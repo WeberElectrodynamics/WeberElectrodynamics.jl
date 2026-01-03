@@ -1,0 +1,53 @@
+struct EnergyData
+    t::Vector{Float64}
+    total::Vector{Float64}
+    kinetic::Union{Vector{Float64}, Nothing}
+    potential::Union{Vector{Float64}, Nothing}
+    max_local_error::Float64
+    relative_energy_range::Float64
+end
+
+function compute_energy_timeseries(solution::IntegratorSolution,
+                                   total_energy_func::Function,
+                                   KE_func::Union{Function, Nothing}=nothing,
+                                   PE_func::Union{Function, Nothing}=nothing,
+                                   params=nothing;
+                                   stride::Int=1)::EnergyData
+    indices = 1:stride:length(solution.t)
+    n_points = length(indices)
+    t = solution.t[indices]
+
+    total = zeros(n_points)
+    for (i, idx) in enumerate(indices)
+        total[i] = total_energy_func(solution.q[idx], solution.p[idx], params, solution.t[idx])
+    end
+
+    kinetic = if !isnothing(KE_func)
+        ke = zeros(n_points)
+        for (i, idx) in enumerate(indices)
+            ke[i] = KE_func(solution.q[idx], solution.p[idx], params, solution.t[idx])
+        end
+        ke
+    else
+        nothing
+    end
+
+    potential = if !isnothing(PE_func)
+        pe = zeros(n_points)
+        for (i, idx) in enumerate(indices)
+            pe[i] = PE_func(solution.q[idx], solution.p[idx], params, solution.t[idx])
+        end
+        pe
+    else
+        nothing
+    end
+
+    E_initial = total[1]
+    max_local_error = maximum(abs.(total .- E_initial))
+
+    E_max = maximum(total)
+    E_min = minimum(total)
+    relative_energy_range = (E_max - E_min) / E_initial
+
+    return EnergyData(t, total, kinetic, potential, max_local_error, relative_energy_range)
+end

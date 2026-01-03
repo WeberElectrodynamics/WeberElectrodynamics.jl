@@ -1,0 +1,72 @@
+# Editor directories and files
+.vscode
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Julia
+*.jl.cov
+*.jl.*.cov
+*.jl.mem
+deps/deps.jl
+deps/build.log
+deps/downloads/
+deps/usr/
+deps/src/
+
+# Julia compiled files
+*.ji
+*.o
+*.so
+*.dylib
+*.dll
+
+# Julia package manager
+Manifest.toml
+LocalPreferences.toml
+
+# Build artifacts
+/build/
+/builds/
+
+# Documentation builds
+docs/build/
+docs/site/
+
+# Jupyter notebooks checkpoints
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Test coverage
+*.cov
+/coverage/
+lcov.info
+
+# Benchmark results
+benchmark/*.json
+benchmark/tune.json
+
+# Temporary files
+*.tmp
+tmp/
+temp/
+
+# Logs
+*.log
+
+# Environment and secrets
+.env
+.env.local
+
+.venv*
+
+# LaTeX auxiliary files
+*.aux
+*.bbl
+*.blg
+*.out
+*.synctex.gz
+*.toc
+*.lof
+*.lot
