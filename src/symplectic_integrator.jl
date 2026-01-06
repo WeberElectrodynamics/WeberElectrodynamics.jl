@@ -1,5 +1,15 @@
 using LinearAlgebra
 
+struct NewtonConvergenceError <: Exception
+    iterations::Int
+    tolerance::Float64
+    final_residual::Float64
+end
+
+function Base.showerror(io::IO, e::NewtonConvergenceError)
+    print(io, "NewtonConvergenceError: failed to converge after $(e.iterations) iterations (residual=$(e.final_residual), tolerance=$(e.tolerance))")
+end
+
 mutable struct PhaseSpacePoint
     q::Vector{Float64}
     p::Vector{Float64}
@@ -159,7 +169,8 @@ function step!(state::IntegratorState)::Nothing
         return nothing
     end
 
-    for _ in 1:max_iter
+    final_residual = 0.0
+    for iter in 1:max_iter
         f!(f_val, μ)
 
         copyto!(μ_old, μ)
@@ -169,8 +180,9 @@ function step!(state::IntegratorState)::Nothing
         for i in eachindex(μ, μ_old)
             diff_norm_sq += (μ[i] - μ_old[i])^2
         end
+        final_residual = sqrt(diff_norm_sq)
 
-        if sqrt(diff_norm_sq) < tol
+        if final_residual < tol
             mul!(ATμ, A', μ_old)
             @. Z_post_phi = Z_post_phi + ATμ
 
@@ -183,7 +195,7 @@ function step!(state::IntegratorState)::Nothing
         end
     end
 
-    error("Newton iteration did not converge within $max_iter iterations")
+    throw(NewtonConvergenceError(max_iter, tol, final_residual))
 end
 
 function integrate(state::IntegratorState, timespan::TimeSpan; reset_mu::Bool=false)::IntegratorSolution
@@ -209,8 +221,9 @@ function integrate(state::IntegratorState, timespan::TimeSpan; reset_mu::Bool=fa
         try
             step!(state)
         catch e
-            if e isa ErrorException && contains(e.msg, "Newton iteration")
-                error("Integration failed at step $step (t=$(t_start + (step-1)*dt)): $(e.msg)")
+            if e isa NewtonConvergenceError
+                current_time = t_start + (step - 1) * dt
+                error("Integration failed at step $step (t=$current_time): $(e.iterations) iterations, residual=$(e.final_residual), tolerance=$(e.tolerance)")
             else
                 rethrow()
             end

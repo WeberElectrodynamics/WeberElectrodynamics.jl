@@ -25,11 +25,33 @@ function compute_force_timeseries(sol::IntegratorSolution,
                                   charges::Vector{Float64},
                                   c::Float64;
                                   stride::Int=1)::ForceData
-    @assert length(masses) == n_particles
-    @assert length(charges) == n_particles
+    if stride <= 0
+        throw(ArgumentError("stride must be positive, got $stride"))
+    end
+    if length(sol.t) < 2
+        throw(ArgumentError("solution must have at least 2 time points for force computation"))
+    end
+    if length(masses) != n_particles
+        throw(ArgumentError("masses length ($(length(masses))) must equal n_particles ($n_particles)"))
+    end
+    if length(charges) != n_particles
+        throw(ArgumentError("charges length ($(length(charges))) must equal n_particles ($n_particles)"))
+    end
+    expected_dim = n_particles * dims
+    actual_dim = length(sol.q[1])
+    if actual_dim != expected_dim
+        throw(ArgumentError("dimension mismatch: n_particles=$n_particles × dims=$dims = $expected_dim, but solution has dimension $actual_dim"))
+    end
+    if c <= 0
+        throw(ArgumentError("speed of light c must be positive, got $c"))
+    end
 
     indices = 1:stride:length(sol.t)
     n_steps = length(indices)
+
+    if n_steps < 2
+        throw(ArgumentError("stride=$stride results in only $n_steps points; need at least 2 for acceleration computation"))
+    end
 
     dt = sol.t[indices[2]] - sol.t[indices[1]]
 

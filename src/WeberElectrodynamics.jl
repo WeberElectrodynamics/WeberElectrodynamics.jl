@@ -6,6 +6,7 @@ export symbolize, compile, create_phase_space_variables
 
 include("symplectic_integrator.jl")
 export PhaseSpacePoint, IntegratorSettings, IntegratorState, TimeSpan, IntegratorSolution
+export NewtonConvergenceError
 export step!, integrate
 
 include("statistics/trajectories.jl")

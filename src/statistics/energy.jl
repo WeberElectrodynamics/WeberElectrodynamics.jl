@@ -13,6 +13,13 @@ function compute_energy_timeseries(solution::IntegratorSolution,
                                    PE_func::Union{Function, Nothing}=nothing,
                                    params=nothing;
                                    stride::Int=1)::EnergyData
+    if stride <= 0
+        throw(ArgumentError("stride must be positive, got $stride"))
+    end
+    if length(solution.t) < 1
+        throw(ArgumentError("solution must have at least 1 time point"))
+    end
+
     indices = 1:stride:length(solution.t)
     n_points = length(indices)
     t = solution.t[indices]
@@ -47,7 +54,12 @@ function compute_energy_timeseries(solution::IntegratorSolution,
 
     E_max = maximum(total)
     E_min = minimum(total)
-    relative_energy_range = (E_max - E_min) / E_initial
+
+    relative_energy_range = if abs(E_initial) < 100 * eps(Float64)
+        NaN
+    else
+        (E_max - E_min) / E_initial
+    end
 
     return EnergyData(t, total, kinetic, potential, max_local_error, relative_energy_range)
 end
