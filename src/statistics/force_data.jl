@@ -6,6 +6,17 @@ struct ForceData
     n_particles::Int
 end
 
+struct ForceComputationBuffers
+    r::Vector{Float64}
+    v::Vector{Float64}
+    a::Vector{Float64}
+    r_hat::Vector{Float64}
+end
+
+function ForceComputationBuffers()
+    ForceComputationBuffers(zeros(2), zeros(2), zeros(2), zeros(2))
+end
+
 function compute_force_timeseries(sol::IntegratorSolution,
                                   n_particles::Int,
                                   masses::Vector{Float64},
@@ -33,7 +44,9 @@ function compute_force_timeseries(sol::IntegratorSolution,
         @inbounds for (i, idx) in enumerate(indices)
             px = sol.p[idx][x_idx]
             py = sol.p[idx][y_idx]
-            vels[i] = [px / m, py / m]
+            vels[i] = Vector{Float64}(undef, 2)
+            vels[i][1] = px / m
+            vels[i][2] = py / m
         end
         velocities[particle] = vels
     end
@@ -42,8 +55,8 @@ function compute_force_timeseries(sol::IntegratorSolution,
     for particle in 1:n_particles
         accels = Vector{Vector{Float64}}(undef, n_force_steps)
         @inbounds for t in 1:n_force_steps
-            dv = velocities[particle][t+1] - velocities[particle][t]
-            accels[t] = dv / dt
+            accels[t] = Vector{Float64}(undef, 2)
+            @. accels[t] = (velocities[particle][t+1] - velocities[particle][t]) / dt
         end
         accelerations[particle] = accels
     end
@@ -55,12 +68,15 @@ function compute_force_timeseries(sol::IntegratorSolution,
 
         pos = Vector{Vector{Float64}}(undef, n_steps)
         @inbounds for (i, idx) in enumerate(indices)
-            pos[i] = [sol.q[idx][x_idx], sol.q[idx][y_idx]]
+            pos[i] = Vector{Float64}(undef, 2)
+            pos[i][1] = sol.q[idx][x_idx]
+            pos[i][2] = sol.q[idx][y_idx]
         end
         positions[particle] = pos
     end
 
     forces = Dict{Tuple{Int,Int}, Vector{Vector{Float64}}}()
+    buf = ForceComputationBuffers()
 
     for i in 1:n_particles
         for j in (i+1):n_particles
@@ -77,25 +93,31 @@ function compute_force_timeseries(sol::IntegratorSolution,
                 a_i = accelerations[i][t]
                 a_j = accelerations[j][t]
 
-                r = r_i - r_j
-                v = v_i - v_j
-                a = a_i - a_j
+                @. buf.r = r_i - r_j
+                @. buf.v = v_i - v_j
+                @. buf.a = a_i - a_j
 
-                r_norm = norm(r)
-                r_hat = r / r_norm
+                r_norm = norm(buf.r)
+                @. buf.r_hat = buf.r / r_norm
 
-                v_dot_v = dot(v, v)
-                r_dot_a = dot(r, a)
-                r_hat_dot_v = dot(r_hat, v)
+                v_dot_v = dot(buf.v, buf.v)
+                r_dot_a = dot(buf.r, buf.a)
+                r_hat_dot_v = dot(buf.r_hat, buf.v)
 
                 factor = (qi * qj / (r_norm^2)) * (1.0 + (1.0 / c^2) * (v_dot_v + r_dot_a - 1.5 * r_hat_dot_v^2))
-                F_ij = factor * r_hat
 
-                force_series[t] = F_ij
+                force_series[t] = Vector{Float64}(undef, 2)
+                @. force_series[t] = factor * buf.r_hat
             end
 
             forces[(i, j)] = force_series
-            forces[(j, i)] = [-f for f in force_series]
+
+            neg_series = Vector{Vector{Float64}}(undef, n_force_steps)
+            @inbounds for t in 1:n_force_steps
+                neg_series[t] = Vector{Float64}(undef, 2)
+                @. neg_series[t] = -force_series[t]
+            end
+            forces[(j, i)] = neg_series
         end
     end
 
@@ -139,7 +161,7 @@ function check_newtons_third_law(force_data::ForceData)::NewtonsThirdLawData
             pair_violations[(i, j)] = violations
             max_violations[(i, j)] = maximum(violations)
             mean_violations[(i, j)] = sum(violations) / length(violations)
-            rms_violations[(i, j)] = sqrt(sum(violations.^2) / length(violations))
+            rms_violations[(i, j)] = sqrt(sum(x -> x^2, violations) / length(violations))
 
             if max_violations[(i, j)] > global_max
                 global_max = max_violations[(i, j)]
