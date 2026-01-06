@@ -24,6 +24,6 @@ export NewtonsThirdLawData
 export check_newtons_third_law
 
 include("plotting.jl")
-export plot_trajectories, plot_energy, plot_newtons_third_law
+export plot_trajectories, plot_energy, plot_forces
 
 end
