@@ -4,6 +4,7 @@ struct ForceData
     forces::Dict{Tuple{Int,Int}, Vector{Vector{Float64}}}
     t::Vector{Float64}
     n_particles::Int
+    dims::Int
 end
 
 struct ForceComputationBuffers
@@ -13,12 +14,13 @@ struct ForceComputationBuffers
     r_hat::Vector{Float64}
 end
 
-function ForceComputationBuffers()
-    ForceComputationBuffers(zeros(2), zeros(2), zeros(2), zeros(2))
+function ForceComputationBuffers(dims::Int)
+    ForceComputationBuffers(zeros(dims), zeros(dims), zeros(dims), zeros(dims))
 end
 
 function compute_force_timeseries(sol::IntegratorSolution,
                                   n_particles::Int,
+                                  dims::Int,
                                   masses::Vector{Float64},
                                   charges::Vector{Float64},
                                   c::Float64;
@@ -36,17 +38,15 @@ function compute_force_timeseries(sol::IntegratorSolution,
 
     velocities = Vector{Vector{Vector{Float64}}}(undef, n_particles)
     for particle in 1:n_particles
-        x_idx = (particle - 1) * 2 + 1
-        y_idx = (particle - 1) * 2 + 2
         m = masses[particle]
 
         vels = Vector{Vector{Float64}}(undef, n_steps)
         @inbounds for (i, idx) in enumerate(indices)
-            px = sol.p[idx][x_idx]
-            py = sol.p[idx][y_idx]
-            vels[i] = Vector{Float64}(undef, 2)
-            vels[i][1] = px / m
-            vels[i][2] = py / m
+            vels[i] = Vector{Float64}(undef, dims)
+            for d in 1:dims
+                p_idx = (particle - 1) * dims + d
+                vels[i][d] = sol.p[idx][p_idx] / m
+            end
         end
         velocities[particle] = vels
     end
@@ -55,7 +55,7 @@ function compute_force_timeseries(sol::IntegratorSolution,
     for particle in 1:n_particles
         accels = Vector{Vector{Float64}}(undef, n_force_steps)
         @inbounds for t in 1:n_force_steps
-            accels[t] = Vector{Float64}(undef, 2)
+            accels[t] = Vector{Float64}(undef, dims)
             @. accels[t] = (velocities[particle][t+1] - velocities[particle][t]) / dt
         end
         accelerations[particle] = accels
@@ -63,20 +63,19 @@ function compute_force_timeseries(sol::IntegratorSolution,
 
     positions = Vector{Vector{Vector{Float64}}}(undef, n_particles)
     for particle in 1:n_particles
-        x_idx = (particle - 1) * 2 + 1
-        y_idx = (particle - 1) * 2 + 2
-
         pos = Vector{Vector{Float64}}(undef, n_steps)
         @inbounds for (i, idx) in enumerate(indices)
-            pos[i] = Vector{Float64}(undef, 2)
-            pos[i][1] = sol.q[idx][x_idx]
-            pos[i][2] = sol.q[idx][y_idx]
+            pos[i] = Vector{Float64}(undef, dims)
+            for d in 1:dims
+                q_idx = (particle - 1) * dims + d
+                pos[i][d] = sol.q[idx][q_idx]
+            end
         end
         positions[particle] = pos
     end
 
     forces = Dict{Tuple{Int,Int}, Vector{Vector{Float64}}}()
-    buf = ForceComputationBuffers()
+    buf = ForceComputationBuffers(dims)
 
     for i in 1:n_particles
         for j in (i+1):n_particles
@@ -106,7 +105,7 @@ function compute_force_timeseries(sol::IntegratorSolution,
 
                 factor = (qi * qj / (r_norm^2)) * (1.0 + (1.0 / c^2) * (v_dot_v + r_dot_a - 1.5 * r_hat_dot_v^2))
 
-                force_series[t] = Vector{Float64}(undef, 2)
+                force_series[t] = Vector{Float64}(undef, dims)
                 @. force_series[t] = factor * buf.r_hat
             end
 
@@ -114,14 +113,14 @@ function compute_force_timeseries(sol::IntegratorSolution,
 
             neg_series = Vector{Vector{Float64}}(undef, n_force_steps)
             @inbounds for t in 1:n_force_steps
-                neg_series[t] = Vector{Float64}(undef, 2)
+                neg_series[t] = Vector{Float64}(undef, dims)
                 @. neg_series[t] = -force_series[t]
             end
             forces[(j, i)] = neg_series
         end
     end
 
-    return ForceData(forces, t_forces, n_particles)
+    return ForceData(forces, t_forces, n_particles, dims)
 end
 
 struct NewtonsThirdLawData

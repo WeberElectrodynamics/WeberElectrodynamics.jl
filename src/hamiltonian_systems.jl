@@ -35,9 +35,8 @@ function symbolize(H_func::Function, q_syms::Vector{Symbol}, p_syms::Vector{Symb
     q_vars = [Symbolics.variable(q_sym) for q_sym in q_syms]
     p_vars = [Symbolics.variable(p_sym) for p_sym in p_syms]
     param_vars = [Symbolics.variable(param_name) for param_name in param_names]
-    t = Symbolics.variable(:t)
 
-    H_sym = H_func(q_vars, p_vars, param_vars, t)
+    H_sym = H_func(q_vars, p_vars, param_vars)
 
     qdot_sym = [Symbolics.derivative(H_sym, p_vars[i]) for i in eachindex(p_vars)]
     pdot_sym = [-Symbolics.derivative(H_sym, q_vars[i]) for i in eachindex(q_vars)]

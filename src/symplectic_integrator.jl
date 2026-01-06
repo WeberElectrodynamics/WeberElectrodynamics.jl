@@ -18,9 +18,8 @@ end
 mutable struct IntegratorBuffers
     d::Int
     A::Matrix{Float64}
-    Zₙ::Vector{Float64}
-    Ẑₙ::Vector{Float64}
-    Ẑₙ₊₁::Vector{Float64}
+    Z_current::Vector{Float64}
+    Z_post_phi::Vector{Float64}
     Z_result::Vector{Float64}
     qs_buf::Vector{Float64}
     xs_buf::Vector{Float64}
@@ -40,7 +39,6 @@ mutable struct IntegratorBuffers
         new(
             d,
             A,
-            Vector{Float64}(undef, 4d),
             Vector{Float64}(undef, 4d),
             Vector{Float64}(undef, 4d),
             Vector{Float64}(undef, 4d),
@@ -108,9 +106,9 @@ function step!(state::IntegratorState)::Nothing
     Y_ = 4d
 
     A = buffers.A
-    Zₙ = buffers.Zₙ
-    Ẑₙ = buffers.Ẑₙ
-    Ẑₙ₊₁ = buffers.Ẑₙ₊₁
+    Z_current = buffers.Z_current
+    Z_post_phi = buffers.Z_post_phi
+    Z_result = buffers.Z_result
     qs_buf = buffers.qs_buf
     xs_buf = buffers.xs_buf
     ps_buf = buffers.ps_buf
@@ -119,13 +117,12 @@ function step!(state::IntegratorState)::Nothing
     μ = buffers.μ
     μ_old = buffers.μ_old
     f_val = buffers.f_val
-    Z_result = buffers.Z_result
 
     @views begin
-        Zₙ[Q:Q_] .= q
-        Zₙ[X:X_] .= q
-        Zₙ[P:P_] .= p
-        Zₙ[Y:Y_] .= p
+        Z_current[Q:Q_] .= q
+        Z_current[X:X_] .= q
+        Z_current[P:P_] .= p
+        Z_current[Y:Y_] .= p
     end
 
     function ϕ(Z::Vector{Float64})::Nothing
@@ -155,10 +152,9 @@ function step!(state::IntegratorState)::Nothing
 
     function f!(result::Vector{Float64}, μ_input::Vector{Float64})::Nothing
         mul!(ATμ, A', μ_input)
-        @. Ẑₙ = Zₙ + ATμ
-        Ẑₙ₊₁ .= Ẑₙ
-        ϕ(Ẑₙ₊₁)
-        @. Z_result = Ẑₙ₊₁ + ATμ
+        @. Z_post_phi = Z_current + ATμ
+        ϕ(Z_post_phi)
+        @. Z_result = Z_post_phi + ATμ
         mul!(result, A, Z_result)
         return nothing
     end
@@ -176,11 +172,11 @@ function step!(state::IntegratorState)::Nothing
 
         if sqrt(diff_norm_sq) < tol
             mul!(ATμ, A', μ_old)
-            @. Ẑₙ₊₁ = Ẑₙ₊₁ + ATμ
+            @. Z_post_phi = Z_post_phi + ATμ
 
             @views begin
-                state.point.q .= Ẑₙ₊₁[Q:Q_]
-                state.point.p .= Ẑₙ₊₁[P:P_]
+                state.point.q .= Z_post_phi[Q:Q_]
+                state.point.p .= Z_post_phi[P:P_]
             end
 
             return nothing

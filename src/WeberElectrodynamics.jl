@@ -8,21 +8,21 @@ include("symplectic_integrator.jl")
 export PhaseSpacePoint, IntegratorSettings, IntegratorState, TimeSpan, IntegratorSolution
 export step!, integrate
 
-include("statistics/trajectory_data.jl")
+include("statistics/trajectories.jl")
 export TrajectoryData
 export create_trajectory_data
 
-include("statistics/energy_data.jl")
+include("statistics/energy.jl")
 export EnergyData
 export compute_energy_timeseries
 
-include("statistics/force_data.jl")
+include("statistics/forces.jl")
 export ForceData
 export compute_force_timeseries
 export NewtonsThirdLawData
 export check_newtons_third_law
 
-include("visualization.jl")
-export plot_trajectories_2d, plot_energy, plot_newtons_third_law
+include("plotting.jl")
+export plot_trajectories, plot_energy, plot_newtons_third_law
 
 end
