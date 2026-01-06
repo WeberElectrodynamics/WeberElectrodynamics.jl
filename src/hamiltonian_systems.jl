@@ -14,7 +14,7 @@ struct HamiltonianVectorField
     pdot_func::Function
 end
 
-function create_phase_space_variables(n_particles::UInt8, dims::UInt8)::Tuple{Vector{Symbol}, Vector{Symbol}}
+function create_phase_space_variables(n_particles::Int, dims::Int)::Tuple{Vector{Symbol}, Vector{Symbol}}
     coord_names = [:x, :y, :z]
     momentum_names = [:px, :py, :pz]
 

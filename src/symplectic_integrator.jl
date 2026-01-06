@@ -169,12 +169,13 @@ function step!(state::IntegratorState)::Nothing
         return nothing
     end
 
+    relaxation = 0.25  # Fixed-point iteration relaxation factor (1/4 for symmetric projection)
     final_residual = 0.0
     for iter in 1:max_iter
         f!(f_val, μ)
 
         copyto!(μ_old, μ)
-        @. μ = μ - 0.25 * f_val
+        @. μ = μ - relaxation * f_val
 
         diff_norm_sq = 0.0
         for i in eachindex(μ, μ_old)
