@@ -58,6 +58,7 @@ temp/
 # Environment and secrets
 .env
 .env.local
+.envrc
 
 .venv*
 
