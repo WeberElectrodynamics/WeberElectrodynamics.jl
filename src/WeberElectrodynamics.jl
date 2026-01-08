@@ -23,7 +23,12 @@ export compute_force_timeseries
 export NewtonsThirdLawData
 export check_newtons_third_law
 
+include("statistics/phase_space.jl")
+export PhaseSpaceData
+export compute_phase_space_data
+
+# Plots.jl plotting for Jupyter notebooks
 include("plotting.jl")
-export plot_trajectories, plot_energy, plot_forces
+export plot_trajectories, plot_energy, plot_forces, plot_phase_space
 
 end

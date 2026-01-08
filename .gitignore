@@ -30,6 +30,10 @@ LocalPreferences.toml
 /build/
 /builds/
 
+# Generated figures
+examples/figures/
+papers/**/examples/figures/
+
 # Documentation builds
 docs/build/
 docs/site/
@@ -71,3 +75,8 @@ temp/
 *.toc
 *.lof
 *.lot
+*.fdb_latexmk
+*.fls
+
+# Generated PDFs in examples
+papers/**/examples/*.pdf
