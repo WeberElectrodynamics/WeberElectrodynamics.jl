@@ -18,7 +18,7 @@ function ForceComputationBuffers(dims::Int)
     ForceComputationBuffers(zeros(dims), zeros(dims), zeros(dims), zeros(dims))
 end
 
-function compute_force_timeseries(sol::IntegratorSolution,
+function compute_force_timeseries(sol::WeberSolution,
                                   n_particles::Int,
                                   dims::Int,
                                   masses::Vector{Float64},

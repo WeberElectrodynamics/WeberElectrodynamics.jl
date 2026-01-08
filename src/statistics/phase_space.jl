@@ -31,7 +31,7 @@ end
 Extract phase space coordinates (r, rdot) for a particle pair.
 
 # Arguments
-- `sol::IntegratorSolution`: Integration solution
+- `sol::WeberSolution`: Integration solution
 - `n_particles::Int`: Number of particles
 - `dims::Int`: Spatial dimensions (1, 2, or 3)
 - `masses::Vector{Float64}`: Particle masses
@@ -43,7 +43,7 @@ Extract phase space coordinates (r, rdot) for a particle pair.
 # Returns
 - `PhaseSpaceData`: Phase space data for the particle pair
 """
-function compute_phase_space_data(sol::IntegratorSolution, n_particles::Int, dims::Int,
+function compute_phase_space_data(sol::WeberSolution, n_particles::Int, dims::Int,
                                    masses::Vector{Float64};
                                    particle_pair::Tuple{Int,Int}=(1, 2),
                                    stride::Int=1,
