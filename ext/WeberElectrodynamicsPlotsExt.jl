@@ -1,3 +1,6 @@
+module WeberElectrodynamicsPlotsExt
+
+using WeberElectrodynamics
 using Plots
 using LinearAlgebra
 
@@ -14,7 +17,7 @@ const PLOT_DEFAULTS = (
 
 # Public API
 
-function plot_trajectories(data::TrajectoryData)::Plots.Plot
+function WeberElectrodynamics.plot_trajectories(data::TrajectoryData)::Plots.Plot
     if data.dims == 1
         return _plot_trajectories_1d(data)
     elseif data.dims == 2
@@ -26,7 +29,7 @@ function plot_trajectories(data::TrajectoryData)::Plots.Plot
     end
 end
 
-function plot_energy(data::EnergyData)::Plots.Plot
+function WeberElectrodynamics.plot_energy(data::EnergyData)::Plots.Plot
     E0 = data.total[1]
     relative_error = abs.((data.total .- E0) ./ E0)
     relative_error = max.(relative_error, eps(Float64))
@@ -51,7 +54,7 @@ function plot_energy(data::EnergyData)::Plots.Plot
     return plt
 end
 
-function plot_forces(data::ForceData)::Plots.Plot
+function WeberElectrodynamics.plot_forces(data::ForceData)::Plots.Plot
     n_times = length(data.t)
     n = data.n_particles
 
@@ -75,7 +78,7 @@ function plot_forces(data::ForceData)::Plots.Plot
     return plt
 end
 
-function plot_phase_space(data::PhaseSpaceData)::Plots.Plot
+function WeberElectrodynamics.plot_phase_space(data::PhaseSpaceData)::Plots.Plot
     plt = plot(; xlabel="r", ylabel="dr/dt",
                size=(500, 500), PLOT_DEFAULTS...)
 
@@ -153,3 +156,5 @@ function _plot_trajectories_3d(data::TrajectoryData)::Plots.Plot
 
     return plt
 end
+
+end # module
