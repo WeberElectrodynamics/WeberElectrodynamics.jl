@@ -23,7 +23,15 @@ export compute_force_timeseries
 export NewtonsThirdLawData
 export check_newtons_third_law
 
-include("plotting.jl")
-export plot_trajectories, plot_energy, plot_forces
+include("statistics/phase_space.jl")
+export PhaseSpaceData
+export compute_phase_space_data
+
+# Plotting functions (implemented in WeberElectrodynamicsPlotsExt extension)
+function plot_trajectories end
+function plot_energy end
+function plot_forces end
+function plot_phase_space end
+export plot_trajectories, plot_energy, plot_forces, plot_phase_space
 
 end

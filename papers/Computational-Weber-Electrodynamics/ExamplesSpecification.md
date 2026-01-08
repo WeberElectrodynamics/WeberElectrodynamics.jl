@@ -28,8 +28,8 @@ With $M = m_1 + m_2 = 1.1$ and $v_{\text{circ}} = \sqrt{k|q_1 q_2| M / (m_1 m_2 
 - $v_{\text{scale}} = 0.7$ (elliptical orbit)
 
 ### Integration
-- Time span: 50 orbital periods (~500 time units)
-- Step size: $\Delta t = 0.01$
+- Time span: 2 orbital periods
+- Step size: $\Delta t = 0.001$
 
 ### Output
 1. Trajectory plot showing rosette pattern
@@ -125,7 +125,7 @@ end
 
 ### Integration
 - Time span: 100 time units (~15 oscillation periods)
-- Step size: $\Delta t = 0.01$
+- Step size: $\Delta t = 0.001$
 
 ### Output
 1. Snapshots at $t = 0, T/4, T/2, 3T/4, T$
