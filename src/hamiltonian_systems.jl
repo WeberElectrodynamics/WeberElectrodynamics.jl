@@ -1,4 +1,5 @@
 using Symbolics
+using Latexify: latexify
 
 # =============================================================================
 # Phase Space Variable Creation
@@ -153,4 +154,9 @@ function Base.show(io::IO, ::MIME"text/plain", H::WeberHamiltonian)
     println(io, "  DOF: $(H.n_dof)")
     println(io, "  Parameters: $(H.param_names)")
     println(io, "  H = $(H.H_sym)")
+end
+
+# LaTeX display for Jupyter notebooks
+function Base.show(io::IO, ::MIME"text/latex", H::WeberHamiltonian)
+    print(io, latexify(H.H_sym))
 end
