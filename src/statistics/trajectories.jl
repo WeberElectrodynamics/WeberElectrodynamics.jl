@@ -6,7 +6,7 @@ struct TrajectoryData
     dims::Int
 end
 
-function create_trajectory_data(sol::IntegratorSolution, n_particles::Int, dims::Int; stride::Int=1)::TrajectoryData
+function create_trajectory_data(sol::WeberSolution, n_particles::Int, dims::Int; stride::Int=1)::TrajectoryData
     if stride <= 0
         throw(ArgumentError("stride must be positive, got $stride"))
     end

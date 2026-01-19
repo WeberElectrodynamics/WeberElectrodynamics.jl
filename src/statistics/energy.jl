@@ -7,7 +7,7 @@ struct EnergyData
     relative_energy_range::Float64
 end
 
-function compute_energy_timeseries(solution::IntegratorSolution,
+function compute_energy_timeseries(solution::WeberSolution,
                                    total_energy_func::Function,
                                    KE_func::Union{Function, Nothing}=nothing,
                                    PE_func::Union{Function, Nothing}=nothing,

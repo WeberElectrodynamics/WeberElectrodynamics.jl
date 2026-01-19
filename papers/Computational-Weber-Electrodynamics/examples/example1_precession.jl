@@ -4,7 +4,6 @@
 # Run: julia --project=papers/Computational-Weber-Electrodynamics/examples papers/Computational-Weber-Electrodynamics/examples/example1_precession.jl
 
 using WeberElectrodynamics
-using Symbolics
 using PGFPlotsX
 using LaTeXStrings
 
@@ -21,10 +20,7 @@ k = 0.1
 r0 = 2.0
 c_weber = 4.0
 
-# Setup Hamiltonian
-n_particles, dims = 2, 2
-q_syms, p_syms = create_phase_space_variables(n_particles, dims)
-
+# Setup Hamiltonian using new API
 function H_weber(q, p, params)
     m1, m2, k, c = params
     x1, y1, x2, y2 = q
@@ -43,8 +39,8 @@ function H_weber(q, p, params)
     return KE + PE
 end
 
-sh = symbolize(H_weber, q_syms, p_syms, [:m1, :m2, :k, :c])
-vf = compile(sh)
+# Build Hamiltonian (2 particles, 2D)
+H = build_hamiltonian(H_weber, 2, 2; param_names=[:m1, :m2, :k, :c])
 
 # Initial conditions (center-of-mass frame)
 M = m1 + m2
@@ -56,21 +52,29 @@ p0 = [0.0, m1 * (-m2/M * v_circ * v_scale), 0.0, m2 * (m1/M * v_circ * v_scale)]
 
 # Integration settings
 T_orbit = 2π * sqrt(r0^3 * m1 * m2 / (k * M))
-settings = IntegratorSettings(0.001, 1e-12, 100)
-timespan = TimeSpan(0.0, 2 * T_orbit)
+dt = 0.001
+tspan = (0.0, 2 * T_orbit)
 
 # Weber simulation
 println("\nRunning Weber simulation (c = $c_weber)...")
-params_weber = [m1, m2, k, c_weber]
-state_weber = IntegratorState(PhaseSpacePoint(copy(q0), copy(p0)), settings, vf, params_weber)
-sol_weber = integrate(state_weber, timespan)
+prob_weber = WeberProblem(H, tspan, q0, p0;
+    params=[m1, m2, k, c_weber],
+    dt=dt,
+    tolerance=1e-12,
+    max_iterations=100
+)
+sol_weber = solve(prob_weber)
 println("  $(length(sol_weber.t)) steps")
 
 # Coulomb simulation (c → ∞)
 println("Running Coulomb simulation (c → ∞)...")
-params_coulomb = [m1, m2, k, 1e6]
-state_coulomb = IntegratorState(PhaseSpacePoint(copy(q0), copy(p0)), settings, vf, params_coulomb)
-sol_coulomb = integrate(state_coulomb, timespan)
+prob_coulomb = WeberProblem(H, tspan, q0, p0;
+    params=[m1, m2, k, 1e6],
+    dt=dt,
+    tolerance=1e-12,
+    max_iterations=100
+)
+sol_coulomb = solve(prob_coulomb)
 println("  $(length(sol_coulomb.t)) steps")
 
 # Extract trajectory data (stride=100 for 4 orbits with dt=0.001)
