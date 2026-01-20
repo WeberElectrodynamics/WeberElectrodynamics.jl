@@ -22,7 +22,7 @@ end
 sol = solve!(integrator)
 ```
 """
-function CommonSolve.init(prob::WeberProblem{P}, alg::WeberAlgorithm=SymmetricProjection()) where P
+function CommonSolve.init(prob::WeberProblem{P}, alg::SymmetricProjection=SymmetricProjection()) where P
     d = prob.H.n_dof
     buffers = IntegratorBuffers(d)
 
@@ -62,9 +62,9 @@ Advance the integrator by one time step.
 - `false` if integration is complete (reached t_end)
 
 # Throws
-- `NewtonConvergenceError` if Newton iteration fails to converge
+- `NonlinearSolveError` if the nonlinear solver fails to converge
 """
-function CommonSolve.step!(integrator::WeberIntegrator{P,SymmetricProjection}) where P
+function CommonSolve.step!(integrator::WeberIntegrator{P,SymmetricProjection{S}}) where {P,S}
     # Check if already done
     if integrator.t >= integrator.t_end - eps(integrator.t_end)
         return false
@@ -151,44 +151,37 @@ function CommonSolve.step!(integrator::WeberIntegrator{P,SymmetricProjection}) w
         return nothing
     end
 
-    # Fixed-point iteration
-    relaxation = 0.25
-    final_residual = 0.0
-    for iter in 1:max_iter
-        f!(f_val, μ)
+    # Solve the nonlinear projection problem
+    solver = integrator.alg.solver
+    success, iterations, final_residual = solve_nonlinear!(
+        μ, f!, solver, tol, max_iter;
+        fu_buffer=f_val,
+        u_old_buffer=μ_old
+    )
 
-        copyto!(μ_old, μ)
-        @. μ = μ - relaxation * f_val
+    if success
+        mul!(ATμ, A', μ)
+        @. Z_post_phi = Z_post_phi + ATμ
 
-        diff_norm_sq = 0.0
-        for i in eachindex(μ, μ_old)
-            diff_norm_sq += (μ[i] - μ_old[i])^2
+        @views begin
+            integrator.q .= Z_post_phi[iQ:iQ_]
+            integrator.p .= Z_post_phi[iP:iP_]
         end
-        final_residual = sqrt(diff_norm_sq)
 
-        if final_residual < tol
-            mul!(ATμ, A', μ_old)
-            @. Z_post_phi = Z_post_phi + ATμ
+        integrator.step_count += 1
+        integrator.t = prob.tspan[1] + integrator.step_count * dt
 
-            @views begin
-                integrator.q .= Z_post_phi[iQ:iQ_]
-                integrator.p .= Z_post_phi[iP:iP_]
-            end
+        # Store in history
+        idx = integrator.step_count + 1
+        integrator.t_history[idx] = integrator.t
+        integrator.q_history[idx] = copy(integrator.q)
+        integrator.p_history[idx] = copy(integrator.p)
 
-            integrator.step_count += 1
-            integrator.t = prob.tspan[1] + integrator.step_count * dt
-
-            # Store in history
-            idx = integrator.step_count + 1
-            integrator.t_history[idx] = integrator.t
-            integrator.q_history[idx] = copy(integrator.q)
-            integrator.p_history[idx] = copy(integrator.p)
-
-            return integrator.t < integrator.t_end
-        end
+        return integrator.t < integrator.t_end
     end
 
-    throw(NewtonConvergenceError(max_iter, tol, final_residual, integrator.step_count + 1, integrator.t))
+    solver_name = string(typeof(solver).name.name)
+    throw(NonlinearSolveError(iterations, tol, final_residual, integrator.step_count + 1, integrator.t, solver_name))
 end
 
 """
@@ -205,7 +198,7 @@ function CommonSolve.solve!(integrator::WeberIntegrator)
             # Continue stepping
         end
     catch e
-        if e isa NewtonConvergenceError
+        if e isa NonlinearSolveError
             retcode = :Failure
         else
             rethrow()
