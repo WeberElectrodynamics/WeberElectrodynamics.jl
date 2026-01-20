@@ -26,9 +26,6 @@ export NewtonConvergenceError  # Deprecated alias
 include("hamiltonian_systems.jl")
 export @hamiltonian, build_hamiltonian
 export create_phase_space_variables
-# Re-export latexify for symbolic expression display
-using Latexify: latexify
-export latexify
 
 # =============================================================================
 # CommonSolve Interface
