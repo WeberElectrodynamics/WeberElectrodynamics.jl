@@ -72,42 +72,35 @@ function compute_force_timeseries(sol::WeberSolution,
     t_forces = sol.t[indices[1:end-1]]
     n_force_steps = length(t_forces)
 
-    velocities = Vector{Vector{Vector{Float64}}}(undef, n_particles)
-    for particle in 1:n_particles
+    # Use 3D arrays instead of nested vectors (avoids per-timestep allocations)
+    velocities = Array{Float64}(undef, dims, n_steps, n_particles)
+    @inbounds for particle in 1:n_particles
         m = masses[particle]
-
-        vels = Vector{Vector{Float64}}(undef, n_steps)
-        @inbounds for (i, idx) in enumerate(indices)
-            vels[i] = Vector{Float64}(undef, dims)
+        for (i, idx) in enumerate(indices)
             for d in 1:dims
                 p_idx = (particle - 1) * dims + d
-                vels[i][d] = sol.p[idx][p_idx] / m
+                velocities[d, i, particle] = sol.p[idx][p_idx] / m
             end
         end
-        velocities[particle] = vels
     end
 
-    accelerations = Vector{Vector{Vector{Float64}}}(undef, n_particles)
-    for particle in 1:n_particles
-        accels = Vector{Vector{Float64}}(undef, n_force_steps)
-        @inbounds for t in 1:n_force_steps
-            accels[t] = Vector{Float64}(undef, dims)
-            @. accels[t] = (velocities[particle][t+1] - velocities[particle][t]) / dt
+    accelerations = Array{Float64}(undef, dims, n_force_steps, n_particles)
+    @inbounds for particle in 1:n_particles
+        for t in 1:n_force_steps
+            for d in 1:dims
+                accelerations[d, t, particle] = (velocities[d, t+1, particle] - velocities[d, t, particle]) / dt
+            end
         end
-        accelerations[particle] = accels
     end
 
-    positions = Vector{Vector{Vector{Float64}}}(undef, n_particles)
-    for particle in 1:n_particles
-        pos = Vector{Vector{Float64}}(undef, n_steps)
-        @inbounds for (i, idx) in enumerate(indices)
-            pos[i] = Vector{Float64}(undef, dims)
+    positions = Array{Float64}(undef, dims, n_steps, n_particles)
+    @inbounds for particle in 1:n_particles
+        for (i, idx) in enumerate(indices)
             for d in 1:dims
                 q_idx = (particle - 1) * dims + d
-                pos[i][d] = sol.q[idx][q_idx]
+                positions[d, i, particle] = sol.q[idx][q_idx]
             end
         end
-        positions[particle] = pos
     end
 
     forces = Dict{Tuple{Int,Int}, Vector{Vector{Float64}}}()
@@ -118,15 +111,18 @@ function compute_force_timeseries(sol::WeberSolution,
             qi = charges[i]
             qj = charges[j]
 
-            force_series = Vector{Vector{Float64}}(undef, n_force_steps)
+            # Pre-allocate all force vectors before time loop
+            force_series = [Vector{Float64}(undef, dims) for _ in 1:n_force_steps]
+            neg_series = [Vector{Float64}(undef, dims) for _ in 1:n_force_steps]
 
             @inbounds for t in 1:n_force_steps
-                r_i = positions[i][t]
-                r_j = positions[j][t]
-                v_i = velocities[i][t]
-                v_j = velocities[j][t]
-                a_i = accelerations[i][t]
-                a_j = accelerations[j][t]
+                # Use views into 3D arrays
+                r_i = @view positions[:, t, i]
+                r_j = @view positions[:, t, j]
+                v_i = @view velocities[:, t, i]
+                v_j = @view velocities[:, t, j]
+                a_i = @view accelerations[:, t, i]
+                a_j = @view accelerations[:, t, j]
 
                 @. buf.r = r_i - r_j
                 @. buf.v = v_i - v_j
@@ -141,17 +137,12 @@ function compute_force_timeseries(sol::WeberSolution,
 
                 factor = (qi * qj / (r_norm^2)) * (1.0 + (1.0 / c^2) * (v_dot_v + r_dot_a - 1.5 * r_hat_dot_v^2))
 
-                force_series[t] = Vector{Float64}(undef, dims)
+                # In-place assignment to pre-allocated vectors
                 @. force_series[t] = factor * buf.r_hat
+                @. neg_series[t] = -force_series[t]
             end
 
             forces[(i, j)] = force_series
-
-            neg_series = Vector{Vector{Float64}}(undef, n_force_steps)
-            @inbounds for t in 1:n_force_steps
-                neg_series[t] = Vector{Float64}(undef, dims)
-                @. neg_series[t] = -force_series[t]
-            end
             forces[(j, i)] = neg_series
         end
     end
@@ -187,6 +178,7 @@ Check Newton's third law violations in computed Weber forces.
 function check_newtons_third_law(force_data::ForceData)::NewtonsThirdLawData
     n = force_data.n_particles
     n_times = length(force_data.t)
+    dims = force_data.dims
 
     pair_violations = Dict{Tuple{Int,Int}, Vector{Float64}}()
     max_violations = Dict{Tuple{Int,Int}, Float64}()
@@ -196,6 +188,9 @@ function check_newtons_third_law(force_data::ForceData)::NewtonsThirdLawData
     global_max = 0.0
     n_pairs = 0
 
+    # Pre-allocate buffer for sum computation (avoids per-iteration allocation)
+    sum_buf = zeros(dims)
+
     for i in 1:n
         for j in (i+1):n
             n_pairs += 1
@@ -204,17 +199,29 @@ function check_newtons_third_law(force_data::ForceData)::NewtonsThirdLawData
             F_ji = force_data.forces[(j, i)]
 
             violations = Vector{Float64}(undef, n_times)
+            sum_val = 0.0
+            sum_sq = 0.0
+            max_val = 0.0
+
             @inbounds for t in 1:n_times
-                violations[t] = norm(F_ij[t] + F_ji[t])
+                # Compute norm without temporary allocation
+                @. sum_buf = F_ij[t] + F_ji[t]
+                v = norm(sum_buf)
+                violations[t] = v
+                sum_val += v
+                sum_sq += v * v
+                if v > max_val
+                    max_val = v
+                end
             end
 
             pair_violations[(i, j)] = violations
-            max_violations[(i, j)] = maximum(violations)
-            mean_violations[(i, j)] = sum(violations) / length(violations)
-            rms_violations[(i, j)] = sqrt(sum(x -> x^2, violations) / length(violations))
+            max_violations[(i, j)] = max_val
+            mean_violations[(i, j)] = sum_val / n_times
+            rms_violations[(i, j)] = sqrt(sum_sq / n_times)
 
-            if max_violations[(i, j)] > global_max
-                global_max = max_violations[(i, j)]
+            if max_val > global_max
+                global_max = max_val
             end
         end
     end

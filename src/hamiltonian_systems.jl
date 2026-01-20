@@ -15,13 +15,17 @@ function create_phase_space_variables(n_particles::Int, dims::Int)::Tuple{Vector
     coord_names = [:x, :y, :z]
     momentum_names = [:px, :py, :pz]
 
-    q_syms = Symbol[]
-    p_syms = Symbol[]
+    # Pre-size arrays (avoids reallocations from push!)
+    n_total = n_particles * dims
+    q_syms = Vector{Symbol}(undef, n_total)
+    p_syms = Vector{Symbol}(undef, n_total)
 
+    idx = 1
     for i in 1:n_particles
         for d in 1:dims
-            push!(q_syms, Symbol(string(coord_names[d]) * string(i)))
-            push!(p_syms, Symbol(string(momentum_names[d]) * string(i)))
+            q_syms[idx] = Symbol(string(coord_names[d]) * string(i))
+            p_syms[idx] = Symbol(string(momentum_names[d]) * string(i))
+            idx += 1
         end
     end
 

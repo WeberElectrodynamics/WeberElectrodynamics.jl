@@ -176,12 +176,17 @@ mutable struct IntegratorBuffers
     μ::Vector{Float64}
     μ_old::Vector{Float64}
     f_val::Vector{Float64}
+    params_vec::Vector{Float64}  # Cached parameter vector (avoids per-step allocation)
 
-    function IntegratorBuffers(d::Int)
-        Id = Matrix{Float64}(I, d, d)
-        Zd = zeros(Float64, d, d)
-        A = [Id -Id Zd Zd;
-             Zd Zd Id -Id]
+    function IntegratorBuffers(d::Int, params_vec::Vector{Float64})
+        # Construct A matrix directly without intermediate allocations
+        A = zeros(Float64, 2d, 4d)
+        @inbounds for i in 1:d
+            A[i, i] = 1.0           # Id in top-left
+            A[i, d + i] = -1.0      # -Id in top-middle-left
+            A[d + i, 2d + i] = 1.0  # Id in bottom-middle-right
+            A[d + i, 3d + i] = -1.0 # -Id in bottom-right
+        end
 
         new(
             d,
@@ -196,7 +201,8 @@ mutable struct IntegratorBuffers
             Vector{Float64}(undef, 4d),
             zeros(Float64, 2d),
             Vector{Float64}(undef, 2d),
-            Vector{Float64}(undef, 2d)
+            Vector{Float64}(undef, 2d),
+            params_vec
         )
     end
 end

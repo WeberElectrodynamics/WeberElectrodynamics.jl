@@ -11,18 +11,21 @@ Initialize an integrator for stepped integration. Use `step!()` to advance, `sol
 """
 function CommonSolve.init(prob::WeberProblem{P}, alg::SymmetricProjection=SymmetricProjection()) where P
     d = prob.H.n_dof
-    buffers = IntegratorBuffers(d)
 
-    # Pre-allocate solution storage
+    # Convert params once, cache in buffers (avoids per-step allocation)
+    params_vec = _params_to_vector(prob.params)
+    buffers = IntegratorBuffers(d, params_vec)
+
+    # Pre-allocate solution storage with all inner vectors
     n_steps = Int(ceil((prob.tspan[2] - prob.tspan[1]) / prob.dt))
     t_history = Vector{Float64}(undef, n_steps + 1)
-    q_history = Vector{Vector{Float64}}(undef, n_steps + 1)
-    p_history = Vector{Vector{Float64}}(undef, n_steps + 1)
+    q_history = [Vector{Float64}(undef, d) for _ in 1:(n_steps + 1)]
+    p_history = [Vector{Float64}(undef, d) for _ in 1:(n_steps + 1)]
 
-    # Store initial conditions
+    # Store initial conditions (in-place copy to pre-allocated vectors)
     t_history[1] = prob.tspan[1]
-    q_history[1] = copy(prob.q₀)
-    p_history[1] = copy(prob.p₀)
+    q_history[1] .= prob.q₀
+    p_history[1] .= prob.p₀
 
     WeberIntegrator{P,typeof(alg)}(
         prob,
@@ -64,7 +67,7 @@ function CommonSolve.step!(integrator::WeberIntegrator{P,SymmetricProjection{S}}
 
     qdot_func = prob.H.qdot_func
     pdot_func = prob.H.pdot_func
-    params = _params_to_vector(prob.params)
+    params = integrator.buffers.params_vec  # Use cached params (no allocation)
 
     buffers = integrator.buffers
     d = buffers.d
@@ -158,11 +161,11 @@ function CommonSolve.step!(integrator::WeberIntegrator{P,SymmetricProjection{S}}
         integrator.step_count += 1
         integrator.t = prob.tspan[1] + integrator.step_count * dt
 
-        # Store in history
+        # Store in history (in-place copy to pre-allocated vectors)
         idx = integrator.step_count + 1
         integrator.t_history[idx] = integrator.t
-        integrator.q_history[idx] = copy(integrator.q)
-        integrator.p_history[idx] = copy(integrator.p)
+        integrator.q_history[idx] .= integrator.q
+        integrator.p_history[idx] .= integrator.p
 
         return integrator.t < integrator.t_end
     end

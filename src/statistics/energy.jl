@@ -64,10 +64,11 @@ function compute_energy_timeseries(solution::WeberSolution,
     end
 
     E_initial = total[1]
-    max_local_error = maximum(abs.(total .- E_initial))
+    # Single-pass reduction without temporary allocation
+    max_local_error = mapreduce(x -> abs(x - E_initial), max, total)
 
-    E_max = maximum(total)
-    E_min = minimum(total)
+    # Single pass for both min and max
+    E_min, E_max = extrema(total)
 
     relative_energy_range = if abs(E_initial) < 100 * eps(Float64)
         NaN

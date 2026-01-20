@@ -49,21 +49,29 @@ function compute_phase_space_data(sol::WeberSolution, n_particles::Int, dims::In
 
     m_i, m_j = masses[i], masses[j]
 
+    # Pre-allocate buffers outside loop (avoids per-iteration allocations)
+    pos_i = zeros(dims)
+    pos_j = zeros(dims)
+    vel_i = zeros(dims)
+    vel_j = zeros(dims)
+    rel_pos = zeros(dims)
+    rel_vel = zeros(dims)
+
     for (k, idx) in enumerate(indices)
         q = sol.q[idx]
         p = sol.p[idx]
 
-        # Extract positions
-        pos_i = [q[(i-1)*dims + d] for d in 1:dims]
-        pos_j = [q[(j-1)*dims + d] for d in 1:dims]
+        # Extract positions and velocities (in-place)
+        @inbounds for d in 1:dims
+            pos_i[d] = q[(i-1)*dims + d]
+            pos_j[d] = q[(j-1)*dims + d]
+            vel_i[d] = p[(i-1)*dims + d] / m_i
+            vel_j[d] = p[(j-1)*dims + d] / m_j
+        end
 
-        # Extract momenta and compute velocities
-        vel_i = [p[(i-1)*dims + d] / m_i for d in 1:dims]
-        vel_j = [p[(j-1)*dims + d] / m_j for d in 1:dims]
-
-        # Relative position and velocity
-        rel_pos = pos_i - pos_j
-        rel_vel = vel_i - vel_j
+        # Relative position and velocity (in-place)
+        @. rel_pos = pos_i - pos_j
+        @. rel_vel = vel_i - vel_j
 
         # Separation distance
         r = norm(rel_pos)
@@ -81,13 +89,16 @@ function compute_phase_space_data(sol::WeberSolution, n_particles::Int, dims::In
             theta_vals[k] = atan(rel_pos[2], rel_pos[1])
         end
 
-        # Angular momentum (2D: L = x*vy - y*vx, 3D: |r × v|)
+        # Angular momentum (2D: L = x*vy - y*vx, 3D: compute norm directly)
         if !isnothing(L_vals)
             if dims == 2
                 L_vals[k] = rel_pos[1] * rel_vel[2] - rel_pos[2] * rel_vel[1]
             elseif dims == 3
-                L_vec = cross(rel_pos, rel_vel)
-                L_vals[k] = norm(L_vec)
+                # Compute cross product norm directly (avoids allocation)
+                cx = rel_pos[2] * rel_vel[3] - rel_pos[3] * rel_vel[2]
+                cy = rel_pos[3] * rel_vel[1] - rel_pos[1] * rel_vel[3]
+                cz = rel_pos[1] * rel_vel[2] - rel_pos[2] * rel_vel[1]
+                L_vals[k] = sqrt(cx^2 + cy^2 + cz^2)
             end
         end
     end
