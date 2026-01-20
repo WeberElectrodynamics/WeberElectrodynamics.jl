@@ -150,7 +150,13 @@ function CommonSolve.step!(integrator::WeberIntegrator{P,SymmetricProjection{S}}
     )
 
     if success
+        # Recompute Z_post_phi with the final converged μ to ensure consistency
+        # (The solver's last f! call used μ_previous, not μ_final)
         mul!(ATμ, A', μ)
+        @. Z_post_phi = Z_current + ATμ
+        ϕ(Z_post_phi)
+
+        # Apply symmetric projection shift: Z_{n+1} = ϕ(Z_n + A'μ) + A'μ
         @. Z_post_phi = Z_post_phi + ATμ
 
         @views begin

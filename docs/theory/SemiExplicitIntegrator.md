@@ -86,13 +86,17 @@ $$f(\mu) = A\left(\hat{\Phi}_{\Delta t}(Z_n + A^T \mu) + A^T \mu\right)$$
 **Initial guess:**
 $$\mu^{(0)} = 0$$
 
+> **Implementation note:** Using the converged $\mu$ from the previous time step as a warm start is permitted and typically reduces iterations from 2-3 to 1-2.
+
 **Simplified Newton iteration:**
 $$\mu^{(k+1)} = \mu^{(k)} - \frac{1}{4}f(\mu^{(k)})$$
 
-**Stopping criterion:**
-$$\|\mu^{(N+1)} - \mu^{(N)}\| < \varepsilon$$
+This is equivalent to a relaxed fixed-point iteration with relaxation factor $\omega = 0.25$, since $Df(0) = 2AA^T = 4I_{2d}$.
 
-The factor $1/4$ comes from $Df(0) = 2AA^T = 4I_{2d}$.
+**Stopping criterion:**
+$$\|\mu^{(N+1)} - \mu^{(N)}\| < \varepsilon \quad \text{and} \quad \|f(\mu^{(N+1)})\| < \varepsilon$$
+
+The first condition checks iteration stationarity; the second verifies the constraint is actually satisfied.
 
 ## Broyden's Method (Alternative)
 

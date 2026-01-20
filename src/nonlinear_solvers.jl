@@ -76,7 +76,13 @@ function solve_nonlinear!(
         diff_norm = sqrt(diff_norm_sq)
 
         if diff_norm < abstol
-            return (true, iter, diff_norm)
+            # Verify constraint satisfaction (not just iteration stationarity)
+            f!(fu_buffer, u)
+            residual = norm(fu_buffer)
+            if residual < abstol
+                return (true, iter, residual)
+            end
+            # Continue iterating if residual still large
         end
     end
 
