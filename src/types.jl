@@ -13,15 +13,36 @@ Extensible for future methods (ImplicitMidpoint, StormerVerlet, etc.).
 abstract type WeberAlgorithm end
 
 """
-    SymmetricProjection <: WeberAlgorithm
+    SymmetricProjection{S} <: WeberAlgorithm
 
 Semi-explicit symplectic integrator using symmetric projection for
 non-separable Hamiltonians. Second-order accurate, preserves symplectic
 structure via extended phase space projection.
 
-This is the default algorithm.
+# Type Parameter
+- `S`: Nonlinear solver type (default: `RelaxedFixedPoint`)
+
+# Constructor
+    SymmetricProjection(; solver=RelaxedFixedPoint())
+
+# Examples
+```julia
+# Default solver (relaxed fixed-point iteration)
+alg = SymmetricProjection()
+
+# Custom relaxation parameter
+alg = SymmetricProjection(solver=RelaxedFixedPoint(relaxation=0.1))
+
+# Newton-Raphson from SimpleNonlinearSolve
+using SimpleNonlinearSolve
+alg = SymmetricProjection(solver=SimpleNewtonRaphson())
+```
 """
-struct SymmetricProjection <: WeberAlgorithm end
+struct SymmetricProjection{S} <: WeberAlgorithm
+    solver::S
+end
+
+SymmetricProjection(; solver=RelaxedFixedPoint()) = SymmetricProjection(solver)
 
 # =============================================================================
 # Hamiltonian Type
@@ -276,19 +297,31 @@ end
 # =============================================================================
 
 """
-    NewtonConvergenceError <: Exception
+    NonlinearSolveError <: Exception
 
-Thrown when Newton iteration fails to converge during integration step.
+Thrown when the nonlinear solver fails to converge during an integration step.
+
+# Fields
+- `iterations`: Number of iterations performed
+- `tolerance`: Target tolerance
+- `final_residual`: Residual at termination
+- `step`: Integration step number where failure occurred
+- `time`: Simulation time at failure
+- `solver_name`: Name of the solver that failed
 """
-struct NewtonConvergenceError <: Exception
+struct NonlinearSolveError <: Exception
     iterations::Int
     tolerance::Float64
     final_residual::Float64
     step::Int
     time::Float64
+    solver_name::String
 end
 
-function Base.showerror(io::IO, e::NewtonConvergenceError)
-    print(io, "NewtonConvergenceError: failed to converge at step $(e.step) (t=$(e.time)) ")
+function Base.showerror(io::IO, e::NonlinearSolveError)
+    print(io, "NonlinearSolveError: $(e.solver_name) failed to converge at step $(e.step) (t=$(e.time)) ")
     print(io, "after $(e.iterations) iterations (residual=$(e.final_residual), tolerance=$(e.tolerance))")
 end
+
+# Deprecated alias for backward compatibility
+const NewtonConvergenceError = NonlinearSolveError

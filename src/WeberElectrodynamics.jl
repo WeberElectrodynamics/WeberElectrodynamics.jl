@@ -1,6 +1,13 @@
 module WeberElectrodynamics
 
 # =============================================================================
+# Nonlinear Solvers
+# =============================================================================
+include("nonlinear_solvers.jl")
+export RelaxedFixedPoint
+export solve_nonlinear!
+
+# =============================================================================
 # Core Types
 # =============================================================================
 include("types.jl")
@@ -10,7 +17,8 @@ export WeberProblem
 export WeberSolution
 export WeberIntegrator
 export IntegratorBuffers  # For advanced users
-export NewtonConvergenceError
+export NonlinearSolveError
+export NewtonConvergenceError  # Deprecated alias
 
 # =============================================================================
 # Hamiltonian Construction
