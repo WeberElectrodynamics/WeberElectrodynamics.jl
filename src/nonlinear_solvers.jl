@@ -98,7 +98,7 @@ function solve_nonlinear!(
     abstol::Float64,
     maxiters::Int;
     fu_buffer::AbstractVector{Float64},
-    _u_old_buffer::AbstractVector{Float64}=similar(u)  # unused, maintains interface
+    _u_old_buffer::Union{AbstractVector{Float64}, Nothing}=nothing  # unused, avoids allocation
 )
     # Wrap f! to match SciML signature f!(result, u, p)
     wrapped_f! = (result, u_inner, _p) -> f!(result, u_inner)

@@ -36,8 +36,9 @@ function create_trajectory_data(sol::WeberSolution, n_particles::Int, dims::Int;
     n_points = length(indices)
 
     trajectories = Vector{Matrix{Float64}}(undef, n_particles)
-    initial_positions = Vector{Vector{Float64}}(undef, n_particles)
-    final_positions = Vector{Vector{Float64}}(undef, n_particles)
+    # Pre-allocate all inner vectors (avoids per-particle comprehension allocations)
+    initial_positions = [Vector{Float64}(undef, dims) for _ in 1:n_particles]
+    final_positions = [Vector{Float64}(undef, dims) for _ in 1:n_particles]
 
     initial_idx = indices[1]
     final_idx = indices[end]
@@ -52,8 +53,12 @@ function create_trajectory_data(sol::WeberSolution, n_particles::Int, dims::Int;
         end
         trajectories[particle] = traj
 
-        initial_positions[particle] = [sol.q[initial_idx][(particle - 1) * dims + d] for d in 1:dims]
-        final_positions[particle] = [sol.q[final_idx][(particle - 1) * dims + d] for d in 1:dims]
+        # In-place assignment to pre-allocated vectors
+        @inbounds for d in 1:dims
+            coord_idx = (particle - 1) * dims + d
+            initial_positions[particle][d] = sol.q[initial_idx][coord_idx]
+            final_positions[particle][d] = sol.q[final_idx][coord_idx]
+        end
     end
 
     return TrajectoryData(trajectories, initial_positions, final_positions, n_particles, dims)
