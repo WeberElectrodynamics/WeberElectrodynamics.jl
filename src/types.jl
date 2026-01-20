@@ -15,28 +15,8 @@ abstract type WeberAlgorithm end
 """
     SymmetricProjection{S} <: WeberAlgorithm
 
-Semi-explicit symplectic integrator using symmetric projection for
-non-separable Hamiltonians. Second-order accurate, preserves symplectic
-structure via extended phase space projection.
-
-# Type Parameter
-- `S`: Nonlinear solver type (default: `RelaxedFixedPoint`)
-
-# Constructor
-    SymmetricProjection(; solver=RelaxedFixedPoint())
-
-# Examples
-```julia
-# Default solver (relaxed fixed-point iteration)
-alg = SymmetricProjection()
-
-# Custom relaxation parameter
-alg = SymmetricProjection(solver=RelaxedFixedPoint(relaxation=0.1))
-
-# Newton-Raphson from SimpleNonlinearSolve
-using SimpleNonlinearSolve
-alg = SymmetricProjection(solver=SimpleNewtonRaphson())
-```
+Semi-explicit symplectic integrator using symmetric projection for non-separable Hamiltonians.
+Second-order accurate. Type parameter `S` is the nonlinear solver (default: `RelaxedFixedPoint`).
 """
 struct SymmetricProjection{S} <: WeberAlgorithm
     solver::S
@@ -83,25 +63,9 @@ end
 
 Problem specification for Weber electrodynamics simulation.
 
-# Constructor
-    WeberProblem(H::WeberHamiltonian, tspan, q₀, p₀; params, dt, tolerance=1e-13, max_iterations=100)
+    WeberProblem(H, tspan, q₀, p₀; params, dt, tolerance=1e-13, max_iterations=100)
 
-# Arguments
-- `H`: Compiled Hamiltonian (from `@hamiltonian` macro)
-- `tspan`: Time span as `(t_start, t_end)`
-- `q₀`: Initial generalized coordinates
-- `p₀`: Initial conjugate momenta
-- `params`: Physical parameters (Vector or NamedTuple)
-- `dt`: Time step size
-- `tolerance`: Newton iteration convergence tolerance (default: 1e-13)
-- `max_iterations`: Maximum Newton iterations per step (default: 100)
-
-# Example
-```julia
-H = @hamiltonian (q, p, params) -> kinetic_energy(p, params) + potential_energy(q, params)
-prob = WeberProblem(H, (0.0, 10.0), q₀, p₀; params=[m1, m2, k, c], dt=0.01)
-sol = solve(prob)
-```
+`H` is a compiled `WeberHamiltonian`, `tspan = (t_start, t_end)`, `params` is Vector or NamedTuple.
 """
 struct WeberProblem{P}
     H::WeberHamiltonian
@@ -153,22 +117,11 @@ end
 Solution of a Weber electrodynamics problem.
 
 # Fields
-- `t`: Time points
-- `q`: Generalized coordinates at each time point
-- `p`: Conjugate momenta at each time point
+- `t`, `q`, `p`: Time points, coordinates, momenta
 - `prob`: Reference to the problem
-- `retcode`: Solution status (`:Success`, `:Failure`, `:MaxIters`)
+- `retcode`: `:Success`, `:Failure`, or `:MaxIters`
 
-# Indexing
-- `sol[i]` returns `(t, q, p)` at step `i`
-- `sol.t`, `sol.q`, `sol.p` for direct array access
-
-# Iteration
-```julia
-for (t, q, p) in sol
-    # process each time point
-end
-```
+Supports indexing (`sol[i]`) and iteration.
 """
 struct WeberSolution{P}
     t::Vector{Float64}
@@ -256,22 +209,7 @@ end
     WeberIntegrator{P,A<:WeberAlgorithm}
 
 Mutable integrator state for stepped integration via CommonSolve interface.
-
-# Fields (user-accessible)
-- `t`: Current time
-- `q`: Current generalized coordinates
-- `p`: Current conjugate momenta
-- `step_count`: Number of steps taken
-
-# Usage
-```julia
-integrator = init(prob, SymmetricProjection())
-while integrator.t < t_end
-    step!(integrator)
-    # Access integrator.q, integrator.p, integrator.t
-end
-sol = solve!(integrator)  # Or continue stepping
-```
+Access `t`, `q`, `p`, `step_count` during integration. Use `step!()` to advance, `solve!()` to complete.
 """
 mutable struct WeberIntegrator{P,A<:WeberAlgorithm}
     prob::WeberProblem{P}

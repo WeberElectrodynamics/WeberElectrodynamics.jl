@@ -1,3 +1,12 @@
+"""
+Energy timeseries data from a solution.
+
+# Fields
+- `t`, `total`: Time points and total energy
+- `kinetic`, `potential`: Optional component energies
+- `max_local_error`: Max deviation from initial energy
+- `relative_energy_range`: (E_max - E_min) / E_initial
+"""
 struct EnergyData
     t::Vector{Float64}
     total::Vector{Float64}
@@ -7,6 +16,11 @@ struct EnergyData
     relative_energy_range::Float64
 end
 
+"""
+    compute_energy_timeseries(sol, total_energy_func, [KE_func], [PE_func], params; stride=1) -> EnergyData
+
+Compute energy timeseries from a solution. Energy functions have signature `(q, p, params, t)`.
+"""
 function compute_energy_timeseries(solution::WeberSolution,
                                    total_energy_func::Function,
                                    KE_func::Union{Function, Nothing}=nothing,

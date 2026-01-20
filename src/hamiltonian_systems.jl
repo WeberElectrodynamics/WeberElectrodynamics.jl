@@ -6,23 +6,10 @@ using Latexify: latexify
 # =============================================================================
 
 """
-    create_phase_space_variables(n_particles::Int, dims::Int)
+    create_phase_space_variables(n_particles, dims) -> (q_syms, p_syms)
 
 Create symbolic variable names for phase space coordinates.
-
-# Arguments
-- `n_particles`: Number of particles
-- `dims`: Spatial dimensions (1, 2, or 3)
-
-# Returns
-Tuple `(q_syms, p_syms)` of Symbol vectors.
-
-# Example
-```julia
-q_syms, p_syms = create_phase_space_variables(2, 3)
-# q_syms = [:x1, :y1, :z1, :x2, :y2, :z2]
-# p_syms = [:px1, :py1, :pz1, :px2, :py2, :pz2]
-```
+Returns tuple of Symbol vectors for positions (x,y,z) and momenta (px,py,pz).
 """
 function create_phase_space_variables(n_particles::Int, dims::Int)::Tuple{Vector{Symbol}, Vector{Symbol}}
     coord_names = [:x, :y, :z]
@@ -46,31 +33,11 @@ end
 # =============================================================================
 
 """
-    @hamiltonian(n_particles, dims, param_names, H_expr)
+    @hamiltonian n_particles dims param_names H_expr -> WeberHamiltonian
 
-Create a compiled Hamiltonian from a symbolic expression.
+Create a compiled Hamiltonian. `H_expr` is `(q, p, params) -> H`.
 
-# Arguments
-- `n_particles`: Number of particles
-- `dims`: Spatial dimensions (1, 2, or 3)
-- `param_names`: Vector of parameter names as symbols
-- `H_expr`: Function `(q, p, params) -> H` returning Hamiltonian expression
-
-# Returns
-`WeberHamiltonian` with compiled vector field functions.
-
-# Example
-```julia
-H = @hamiltonian 2 2 [:m1, :m2, :k, :c] (q, p, params) -> begin
-    m1, m2, k, c = params
-    x1, y1, x2, y2 = q
-    px1, py1, px2, py2 = p
-
-    KE = (px1^2 + py1^2)/(2m1) + (px2^2 + py2^2)/(2m2)
-    # ... potential energy
-    return KE + PE
-end
-```
+    H = @hamiltonian 2 2 [:m, :k] (q, p, params) -> p'p/(2params[1]) + params[2]*q'q/2
 """
 macro hamiltonian(n_particles, dims, param_names, H_expr)
     quote
@@ -116,26 +83,9 @@ end
 # =============================================================================
 
 """
-    build_hamiltonian(H_func, n_particles, dims; param_names=Symbol[])
+    build_hamiltonian(H_func, n_particles, dims; param_names=Symbol[]) -> WeberHamiltonian
 
-Build a WeberHamiltonian from a function without using the macro.
-
-# Arguments
-- `H_func`: Function `(q, p, params) -> H` returning symbolic Hamiltonian
-- `n_particles`: Number of particles
-- `dims`: Spatial dimensions
-- `param_names`: Parameter names (optional, for documentation)
-
-# Example
-```julia
-function my_hamiltonian(q, p, params)
-    m1, m2, k, c = params
-    # ... define H
-    return KE + PE
-end
-
-H = build_hamiltonian(my_hamiltonian, 2, 2; param_names=[:m1, :m2, :k, :c])
-```
+Build a WeberHamiltonian from a function `(q, p, params) -> H` without using the macro.
 """
 function build_hamiltonian(H_func::Function, n_particles::Int, dims::Int; param_names::Vector{Symbol}=Symbol[])
     _build_hamiltonian(n_particles, dims, param_names, H_func)

@@ -5,22 +5,9 @@ using CommonSolve
 # =============================================================================
 
 """
-    init(prob::WeberProblem, alg::WeberAlgorithm=SymmetricProjection())
+    init(prob, alg=SymmetricProjection()) -> WeberIntegrator
 
-Initialize an integrator for stepped integration.
-
-Returns a `WeberIntegrator` that can be advanced with `step!()` or
-completed with `solve!()`.
-
-# Example
-```julia
-integrator = init(prob, SymmetricProjection())
-for i in 1:100
-    step!(integrator)
-    println("t = \$(integrator.t), q = \$(integrator.q)")
-end
-sol = solve!(integrator)
-```
+Initialize an integrator for stepped integration. Use `step!()` to advance, `solve!()` to complete.
 """
 function CommonSolve.init(prob::WeberProblem{P}, alg::SymmetricProjection=SymmetricProjection()) where P
     d = prob.H.n_dof
@@ -217,28 +204,9 @@ function CommonSolve.solve!(integrator::WeberIntegrator)
 end
 
 """
-    solve(prob::WeberProblem, alg::WeberAlgorithm=SymmetricProjection())
+    solve(prob, alg=SymmetricProjection()) -> WeberSolution
 
-Solve a Weber electrodynamics problem.
-
-# Arguments
-- `prob`: Problem specification
-- `alg`: Integration algorithm (default: `SymmetricProjection()`)
-
-# Returns
-`WeberSolution` containing the full trajectory.
-
-# Example
-```julia
-H = @hamiltonian (q, p, params) -> begin
-    m1, m2, k, c = params
-    # ... Hamiltonian expression
-end
-
-prob = WeberProblem(H, (0.0, 10.0), q₀, p₀; params=[1.0, 0.1, 0.1, 4.0], dt=0.01)
-sol = solve(prob)
-sol = solve(prob, SymmetricProjection())  # Explicit algorithm
-```
+Solve a Weber electrodynamics problem and return the full trajectory.
 """
 function CommonSolve.solve(prob::WeberProblem, alg::WeberAlgorithm=SymmetricProjection())
     integrator = CommonSolve.init(prob, alg)

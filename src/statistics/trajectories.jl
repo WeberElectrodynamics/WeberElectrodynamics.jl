@@ -1,3 +1,11 @@
+"""
+Particle trajectory data extracted from a solution.
+
+# Fields
+- `trajectories`: Position matrices per particle (n_points × dims)
+- `initial_positions`, `final_positions`: Start/end positions per particle
+- `n_particles`, `dims`: System dimensions
+"""
 struct TrajectoryData
     trajectories::Vector{Matrix{Float64}}
     initial_positions::Vector{Vector{Float64}}
@@ -6,6 +14,11 @@ struct TrajectoryData
     dims::Int
 end
 
+"""
+    create_trajectory_data(sol, n_particles, dims; stride=1) -> TrajectoryData
+
+Extract trajectory data from a `WeberSolution`. Use `stride > 1` to downsample.
+"""
 function create_trajectory_data(sol::WeberSolution, n_particles::Int, dims::Int; stride::Int=1)::TrajectoryData
     if stride <= 0
         throw(ArgumentError("stride must be positive, got $stride"))

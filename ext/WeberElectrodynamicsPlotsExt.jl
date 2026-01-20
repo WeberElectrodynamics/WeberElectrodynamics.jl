@@ -17,6 +17,7 @@ const PLOT_DEFAULTS = (
 
 # Public API
 
+"""Plot particle trajectories (1D, 2D, or 3D based on `data.dims`)."""
 function WeberElectrodynamics.plot_trajectories(data::TrajectoryData)::Plots.Plot
     if data.dims == 1
         return _plot_trajectories_1d(data)
@@ -29,6 +30,7 @@ function WeberElectrodynamics.plot_trajectories(data::TrajectoryData)::Plots.Plo
     end
 end
 
+"""Plot energy timeseries with relative error subplot."""
 function WeberElectrodynamics.plot_energy(data::EnergyData)::Plots.Plot
     E0 = data.total[1]
     relative_error = abs.((data.total .- E0) ./ E0)
@@ -54,6 +56,7 @@ function WeberElectrodynamics.plot_energy(data::EnergyData)::Plots.Plot
     return plt
 end
 
+"""Plot force magnitudes between particle pairs over time."""
 function WeberElectrodynamics.plot_forces(data::ForceData)::Plots.Plot
     n_times = length(data.t)
     n = data.n_particles
@@ -78,6 +81,7 @@ function WeberElectrodynamics.plot_forces(data::ForceData)::Plots.Plot
     return plt
 end
 
+"""Plot (r, ṙ) phase space portrait."""
 function WeberElectrodynamics.plot_phase_space(data::PhaseSpaceData)::Plots.Plot
     plt = plot(; xlabel="r", ylabel="dr/dt",
                size=(500, 500), PLOT_DEFAULTS...)

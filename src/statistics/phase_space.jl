@@ -3,14 +3,12 @@
 using LinearAlgebra
 
 """
-Phase space data for (r, rdot) portraits.
+Phase space data for (r, ṙ) portraits.
 
 # Fields
-- `t::Vector{Float64}`: Time points
-- `r::Vector{Float64}`: Separation distance between particle pair
-- `rdot::Vector{Float64}`: Radial velocity dr/dt
-- `theta::Union{Vector{Float64}, Nothing}`: Angle in 2D (optional)
-- `L::Union{Vector{Float64}, Nothing}`: Angular momentum (optional)
+- `t`, `r`, `rdot`: Time, separation distance, radial velocity
+- `theta`: Angle in 2D (optional)
+- `L`: Angular momentum (optional)
 """
 struct PhaseSpaceData
     t::Vector{Float64}
@@ -21,27 +19,9 @@ struct PhaseSpaceData
 end
 
 """
-    compute_phase_space_data(sol::IntegratorSolution, n_particles::Int, dims::Int,
-                              masses::Vector{Float64};
-                              particle_pair::Tuple{Int,Int}=(1,2),
-                              stride::Int=1,
-                              compute_angle::Bool=true,
-                              compute_angular_momentum::Bool=true) -> PhaseSpaceData
+    compute_phase_space_data(sol, n_particles, dims, masses; particle_pair=(1,2), stride=1, ...) -> PhaseSpaceData
 
-Extract phase space coordinates (r, rdot) for a particle pair.
-
-# Arguments
-- `sol::WeberSolution`: Integration solution
-- `n_particles::Int`: Number of particles
-- `dims::Int`: Spatial dimensions (1, 2, or 3)
-- `masses::Vector{Float64}`: Particle masses
-- `particle_pair::Tuple{Int,Int}`: Which particle pair to analyze (default: (1,2))
-- `stride::Int`: Downsampling factor
-- `compute_angle::Bool`: Compute angle θ (2D only)
-- `compute_angular_momentum::Bool`: Compute angular momentum L
-
-# Returns
-- `PhaseSpaceData`: Phase space data for the particle pair
+Extract phase space coordinates (r, ṙ) for a particle pair from a `WeberSolution`.
 """
 function compute_phase_space_data(sol::WeberSolution, n_particles::Int, dims::Int,
                                    masses::Vector{Float64};

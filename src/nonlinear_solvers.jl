@@ -9,26 +9,8 @@ using LinearAlgebra: norm
 """
     RelaxedFixedPoint <: AbstractNonlinearAlgorithm
 
-Relaxed fixed-point iteration solver for nonlinear systems.
-
-Implements the iteration: `x_{n+1} = x_n - relaxation * f(x_n)`
-
-This is a simple, robust solver that works well for the symmetric projection
-step in Weber electrodynamics integration. It is the default solver for
-`SymmetricProjection`.
-
-# Constructor
-    RelaxedFixedPoint(; relaxation=0.25)
-
-# Parameters
-- `relaxation::Float64`: Relaxation factor (0 < relaxation <= 1). Smaller values
-  are more stable but converge slower. Default: 0.25
-
-# Example
-```julia
-solver = RelaxedFixedPoint(relaxation=0.3)
-alg = SymmetricProjection(; solver)
-```
+Relaxed fixed-point iteration: `x_{n+1} = x_n - relaxation * f(x_n)`.
+Default solver for `SymmetricProjection`. Constructor: `RelaxedFixedPoint(; relaxation=0.25)`.
 """
 struct RelaxedFixedPoint <: AbstractNonlinearAlgorithm
     relaxation::Float64
