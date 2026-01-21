@@ -1,3 +1,6 @@
+# Internal function for testing - access via module
+const solve_nonlinear! = WeberElectrodynamics.solve_nonlinear!
+
 @testset "Nonlinear Solvers" begin
     @testset "RelaxedFixedPointSolver convergence - linear" begin
         # Simple linear problem: f(x) = x - 1 (solution x = 1)

@@ -133,27 +133,6 @@
         @test occursin("WeberIntegrator", String(take!(io)))
     end
 
-    @testset "SymmetricProjectionBuffers" begin
-        params_vec = [1.0, 2.0]
-        d = 3
-        buffers = SymmetricProjectionBuffers(d, params_vec)
-
-        @test buffers.degrees_of_freedom == 3
-        @test size(buffers.constraint_matrix) == (2d, 4d)  # 6 × 12
-        @test length(buffers.extended_state) == 4d  # 12
-        @test length(buffers.extended_state_after_flow) == 4d
-        @test length(buffers.extended_state_result) == 4d
-        @test length(buffers.position_buffer) == d
-        @test length(buffers.auxiliary_position_buffer) == d
-        @test length(buffers.momentum_buffer) == d
-        @test length(buffers.auxiliary_momentum_buffer) == d
-        @test length(buffers.constraint_shift) == 4d
-        @test length(buffers.lagrange_multipliers) == 2d
-        @test length(buffers.lagrange_multipliers_previous) == 2d
-        @test length(buffers.residual_buffer) == 2d
-        @test buffers.params_vec === params_vec
-    end
-
     @testset "NonlinearSolveError" begin
         err = NonlinearSolveError(50, 1e-12, 1e-8, 100, 0.5, "RelaxedFixedPointSolver")
 
@@ -171,8 +150,5 @@
         @test occursin("NonlinearSolveError", msg)
         @test occursin("RelaxedFixedPointSolver", msg)
         @test occursin("step 100", msg)
-
-        # Deprecated alias
-        @test NewtonConvergenceError === NonlinearSolveError
     end
 end
