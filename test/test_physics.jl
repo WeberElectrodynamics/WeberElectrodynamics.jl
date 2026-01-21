@@ -4,7 +4,7 @@
         m, k = 1.0, 4.0
         T_analytical = 2π * sqrt(m / k)
 
-        H = build_hamiltonian(harmonic_oscillator_H, 1, 1; param_names=[:m, :k])
+        H = compile_hamiltonian(harmonic_oscillator_H, 1, 1; parameter_names=[:m, :k])
         prob = WeberProblem(H, (0.0, 2 * T_analytical), [1.0], [0.0]; params=[m, k], dt=0.001)
         sol = solve(prob)
 

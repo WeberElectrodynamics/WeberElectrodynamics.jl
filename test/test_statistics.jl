@@ -7,8 +7,8 @@
     sol_harmonic = solve(prob_harmonic)
 
     @testset "TrajectoryData" begin
-        @testset "create_trajectory_data basic" begin
-            traj = create_trajectory_data(sol_coulomb, 2, 2)
+        @testset "compute_trajectory_data basic" begin
+            traj = compute_trajectory_data(sol_coulomb, 2, 2)
 
             @test traj isa TrajectoryData
             @test traj.n_particles == 2
@@ -20,15 +20,15 @@
             @test length(traj.initial_positions[1]) == 2
         end
 
-        @testset "create_trajectory_data with stride" begin
-            traj = create_trajectory_data(sol_coulomb, 2, 2; stride=10)
+        @testset "compute_trajectory_data with stride" begin
+            traj = compute_trajectory_data(sol_coulomb, 2, 2; stride=10)
 
             expected_points = length(1:10:length(sol_coulomb.t))
             @test size(traj.trajectories[1], 1) == expected_points
         end
 
         @testset "Initial and final positions" begin
-            traj = create_trajectory_data(sol_coulomb, 2, 2)
+            traj = compute_trajectory_data(sol_coulomb, 2, 2)
 
             # Initial positions should match solution
             for p in 1:2
@@ -41,14 +41,14 @@
         end
 
         @testset "Validation errors" begin
-            @test_throws ArgumentError create_trajectory_data(sol_coulomb, 2, 2; stride=0)
-            @test_throws ArgumentError create_trajectory_data(sol_coulomb, 2, 2; stride=-1)
-            @test_throws ArgumentError create_trajectory_data(sol_coulomb, 3, 2)  # Wrong n_particles
-            @test_throws ArgumentError create_trajectory_data(sol_coulomb, 2, 3)  # Wrong dims
+            @test_throws ArgumentError compute_trajectory_data(sol_coulomb, 2, 2; stride=0)
+            @test_throws ArgumentError compute_trajectory_data(sol_coulomb, 2, 2; stride=-1)
+            @test_throws ArgumentError compute_trajectory_data(sol_coulomb, 3, 2)  # Wrong n_particles
+            @test_throws ArgumentError compute_trajectory_data(sol_coulomb, 2, 3)  # Wrong dims
         end
 
         @testset "1D system" begin
-            traj = create_trajectory_data(sol_harmonic, 1, 1)
+            traj = compute_trajectory_data(sol_harmonic, 1, 1)
             @test traj.n_particles == 1
             @test traj.dims == 1
             @test size(traj.trajectories[1], 2) == 1
@@ -67,22 +67,22 @@
 
             @test energy isa EnergyData
             @test length(energy.t) == length(sol_harmonic.t)
-            @test length(energy.total) == length(sol_harmonic.t)
-            @test isnothing(energy.kinetic)
-            @test isnothing(energy.potential)
+            @test length(energy.total_energy) == length(sol_harmonic.t)
+            @test isnothing(energy.kinetic_energy)
+            @test isnothing(energy.potential_energy)
         end
 
         @testset "compute_energy_timeseries with components" begin
             energy = compute_energy_timeseries(sol_harmonic, total_energy, kinetic_energy, potential_energy, params)
 
-            @test !isnothing(energy.kinetic)
-            @test !isnothing(energy.potential)
-            @test length(energy.kinetic) == length(sol_harmonic.t)
-            @test length(energy.potential) == length(sol_harmonic.t)
+            @test !isnothing(energy.kinetic_energy)
+            @test !isnothing(energy.potential_energy)
+            @test length(energy.kinetic_energy) == length(sol_harmonic.t)
+            @test length(energy.potential_energy) == length(sol_harmonic.t)
 
             # KE + PE = Total (approximately)
             for i in 1:length(energy.t)
-                @test energy.kinetic[i] + energy.potential[i] ≈ energy.total[i] rtol = 1e-10
+                @test energy.kinetic_energy[i] + energy.potential_energy[i] ≈ energy.total_energy[i] rtol = 1e-10
             end
         end
 
@@ -101,7 +101,7 @@
 
             expected_points = length(1:10:length(sol_harmonic.t))
             @test length(energy.t) == expected_points
-            @test length(energy.total) == expected_points
+            @test length(energy.total_energy) == expected_points
         end
 
         @testset "Validation errors" begin
@@ -187,10 +187,10 @@
 
             @test ps isa PhaseSpaceData
             @test length(ps.t) == length(sol_coulomb.t)
-            @test length(ps.r) == length(sol_coulomb.t)
-            @test length(ps.rdot) == length(sol_coulomb.t)
+            @test length(ps.separation_distance) == length(sol_coulomb.t)
+            @test length(ps.radial_velocity) == length(sol_coulomb.t)
             @test !isnothing(ps.theta)
-            @test !isnothing(ps.L)
+            @test !isnothing(ps.angular_momentum)
         end
 
         @testset "compute_phase_space_data with stride" begin
@@ -198,19 +198,19 @@
 
             expected_points = length(1:10:length(sol_coulomb.t))
             @test length(ps.t) == expected_points
-            @test length(ps.r) == expected_points
+            @test length(ps.separation_distance) == expected_points
         end
 
         @testset "Different particle pairs" begin
             ps_12 = compute_phase_space_data(sol_coulomb, 2, 2, masses; particle_pair=(1, 2))
             ps_21 = compute_phase_space_data(sol_coulomb, 2, 2, masses; particle_pair=(2, 1))
 
-            # r should be the same (distance is symmetric)
-            @test ps_12.r ≈ ps_21.r
+            # separation_distance should be the same (distance is symmetric)
+            @test ps_12.separation_distance ≈ ps_21.separation_distance
 
-            # rdot = dot(r_vec, v_vec) / |r|
-            # Swapping particles flips both r_vec and v_vec, so rdot is the same
-            @test ps_12.rdot ≈ ps_21.rdot
+            # radial_velocity = dot(r_vec, v_vec) / |r|
+            # Swapping particles flips both r_vec and v_vec, so radial_velocity is the same
+            @test ps_12.radial_velocity ≈ ps_21.radial_velocity
         end
 
         @testset "Disable optional computations" begin
@@ -219,7 +219,7 @@
                 compute_angular_momentum=false)
 
             @test isnothing(ps.theta)
-            @test isnothing(ps.L)
+            @test isnothing(ps.angular_momentum)
         end
 
         @testset "Validation errors" begin
@@ -230,7 +230,7 @@
 
         @testset "Positive separation distance" begin
             ps = compute_phase_space_data(sol_coulomb, 2, 2, masses)
-            @test all(ps.r .> 0)  # Particles should never collide
+            @test all(ps.separation_distance .> 0)  # Particles should never collide
         end
     end
 end

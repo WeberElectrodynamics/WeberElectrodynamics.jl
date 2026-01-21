@@ -1,5 +1,5 @@
 @testset "Nonlinear Solvers" begin
-    @testset "RelaxedFixedPoint convergence - linear" begin
+    @testset "RelaxedFixedPointSolver convergence - linear" begin
         # Simple linear problem: f(x) = x - 1 (solution x = 1)
         function f_linear!(result, u)
             result[1] = u[1] - 1.0
@@ -10,7 +10,7 @@
         fu_buffer = zeros(1)
         u_old_buffer = zeros(1)
 
-        solver = RelaxedFixedPoint(relaxation=0.5)
+        solver = RelaxedFixedPointSolver(relaxation=0.5)
         success, iters, residual = solve_nonlinear!(u, f_linear!, solver, 1e-12, 100;
             fu_buffer=fu_buffer,
             u_old_buffer=u_old_buffer)
@@ -21,7 +21,7 @@
         @test iters < 100
     end
 
-    @testset "RelaxedFixedPoint convergence - multidimensional" begin
+    @testset "RelaxedFixedPointSolver convergence - multidimensional" begin
         # 2D problem: f(x) = x - [1, 2]
         function f_2d!(result, u)
             result[1] = u[1] - 1.0
@@ -33,7 +33,7 @@
         fu_buffer = zeros(2)
         u_old_buffer = zeros(2)
 
-        solver = RelaxedFixedPoint(relaxation=0.5)
+        solver = RelaxedFixedPointSolver(relaxation=0.5)
         success, _, _ = solve_nonlinear!(u, f_2d!, solver, 1e-12, 100;
             fu_buffer=fu_buffer,
             u_old_buffer=u_old_buffer)
@@ -42,7 +42,7 @@
         @test u ≈ [1.0, 2.0] atol = 1e-10
     end
 
-    @testset "RelaxedFixedPoint max iterations" begin
+    @testset "RelaxedFixedPointSolver max iterations" begin
         # Problem that converges slowly - need many iterations
         function f_slow!(result, u)
             # This creates a very slow convergence
@@ -54,7 +54,7 @@
         fu_buffer = zeros(1)
         u_old_buffer = zeros(1)
 
-        solver = RelaxedFixedPoint(relaxation=0.1)  # Very slow
+        solver = RelaxedFixedPointSolver(relaxation=0.1)  # Very slow
         success, iters, residual = solve_nonlinear!(u, f_slow!, solver, 1e-12, 5;
             fu_buffer=fu_buffer,
             u_old_buffer=u_old_buffer)
@@ -77,7 +77,7 @@
             fu_buffer = zeros(1)
             u_old_buffer = zeros(1)
 
-            solver = RelaxedFixedPoint(relaxation=relaxation)
+            solver = RelaxedFixedPointSolver(relaxation=relaxation)
             success, iters, _ = solve_nonlinear!(u, f_test!, solver, 1e-12, 1000;
                 fu_buffer=fu_buffer,
                 u_old_buffer=u_old_buffer)
@@ -100,7 +100,7 @@
         fu_buffer = zeros(1)
         u_old_buffer = zeros(1)
 
-        solver = RelaxedFixedPoint()
+        solver = RelaxedFixedPointSolver()
         success, iters, residual = solve_nonlinear!(u, f_zero!, solver, 1e-12, 100;
             fu_buffer=fu_buffer,
             u_old_buffer=u_old_buffer)
@@ -123,7 +123,7 @@
         fu_buffer = zeros(n)
         u_old_buffer = zeros(n)
 
-        solver = RelaxedFixedPoint(relaxation=0.5)
+        solver = RelaxedFixedPointSolver(relaxation=0.5)
         success, _, _ = solve_nonlinear!(u, f_nd!, solver, 1e-12, 200;
             fu_buffer=fu_buffer,
             u_old_buffer=u_old_buffer)

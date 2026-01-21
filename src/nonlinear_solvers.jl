@@ -3,26 +3,26 @@ using SimpleNonlinearSolve: AbstractSimpleNonlinearSolveAlgorithm, solve as nl_s
 using LinearAlgebra: norm
 
 # =============================================================================
-# RelaxedFixedPoint Solver
+# RelaxedFixedPointSolver
 # =============================================================================
 
 """
-    RelaxedFixedPoint <: AbstractNonlinearAlgorithm
+    RelaxedFixedPointSolver <: AbstractNonlinearAlgorithm
 
 Relaxed fixed-point iteration: `x_{n+1} = x_n - relaxation * f(x_n)`.
-Default solver for `SymmetricProjection`. Constructor: `RelaxedFixedPoint(; relaxation=0.25)`.
+Default solver for `SymmetricProjectionIntegrator`. Constructor: `RelaxedFixedPointSolver(; relaxation=0.25)`.
 """
-struct RelaxedFixedPoint <: AbstractNonlinearAlgorithm
+struct RelaxedFixedPointSolver <: AbstractNonlinearAlgorithm
     relaxation::Float64
 
-    function RelaxedFixedPoint(; relaxation::Real=0.25)
+    function RelaxedFixedPointSolver(; relaxation::Real=0.25)
         @assert 0 < relaxation <= 1 "Relaxation must be in (0, 1], got $relaxation"
         new(Float64(relaxation))
     end
 end
 
-function Base.show(io::IO, alg::RelaxedFixedPoint)
-    print(io, "RelaxedFixedPoint(relaxation=$(alg.relaxation))")
+function Base.show(io::IO, alg::RelaxedFixedPointSolver)
+    print(io, "RelaxedFixedPointSolver(relaxation=$(alg.relaxation))")
 end
 
 # =============================================================================
@@ -30,7 +30,7 @@ end
 # =============================================================================
 
 """
-    solve_nonlinear!(u, f!, alg, abstol, maxiters; fu_buffer, u_old_buffer)
+    solve_nonlinear!(u, f!, alg, convergence_tolerance, maximum_iterations; fu_buffer, u_old_buffer)
 
 In-place nonlinear solve for Weber integrator.
 
@@ -38,8 +38,8 @@ In-place nonlinear solve for Weber integrator.
 - `u`: Initial guess (modified in-place to contain solution)
 - `f!`: In-place residual function `f!(result, u)`
 - `alg`: Nonlinear solver algorithm
-- `abstol`: Absolute tolerance for convergence
-- `maxiters`: Maximum iterations
+- `convergence_tolerance`: Absolute tolerance for convergence
+- `maximum_iterations`: Maximum iterations
 
 # Keyword Arguments
 - `fu_buffer`: Pre-allocated buffer for residual (same size as `u`)
@@ -50,19 +50,19 @@ In-place nonlinear solve for Weber integrator.
 """
 function solve_nonlinear! end
 
-# Dispatch for RelaxedFixedPoint (direct implementation, no allocations)
+# Dispatch for RelaxedFixedPointSolver (direct implementation, no allocations)
 function solve_nonlinear!(
     u::AbstractVector{Float64},
     f!::F,
-    alg::RelaxedFixedPoint,
-    abstol::Float64,
-    maxiters::Int;
+    alg::RelaxedFixedPointSolver,
+    convergence_tolerance::Float64,
+    maximum_iterations::Int;
     fu_buffer::AbstractVector{Float64},
     u_old_buffer::AbstractVector{Float64}
 ) where {F<:Function}
     relaxation = alg.relaxation
 
-    for iter in 1:maxiters
+    for iter in 1:maximum_iterations
         f!(fu_buffer, u)
 
         copyto!(u_old_buffer, u)
@@ -75,11 +75,11 @@ function solve_nonlinear!(
         end
         diff_norm = sqrt(diff_norm_sq)
 
-        if diff_norm < abstol
+        if diff_norm < convergence_tolerance
             # Verify constraint satisfaction (not just iteration stationarity)
             f!(fu_buffer, u)
             residual = norm(fu_buffer)
-            if residual < abstol
+            if residual < convergence_tolerance
                 return (true, iter, residual)
             end
             # Continue iterating if residual still large
@@ -89,7 +89,7 @@ function solve_nonlinear!(
     # Failed to converge - compute final residual
     f!(fu_buffer, u)
     final_residual = norm(fu_buffer)
-    return (false, maxiters, final_residual)
+    return (false, maximum_iterations, final_residual)
 end
 
 # Dispatch for SimpleNonlinearSolve algorithms
@@ -101,8 +101,8 @@ function solve_nonlinear!(
     u::AbstractVector{Float64},
     f!::Function,
     alg::AbstractSimpleNonlinearSolveAlgorithm,
-    abstol::Float64,
-    maxiters::Int;
+    convergence_tolerance::Float64,
+    maximum_iterations::Int;
     fu_buffer::AbstractVector{Float64},
     _u_old_buffer::Union{AbstractVector{Float64}, Nothing}=nothing  # unused, avoids allocation
 )
@@ -112,7 +112,7 @@ function solve_nonlinear!(
     # Create NonlinearProblem with wrapped in-place function
     prob = NonlinearProblem{true}(wrapped_f!, copy(u), nothing)
 
-    sol = nl_solve(prob, alg; abstol=abstol, maxiters=maxiters)
+    sol = nl_solve(prob, alg; abstol=convergence_tolerance, maxiters=maximum_iterations)
 
     # Copy solution back to u
     copyto!(u, sol.u)
@@ -122,7 +122,7 @@ function solve_nonlinear!(
     residual = norm(fu_buffer)
 
     success = sol.retcode == ReturnCode.Success
-    iterations = maxiters  # SimpleNonlinearSolve doesn't always expose iteration count
+    iterations = maximum_iterations  # SimpleNonlinearSolve doesn't always expose iteration count
 
     return (success, iterations, residual)
 end

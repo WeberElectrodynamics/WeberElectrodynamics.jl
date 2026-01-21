@@ -6,16 +6,18 @@ using LinearAlgebra
 Phase space data for (r, ṙ) portraits.
 
 # Fields
-- `t`, `r`, `rdot`: Time, separation distance, radial velocity
+- `t`: Time points
+- `separation_distance`: Inter-particle separation |r_i - r_j|
+- `radial_velocity`: Radial velocity ṙ = (r · v) / |r|
 - `theta`: Angle in 2D (optional)
-- `L`: Angular momentum (optional)
+- `angular_momentum`: Angular momentum L = r × v (optional)
 """
 struct PhaseSpaceData
     t::Vector{Float64}
-    r::Vector{Float64}
-    rdot::Vector{Float64}
+    separation_distance::Vector{Float64}
+    radial_velocity::Vector{Float64}
     theta::Union{Vector{Float64}, Nothing}
-    L::Union{Vector{Float64}, Nothing}
+    angular_momentum::Union{Vector{Float64}, Nothing}
 end
 
 """
@@ -42,10 +44,10 @@ function compute_phase_space_data(sol::WeberSolution, n_particles::Int, dims::In
     n_points = length(indices)
 
     t = sol.t[indices]
-    r_vals = zeros(n_points)
-    rdot_vals = zeros(n_points)
+    separation_distance_vals = zeros(n_points)
+    radial_velocity_vals = zeros(n_points)
     theta_vals = compute_angle && dims >= 2 ? zeros(n_points) : nothing
-    L_vals = compute_angular_momentum && dims >= 2 ? zeros(n_points) : nothing
+    angular_momentum_vals = compute_angular_momentum && dims >= 2 ? zeros(n_points) : nothing
 
     m_i, m_j = masses[i], masses[j]
 
@@ -75,13 +77,13 @@ function compute_phase_space_data(sol::WeberSolution, n_particles::Int, dims::In
 
         # Separation distance
         r = norm(rel_pos)
-        r_vals[k] = r
+        separation_distance_vals[k] = r
 
         # Radial velocity: rdot = (r . v) / |r|
         if r > eps(Float64)
-            rdot_vals[k] = dot(rel_pos, rel_vel) / r
+            radial_velocity_vals[k] = dot(rel_pos, rel_vel) / r
         else
-            rdot_vals[k] = 0.0
+            radial_velocity_vals[k] = 0.0
         end
 
         # Angle (2D only)
@@ -90,18 +92,18 @@ function compute_phase_space_data(sol::WeberSolution, n_particles::Int, dims::In
         end
 
         # Angular momentum (2D: L = x*vy - y*vx, 3D: compute norm directly)
-        if !isnothing(L_vals)
+        if !isnothing(angular_momentum_vals)
             if dims == 2
-                L_vals[k] = rel_pos[1] * rel_vel[2] - rel_pos[2] * rel_vel[1]
+                angular_momentum_vals[k] = rel_pos[1] * rel_vel[2] - rel_pos[2] * rel_vel[1]
             elseif dims == 3
                 # Compute cross product norm directly (avoids allocation)
                 cx = rel_pos[2] * rel_vel[3] - rel_pos[3] * rel_vel[2]
                 cy = rel_pos[3] * rel_vel[1] - rel_pos[1] * rel_vel[3]
                 cz = rel_pos[1] * rel_vel[2] - rel_pos[2] * rel_vel[1]
-                L_vals[k] = sqrt(cx^2 + cy^2 + cz^2)
+                angular_momentum_vals[k] = sqrt(cx^2 + cy^2 + cz^2)
             end
         end
     end
 
-    return PhaseSpaceData(t, r_vals, rdot_vals, theta_vals, L_vals)
+    return PhaseSpaceData(t, separation_distance_vals, radial_velocity_vals, theta_vals, angular_momentum_vals)
 end

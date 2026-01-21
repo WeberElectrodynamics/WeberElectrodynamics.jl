@@ -39,13 +39,13 @@ end
 
 """Build a simple 1D harmonic oscillator problem for fast tests."""
 function make_harmonic_problem(; dt=0.01, tspan=(0.0, 1.0), m=1.0, k=1.0, q0=1.0, p0=0.0)
-    H = build_hamiltonian(harmonic_oscillator_H, 1, 1; param_names=[:m, :k])
+    H = compile_hamiltonian(harmonic_oscillator_H, 1, 1; parameter_names=[:m, :k])
     WeberProblem(H, tspan, [q0], [p0]; params=[m, k], dt=dt)
 end
 
 """Build a 2D two-body Coulomb problem."""
 function make_coulomb_problem(; dt=0.01, tspan=(0.0, 1.0), m1=1.0, m2=0.5, k=1.0)
-    H = build_hamiltonian(coulomb_H, 2, 2; param_names=[:m1, :m2, :k])
+    H = compile_hamiltonian(coulomb_H, 2, 2; parameter_names=[:m1, :m2, :k])
     r0 = 2.0
     M = m1 + m2
     v_circ = sqrt(k * M / (m1 * m2 * r0))
@@ -56,7 +56,7 @@ end
 
 """Build a 2D two-body Weber problem."""
 function make_weber_problem(; dt=0.001, tspan=(0.0, 1.0), c=4.0, m1=1.0, m2=0.1, k=-0.1)
-    H = build_hamiltonian(weber_H, 2, 2; param_names=[:m1, :m2, :k, :c])
+    H = compile_hamiltonian(weber_H, 2, 2; parameter_names=[:m1, :m2, :k, :c])
     r0 = 2.0
     M = m1 + m2
     v_circ = sqrt(abs(k) * M / (m1 * m2 * r0))

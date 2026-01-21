@@ -1,7 +1,7 @@
 name = "WeberElectrodynamics"
 uuid = "b7b438b0-8b51-4018-ba50-da6ecf296240"
 version = "0.1.0"
-authors = ["mac "]
+authors = ["Samer"]
 
 [deps]
 CommonSolve = "38540f10-b2f7-11e9-35d8-d573e4eb0ff2"

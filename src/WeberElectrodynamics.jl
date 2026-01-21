@@ -4,19 +4,19 @@ module WeberElectrodynamics
 # Nonlinear Solvers
 # =============================================================================
 include("nonlinear_solvers.jl")
-export RelaxedFixedPoint
+export RelaxedFixedPointSolver
 export solve_nonlinear!
 
 # =============================================================================
 # Core Types
 # =============================================================================
 include("types.jl")
-export WeberAlgorithm, SymmetricProjection
+export WeberAlgorithm, SymmetricProjectionIntegrator
 export WeberHamiltonian
 export WeberProblem
 export WeberSolution
 export WeberIntegrator
-export IntegratorBuffers  # For advanced users
+export SymmetricProjectionBuffers  # For advanced users
 export NonlinearSolveError
 export NewtonConvergenceError  # Deprecated alias
 
@@ -24,8 +24,8 @@ export NewtonConvergenceError  # Deprecated alias
 # Hamiltonian Construction
 # =============================================================================
 include("hamiltonian_systems.jl")
-export @hamiltonian, build_hamiltonian
-export create_phase_space_variables
+export @hamiltonian, compile_hamiltonian
+export generate_phase_space_symbols
 
 # =============================================================================
 # CommonSolve Interface
@@ -40,7 +40,7 @@ export solve, init, step!, solve!
 # =============================================================================
 include("statistics/trajectories.jl")
 export TrajectoryData
-export create_trajectory_data
+export compute_trajectory_data
 
 include("statistics/energy.jl")
 export EnergyData

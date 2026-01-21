@@ -12,7 +12,7 @@
     @testset "solve with custom algorithm" begin
         # Use a short problem with small dt for reliable convergence
         prob = make_harmonic_problem(tspan=(0.0, 0.1), dt=0.001)
-        alg = SymmetricProjection(solver=RelaxedFixedPoint(relaxation=0.3))
+        alg = SymmetricProjectionIntegrator(solver=RelaxedFixedPointSolver(relaxation=0.3))
         sol = solve(prob, alg)
 
         @test sol.retcode == :Success
@@ -24,8 +24,8 @@
 
         @test integrator.t == prob.tspan[1]
         @test integrator.t_end == prob.tspan[2]
-        @test integrator.q == prob.q₀
-        @test integrator.p == prob.p₀
+        @test integrator.q == prob.q_initial
+        @test integrator.p == prob.p_initial
         @test integrator.step_count == 0
         @test length(integrator.t_history) > 0
     end
@@ -42,7 +42,7 @@
         @test integrator.t_history[2] ≈ 0.1
 
         # State changed from initial
-        @test integrator.q != prob.q₀ || integrator.p != prob.p₀
+        @test integrator.q != prob.q_initial || integrator.p != prob.p_initial
 
         # Continue stepping
         for _ in 1:5
@@ -107,7 +107,7 @@
     end
 
     @testset "params as NamedTuple" begin
-        H = build_hamiltonian(harmonic_oscillator_H, 1, 1; param_names=[:m, :k])
+        H = compile_hamiltonian(harmonic_oscillator_H, 1, 1; parameter_names=[:m, :k])
         prob = WeberProblem(H, (0.0, 1.0), [1.0], [0.0]; params=(m=1.0, k=1.0), dt=0.01)
         sol = solve(prob)
         @test sol.retcode == :Success
@@ -144,9 +144,9 @@
     @testset "Custom tolerance" begin
         prob = make_harmonic_problem(tspan=(0.0, 0.1), dt=0.01)
         # Tighter tolerance
-        H = build_hamiltonian(harmonic_oscillator_H, 1, 1; param_names=[:m, :k])
+        H = compile_hamiltonian(harmonic_oscillator_H, 1, 1; parameter_names=[:m, :k])
         prob_tight = WeberProblem(H, (0.0, 0.1), [1.0], [0.0];
-            params=[1.0, 1.0], dt=0.01, tolerance=1e-14)
+            params=[1.0, 1.0], dt=0.01, convergence_tolerance=1e-14)
         sol = solve(prob_tight)
         @test sol.retcode == :Success
     end

@@ -1,7 +1,7 @@
 @testset "Integration Tests" begin
     @testset "Full two-body workflow" begin
         # Build Hamiltonian
-        H = build_hamiltonian(weber_H, 2, 2; param_names=[:m1, :m2, :k, :c])
+        H = compile_hamiltonian(weber_H, 2, 2; parameter_names=[:m1, :m2, :k, :c])
 
         # Setup problem
         m1, m2, k, c = 1.0, 0.1, -0.1, 4.0
@@ -18,7 +18,7 @@
         @test sol.retcode == :Success
 
         # Trajectories
-        traj = create_trajectory_data(sol, 2, 2; stride=10)
+        traj = compute_trajectory_data(sol, 2, 2; stride=10)
         @test traj.n_particles == 2
 
         # Energy
@@ -33,7 +33,7 @@
 
         # Phase space
         ps = compute_phase_space_data(sol, 2, 2, [m1, m2]; stride=10)
-        @test all(ps.r .> 0)  # Particles don't collide
+        @test all(ps.separation_distance .> 0)  # Particles don't collide
     end
 
     @testset "Stepped integration matches full solve" begin
@@ -65,7 +65,7 @@
     end
 
     @testset "Different initial conditions" begin
-        H = build_hamiltonian(harmonic_oscillator_H, 1, 1; param_names=[:m, :k])
+        H = compile_hamiltonian(harmonic_oscillator_H, 1, 1; parameter_names=[:m, :k])
 
         # Different amplitudes
         for amp in [0.1, 1.0, 10.0]
@@ -130,7 +130,7 @@
         params = [1.0, 0.5, 1.0]
 
         # All statistics should work on the same solution
-        traj = create_trajectory_data(sol, 2, 2)
+        traj = compute_trajectory_data(sol, 2, 2)
         @test traj isa TrajectoryData
 
         energy_func(q, p, params, t) = coulomb_H(q, p, params)

@@ -6,30 +6,30 @@ using Latexify: latexify
 # =============================================================================
 
 """
-    create_phase_space_variables(n_particles, dims) -> (q_syms, p_syms)
+    generate_phase_space_symbols(n_particles, dims) -> (coordinate_names, momentum_names)
 
-Create symbolic variable names for phase space coordinates.
+Generate symbolic variable names for phase space coordinates.
 Returns tuple of Symbol vectors for positions (x,y,z) and momenta (px,py,pz).
 """
-function create_phase_space_variables(n_particles::Int, dims::Int)::Tuple{Vector{Symbol}, Vector{Symbol}}
+function generate_phase_space_symbols(n_particles::Int, dims::Int)::Tuple{Vector{Symbol}, Vector{Symbol}}
     coord_names = [:x, :y, :z]
     momentum_names = [:px, :py, :pz]
 
     # Pre-size arrays (avoids reallocations from push!)
     n_total = n_particles * dims
-    q_syms = Vector{Symbol}(undef, n_total)
-    p_syms = Vector{Symbol}(undef, n_total)
+    coordinate_symbols = Vector{Symbol}(undef, n_total)
+    momentum_symbols = Vector{Symbol}(undef, n_total)
 
     idx = 1
     for i in 1:n_particles
         for d in 1:dims
-            q_syms[idx] = Symbol(string(coord_names[d]) * string(i))
-            p_syms[idx] = Symbol(string(momentum_names[d]) * string(i))
+            coordinate_symbols[idx] = Symbol(string(coord_names[d]) * string(i))
+            momentum_symbols[idx] = Symbol(string(momentum_names[d]) * string(i))
             idx += 1
         end
     end
 
-    return (q_syms, p_syms)
+    return (coordinate_symbols, momentum_symbols)
 end
 
 # =============================================================================
@@ -37,48 +37,49 @@ end
 # =============================================================================
 
 """
-    @hamiltonian n_particles dims param_names H_expr -> WeberHamiltonian
+    @hamiltonian n_particles dims parameter_names H_expr -> WeberHamiltonian
 
 Create a compiled Hamiltonian. `H_expr` is `(q, p, params) -> H`.
 
     H = @hamiltonian 2 2 [:m, :k] (q, p, params) -> p'p/(2params[1]) + params[2]*q'q/2
 """
-macro hamiltonian(n_particles, dims, param_names, H_expr)
+macro hamiltonian(n_particles, dims, parameter_names, H_expr)
     quote
-        _build_hamiltonian($(esc(n_particles)), $(esc(dims)), $(esc(param_names)), $(esc(H_expr)))
+        _compile_hamiltonian_internal($(esc(n_particles)), $(esc(dims)), $(esc(parameter_names)), $(esc(H_expr)))
     end
 end
 
 """
-    _build_hamiltonian(n_particles, dims, param_names, H_func)
+    _compile_hamiltonian_internal(n_particles, dims, parameter_names, H_func)
 
-Internal function to build WeberHamiltonian from a Hamiltonian function.
+Internal function to compile WeberHamiltonian from a Hamiltonian function.
 """
-function _build_hamiltonian(n_particles::Int, dims::Int, param_names::Vector{Symbol}, H_func::Function)
-    q_syms, p_syms = create_phase_space_variables(n_particles, dims)
+function _compile_hamiltonian_internal(n_particles::Int, dims::Int, parameter_names::Vector{Symbol}, H_func::Function)
+    coordinate_symbols, momentum_symbols = generate_phase_space_symbols(n_particles, dims)
 
-    q_vars = [Symbolics.variable(q_sym) for q_sym in q_syms]
-    p_vars = [Symbolics.variable(p_sym) for p_sym in p_syms]
-    param_vars = [Symbolics.variable(param_name) for param_name in param_names]
+    q_vars = [Symbolics.variable(sym) for sym in coordinate_symbols]
+    p_vars = [Symbolics.variable(sym) for sym in momentum_symbols]
+    param_vars = [Symbolics.variable(param_name) for param_name in parameter_names]
 
-    H_sym = H_func(q_vars, p_vars, param_vars)
+    hamiltonian_symbolic = H_func(q_vars, p_vars, param_vars)
 
-    qdot_sym = [Symbolics.derivative(H_sym, p_vars[i]) for i in eachindex(p_vars)]
-    pdot_sym = [-Symbolics.derivative(H_sym, q_vars[i]) for i in eachindex(q_vars)]
+    # Hamilton's equations: dq/dt = ∂H/∂p, dp/dt = -∂H/∂q
+    dq_dt_symbolic = [Symbolics.derivative(hamiltonian_symbolic, p_vars[i]) for i in eachindex(p_vars)]
+    dp_dt_symbolic = [-Symbolics.derivative(hamiltonian_symbolic, q_vars[i]) for i in eachindex(q_vars)]
 
     # Compile to fast numeric functions
     # Signature: func(out, q, p, params) - GI-compatible
-    qdot_func = build_function(qdot_sym, q_vars, p_vars, param_vars, expression=Val{false})[2]
-    pdot_func = build_function(pdot_sym, q_vars, p_vars, param_vars, expression=Val{false})[2]
+    dq_dt_compiled = build_function(dq_dt_symbolic, q_vars, p_vars, param_vars, expression=Val{false})[2]
+    dp_dt_compiled = build_function(dp_dt_symbolic, q_vars, p_vars, param_vars, expression=Val{false})[2]
 
     WeberHamiltonian(
-        H_sym,
-        qdot_sym,
-        pdot_sym,
-        qdot_func,
-        pdot_func,
+        hamiltonian_symbolic,
+        dq_dt_symbolic,
+        dp_dt_symbolic,
+        dq_dt_compiled,
+        dp_dt_compiled,
         length(q_vars),
-        param_names
+        parameter_names
     )
 end
 
@@ -87,12 +88,12 @@ end
 # =============================================================================
 
 """
-    build_hamiltonian(H_func, n_particles, dims; param_names=Symbol[]) -> WeberHamiltonian
+    compile_hamiltonian(H_func, n_particles, dims; parameter_names=Symbol[]) -> WeberHamiltonian
 
-Build a WeberHamiltonian from a function `(q, p, params) -> H` without using the macro.
+Compile a WeberHamiltonian from a function `(q, p, params) -> H` without using the macro.
 """
-function build_hamiltonian(H_func::Function, n_particles::Int, dims::Int; param_names::Vector{Symbol}=Symbol[])
-    _build_hamiltonian(n_particles, dims, param_names, H_func)
+function compile_hamiltonian(H_func::Function, n_particles::Int, dims::Int; parameter_names::Vector{Symbol}=Symbol[])
+    _compile_hamiltonian_internal(n_particles, dims, parameter_names, H_func)
 end
 
 # =============================================================================
@@ -100,17 +101,17 @@ end
 # =============================================================================
 
 function Base.show(io::IO, H::WeberHamiltonian)
-    print(io, "WeberHamiltonian($(H.n_dof) DOF, params=$(H.param_names))")
+    print(io, "WeberHamiltonian($(H.degrees_of_freedom) DOF, params=$(H.parameter_names))")
 end
 
 function Base.show(io::IO, ::MIME"text/plain", H::WeberHamiltonian)
     println(io, "WeberHamiltonian")
-    println(io, "  DOF: $(H.n_dof)")
-    println(io, "  Parameters: $(H.param_names)")
-    println(io, "  H = $(H.H_sym)")
+    println(io, "  DOF: $(H.degrees_of_freedom)")
+    println(io, "  Parameters: $(H.parameter_names)")
+    println(io, "  H = $(H.hamiltonian_symbolic)")
 end
 
 # LaTeX display for Jupyter notebooks
 function Base.show(io::IO, ::MIME"text/latex", H::WeberHamiltonian)
-    print(io, latexify(H.H_sym))
+    print(io, latexify(H.hamiltonian_symbolic))
 end

@@ -40,7 +40,7 @@ function H_weber(q, p, params)
 end
 
 # Build Hamiltonian (2 particles, 2D)
-H = build_hamiltonian(H_weber, 2, 2; param_names=[:m1, :m2, :k, :c])
+H = compile_hamiltonian(H_weber, 2, 2; parameter_names=[:m1, :m2, :k, :c])
 
 # Initial conditions (center-of-mass frame)
 M = m1 + m2
@@ -60,8 +60,8 @@ println("\nRunning Weber simulation (c = $c_weber)...")
 prob_weber = WeberProblem(H, tspan, q0, p0;
     params=[m1, m2, k, c_weber],
     dt=dt,
-    tolerance=1e-12,
-    max_iterations=100
+    convergence_tolerance=1e-12,
+    maximum_iterations=100
 )
 sol_weber = solve(prob_weber)
 println("  $(length(sol_weber.t)) steps")
@@ -71,8 +71,8 @@ println("Running Coulomb simulation (c → ∞)...")
 prob_coulomb = WeberProblem(H, tspan, q0, p0;
     params=[m1, m2, k, 1e6],
     dt=dt,
-    tolerance=1e-12,
-    max_iterations=100
+    convergence_tolerance=1e-12,
+    maximum_iterations=100
 )
 sol_coulomb = solve(prob_coulomb)
 println("  $(length(sol_coulomb.t)) steps")

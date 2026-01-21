@@ -15,7 +15,7 @@ Pkg.add("WeberElectrodynamics")
 using WeberElectrodynamics
 
 # Define a two-body Hamiltonian
-H = build_hamiltonian(2, 2; param_names=[:m1, :m2, :k, :c]) do q, p, params
+H = compile_hamiltonian(2, 2; parameter_names=[:m1, :m2, :k, :c]) do q, p, params
     m1, m2, k, c = params
     x1, y1, x2, y2 = q
     px1, py1, px2, py2 = p
@@ -40,11 +40,11 @@ r0 = 2.0
 M = m1 + m2
 v = sqrt(abs(k) * M / (m1 * m2 * r0))
 
-q₀ = [-m2/M * r0, 0.0, m1/M * r0, 0.0]
-p₀ = [0.0, -m1 * m2/M * v, 0.0, m2 * m1/M * v]
+q_initial = [-m2/M * r0, 0.0, m1/M * r0, 0.0]
+p_initial = [0.0, -m1 * m2/M * v, 0.0, m2 * m1/M * v]
 
 # Create and solve problem
-prob = WeberProblem(H, (0.0, 10.0), q₀, p₀; params=[m1, m2, k, c], dt=0.001)
+prob = WeberProblem(H, (0.0, 10.0), q_initial, p_initial; params=[m1, m2, k, c], dt=0.001)
 sol = solve(prob)
 
 # Access solution
@@ -56,7 +56,7 @@ end
 
 ## Features
 
-- **SymmetricProjection integrator**: Semi-explicit symplectic integrator for non-separable Hamiltonians
+- **SymmetricProjectionIntegrator**: Semi-explicit symplectic integrator for non-separable Hamiltonians
 - **CommonSolve.jl interface**: Standard `solve`, `init`, `step!`, `solve!` functions
 - **Analysis tools**: Energy timeseries, force computation, Newton's third law verification, phase space data
 - **Plots.jl extension**: `plot_trajectories`, `plot_energy`, `plot_forces`, `plot_phase_space`
@@ -67,7 +67,7 @@ end
 
 ```julia
 # Function API
-H = build_hamiltonian(H_func, n_particles, dims; param_names=[:m, :k])
+H = compile_hamiltonian(H_func, n_particles, dims; parameter_names=[:m, :k])
 
 # Macro API
 H = @hamiltonian 2 2 [:m1, :m2, :k] (q, p, params) -> begin
@@ -78,7 +78,7 @@ end
 ### Problem & Solution
 
 ```julia
-prob = WeberProblem(H, tspan, q₀, p₀; params, dt, tolerance=1e-13, max_iterations=100)
+prob = WeberProblem(H, tspan, q_initial, p_initial; params, dt, convergence_tolerance=1e-13, maximum_iterations=100)
 sol = solve(prob)  # Returns WeberSolution
 
 # Access solution data
@@ -102,7 +102,7 @@ sol = solve!(integrator)          # Finalize solution
 
 ```julia
 # Trajectory data
-traj = create_trajectory_data(sol, n_particles, dims; stride=1)
+traj = compute_trajectory_data(sol, n_particles, dims; stride=1)
 
 # Energy analysis
 energy = compute_energy_timeseries(sol, E_func, KE_func, PE_func, params)

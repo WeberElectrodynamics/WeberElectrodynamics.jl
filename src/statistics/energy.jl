@@ -2,29 +2,31 @@
 Energy timeseries data from a solution.
 
 # Fields
-- `t`, `total`: Time points and total energy
-- `kinetic`, `potential`: Optional component energies
+- `t`: Time points
+- `total_energy`: Total energy H(q, p) at each time point
+- `kinetic_energy`: Optional kinetic energy component
+- `potential_energy`: Optional potential energy component
 - `max_local_error`: Max deviation from initial energy
 - `relative_energy_range`: (E_max - E_min) / E_initial
 """
 struct EnergyData
     t::Vector{Float64}
-    total::Vector{Float64}
-    kinetic::Union{Vector{Float64}, Nothing}
-    potential::Union{Vector{Float64}, Nothing}
+    total_energy::Vector{Float64}
+    kinetic_energy::Union{Vector{Float64}, Nothing}
+    potential_energy::Union{Vector{Float64}, Nothing}
     max_local_error::Float64
     relative_energy_range::Float64
 end
 
 """
-    compute_energy_timeseries(sol, total_energy_func, [KE_func], [PE_func], params; stride=1) -> EnergyData
+    compute_energy_timeseries(sol, total_energy_func, [kinetic_energy_func], [potential_energy_func], params; stride=1) -> EnergyData
 
 Compute energy timeseries from a solution. Energy functions have signature `(q, p, params, t)`.
 """
 function compute_energy_timeseries(solution::WeberSolution,
                                    total_energy_func::Function,
-                                   KE_func::Union{Function, Nothing}=nothing,
-                                   PE_func::Union{Function, Nothing}=nothing,
+                                   kinetic_energy_func::Union{Function, Nothing}=nothing,
+                                   potential_energy_func::Union{Function, Nothing}=nothing,
                                    params=nothing;
                                    stride::Int=1)::EnergyData
     if stride <= 0
@@ -38,37 +40,37 @@ function compute_energy_timeseries(solution::WeberSolution,
     n_points = length(indices)
     t = solution.t[indices]
 
-    total = zeros(n_points)
+    total_energy = zeros(n_points)
     for (i, idx) in enumerate(indices)
-        total[i] = total_energy_func(solution.q[idx], solution.p[idx], params, solution.t[idx])
+        total_energy[i] = total_energy_func(solution.q[idx], solution.p[idx], params, solution.t[idx])
     end
 
-    kinetic = if !isnothing(KE_func)
+    kinetic_energy = if !isnothing(kinetic_energy_func)
         ke = zeros(n_points)
         for (i, idx) in enumerate(indices)
-            ke[i] = KE_func(solution.q[idx], solution.p[idx], params, solution.t[idx])
+            ke[i] = kinetic_energy_func(solution.q[idx], solution.p[idx], params, solution.t[idx])
         end
         ke
     else
         nothing
     end
 
-    potential = if !isnothing(PE_func)
+    potential_energy = if !isnothing(potential_energy_func)
         pe = zeros(n_points)
         for (i, idx) in enumerate(indices)
-            pe[i] = PE_func(solution.q[idx], solution.p[idx], params, solution.t[idx])
+            pe[i] = potential_energy_func(solution.q[idx], solution.p[idx], params, solution.t[idx])
         end
         pe
     else
         nothing
     end
 
-    E_initial = total[1]
+    E_initial = total_energy[1]
     # Single-pass reduction without temporary allocation
-    max_local_error = mapreduce(x -> abs(x - E_initial), max, total)
+    max_local_error = mapreduce(x -> abs(x - E_initial), max, total_energy)
 
     # Single pass for both min and max
-    E_min, E_max = extrema(total)
+    E_min, E_max = extrema(total_energy)
 
     relative_energy_range = if abs(E_initial) < 100 * eps(Float64)
         NaN
@@ -76,5 +78,5 @@ function compute_energy_timeseries(solution::WeberSolution,
         (E_max - E_min) / E_initial
     end
 
-    return EnergyData(t, total, kinetic, potential, max_local_error, relative_energy_range)
+    return EnergyData(t, total_energy, kinetic_energy, potential_energy, max_local_error, relative_energy_range)
 end

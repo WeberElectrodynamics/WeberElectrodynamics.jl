@@ -32,18 +32,18 @@ end
 
 """Plot energy timeseries with relative error subplot."""
 function WeberElectrodynamics.plot_energy(data::EnergyData)::Plots.Plot
-    E0 = data.total[1]
-    relative_error = abs.((data.total .- E0) ./ E0)
+    E0 = data.total_energy[1]
+    relative_error = abs.((data.total_energy .- E0) ./ E0)
     relative_error = max.(relative_error, eps(Float64))
 
     p1 = plot(; xlabel="", ylabel="Energy", legend=:topright,
               size=(600, 300), PLOT_DEFAULTS...)
-    plot!(p1, data.t, data.total, label="Total", linewidth=2, color=:black)
-    if !isnothing(data.kinetic)
-        plot!(p1, data.t, data.kinetic, label="Kinetic", linewidth=1.5, color=:steelblue)
+    plot!(p1, data.t, data.total_energy, label="Total", linewidth=2, color=:black)
+    if !isnothing(data.kinetic_energy)
+        plot!(p1, data.t, data.kinetic_energy, label="Kinetic", linewidth=1.5, color=:steelblue)
     end
-    if !isnothing(data.potential)
-        plot!(p1, data.t, data.potential, label="Potential", linewidth=1.5, color=:firebrick)
+    if !isnothing(data.potential_energy)
+        plot!(p1, data.t, data.potential_energy, label="Potential", linewidth=1.5, color=:firebrick)
     end
 
     max_err = maximum(relative_error)
@@ -86,11 +86,11 @@ function WeberElectrodynamics.plot_phase_space(data::PhaseSpaceData)::Plots.Plot
     plt = plot(; xlabel="r", ylabel="dr/dt",
                size=(500, 500), PLOT_DEFAULTS...)
 
-    plot!(plt, data.r, data.rdot, label="", linewidth=1.5, color=:black)
+    plot!(plt, data.separation_distance, data.radial_velocity, label="", linewidth=1.5, color=:black)
 
-    scatter!(plt, [data.r[1]], [data.rdot[1]],
+    scatter!(plt, [data.separation_distance[1]], [data.radial_velocity[1]],
         marker=:circle, markersize=6, color=:steelblue, label="Initial")
-    scatter!(plt, [data.r[end]], [data.rdot[end]],
+    scatter!(plt, [data.separation_distance[end]], [data.radial_velocity[end]],
         marker=:square, markersize=6, color=:firebrick, label="Final")
 
     return plt
