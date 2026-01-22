@@ -30,9 +30,11 @@ LocalPreferences.toml
 /build/
 /builds/
 
-# Generated figures
-examples/figures/
-papers/**/examples/figures/
+# Generated figures (kept in git for reproducibility)
+# examples/figures/
+
+# Paper build directories
+papers/**/build/
 
 # Documentation builds
 docs/build/
@@ -78,5 +80,5 @@ temp/
 *.fdb_latexmk
 *.fls
 
-# Generated PDFs in examples
-papers/**/examples/*.pdf
+# Generated PDFs in papers (regenerated from make paper)
+papers/**/*.pdf
