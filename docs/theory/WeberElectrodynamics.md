@@ -124,17 +124,17 @@ $$U = \frac{q_1 q_2}{r}\left(1 - \frac{\dot{r}^2}{2c^2}\right)$$
 
 ### Explicit Time Parameterization of $r$ and $\dot{r}$
 
-If $r$ and $\dot{r}$ are both functions of time, that is, $r = r(t)$ and $\dot{r} = \dot{r}(t)$, then the force experienced by charge $q_2$ due to charge $q_1$ can be derived from the potential energy as:
+If $r$ and $\dot{r}$ are both functions of time, that is, $r = r(t)$ and $\dot{r} = \dot{r}(t)$, then the force on particle 1 due to particle 2 can be derived from the potential energy using $\vec{F}_{12} = -\nabla_1 U$. Since $\nabla_1 r = \hat{r}$ (where $\hat{r}$ points from particle 2 to particle 1), we have:
 
-$$\vec{F}_{21} =  -\frac{dU}{dr_{12}}\hat{r}_{12}$$
-
-By Newton's third law, the force on particle 1 due to particle 2 is:
-
-$$\vec{F}_{12} =  \frac{dU}{dr_{12}}\hat{r}_{12}$$
+$$\vec{F}_{12} = -\frac{dU}{dr}\hat{r}$$
 
 Using the chain rule:
 
 $$\frac{d\dot{r}^2}{dr} = 2\dot{r} \frac{d\dot{r}}{dr} = 2\dot{r} \frac{d\dot{r}/dt}{dr/dt} = 2\dot{r} \frac{\ddot{r}}{\dot{r}} = 2\ddot{r}$$
+
+Computing the derivative:
+
+$$\frac{dU}{dr} = -\frac{q_1 q_2}{r^2}\left(1 - \frac{\dot{r}^2}{2c^2} + \frac{r\ddot{r}}{c^2}\right)$$
 
 This yields:
 
