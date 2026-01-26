@@ -23,39 +23,41 @@ $$m_2, q_2$$
 
 #### Position
 
-$$x_1(t), y_1(t)$$
-$$x_2(t), y_2(t)$$
+$$x_1(t), y_1(t), z_1(t)$$
+$$x_2(t), y_2(t), z_2(t)$$
 
 #### Velocity
 
-$$\dot{x}_1(t), \dot{y}_1(t)$$
-$$\dot{x}_2(t), \dot{y}_2(t)$$
+$$\dot{x}_1(t), \dot{y}_1(t), \dot{z}_1(t)$$
+$$\dot{x}_2(t), \dot{y}_2(t), \dot{z}_2(t)$$
 
 #### Acceleration
 
-$$\ddot{x}_1(t), \ddot{y}_1(t)$$
-$$\ddot{x}_2(t), \ddot{y}_2(t)$$
+$$\ddot{x}_1(t), \ddot{y}_1(t), \ddot{z}_1(t)$$
+$$\ddot{x}_2(t), \ddot{y}_2(t), \ddot{z}_2(t)$$
 
 ### Vector notation for Particle 1 and Particle 2
 
 #### Position
 
-$$\vec{r}_1 = (x_1(t), y_1(t)), \quad \vec{r}_2 = (x_2(t), y_2(t))$$
+$$\vec{r}_1 = (x_1(t), y_1(t), z_1(t)), \quad \vec{r}_2 = (x_2(t), y_2(t), z_2(t))$$
 
 #### Velocity
 
-$$\vec{v}_1 = (\dot{x}_1(t), \dot{y}_1(t)), \quad \vec{v}_2 = (\dot{x}_2(t), \dot{y}_2(t))$$
+$$\vec{v}_1 = (\dot{x}_1(t), \dot{y}_1(t), \dot{z}_1(t)), \quad \vec{v}_2 = (\dot{x}_2(t), \dot{y}_2(t), \dot{z}_2(t))$$
 
 #### Acceleration
 
-$$\vec{a}_1 = (\ddot{x}_1(t), \ddot{y}_1(t)), \quad \vec{a}_2 = (\ddot{x}_2(t), \ddot{y}_2(t))$$
+$$\vec{a}_1 = (\ddot{x}_1(t), \ddot{y}_1(t), \ddot{z}_1(t)), \quad \vec{a}_2 = (\ddot{x}_2(t), \ddot{y}_2(t), \ddot{z}_2(t))$$
 
 ### Momenta for Particle 1 and Particle 2
 
 $$p_{x_1} = m_1 \dot{x}_1$$
 $$p_{y_1} = m_1 \dot{y}_1$$
+$$p_{z_1} = m_1 \dot{z}_1$$
 $$p_{x_2} = m_2 \dot{x}_2$$
 $$p_{y_2} = m_2 \dot{y}_2$$
+$$p_{z_2} = m_2 \dot{z}_2$$
 
 ### Relative Coordinates and Vectors for Particle 1 and Particle 2
 
@@ -63,38 +65,41 @@ $$p_{y_2} = m_2 \dot{y}_2$$
 
 $$x = x_1 - x_2$$
 $$y = y_1 - y_2$$
+$$z = z_1 - z_2$$
 
 #### Relative velocity
 
 $$\dot{x} = \dot{x}_1 - \dot{x}_2$$
 $$\dot{y} = \dot{y}_1 - \dot{y}_2$$
+$$\dot{z} = \dot{z}_1 - \dot{z}_2$$
 
 #### Relative acceleration
 
 $$\ddot{x} = \ddot{x}_1 - \ddot{x}_2$$
 $$\ddot{y} = \ddot{y}_1 - \ddot{y}_2$$
+$$\ddot{z} = \ddot{z}_1 - \ddot{z}_2$$
 
 #### Relative vectors
 
-$$\vec{r} = (x, y)$$
+$$\vec{r} = (x, y, z)$$
 
-$$\vec{v} = (\dot{x}, \dot{y})$$
+$$\vec{v} = (\dot{x}, \dot{y}, \dot{z})$$
 
-$$\vec{a} = (\ddot{x}, \ddot{y})$$
+$$\vec{a} = (\ddot{x}, \ddot{y}, \ddot{z})$$
 
 ### Relative distance
 
-$$r = |\vec{r}| = \sqrt{x^2 + y^2}$$
+$$r = |\vec{r}| = \sqrt{x^2 + y^2 + z^2}$$
 
 ### Relative radial velocity
 
-$$\dot{r} = \frac{x\dot{x} + y\dot{y}}{r} =  \frac{\vec{r} \cdot \vec{v}}{r}$$
+$$\dot{r} = \frac{x\dot{x} + y\dot{y} + z\dot{z}}{r} = \frac{\vec{r} \cdot \vec{v}}{r}$$
 
 ### Relative radial acceleration
 
 $$
 \begin{align}
-\ddot{r} &= \frac{x\ddot{x} + y\ddot{y}}{r} + \frac{\dot{x}^2 + \dot{y}^2}{r} - \frac{(x\dot{x} + y\dot{y})^2}{r^3} \\
+\ddot{r} &= \frac{x\ddot{x} + y\ddot{y} + z\ddot{z}}{r} + \frac{\dot{x}^2 + \dot{y}^2 + \dot{z}^2}{r} - \frac{(x\dot{x} + y\dot{y} + z\dot{z})^2}{r^3} \\
 &= \frac{\vec{r} \cdot \vec{a}}{r} + \frac{\vec{v} \cdot \vec{v}}{r} - \frac{(\vec{r} \cdot \vec{v})^2}{r^3} \\
 &= \frac{1}{r}\left(\vec{r} \cdot \vec{a} + \vec{v} \cdot \vec{v} - (\hat{\vec{r}} \cdot \vec{v})^2\right)
 \end{align}
@@ -189,4 +194,26 @@ $$H = \sum_i^n T_i + \sum_{i<j}^n U_{ij}$$
 
 ## Euler-Lagrange equations
 
+The Euler-Lagrange equation for Weber electrodynamics yields the force on particle 1 in the $x$-direction:
+
+$$F_{12}^x = \frac{d}{dt}\frac{\partial S}{\partial \dot{x}_1} - \frac{\partial S}{\partial x_1} = q_1 q_2 \frac{(x_1 - x_2)}{r^3} \left(1 - \frac{\dot{r}^2}{2c^2} + \frac{r\ddot{r}}{c^2}\right)$$
+
+with analogous equations for the $y$ and $z$ directions and for particle 2.
+
 ## Equations of motion
+
+Hamilton's equations give the time evolution of positions and momenta:
+
+$$\dot{x}_i = \frac{\partial H}{\partial p_{x_i}}, \quad \dot{p}_{x_i} = -\frac{\partial H}{\partial x_i}$$
+
+For the two-particle Weber system, these expand to:
+
+$$\dot{x}_1 = \frac{1}{m_1} \left(p_{x_1} + \frac{q_1 q_2}{c^2} \frac{\dot{r} (x_1 - x_2)}{r^2}\right)$$
+
+$$\dot{x}_2 = \frac{1}{m_2} \left(p_{x_2} - \frac{q_1 q_2}{c^2} \frac{\dot{r} (x_1 - x_2)}{r^2}\right)$$
+
+$$\dot{p}_{x_1} = \frac{q_1 q_2}{r^2}\left[\frac{(x_1 - x_2)}{r}\left(1 - \frac{3\dot{r}^2}{2 c^2}\right) + \frac{\dot{r}(\dot{x}_1 - \dot{x}_2)}{c^2}\right]$$
+
+$$\dot{p}_{x_2} = -\dot{p}_{x_1}$$
+
+with analogous equations for the $y$ and $z$ directions.
