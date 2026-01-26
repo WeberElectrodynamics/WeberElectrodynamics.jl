@@ -14,6 +14,17 @@ Note: The momentum derivative function $\dot{p}$ should already include the minu
 - Extended system: $(q,x,p,y) \in \mathbb{R}^{4d}$ where $q, x, p, y \in \mathbb{R}^d$
 - Invariant subspace $\mathcal{N}$: points where $x = q$ and $y = p$
 
+## Extended System Dynamics
+
+The extended Hamiltonian $\hat{H}(q,x,p,y) = H(q,y) + H(x,p)$ generates the system:
+
+$$\dot{q} = D_2 H(x,p), \quad \dot{p} = -D_1 H(q,y)$$
+$$\dot{x} = D_2 H(q,y), \quad \dot{y} = -D_1 H(x,p)$$
+
+where $D_i$ denotes the partial derivative with respect to the $i$-th argument.
+
+Starting from initial conditions $(q_0, q_0, p_0, p_0) \in \mathcal{N}$, the solution satisfies $(q(t), p(t)) = (x(t), y(t))$ for all $t$, and this pair solves the original Hamilton's equations.
+
 ## Flow Maps
 
 ### Flow A
@@ -40,6 +51,36 @@ Variables $x$ and $p$ are frozen; $q$ and $y$ evolve.
 
 Strang splitting:
 $$\hat{\Phi}_{\Delta t} = \hat{\Phi}^A_{\Delta t/2} \circ \hat{\Phi}^B_{\Delta t} \circ \hat{\Phi}^A_{\Delta t/2}$$
+
+## Higher-Order Integrators
+
+Higher-order methods are constructed by composing the 2nd-order integrator with carefully chosen time steps.
+
+### Triple Jump Composition
+
+Given a 2nd-order method $\hat{\Phi}^{(2)}_{\Delta t}$, construct order $n$ (even) recursively:
+
+$$\hat{\Phi}^{(n)}_{\Delta t} := \hat{\Phi}^{(n-2)}_{\gamma_3 \Delta t} \circ \hat{\Phi}^{(n-2)}_{\gamma_2 \Delta t} \circ \hat{\Phi}^{(n-2)}_{\gamma_1 \Delta t}$$
+
+where:
+$$\gamma_1 = \gamma_3 = \frac{1}{2 - 2^{1/(n-1)}}, \quad \gamma_2 = -\frac{2^{1/(n-1)}}{2 - 2^{1/(n-1)}}$$
+
+This yields a $3^{n/2}$-stage method:
+- 4th order: 9 stages
+- 6th order: 27 stages
+
+### Suzuki Composition (5-stage)
+
+Alternative composition for order $n$:
+
+$$\hat{\Phi}^{(n)}_{\Delta t} := \hat{\Phi}^{(n-2)}_{\gamma_5 \Delta t} \circ \hat{\Phi}^{(n-2)}_{\gamma_4 \Delta t} \circ \hat{\Phi}^{(n-2)}_{\gamma_3 \Delta t} \circ \hat{\Phi}^{(n-2)}_{\gamma_2 \Delta t} \circ \hat{\Phi}^{(n-2)}_{\gamma_1 \Delta t}$$
+
+where:
+$$\gamma_1 = \gamma_2 = \gamma_4 = \gamma_5 = \frac{1}{4 - 4^{1/(n-1)}}, \quad \gamma_3 = -\frac{4^{1/(n-1)}}{4 - 4^{1/(n-1)}}$$
+
+### Yoshida 6th-Order (7-stage)
+
+A 7-stage 6th-order symmetric composition (Yoshida 1990).
 
 ## Projection Matrix
 
@@ -92,6 +133,19 @@ $$\mu^{(0)} = 0$$
 $$\mu^{(k+1)} = \mu^{(k)} - \frac{1}{4}f(\mu^{(k)})$$
 
 This is equivalent to a relaxed fixed-point iteration with relaxation factor $\omega = 0.25$, since $Df(0) = 2AA^T = 4I_{2d}$.
+
+### Derivation of the Factor 1/4
+
+The Jacobian of $f$ at $\mu$ is:
+$$Df_{\Delta t}(\mu) = A \cdot D\hat{\Phi}_{\Delta t}(Z_n + A^T \mu) \cdot A^T + AA^T$$
+
+At $\Delta t = 0$, we have $D\hat{\Phi}_0 = I_{4d}$, so:
+$$Df_0(\mu) = A \cdot I_{4d} \cdot A^T + AA^T = 2AA^T$$
+
+Computing $AA^T$:
+$$AA^T = \begin{bmatrix} I_d & -I_d & 0 & 0 \\ 0 & 0 & I_d & -I_d \end{bmatrix} \begin{bmatrix} I_d & 0 \\ -I_d & 0 \\ 0 & I_d \\ 0 & -I_d \end{bmatrix} = \begin{bmatrix} 2I_d & 0 \\ 0 & 2I_d \end{bmatrix} = 2I_{2d}$$
+
+Therefore $Df_0 = 2 \cdot 2I_{2d} = 4I_{2d}$, giving the Newton step $(Df_0)^{-1} = \frac{1}{4}I_{2d}$.
 
 **Stopping criterion:**
 $$\|\mu^{(N+1)} - \mu^{(N)}\| < \varepsilon \quad \text{and} \quad \|f(\mu^{(N+1)})\| < \varepsilon$$
