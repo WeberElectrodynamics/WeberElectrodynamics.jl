@@ -27,7 +27,7 @@ function CommonSolve.init(prob::WeberProblem{P}, alg::SymmetricProjectionIntegra
     q_history[1] .= prob.q_initial
     p_history[1] .= prob.p_initial
 
-    WeberIntegrator{P,typeof(alg)}(
+    WeberIntegrator{P}(
         prob,
         alg,
         prob.tspan[1],
@@ -54,7 +54,7 @@ Advance the integrator by one time step.
 # Throws
 - `NonlinearSolveError` if the nonlinear solver fails to converge
 """
-function CommonSolve.step!(integrator::WeberIntegrator{P,SymmetricProjectionIntegrator{S}}) where {P,S}
+function CommonSolve.step!(integrator::WeberIntegrator{P}) where {P}
     # Check if already done
     if integrator.t >= integrator.t_end - eps(integrator.t_end)
         return false
@@ -146,9 +146,9 @@ function CommonSolve.step!(integrator::WeberIntegrator{P,SymmetricProjectionInte
     end
 
     # Solve the nonlinear projection problem
-    solver = integrator.alg.solver
-    success, iterations, final_residual = solve_nonlinear!(
-        lagrange_multipliers, projection_residual!, solver, convergence_tolerance, maximum_iterations;
+    relaxation = integrator.alg.relaxation
+    success, iterations, final_residual = solve_relaxed_fixed_point!(
+        lagrange_multipliers, projection_residual!, relaxation, convergence_tolerance, maximum_iterations;
         fu_buffer=residual_buffer,
         u_old_buffer=lagrange_multipliers_previous
     )
@@ -180,8 +180,7 @@ function CommonSolve.step!(integrator::WeberIntegrator{P,SymmetricProjectionInte
         return integrator.t < integrator.t_end
     end
 
-    solver_name = string(typeof(solver).name.name)
-    throw(NonlinearSolveError(iterations, convergence_tolerance, final_residual, integrator.step_count + 1, integrator.t, solver_name))
+    throw(NonlinearSolveError(iterations, convergence_tolerance, final_residual, integrator.step_count + 1, integrator.t, "RelaxedFixedPoint"))
 end
 
 """

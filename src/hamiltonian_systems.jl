@@ -37,19 +37,6 @@ end
 # =============================================================================
 
 """
-    @hamiltonian n_particles dims parameter_names H_expr -> WeberHamiltonian
-
-Create a compiled Hamiltonian. `H_expr` is `(q, p, params) -> H`.
-
-    H = @hamiltonian 2 2 [:m, :k] (q, p, params) -> p'p/(2params[1]) + params[2]*q'q/2
-"""
-macro hamiltonian(n_particles, dims, parameter_names, H_expr)
-    quote
-        _compile_hamiltonian_internal($(esc(n_particles)), $(esc(dims)), $(esc(parameter_names)), $(esc(H_expr)))
-    end
-end
-
-"""
     _compile_hamiltonian_internal(n_particles, dims, parameter_names, H_func)
 
 Internal function to compile WeberHamiltonian from a Hamiltonian function.
@@ -84,13 +71,13 @@ function _compile_hamiltonian_internal(n_particles::Int, dims::Int, parameter_na
 end
 
 # =============================================================================
-# Alternative: Function-based API (without macro)
+# Public API
 # =============================================================================
 
 """
     compile_hamiltonian(H_func, n_particles, dims; parameter_names=Symbol[]) -> WeberHamiltonian
 
-Compile a WeberHamiltonian from a function `(q, p, params) -> H` without using the macro.
+Compile a WeberHamiltonian from a function `(q, p, params) -> H`.
 """
 function compile_hamiltonian(H_func::Function, n_particles::Int, dims::Int; parameter_names::Vector{Symbol}=Symbol[])
     _compile_hamiltonian_internal(n_particles, dims, parameter_names, H_func)

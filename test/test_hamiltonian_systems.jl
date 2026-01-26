@@ -44,25 +44,6 @@
         @test out_p[1] ≈ -2.0
     end
 
-    @testset "@hamiltonian macro API" begin
-        H = @hamiltonian 1 1 [:m, :k] (q, p, params) -> begin
-            m, k = params
-            sum(p .^ 2) / (2m) + k * sum(q .^ 2) / 2
-        end
-
-        @test H isa WeberHamiltonian
-        @test H.degrees_of_freedom == 1
-        @test H.parameter_names == [:m, :k]
-
-        # Test it produces same results as function API
-        out_q = zeros(1)
-        out_p = zeros(1)
-        H.dq_dt_compiled(out_q, [1.0], [0.5], [1.0, 2.0])
-        H.dp_dt_compiled(out_p, [1.0], [0.5], [1.0, 2.0])
-        @test out_q[1] ≈ 0.5
-        @test out_p[1] ≈ -2.0
-    end
-
     @testset "Multi-particle Hamiltonian" begin
         H = compile_hamiltonian(weber_H, 2, 2; parameter_names=[:m1, :m2, :k, :c])
 

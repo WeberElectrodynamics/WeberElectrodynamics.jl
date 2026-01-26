@@ -3,34 +3,19 @@
         # Default construction
         alg = SymmetricProjectionIntegrator()
         @test alg isa WeberAlgorithm
-        @test alg.solver isa RelaxedFixedPointSolver
-        @test alg.solver.relaxation == 0.25
-
-        # Custom solver
-        custom_solver = RelaxedFixedPointSolver(relaxation=0.5)
-        alg2 = SymmetricProjectionIntegrator(solver=custom_solver)
-        @test alg2.solver.relaxation == 0.5
-    end
-
-    @testset "RelaxedFixedPointSolver" begin
-        # Default relaxation
-        @test RelaxedFixedPointSolver().relaxation == 0.25
+        @test alg.relaxation == 0.25
 
         # Custom relaxation
-        @test RelaxedFixedPointSolver(relaxation=0.5).relaxation == 0.5
+        alg2 = SymmetricProjectionIntegrator(relaxation=0.5)
+        @test alg2.relaxation == 0.5
 
         # Edge case: relaxation = 1.0 is valid
-        @test RelaxedFixedPointSolver(relaxation=1.0).relaxation == 1.0
+        @test SymmetricProjectionIntegrator(relaxation=1.0).relaxation == 1.0
 
         # Validation: relaxation must be in (0, 1]
-        @test_throws AssertionError RelaxedFixedPointSolver(relaxation=0.0)
-        @test_throws AssertionError RelaxedFixedPointSolver(relaxation=-0.1)
-        @test_throws AssertionError RelaxedFixedPointSolver(relaxation=1.5)
-
-        # show method
-        io = IOBuffer()
-        show(io, RelaxedFixedPointSolver(relaxation=0.3))
-        @test occursin("0.3", String(take!(io)))
+        @test_throws AssertionError SymmetricProjectionIntegrator(relaxation=0.0)
+        @test_throws AssertionError SymmetricProjectionIntegrator(relaxation=-0.1)
+        @test_throws AssertionError SymmetricProjectionIntegrator(relaxation=1.5)
     end
 
     @testset "WeberHamiltonian" begin

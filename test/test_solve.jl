@@ -12,7 +12,7 @@
     @testset "solve with custom algorithm" begin
         # Use a short problem with small dt for reliable convergence
         prob = make_harmonic_problem(tspan=(0.0, 0.1), dt=0.001)
-        alg = SymmetricProjectionIntegrator(solver=RelaxedFixedPointSolver(relaxation=0.3))
+        alg = SymmetricProjectionIntegrator(relaxation=0.3)
         sol = solve(prob, alg)
 
         @test sol.retcode == :Success

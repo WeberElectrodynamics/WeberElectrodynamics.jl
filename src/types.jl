@@ -13,16 +13,26 @@ Extensible for future methods (ImplicitMidpoint, StormerVerlet, etc.).
 abstract type WeberAlgorithm end
 
 """
-    SymmetricProjectionIntegrator{S} <: WeberAlgorithm
+    SymmetricProjectionIntegrator <: WeberAlgorithm
 
 Semi-explicit symplectic integrator using symmetric projection for non-separable Hamiltonians.
-Second-order accurate. Type parameter `S` is the nonlinear solver (default: `RelaxedFixedPointSolver`).
-"""
-struct SymmetricProjectionIntegrator{S} <: WeberAlgorithm
-    solver::S
-end
+Second-order accurate. Uses relaxed fixed-point iteration for the nonlinear projection solve.
 
-SymmetricProjectionIntegrator(; solver=RelaxedFixedPointSolver()) = SymmetricProjectionIntegrator(solver)
+# Constructor
+    SymmetricProjectionIntegrator(; relaxation=0.25)
+
+# Arguments
+- `relaxation::Float64`: Relaxation parameter for fixed-point iteration, must be in (0, 1].
+  Default 0.25. Higher values converge faster for well-conditioned problems but may diverge.
+"""
+struct SymmetricProjectionIntegrator <: WeberAlgorithm
+    relaxation::Float64
+
+    function SymmetricProjectionIntegrator(; relaxation::Real=0.25)
+        @assert 0 < relaxation <= 1 "Relaxation must be in (0, 1], got $relaxation"
+        new(Float64(relaxation))
+    end
+end
 
 # =============================================================================
 # Hamiltonian Type
@@ -213,14 +223,14 @@ end
 # =============================================================================
 
 """
-    WeberIntegrator{P,A<:WeberAlgorithm}
+    WeberIntegrator{P}
 
 Mutable integrator state for stepped integration via CommonSolve interface.
 Access `t`, `q`, `p`, `step_count` during integration. Use `step!()` to advance, `solve!()` to complete.
 """
-mutable struct WeberIntegrator{P,A<:WeberAlgorithm}
+mutable struct WeberIntegrator{P}
     prob::WeberProblem{P}
-    alg::A
+    alg::SymmetricProjectionIntegrator
     t::Float64
     t_end::Float64
     q::Vector{Float64}

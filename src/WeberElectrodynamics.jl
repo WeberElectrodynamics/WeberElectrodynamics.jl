@@ -1,10 +1,9 @@
 module WeberElectrodynamics
 
 # =============================================================================
-# Nonlinear Solvers
+# Nonlinear Solver (internal)
 # =============================================================================
 include("nonlinear_solvers.jl")
-export RelaxedFixedPointSolver
 
 # =============================================================================
 # Core Types
@@ -21,7 +20,7 @@ export NonlinearSolveError
 # Hamiltonian Construction
 # =============================================================================
 include("hamiltonian_systems.jl")
-export @hamiltonian, compile_hamiltonian
+export compile_hamiltonian
 export generate_phase_space_symbols
 
 # =============================================================================

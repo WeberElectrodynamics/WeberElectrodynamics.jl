@@ -1,8 +1,8 @@
 # Internal function for testing - access via module
-const solve_nonlinear! = WeberElectrodynamics.solve_nonlinear!
+const solve_relaxed_fixed_point! = WeberElectrodynamics.solve_relaxed_fixed_point!
 
 @testset "Nonlinear Solvers" begin
-    @testset "RelaxedFixedPointSolver convergence - linear" begin
+    @testset "RelaxedFixedPoint convergence - linear" begin
         # Simple linear problem: f(x) = x - 1 (solution x = 1)
         function f_linear!(result, u)
             result[1] = u[1] - 1.0
@@ -13,8 +13,7 @@ const solve_nonlinear! = WeberElectrodynamics.solve_nonlinear!
         fu_buffer = zeros(1)
         u_old_buffer = zeros(1)
 
-        solver = RelaxedFixedPointSolver(relaxation=0.5)
-        success, iters, residual = solve_nonlinear!(u, f_linear!, solver, 1e-12, 100;
+        success, iters, residual = solve_relaxed_fixed_point!(u, f_linear!, 0.5, 1e-12, 100;
             fu_buffer=fu_buffer,
             u_old_buffer=u_old_buffer)
 
@@ -24,7 +23,7 @@ const solve_nonlinear! = WeberElectrodynamics.solve_nonlinear!
         @test iters < 100
     end
 
-    @testset "RelaxedFixedPointSolver convergence - multidimensional" begin
+    @testset "RelaxedFixedPoint convergence - multidimensional" begin
         # 2D problem: f(x) = x - [1, 2]
         function f_2d!(result, u)
             result[1] = u[1] - 1.0
@@ -36,8 +35,7 @@ const solve_nonlinear! = WeberElectrodynamics.solve_nonlinear!
         fu_buffer = zeros(2)
         u_old_buffer = zeros(2)
 
-        solver = RelaxedFixedPointSolver(relaxation=0.5)
-        success, _, _ = solve_nonlinear!(u, f_2d!, solver, 1e-12, 100;
+        success, _, _ = solve_relaxed_fixed_point!(u, f_2d!, 0.5, 1e-12, 100;
             fu_buffer=fu_buffer,
             u_old_buffer=u_old_buffer)
 
@@ -45,7 +43,7 @@ const solve_nonlinear! = WeberElectrodynamics.solve_nonlinear!
         @test u ≈ [1.0, 2.0] atol = 1e-10
     end
 
-    @testset "RelaxedFixedPointSolver max iterations" begin
+    @testset "RelaxedFixedPoint max iterations" begin
         # Problem that converges slowly - need many iterations
         function f_slow!(result, u)
             # This creates a very slow convergence
@@ -57,8 +55,7 @@ const solve_nonlinear! = WeberElectrodynamics.solve_nonlinear!
         fu_buffer = zeros(1)
         u_old_buffer = zeros(1)
 
-        solver = RelaxedFixedPointSolver(relaxation=0.1)  # Very slow
-        success, iters, residual = solve_nonlinear!(u, f_slow!, solver, 1e-12, 5;
+        success, iters, residual = solve_relaxed_fixed_point!(u, f_slow!, 0.1, 1e-12, 5;
             fu_buffer=fu_buffer,
             u_old_buffer=u_old_buffer)
 
@@ -80,8 +77,7 @@ const solve_nonlinear! = WeberElectrodynamics.solve_nonlinear!
             fu_buffer = zeros(1)
             u_old_buffer = zeros(1)
 
-            solver = RelaxedFixedPointSolver(relaxation=relaxation)
-            success, iters, _ = solve_nonlinear!(u, f_test!, solver, 1e-12, 1000;
+            success, iters, _ = solve_relaxed_fixed_point!(u, f_test!, relaxation, 1e-12, 1000;
                 fu_buffer=fu_buffer,
                 u_old_buffer=u_old_buffer)
             @test success
@@ -103,8 +99,7 @@ const solve_nonlinear! = WeberElectrodynamics.solve_nonlinear!
         fu_buffer = zeros(1)
         u_old_buffer = zeros(1)
 
-        solver = RelaxedFixedPointSolver()
-        success, iters, residual = solve_nonlinear!(u, f_zero!, solver, 1e-12, 100;
+        success, iters, residual = solve_relaxed_fixed_point!(u, f_zero!, 0.25, 1e-12, 100;
             fu_buffer=fu_buffer,
             u_old_buffer=u_old_buffer)
 
@@ -126,8 +121,7 @@ const solve_nonlinear! = WeberElectrodynamics.solve_nonlinear!
         fu_buffer = zeros(n)
         u_old_buffer = zeros(n)
 
-        solver = RelaxedFixedPointSolver(relaxation=0.5)
-        success, _, _ = solve_nonlinear!(u, f_nd!, solver, 1e-12, 200;
+        success, _, _ = solve_relaxed_fixed_point!(u, f_nd!, 0.5, 1e-12, 200;
             fu_buffer=fu_buffer,
             u_old_buffer=u_old_buffer)
 
