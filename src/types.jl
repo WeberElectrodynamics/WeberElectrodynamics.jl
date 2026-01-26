@@ -171,48 +171,58 @@ end
 
 Pre-allocated workspace for the symmetric projection integrator.
 Internal type - not part of public API.
+
+Field names match notation in docs/theory/SemiExplicitIntegrator.md (Jayawardana-Ohsawa 2023):
+- `d`: degrees of freedom
+- `A`: projection matrix (2d × 4d)
+- `Z`: extended phase space state Zₙ = (q,q,p,p)
+- `Ẑ`: shifted/evolved state Ẑₙ₊₁
+- `Z_result`: final projected state Zₙ₊₁
+- `ATμ`: constraint shift A^T μ
+- `μ`: Lagrange multipliers for symmetric projection
+- `f_μ`: nonlinear residual f(μ) = A(Φ̂(Zₙ + A^T μ) + A^T μ)
 """
 mutable struct SymmetricProjectionBuffers
-    degrees_of_freedom::Int
-    constraint_matrix::Matrix{Float64}
-    extended_state::Vector{Float64}
-    extended_state_after_flow::Vector{Float64}
-    extended_state_result::Vector{Float64}
+    d::Int                          # degrees of freedom
+    A::Matrix{Float64}              # projection matrix (2d × 4d)
+    Z::Vector{Float64}              # extended state Zₙ (4d)
+    Ẑ::Vector{Float64}              # shifted/evolved state (4d)
+    Z_result::Vector{Float64}       # final projected state Zₙ₊₁ (4d)
     position_buffer::Vector{Float64}
     auxiliary_position_buffer::Vector{Float64}
     momentum_buffer::Vector{Float64}
     auxiliary_momentum_buffer::Vector{Float64}
-    constraint_shift::Vector{Float64}
-    lagrange_multipliers::Vector{Float64}
-    lagrange_multipliers_previous::Vector{Float64}
-    residual_buffer::Vector{Float64}
-    params_vec::Vector{Float64}  # Cached parameter vector (avoids per-step allocation)
+    ATμ::Vector{Float64}            # constraint shift A^T μ (4d)
+    μ::Vector{Float64}              # Lagrange multipliers (2d)
+    μ_prev::Vector{Float64}         # previous iteration μ^(k-1) (2d)
+    f_μ::Vector{Float64}            # nonlinear residual f(μ) (2d)
+    params_vec::Vector{Float64}     # cached parameter vector
 
     function SymmetricProjectionBuffers(degrees_of_freedom::Int, params_vec::Vector{Float64})
         d = degrees_of_freedom
-        # Construct constraint matrix directly without intermediate allocations
-        constraint_matrix = zeros(Float64, 2d, 4d)
+        # Construct projection matrix A directly without intermediate allocations
+        A = zeros(Float64, 2d, 4d)
         @inbounds for i in 1:d
-            constraint_matrix[i, i] = 1.0           # Id in top-left
-            constraint_matrix[i, d + i] = -1.0      # -Id in top-middle-left
-            constraint_matrix[d + i, 2d + i] = 1.0  # Id in bottom-middle-right
-            constraint_matrix[d + i, 3d + i] = -1.0 # -Id in bottom-right
+            A[i, i] = 1.0           # I_d in top-left
+            A[i, d + i] = -1.0      # -I_d in top-middle-left
+            A[d + i, 2d + i] = 1.0  # I_d in bottom-middle-right
+            A[d + i, 3d + i] = -1.0 # -I_d in bottom-right
         end
 
         new(
             d,
-            constraint_matrix,
-            Vector{Float64}(undef, 4d),
-            Vector{Float64}(undef, 4d),
-            Vector{Float64}(undef, 4d),
-            Vector{Float64}(undef, d),
-            Vector{Float64}(undef, d),
-            Vector{Float64}(undef, d),
-            Vector{Float64}(undef, d),
-            Vector{Float64}(undef, 4d),
-            zeros(Float64, 2d),
-            Vector{Float64}(undef, 2d),
-            Vector{Float64}(undef, 2d),
+            A,
+            Vector{Float64}(undef, 4d),  # Z
+            Vector{Float64}(undef, 4d),  # Ẑ
+            Vector{Float64}(undef, 4d),  # Z_result
+            Vector{Float64}(undef, d),   # position_buffer
+            Vector{Float64}(undef, d),   # auxiliary_position_buffer
+            Vector{Float64}(undef, d),   # momentum_buffer
+            Vector{Float64}(undef, d),   # auxiliary_momentum_buffer
+            Vector{Float64}(undef, 4d),  # ATμ
+            zeros(Float64, 2d),          # μ (initialized to zero)
+            Vector{Float64}(undef, 2d),  # μ_prev
+            Vector{Float64}(undef, 2d),  # f_μ
             params_vec
         )
     end
