@@ -118,22 +118,4 @@
         @test occursin("WeberIntegrator", String(take!(io)))
     end
 
-    @testset "NonlinearSolveError" begin
-        err = NonlinearSolveError(50, 1e-12, 1e-8, 100, 0.5, "RelaxedFixedPointSolver")
-
-        @test err.iterations == 50
-        @test err.convergence_tolerance == 1e-12
-        @test err.final_residual == 1e-8
-        @test err.step == 100
-        @test err.time == 0.5
-        @test err.solver_name == "RelaxedFixedPointSolver"
-
-        # showerror
-        io = IOBuffer()
-        showerror(io, err)
-        msg = String(take!(io))
-        @test occursin("NonlinearSolveError", msg)
-        @test occursin("RelaxedFixedPointSolver", msg)
-        @test occursin("step 100", msg)
-    end
 end

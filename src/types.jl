@@ -257,36 +257,3 @@ function Base.show(io::IO, int::WeberIntegrator)
     print(io, "WeberIntegrator at t=$(int.t) (step $(int.step_count))")
 end
 
-# =============================================================================
-# Error Types
-# =============================================================================
-
-"""
-    NonlinearSolveError <: Exception
-
-Thrown when the nonlinear solver fails to converge during an integration step.
-
-# Fields
-- `iterations`: Number of iterations performed
-- `convergence_tolerance`: Target convergence tolerance
-- `final_residual`: Residual at termination
-- `step`: Integration step number where failure occurred
-- `time`: Simulation time at failure
-- `solver_name`: Name of the solver that failed
-"""
-struct NonlinearSolveError <: Exception
-    iterations::Int
-    convergence_tolerance::Float64
-    final_residual::Float64
-    step::Int
-    time::Float64
-    solver_name::String
-end
-
-function Base.showerror(io::IO, e::NonlinearSolveError)
-    print(io, "NonlinearSolveError: $(e.solver_name) failed to converge at step $(e.step) (t=$(e.time)) ")
-    print(io, "after $(e.iterations) iterations (residual=$(e.final_residual), convergence_tolerance=$(e.convergence_tolerance))")
-end
-
-# Deprecated alias for backward compatibility
-const NewtonConvergenceError = NonlinearSolveError

@@ -1,11 +1,6 @@
 module WeberElectrodynamics
 
 # =============================================================================
-# Nonlinear Solver (internal)
-# =============================================================================
-include("nonlinear_solvers.jl")
-
-# =============================================================================
 # Core Types
 # =============================================================================
 include("types.jl")
@@ -14,7 +9,6 @@ export WeberHamiltonian
 export WeberProblem
 export WeberSolution
 export WeberIntegrator
-export NonlinearSolveError
 
 # =============================================================================
 # Hamiltonian Construction

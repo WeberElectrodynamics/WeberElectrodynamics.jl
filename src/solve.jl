@@ -1,4 +1,5 @@
 using CommonSolve
+using LinearAlgebra: norm
 
 # =============================================================================
 # CommonSolve Interface Implementation
@@ -52,7 +53,7 @@ Advance the integrator by one time step.
 - `false` if integration is complete (reached t_end)
 
 # Throws
-- `NonlinearSolveError` if the nonlinear solver fails to converge
+- `ErrorException` if the fixed-point iteration fails to converge
 """
 function CommonSolve.step!(integrator::WeberIntegrator{P}) where {P}
     # Check if already done
@@ -150,43 +151,55 @@ function CommonSolve.step!(integrator::WeberIntegrator{P}) where {P}
         return nothing
     end
 
-    # Step 2: Solve for μ such that f(μ) = 0
+    # Step 2: Solve for μ such that f(μ) = 0 using relaxed fixed-point iteration
     relaxation = integrator.alg.relaxation
-    success, iterations, final_residual = solve_relaxed_fixed_point!(
-        μ, f!, relaxation, convergence_tolerance, maximum_iterations;
-        fu_buffer=f_μ,
-        u_old_buffer=μ_prev
-    )
+    for iter in 1:maximum_iterations
+        f!(f_μ, μ)
+        copyto!(μ_prev, μ)
+        @. μ = μ - relaxation * f_μ
 
-    if success
-        # Steps 3-5: Compute final state with converged μ
-        # Recompute to ensure consistency (solver's last f! call used previous μ)
-        mul!(ATμ, A', μ)           # ATμ = A^T μ
-        @. Ẑ = Z + ATμ             # Ẑₙ = Zₙ + A^T μ
-        Φ̂(Ẑ)                       # Ẑₙ₊₁ = Φ̂(Ẑₙ)
-
-        # Step 5: Zₙ₊₁ = Ẑₙ₊₁ + A^T μ (symmetric projection)
-        @. Ẑ = Ẑ + ATμ
-
-        # Step 6: Extract (qₙ₊₁, pₙ₊₁) from Zₙ₊₁
-        @views begin
-            integrator.q .= Ẑ[idx_Q_start:idx_Q_end]
-            integrator.p .= Ẑ[idx_P_start:idx_P_end]
+        # Check step convergence
+        step_norm = norm(μ .- μ_prev)
+        if step_norm < convergence_tolerance
+            # Verify constraint satisfaction
+            f!(f_μ, μ)
+            if norm(f_μ) < convergence_tolerance
+                @goto converged
+            end
         end
-
-        integrator.step_count += 1
-        integrator.t = prob.tspan[1] + integrator.step_count * dt
-
-        # Store in history (in-place copy to pre-allocated vectors)
-        idx = integrator.step_count + 1
-        integrator.t_history[idx] = integrator.t
-        integrator.q_history[idx] .= integrator.q
-        integrator.p_history[idx] .= integrator.p
-
-        return integrator.t < integrator.t_end
     end
 
-    throw(NonlinearSolveError(iterations, convergence_tolerance, final_residual, integrator.step_count + 1, integrator.t, "RelaxedFixedPoint"))
+    # Failed to converge
+    f!(f_μ, μ)
+    error("Fixed-point iteration failed to converge after $maximum_iterations iterations (residual=$(norm(f_μ)), tolerance=$convergence_tolerance)")
+
+    @label converged
+
+    # Steps 3-5: Compute final state with converged μ
+    # Recompute to ensure consistency (solver's last f! call used previous μ)
+    mul!(ATμ, A', μ)           # ATμ = A^T μ
+    @. Ẑ = Z + ATμ             # Ẑₙ = Zₙ + A^T μ
+    Φ̂(Ẑ)                       # Ẑₙ₊₁ = Φ̂(Ẑₙ)
+
+    # Step 5: Zₙ₊₁ = Ẑₙ₊₁ + A^T μ (symmetric projection)
+    @. Ẑ = Ẑ + ATμ
+
+    # Step 6: Extract (qₙ₊₁, pₙ₊₁) from Zₙ₊₁
+    @views begin
+        integrator.q .= Ẑ[idx_Q_start:idx_Q_end]
+        integrator.p .= Ẑ[idx_P_start:idx_P_end]
+    end
+
+    integrator.step_count += 1
+    integrator.t = prob.tspan[1] + integrator.step_count * dt
+
+    # Store in history (in-place copy to pre-allocated vectors)
+    idx = integrator.step_count + 1
+    integrator.t_history[idx] = integrator.t
+    integrator.q_history[idx] .= integrator.q
+    integrator.p_history[idx] .= integrator.p
+
+    return integrator.t < integrator.t_end
 end
 
 """
@@ -203,7 +216,7 @@ function CommonSolve.solve!(integrator::WeberIntegrator)
             # Continue stepping
         end
     catch e
-        if e isa NonlinearSolveError
+        if e isa ErrorException && contains(e.msg, "Fixed-point iteration failed")
             retcode = :Failure
         else
             rethrow()
