@@ -8,7 +8,6 @@ using LinearAlgebra
     WeberAlgorithm
 
 Abstract type for Weber electrodynamics integration algorithms.
-Extensible for future methods (ImplicitMidpoint, StormerVerlet, etc.).
 """
 abstract type WeberAlgorithm end
 
@@ -35,81 +34,63 @@ struct SymmetricProjectionIntegrator <: WeberAlgorithm
 end
 
 # =============================================================================
-# Hamiltonian Type
-# =============================================================================
-
-"""
-    WeberHamiltonian
-
-Compiled Hamiltonian system with symbolic expressions and fast numeric functions.
-Contains both the symbolic representation (for analysis) and compiled functions
-(for integration).
-
-# Fields
-- `hamiltonian_symbolic`: Symbolic Hamiltonian expression H(q, p)
-- `dq_dt_symbolic`: Symbolic dq/dt = ∂H/∂p (Hamilton's first equation)
-- `dp_dt_symbolic`: Symbolic dp/dt = -∂H/∂q (Hamilton's second equation)
-- `dq_dt_compiled`: Compiled dq/dt function with signature `dq_dt_compiled(out, q, p, params)`
-- `dp_dt_compiled`: Compiled dp/dt function with signature `dp_dt_compiled(out, q, p, params)`
-- `degrees_of_freedom`: Number of degrees of freedom (dimension of q or p)
-- `parameter_names`: Names of parameters (for documentation)
-"""
-struct WeberHamiltonian{H,QD,PD,QF,PF}
-    hamiltonian_symbolic::H
-    dq_dt_symbolic::QD
-    dp_dt_symbolic::PD
-    dq_dt_compiled::QF
-    dp_dt_compiled::PF
-    degrees_of_freedom::Int
-    parameter_names::Vector{Symbol}
-end
-
-# =============================================================================
 # Problem Type
 # =============================================================================
 
 """
-    WeberProblem{P}
+    WeberProblem
 
 Problem specification for Weber electrodynamics simulation.
 
-    WeberProblem(H, tspan, q_initial, p_initial; params, dt, convergence_tolerance=1e-13, maximum_iterations=100)
+    WeberProblem(system, tspan, q_initial, p_initial; dt, convergence_tolerance=1e-13, maximum_iterations=100)
 
-`H` is a compiled `WeberHamiltonian`, `tspan = (t_start, t_end)`, `params` is Vector or NamedTuple.
+# Arguments
+- `system::WeberSystem`: The n-body Weber system definition
+- `tspan::Tuple{Real,Real}`: Time span (t_start, t_end)
+- `q_initial::AbstractVector`: Initial positions (length = system.degrees_of_freedom)
+- `p_initial::AbstractVector`: Initial momenta (length = system.degrees_of_freedom)
+- `dt::Real`: Time step
+- `convergence_tolerance::Real=1e-13`: Tolerance for fixed-point iteration
+- `maximum_iterations::Int=100`: Maximum fixed-point iterations
+
+# Example
+```julia
+system = WeberSystem(2, 2; masses=[1.0, 0.1], charges=[-0.1, 0.1], c=4.0)
+prob = WeberProblem(system, (0.0, 100.0), q0, p0; dt=0.001)
+sol = solve(prob)
+```
 """
-struct WeberProblem{P}
-    H::WeberHamiltonian
+struct WeberProblem
+    system::WeberSystem
     tspan::Tuple{Float64,Float64}
     q_initial::Vector{Float64}
     p_initial::Vector{Float64}
-    params::P
     dt::Float64
     convergence_tolerance::Float64
     maximum_iterations::Int
 
     function WeberProblem(
-        H::WeberHamiltonian,
+        system::WeberSystem,
         tspan::Tuple{Real,Real},
         q_initial::AbstractVector,
         p_initial::AbstractVector;
-        params,
         dt::Real,
         convergence_tolerance::Real=1e-13,
         maximum_iterations::Integer=100
     )
-        @assert length(q_initial) == length(p_initial) == H.degrees_of_freedom "Initial conditions must match Hamiltonian DOF ($(H.degrees_of_freedom))"
+        dof = system.degrees_of_freedom
+        @assert length(q_initial) == dof "q_initial must have length $dof (got $(length(q_initial)))"
+        @assert length(p_initial) == dof "p_initial must have length $dof (got $(length(p_initial)))"
         @assert tspan[2] > tspan[1] "End time must be greater than start time"
         @assert dt > 0 "Time step must be positive"
         @assert convergence_tolerance > 0 "Convergence tolerance must be positive"
         @assert maximum_iterations > 0 "Maximum iterations must be positive"
 
-        P = typeof(params)
-        new{P}(
-            H,
+        new(
+            system,
             (Float64(tspan[1]), Float64(tspan[2])),
             Vector{Float64}(q_initial),
             Vector{Float64}(p_initial),
-            params,
             Float64(dt),
             Float64(convergence_tolerance),
             Int(maximum_iterations)
@@ -122,22 +103,24 @@ end
 # =============================================================================
 
 """
-    WeberSolution{P}
+    WeberSolution
 
 Solution of a Weber electrodynamics problem.
 
 # Fields
-- `t`, `q`, `p`: Time points, coordinates, momenta
+- `t`: Time points
+- `q`: Position vectors at each time
+- `p`: Momentum vectors at each time
 - `prob`: Reference to the problem
 - `retcode`: `:Success`, `:Failure`, or `:MaxIters`
 
 Supports indexing (`sol[i]`) and iteration.
 """
-struct WeberSolution{P}
+struct WeberSolution
     t::Vector{Float64}
     q::Vector{Vector{Float64}}
     p::Vector{Vector{Float64}}
-    prob::WeberProblem{P}
+    prob::WeberProblem
     retcode::Symbol
 end
 
@@ -196,9 +179,8 @@ mutable struct SymmetricProjectionBuffers
     μ::Vector{Float64}              # Lagrange multipliers (2d)
     μ_prev::Vector{Float64}         # previous iteration μ^(k-1) (2d)
     f_μ::Vector{Float64}            # nonlinear residual f(μ) (2d)
-    params_vec::Vector{Float64}     # cached parameter vector
 
-    function SymmetricProjectionBuffers(degrees_of_freedom::Int, params_vec::Vector{Float64})
+    function SymmetricProjectionBuffers(degrees_of_freedom::Int)
         d = degrees_of_freedom
         # Construct projection matrix A directly without intermediate allocations
         A = zeros(Float64, 2d, 4d)
@@ -223,7 +205,6 @@ mutable struct SymmetricProjectionBuffers
             zeros(Float64, 2d),          # μ (initialized to zero)
             Vector{Float64}(undef, 2d),  # μ_prev
             Vector{Float64}(undef, 2d),  # f_μ
-            params_vec
         )
     end
 end
@@ -233,13 +214,13 @@ end
 # =============================================================================
 
 """
-    WeberIntegrator{P}
+    WeberIntegrator
 
 Mutable integrator state for stepped integration via CommonSolve interface.
 Access `t`, `q`, `p`, `step_count` during integration. Use `step!()` to advance, `solve!()` to complete.
 """
-mutable struct WeberIntegrator{P}
-    prob::WeberProblem{P}
+mutable struct WeberIntegrator
+    prob::WeberProblem
     alg::SymmetricProjectionIntegrator
     t::Float64
     t_end::Float64
@@ -256,4 +237,3 @@ end
 function Base.show(io::IO, int::WeberIntegrator)
     print(io, "WeberIntegrator at t=$(int.t) (step $(int.step_count))")
 end
-

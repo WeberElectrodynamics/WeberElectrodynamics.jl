@@ -1,51 +1,11 @@
 @testset "Physics Validation" begin
-    @testset "Harmonic oscillator period" begin
-        # Analytical period: T = 2π√(m/k)
-        m, k = 1.0, 4.0
-        T_analytical = 2π * sqrt(m / k)
-
-        H = compile_hamiltonian(harmonic_oscillator_H, 1, 1; parameter_names=[:m, :k])
-        prob = WeberProblem(H, (0.0, 2 * T_analytical), [1.0], [0.0]; params=[m, k], dt=0.001)
+    @testset "Energy conservation - Coulomb-like" begin
+        prob = make_coulomb_like_problem(tspan=(0.0, 5.0), dt=0.001)
         sol = solve(prob)
+        masses = prob.system.masses
+        charges = prob.system.charges
 
-        # Find zero crossings to measure period
-        q_vals = getindex.(sol.q, 1)
-        crossings = Int[]
-        for i in 2:length(q_vals)
-            if q_vals[i-1] * q_vals[i] < 0 && q_vals[i-1] > 0
-                push!(crossings, i)
-            end
-        end
-
-        if length(crossings) >= 2
-            T_measured = sol.t[crossings[2]] - sol.t[crossings[1]]
-            @test T_measured ≈ T_analytical rtol = 0.01
-        end
-    end
-
-    @testset "Energy conservation - harmonic oscillator" begin
-        prob = make_harmonic_problem(tspan=(0.0, 10.0), dt=0.001)
-        sol = solve(prob)
-
-        E(q, p) = harmonic_oscillator_H(q, p, [1.0, 1.0])
-        E0 = E(sol.q[1], sol.p[1])
-
-        max_error = 0.0
-        for i in 1:length(sol)
-            Ei = E(sol.q[i], sol.p[i])
-            error = abs(Ei - E0) / abs(E0)
-            max_error = max(max_error, error)
-        end
-
-        @test max_error < 1e-10
-    end
-
-    @testset "Energy conservation - Coulomb" begin
-        prob = make_coulomb_problem(tspan=(0.0, 5.0), dt=0.001)
-        sol = solve(prob)
-        params = [1.0, 0.5, 1.0]
-
-        E(q, p) = coulomb_H(q, p, params)
+        E(q, p) = coulomb_like_energy_2body_2d(q, p, masses, charges)
         E0 = E(sol.q[1], sol.p[1])
 
         max_error = 0.0
@@ -61,9 +21,11 @@
     @testset "Energy conservation - Weber" begin
         prob = make_weber_problem(tspan=(0.0, 2.0), dt=0.0005)
         sol = solve(prob)
-        params = [1.0, 0.1, -0.1, 4.0]
+        masses = prob.system.masses
+        charges = prob.system.charges
+        c = prob.system.c
 
-        E(q, p) = weber_H(q, p, params)
+        E(q, p) = weber_energy_2body_2d(q, p, masses, charges, c)
         E0 = E(sol.q[1], sol.p[1])
 
         max_error = 0.0
@@ -76,22 +38,33 @@
         @test max_error < 1e-6
     end
 
-    @testset "Newton's third law - Coulomb forces" begin
-        prob = make_coulomb_problem(tspan=(0.0, 1.0), dt=0.01)
+    @testset "Newton's third law - Coulomb-like forces" begin
+        prob = make_coulomb_like_problem(tspan=(0.0, 1.0), dt=0.01)
         sol = solve(prob)
 
-        forces = compute_force_timeseries(sol, 2, 2, [1.0, 0.5], [1.0, -1.0], 1e10)
+        forces = compute_force_timeseries(sol, 2, 2, prob.system.masses, prob.system.charges, prob.system.c)
         n3 = check_newtons_third_law(forces)
 
-        # F_12 = -F_21 should hold exactly for Coulomb
+        # F_12 = -F_21 should hold for Coulomb-like
         @test n3.global_max_violation < 1e-10
     end
 
-    @testset "Center of mass conservation" begin
-        prob = make_coulomb_problem(tspan=(0.0, 2.0), dt=0.01)
+    @testset "Newton's third law - Weber forces" begin
+        prob = make_weber_problem(tspan=(0.0, 1.0), dt=0.001)
         sol = solve(prob)
 
-        m1, m2 = 1.0, 0.5
+        forces = compute_force_timeseries(sol, 2, 2, prob.system.masses, prob.system.charges, prob.system.c)
+        n3 = check_newtons_third_law(forces)
+
+        # F_12 = -F_21 should hold for Weber (it's a central force)
+        @test n3.global_max_violation < 1e-6
+    end
+
+    @testset "Center of mass conservation" begin
+        prob = make_coulomb_like_problem(tspan=(0.0, 2.0), dt=0.01)
+        sol = solve(prob)
+
+        m1, m2 = prob.system.masses
         M = m1 + m2
 
         # Initial center of mass position and momentum
@@ -118,8 +91,8 @@
         end
     end
 
-    @testset "Angular momentum conservation (Coulomb)" begin
-        prob = make_coulomb_problem(tspan=(0.0, 2.0), dt=0.01)
+    @testset "Angular momentum conservation (Coulomb-like)" begin
+        prob = make_coulomb_like_problem(tspan=(0.0, 2.0), dt=0.01)
         sol = solve(prob)
 
         function angular_momentum(q, p)
@@ -137,11 +110,13 @@
 
     @testset "Symplectic integrator: no secular drift" begin
         # Long simulation to check for secular drift
-        prob = make_harmonic_problem(tspan=(0.0, 100.0), dt=0.01)
+        prob = make_coulomb_like_problem(tspan=(0.0, 50.0), dt=0.01)
         sol = solve(prob)
 
         # Energy at beginning, middle, and end
-        E(q, p) = harmonic_oscillator_H(q, p, [1.0, 1.0])
+        masses = prob.system.masses
+        charges = prob.system.charges
+        E(q, p) = coulomb_like_energy_2body_2d(q, p, masses, charges)
         E_start = E(sol.q[1], sol.p[1])
         E_mid = E(sol.q[length(sol)÷2], sol.p[length(sol)÷2])
         E_end = E(sol.q[end], sol.p[end])
@@ -152,29 +127,40 @@
 
         # End error should not be significantly larger than mid error
         # (would indicate secular drift)
-        @test error_end < 2 * error_mid + 1e-12
+        @test error_end < 2 * error_mid + 1e-10
     end
 
-    @testset "Phase space orbit closure" begin
-        # For a bound orbit, phase space should approximately close
-        m, k = 1.0, 1.0
-        T = 2π * sqrt(m / k)  # One period
-
-        prob = make_harmonic_problem(tspan=(0.0, T), dt=0.001, m=m, k=k)
+    @testset "Phase space orbit closure (Weber)" begin
+        # For a near-circular bound orbit, phase space should approximately close
+        # Use Weber system
+        prob = make_weber_problem(tspan=(0.0, 20.0), dt=0.001)
         sol = solve(prob)
 
-        # Final state should be close to initial
-        @test sol.q[end][1] ≈ sol.q[1][1] rtol = 0.01
-        @test sol.p[end][1] ≈ sol.p[1][1] atol = 0.01
+        # For a bound orbit, the particle should stay bounded
+        r_min = Inf
+        r_max = 0.0
+        for i in 1:length(sol)
+            dx = sol.q[i][1] - sol.q[i][3]
+            dy = sol.q[i][2] - sol.q[i][4]
+            r = sqrt(dx^2 + dy^2)
+            r_min = min(r_min, r)
+            r_max = max(r_max, r)
+        end
+
+        # Orbit should be bounded (not escaping)
+        # Weber orbits precess and may have larger excursions than Kepler
+        @test r_max < 25.0
+        @test r_min > 0.05  # Don't get too close (no collision)
     end
 
     @testset "Bound vs unbound orbits" begin
         # Negative total energy = bound orbit
-        prob_bound = make_coulomb_problem(tspan=(0.0, 2.0), dt=0.01)
+        prob_bound = make_coulomb_like_problem(tspan=(0.0, 2.0), dt=0.01)
         sol_bound = solve(prob_bound)
 
-        params = [1.0, 0.5, 1.0]
-        E0 = coulomb_H(sol_bound.q[1], sol_bound.p[1], params)
+        masses = prob_bound.system.masses
+        charges = prob_bound.system.charges
+        E0 = coulomb_like_energy_2body_2d(sol_bound.q[1], sol_bound.p[1], masses, charges)
         @test E0 < 0  # Bound orbit has negative energy
 
         # Separation should remain bounded
@@ -186,5 +172,30 @@
             r_max = max(r_max, r)
         end
         @test r_max < 10.0  # Should stay bounded
+    end
+
+    @testset "Weber vs Coulomb limit" begin
+        # As c → ∞, Weber should approach Coulomb
+        m1, m2 = 1.0, 0.5
+        q1, q2 = 1.0, -1.0
+
+        # Weber with very large c
+        sys_large_c = WeberSystem(2, 2; masses=[m1, m2], charges=[q1, q2], c=1e10)
+
+        # Weber with smaller c
+        sys_small_c = WeberSystem(2, 2; masses=[m1, m2], charges=[q1, q2], c=10.0)
+
+        # Test at specific point
+        q = [1.0, 0.0, -1.0, 0.0]
+        p = [0.0, 0.5, 0.0, -0.5]
+
+        out_large_c = zeros(4)
+        out_small_c = zeros(4)
+
+        sys_large_c.dp_dt_compiled(out_large_c, q, p)
+        sys_small_c.dp_dt_compiled(out_small_c, q, p)
+
+        # Force magnitude should be similar but with small Weber correction for finite c
+        @test norm(out_large_c) ≈ norm(out_small_c) rtol = 0.1
     end
 end

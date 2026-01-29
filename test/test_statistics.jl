@@ -1,10 +1,10 @@
 @testset "Statistics" begin
     # Setup: run simulations for testing
-    prob_coulomb = make_coulomb_problem(tspan=(0.0, 1.0), dt=0.01)
+    prob_coulomb = make_coulomb_like_problem(tspan=(0.0, 1.0), dt=0.01)
     sol_coulomb = solve(prob_coulomb)
 
-    prob_harmonic = make_harmonic_problem(tspan=(0.0, 2.0), dt=0.01)
-    sol_harmonic = solve(prob_harmonic)
+    prob_weber = make_weber_problem(tspan=(0.0, 2.0), dt=0.001)
+    sol_weber = solve(prob_weber)
 
     @testset "TrajectoryData" begin
         @testset "compute_trajectory_data basic" begin
@@ -48,37 +48,46 @@
         end
 
         @testset "1D system" begin
-            traj = compute_trajectory_data(sol_harmonic, 1, 1)
-            @test traj.n_particles == 1
+            # Create a 1D 2-body system for this test
+            sys1d = WeberSystem(2, 1; masses=[1.0, 1.0], charges=[1.0, -1.0], c=1e10)
+            prob1d = WeberProblem(sys1d, (0.0, 0.5), [1.0, -1.0], [0.1, -0.1]; dt=0.01)
+            sol1d = solve(prob1d)
+            traj = compute_trajectory_data(sol1d, 2, 1)
+            @test traj.n_particles == 2
             @test traj.dims == 1
             @test size(traj.trajectories[1], 2) == 1
         end
     end
 
     @testset "EnergyData" begin
-        params = [1.0, 1.0]  # m, k
+        # Energy functions for 2-body Weber system
+        masses = prob_weber.system.masses
+        charges = prob_weber.system.charges
+        c = prob_weber.system.c
 
-        total_energy(q, p, params, t) = harmonic_oscillator_H(q, p, params)
-        kinetic_energy(q, p, params, t) = sum(p .^ 2) / (2 * params[1])
-        potential_energy(q, p, params, t) = params[2] * sum(q .^ 2) / 2
+        total_energy(q, p, params, t) = weber_energy_2body_2d(q, p, masses, charges, c)
+        kinetic_energy(q, p, params, t) = sum(p[1:2] .^ 2) / (2 * masses[1]) + sum(p[3:4] .^ 2) / (2 * masses[2])
+        function potential_energy(q, p, params, t)
+            weber_energy_2body_2d(q, p, masses, charges, c) - kinetic_energy(q, p, params, t)
+        end
 
         @testset "compute_energy_timeseries basic" begin
-            energy = compute_energy_timeseries(sol_harmonic, total_energy, nothing, nothing, params)
+            energy = compute_energy_timeseries(sol_weber, total_energy, nothing, nothing, nothing)
 
             @test energy isa EnergyData
-            @test length(energy.t) == length(sol_harmonic.t)
-            @test length(energy.total_energy) == length(sol_harmonic.t)
+            @test length(energy.t) == length(sol_weber.t)
+            @test length(energy.total_energy) == length(sol_weber.t)
             @test isnothing(energy.kinetic_energy)
             @test isnothing(energy.potential_energy)
         end
 
         @testset "compute_energy_timeseries with components" begin
-            energy = compute_energy_timeseries(sol_harmonic, total_energy, kinetic_energy, potential_energy, params)
+            energy = compute_energy_timeseries(sol_weber, total_energy, kinetic_energy, potential_energy, nothing)
 
             @test !isnothing(energy.kinetic_energy)
             @test !isnothing(energy.potential_energy)
-            @test length(energy.kinetic_energy) == length(sol_harmonic.t)
-            @test length(energy.potential_energy) == length(sol_harmonic.t)
+            @test length(energy.kinetic_energy) == length(sol_weber.t)
+            @test length(energy.potential_energy) == length(sol_weber.t)
 
             # KE + PE = Total (approximately)
             for i in 1:length(energy.t)
@@ -87,7 +96,7 @@
         end
 
         @testset "Energy statistics" begin
-            energy = compute_energy_timeseries(sol_harmonic, total_energy, nothing, nothing, params)
+            energy = compute_energy_timeseries(sol_weber, total_energy, nothing, nothing, nothing)
 
             @test energy.max_local_error >= 0
             # For symplectic integrator, relative range should be small
@@ -97,16 +106,16 @@
         end
 
         @testset "compute_energy_timeseries with stride" begin
-            energy = compute_energy_timeseries(sol_harmonic, total_energy, nothing, nothing, params; stride=10)
+            energy = compute_energy_timeseries(sol_weber, total_energy, nothing, nothing, nothing; stride=10)
 
-            expected_points = length(1:10:length(sol_harmonic.t))
+            expected_points = length(1:10:length(sol_weber.t))
             @test length(energy.t) == expected_points
             @test length(energy.total_energy) == expected_points
         end
 
         @testset "Validation errors" begin
-            @test_throws ArgumentError compute_energy_timeseries(sol_harmonic, total_energy, nothing, nothing, params; stride=0)
-            @test_throws ArgumentError compute_energy_timeseries(sol_harmonic, total_energy, nothing, nothing, params; stride=-1)
+            @test_throws ArgumentError compute_energy_timeseries(sol_weber, total_energy, nothing, nothing, nothing; stride=0)
+            @test_throws ArgumentError compute_energy_timeseries(sol_weber, total_energy, nothing, nothing, nothing; stride=-1)
         end
     end
 

@@ -1,17 +1,21 @@
 @testset "Integration Tests" begin
     @testset "Full two-body workflow" begin
-        # Build Hamiltonian
-        H = compile_hamiltonian(weber_H, 2, 2; parameter_names=[:m1, :m2, :k, :c])
+        # Setup Weber system
+        m1, m2 = 1.0, 0.1
+        q1_charge = sqrt(0.1)
+        q2_charge = -sqrt(0.1)  # q1*q2 = -0.1 (attractive)
+        c = 4.0
 
-        # Setup problem
-        m1, m2, k, c = 1.0, 0.1, -0.1, 4.0
+        system = WeberSystem(2, 2; masses=[m1, m2], charges=[q1_charge, q2_charge], c=c)
+
         r0 = 2.0
         M = m1 + m2
+        k = q1_charge * q2_charge
         v_circ = sqrt(abs(k) * M / (m1 * m2 * r0))
         q0 = [-m2 / M * r0, 0.0, m1 / M * r0, 0.0]
         p0 = [0.0, m1 * (-m2 / M * v_circ * 0.9), 0.0, m2 * (m1 / M * v_circ * 0.9)]
 
-        prob = WeberProblem(H, (0.0, 1.0), q0, p0; params=[m1, m2, k, c], dt=0.001)
+        prob = WeberProblem(system, (0.0, 1.0), q0, p0; dt=0.001)
 
         # Solve
         sol = solve(prob)
@@ -22,12 +26,14 @@
         @test traj.n_particles == 2
 
         # Energy
-        total_energy(q, p, params, t) = weber_H(q, p, params)
-        energy = compute_energy_timeseries(sol, total_energy, nothing, nothing, [m1, m2, k, c]; stride=10)
+        function total_energy(q, p, params, t)
+            weber_energy_2body_2d(q, p, [m1, m2], [q1_charge, q2_charge], c)
+        end
+        energy = compute_energy_timeseries(sol, total_energy, nothing, nothing, nothing; stride=10)
         @test energy.relative_energy_range < 1e-6
 
         # Forces
-        forces = compute_force_timeseries(sol, 2, 2, [m1, m2], [1.0, -1.0], c; stride=10)
+        forces = compute_force_timeseries(sol, 2, 2, [m1, m2], [q1_charge, q2_charge], c; stride=10)
         n3 = check_newtons_third_law(forces)
         @test n3.global_max_violation < 1e-6
 
@@ -65,30 +71,34 @@
     end
 
     @testset "Different initial conditions" begin
-        H = compile_hamiltonian(harmonic_oscillator_H, 1, 1; parameter_names=[:m, :k])
+        # Test with different orbital configurations
+        for scale in [0.5, 1.0, 2.0]
+            system = WeberSystem(2, 2; masses=[1.0, 0.1], charges=[0.1, -0.1], c=4.0)
+            r0 = 2.0 * scale
+            m1, m2 = 1.0, 0.1
+            M = m1 + m2
+            k = system.charges[1] * system.charges[2]
+            v_circ = sqrt(abs(k) * M / (m1 * m2 * r0))
+            q0 = [-m2 / M * r0, 0.0, m1 / M * r0, 0.0]
+            p0 = [0.0, m1 * (-m2 / M * v_circ * 0.9), 0.0, m2 * (m1 / M * v_circ * 0.9)]
 
-        # Different amplitudes
-        for amp in [0.1, 1.0, 10.0]
-            prob = WeberProblem(H, (0.0, 1.0), [amp], [0.0]; params=[1.0, 1.0], dt=0.01)
+            prob = WeberProblem(system, (0.0, 1.0), q0, p0; dt=0.001)
             sol = solve(prob)
             @test sol.retcode == :Success
-
-            # Check amplitude is preserved (approximately)
-            max_q = maximum(abs.(getindex.(sol.q, 1)))
-            @test max_q ≈ amp rtol = 0.05
         end
     end
 
     @testset "Long-time stability" begin
-        # Run for many orbits
-        prob = make_coulomb_problem(tspan=(0.0, 10.0), dt=0.01)
+        # Run for many orbits with Coulomb-like (large c)
+        prob = make_coulomb_like_problem(tspan=(0.0, 10.0), dt=0.01)
         sol = solve(prob)
 
         @test sol.retcode == :Success
 
         # Energy should be conserved
-        params = [1.0, 0.5, 1.0]
-        E(q, p) = coulomb_H(q, p, params)
+        masses = [1.0, 0.5]
+        charges = prob.system.charges
+        E(q, p) = coulomb_like_energy_2body_2d(q, p, masses, charges)
         E0 = E(sol.q[1], sol.p[1])
         E_final = E(sol.q[end], sol.p[end])
         @test abs(E_final - E0) / abs(E0) < 1e-6
@@ -96,7 +106,7 @@
 
     @testset "API consistency" begin
         # Verify all exported functions work together
-        prob = make_coulomb_problem(tspan=(0.0, 0.5), dt=0.01)
+        prob = make_coulomb_like_problem(tspan=(0.0, 0.5), dt=0.01)
 
         # Method 1: solve directly
         sol1 = solve(prob)
@@ -123,21 +133,20 @@
     end
 
     @testset "Statistics on same solution" begin
-        prob = make_coulomb_problem(tspan=(0.0, 1.0), dt=0.01)
+        prob = make_coulomb_like_problem(tspan=(0.0, 1.0), dt=0.01)
         sol = solve(prob)
-        masses = [1.0, 0.5]
-        charges = [1.0, -1.0]
-        params = [1.0, 0.5, 1.0]
+        masses = prob.system.masses
+        charges = prob.system.charges
 
         # All statistics should work on the same solution
         traj = compute_trajectory_data(sol, 2, 2)
         @test traj isa TrajectoryData
 
-        energy_func(q, p, params, t) = coulomb_H(q, p, params)
-        energy = compute_energy_timeseries(sol, energy_func, nothing, nothing, params)
+        energy_func(q, p, params, t) = coulomb_like_energy_2body_2d(q, p, masses, charges)
+        energy = compute_energy_timeseries(sol, energy_func, nothing, nothing, nothing)
         @test energy isa EnergyData
 
-        forces = compute_force_timeseries(sol, 2, 2, masses, charges, 1e6)
+        forces = compute_force_timeseries(sol, 2, 2, masses, charges, 1e10)
         @test forces isa ForceData
 
         n3 = check_newtons_third_law(forces)

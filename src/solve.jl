@@ -10,12 +10,11 @@ using LinearAlgebra: norm
 
 Initialize an integrator for stepped integration. Use `step!()` to advance, `solve!()` to complete.
 """
-function CommonSolve.init(prob::WeberProblem{P}, alg::SymmetricProjectionIntegrator=SymmetricProjectionIntegrator()) where P
-    degrees_of_freedom = prob.H.degrees_of_freedom
+function CommonSolve.init(prob::WeberProblem, alg::SymmetricProjectionIntegrator=SymmetricProjectionIntegrator())
+    degrees_of_freedom = prob.system.degrees_of_freedom
 
-    # Convert params once, cache in buffers (avoids per-step allocation)
-    params_vec = _params_to_vector(prob.params)
-    buffers = SymmetricProjectionBuffers(degrees_of_freedom, params_vec)
+    # Create workspace buffers (no params needed - baked into compiled functions)
+    buffers = SymmetricProjectionBuffers(degrees_of_freedom)
 
     # Pre-allocate solution storage with all inner vectors
     n_steps = Int(ceil((prob.tspan[2] - prob.tspan[1]) / prob.dt))
@@ -28,7 +27,7 @@ function CommonSolve.init(prob::WeberProblem{P}, alg::SymmetricProjectionIntegra
     q_history[1] .= prob.q_initial
     p_history[1] .= prob.p_initial
 
-    WeberIntegrator{P}(
+    WeberIntegrator(
         prob,
         alg,
         prob.tspan[1],
@@ -55,7 +54,7 @@ Advance the integrator by one time step.
 # Throws
 - `ErrorException` if the fixed-point iteration fails to converge
 """
-function CommonSolve.step!(integrator::WeberIntegrator{P}) where {P}
+function CommonSolve.step!(integrator::WeberIntegrator)
     # Check if already done
     if integrator.t >= integrator.t_end - eps(integrator.t_end)
         return false
@@ -66,9 +65,9 @@ function CommonSolve.step!(integrator::WeberIntegrator{P}) where {P}
     convergence_tolerance = prob.convergence_tolerance
     maximum_iterations = prob.maximum_iterations
 
-    dq_dt_compiled = prob.H.dq_dt_compiled
-    dp_dt_compiled = prob.H.dp_dt_compiled
-    params = integrator.buffers.params_vec  # Use cached params (no allocation)
+    # Compiled functions from WeberSystem (params baked in)
+    dq_dt_compiled = prob.system.dq_dt_compiled
+    dp_dt_compiled = prob.system.dp_dt_compiled
 
     buffers = integrator.buffers
     d = buffers.d  # degrees of freedom
@@ -118,22 +117,22 @@ function CommonSolve.step!(integrator::WeberIntegrator{P}) where {P}
             Y_component = Z_vec[idx_Y_start:idx_Y_end]
 
             # Flow A (half step): frozen (Q, Y), evolve (X, P) using H_A(q,y)
-            dq_dt_compiled(auxiliary_position_buffer, Q_component, Y_component, params)
-            dp_dt_compiled(momentum_buffer, Q_component, Y_component, params)
+            dq_dt_compiled(auxiliary_position_buffer, Q_component, Y_component)
+            dp_dt_compiled(momentum_buffer, Q_component, Y_component)
 
             @. X_component = X_component + auxiliary_position_buffer * (dt / 2)
             @. P_component = P_component + momentum_buffer * (dt / 2)
 
             # Flow B (full step): frozen (X, P), evolve (Q, Y) using H_B(x,p)
-            dq_dt_compiled(position_buffer, X_component, P_component, params)
-            dp_dt_compiled(auxiliary_momentum_buffer, X_component, P_component, params)
+            dq_dt_compiled(position_buffer, X_component, P_component)
+            dp_dt_compiled(auxiliary_momentum_buffer, X_component, P_component)
 
             @. Q_component = Q_component + position_buffer * dt
             @. Y_component = Y_component + auxiliary_momentum_buffer * dt
 
             # Flow A (half step): frozen (Q, Y), evolve (X, P) using H_A(q,y)
-            dq_dt_compiled(auxiliary_position_buffer, Q_component, Y_component, params)
-            dp_dt_compiled(momentum_buffer, Q_component, Y_component, params)
+            dq_dt_compiled(auxiliary_position_buffer, Q_component, Y_component)
+            dp_dt_compiled(momentum_buffer, Q_component, Y_component)
 
             @. X_component = X_component + auxiliary_position_buffer * (dt / 2)
             @. P_component = P_component + momentum_buffer * (dt / 2)
@@ -242,21 +241,4 @@ Solve a Weber electrodynamics problem and return the full trajectory.
 function CommonSolve.solve(prob::WeberProblem, alg::WeberAlgorithm=SymmetricProjectionIntegrator())
     integrator = CommonSolve.init(prob, alg)
     CommonSolve.solve!(integrator)
-end
-
-# =============================================================================
-# Helper Functions
-# =============================================================================
-
-"""Convert params to Vector{Float64} for compiled functions."""
-function _params_to_vector(params::Vector{Float64})
-    params
-end
-
-function _params_to_vector(params::AbstractVector)
-    Vector{Float64}(params)
-end
-
-function _params_to_vector(params::NamedTuple)
-    Vector{Float64}(collect(values(params)))
 end

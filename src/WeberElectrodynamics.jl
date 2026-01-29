@@ -1,21 +1,18 @@
 module WeberElectrodynamics
 
 # =============================================================================
-# Core Types
+# Weber System (n-body Hamiltonian)
+# =============================================================================
+include("weber_system.jl")
+export WeberSystem
+
+# =============================================================================
+# Core Types (Problem, Solution, Integrator)
 # =============================================================================
 include("types.jl")
-export WeberAlgorithm, SymmetricProjectionIntegrator
-export WeberHamiltonian
 export WeberProblem
 export WeberSolution
 export WeberIntegrator
-
-# =============================================================================
-# Hamiltonian Construction
-# =============================================================================
-include("hamiltonian_systems.jl")
-export compile_hamiltonian
-export generate_phase_space_symbols
 
 # =============================================================================
 # CommonSolve Interface

@@ -1,66 +1,81 @@
 # =============================================================================
-# Test Hamiltonians
+# Test Problem Builders
 # =============================================================================
-
-"""Simple harmonic oscillator: H = p²/2m + kq²/2"""
-function harmonic_oscillator_H(q, p, params)
-    m, k = params
-    sum(p .^ 2) / (2m) + k * sum(q .^ 2) / 2
-end
-
-"""Two-body Coulomb (no velocity dependence): H = KE - k/r"""
-function coulomb_H(q, p, params)
-    m1, m2, k = params
-    x1, y1, x2, y2 = q
-    px1, py1, px2, py2 = p
-    KE = (px1^2 + py1^2) / (2m1) + (px2^2 + py2^2) / (2m2)
-    r = sqrt((x1 - x2)^2 + (y1 - y2)^2)
-    KE - k / r
-end
-
-"""Two-body Weber (velocity-dependent): H = KE + U_weber"""
-function weber_H(q, p, params)
-    m1, m2, k, c = params
-    x1, y1, x2, y2 = q
-    px1, py1, px2, py2 = p
-    KE = (px1^2 + py1^2) / (2m1) + (px2^2 + py2^2) / (2m2)
-    dx, dy = x1 - x2, y1 - y2
-    r = sqrt(dx^2 + dy^2)
-    vx1, vy1 = px1 / m1, py1 / m1
-    vx2, vy2 = px2 / m2, py2 / m2
-    rdot = (dx * (vx1 - vx2) + dy * (vy1 - vy2)) / r
-    PE = k / r * (1 - rdot^2 / (2 * c^2))
-    KE + PE
-end
-
-# =============================================================================
-# Problem Builders
-# =============================================================================
-
-"""Build a simple 1D harmonic oscillator problem for fast tests."""
-function make_harmonic_problem(; dt=0.01, tspan=(0.0, 1.0), m=1.0, k=1.0, q0=1.0, p0=0.0)
-    H = compile_hamiltonian(harmonic_oscillator_H, 1, 1; parameter_names=[:m, :k])
-    WeberProblem(H, tspan, [q0], [p0]; params=[m, k], dt=dt)
-end
-
-"""Build a 2D two-body Coulomb problem."""
-function make_coulomb_problem(; dt=0.01, tspan=(0.0, 1.0), m1=1.0, m2=0.5, k=1.0)
-    H = compile_hamiltonian(coulomb_H, 2, 2; parameter_names=[:m1, :m2, :k])
-    r0 = 2.0
-    M = m1 + m2
-    v_circ = sqrt(k * M / (m1 * m2 * r0))
-    q0 = [-m2 / M * r0, 0.0, m1 / M * r0, 0.0]
-    p0 = [0.0, m1 * (-m2 / M * v_circ), 0.0, m2 * (m1 / M * v_circ)]
-    WeberProblem(H, tspan, q0, p0; params=[m1, m2, k], dt=dt)
-end
 
 """Build a 2D two-body Weber problem."""
 function make_weber_problem(; dt=0.001, tspan=(0.0, 1.0), c=4.0, m1=1.0, m2=0.1, k=-0.1)
-    H = compile_hamiltonian(weber_H, 2, 2; parameter_names=[:m1, :m2, :k, :c])
+    # Set charges so q1*q2 = k
+    q1 = sqrt(abs(k))
+    q2 = -sign(k) * sqrt(abs(k))  # q1*q2 = -|k|*sign(k) = k for k < 0
+
+    system = WeberSystem(2, 2; masses=[m1, m2], charges=[q1, q2], c=c)
+
     r0 = 2.0
     M = m1 + m2
     v_circ = sqrt(abs(k) * M / (m1 * m2 * r0))
     q0 = [-m2 / M * r0, 0.0, m1 / M * r0, 0.0]
     p0 = [0.0, m1 * (-m2 / M * v_circ * 0.9), 0.0, m2 * (m1 / M * v_circ * 0.9)]
-    WeberProblem(H, tspan, q0, p0; params=[m1, m2, k, c], dt=dt)
+    WeberProblem(system, tspan, q0, p0; dt=dt)
+end
+
+"""
+Build a 2D two-body Coulomb-like problem (Weber with very large c).
+The velocity-dependent term becomes negligible when c is large.
+"""
+function make_coulomb_like_problem(; dt=0.01, tspan=(0.0, 1.0), m1=1.0, m2=0.5, k=1.0)
+    # Use very large c to make Weber ≈ Coulomb
+    # For attractive Coulomb: U = -k/r, so q1*q2 = -k
+    q1 = sqrt(k)
+    q2 = -sqrt(k)  # q1*q2 = -k (attractive)
+
+    system = WeberSystem(2, 2; masses=[m1, m2], charges=[q1, q2], c=1e10)
+
+    r0 = 2.0
+    M = m1 + m2
+    v_circ = sqrt(k * M / (m1 * m2 * r0))
+    q0 = [-m2 / M * r0, 0.0, m1 / M * r0, 0.0]
+    p0 = [0.0, m1 * (-m2 / M * v_circ), 0.0, m2 * (m1 / M * v_circ)]
+    WeberProblem(system, tspan, q0, p0; dt=dt)
+end
+
+# =============================================================================
+# Test Energy Functions
+# =============================================================================
+
+"""
+Compute Weber energy for a 2-body 2D system.
+This is the actual physics energy function for testing.
+"""
+function weber_energy_2body_2d(q, p, masses, charges, c)
+    m1, m2 = masses
+    q1, q2 = charges
+    x1, y1, x2, y2 = q
+    px1, py1, px2, py2 = p
+
+    # Kinetic energy
+    KE = (px1^2 + py1^2) / (2m1) + (px2^2 + py2^2) / (2m2)
+
+    # Weber potential
+    dx, dy = x1 - x2, y1 - y2
+    r = sqrt(dx^2 + dy^2)
+    vx1, vy1 = px1 / m1, py1 / m1
+    vx2, vy2 = px2 / m2, py2 / m2
+    rdot = (dx * (vx1 - vx2) + dy * (vy1 - vy2)) / r
+    PE = q1 * q2 / r * (1 - rdot^2 / (2 * c^2))
+
+    return KE + PE
+end
+
+"""Compute Coulomb-like energy (Weber with large c, velocity term ignored)."""
+function coulomb_like_energy_2body_2d(q, p, masses, charges)
+    m1, m2 = masses
+    q1, q2 = charges
+    x1, y1, x2, y2 = q
+    px1, py1, px2, py2 = p
+
+    KE = (px1^2 + py1^2) / (2m1) + (px2^2 + py2^2) / (2m2)
+    r = sqrt((x1 - x2)^2 + (y1 - y2)^2)
+    PE = q1 * q2 / r
+
+    return KE + PE
 end
