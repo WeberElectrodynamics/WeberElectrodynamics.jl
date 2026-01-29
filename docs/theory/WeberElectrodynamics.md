@@ -6,7 +6,7 @@ We use absolute system of units throughout this document, unless otherwise speci
 
 |              | Description                        | SI Unit                             | Gauss-Weber absolute units         |
 | ------------ | ---------------------------------- | ----------------------------------- | ---------------------------------- |
-| $q^2$        | electric charge squared            | $C^2$                               | $\frac{mg \cdot mm^3}{s^2} $       |
+| $q^2$        | electric charge squared            | $C^2$                               | $\frac{mg \cdot mm^3}{s^2}$        |
 | $\epsilon_0$ | permittivity of free space         | $\frac{C^2\cdot s^2}{kg \cdot m^3}$ | dimensionless                      |
 | $c$          | Meters per second (speed of light) | $\frac{\text{m}}{\text{s}}$         | $\frac{mm}{s}$                     |
 | $q_i$        | electric charge of particle i      | $C$                                 | $\sqrt{\frac{mg \cdot mm^3}{s^2}}$ |
@@ -98,11 +98,11 @@ $$\dot{r} = \frac{x\dot{x} + y\dot{y} + z\dot{z}}{r} = \frac{\vec{r} \cdot \vec{
 ### Relative radial acceleration
 
 $$
-\begin{align}
+\begin{aligned}
 \ddot{r} &= \frac{x\ddot{x} + y\ddot{y} + z\ddot{z}}{r} + \frac{\dot{x}^2 + \dot{y}^2 + \dot{z}^2}{r} - \frac{(x\dot{x} + y\dot{y} + z\dot{z})^2}{r^3} \\
 &= \frac{\vec{r} \cdot \vec{a}}{r} + \frac{\vec{v} \cdot \vec{v}}{r} - \frac{(\vec{r} \cdot \vec{v})^2}{r^3} \\
-&= \frac{1}{r}\left(\vec{r} \cdot \vec{a} + \vec{v} \cdot \vec{v} - (\hat{\vec{r}} \cdot \vec{v})^2\right)
-\end{align}
+&= \frac{1}{r}\left(\vec{r} \cdot \vec{a} + \vec{v} \cdot \vec{v} - (\hat{r} \cdot \vec{v})^2\right)
+\end{aligned}
 $$
 
 ### Unit relative position vector
