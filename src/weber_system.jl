@@ -59,7 +59,7 @@ function _build_weber_hamiltonian(
     H = zero(eltype(q_vars))  # Start with symbolic zero
 
     # Kinetic energy: Σᵢ |pᵢ|² / (2mᵢ)
-    for i = 1:n_particles
+    @inbounds for i = 1:n_particles
         p_start = (i - 1) * dims + 1
         p_end = i * dims
         p_squared = sum(p_vars[p_start:p_end] .^ 2)
@@ -68,7 +68,7 @@ function _build_weber_hamiltonian(
 
     # Weber potential energy: Σᵢ<ⱼ Uᵢⱼ
     c_squared = c^2
-    for i = 1:n_particles
+    @inbounds for i = 1:n_particles
         for j = (i+1):n_particles
             # Position indices for particles i and j
             qi_start = (i - 1) * dims + 1

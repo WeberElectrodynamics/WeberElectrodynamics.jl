@@ -1,5 +1,89 @@
 using CommonSolve
-using LinearAlgebra: norm
+using LinearAlgebra: norm, mul!
+
+@inline function strang_splitting_flow!(
+    Z_vec::Vector{Float64},
+    dt::Float64,
+    dq_dt_compiled,
+    dp_dt_compiled,
+    auxiliary_position_buffer::Vector{Float64},
+    momentum_buffer::Vector{Float64},
+    position_buffer::Vector{Float64},
+    auxiliary_momentum_buffer::Vector{Float64},
+    d::Int,
+)
+    idx_Q_start = 1
+    idx_Q_end = d
+    idx_X_start = d + 1
+    idx_X_end = 2d
+    idx_P_start = 2d + 1
+    idx_P_end = 3d
+    idx_Y_start = 3d + 1
+    idx_Y_end = 4d
+
+    @inbounds @views begin
+        Q_component = Z_vec[idx_Q_start:idx_Q_end]
+        X_component = Z_vec[idx_X_start:idx_X_end]
+        P_component = Z_vec[idx_P_start:idx_P_end]
+        Y_component = Z_vec[idx_Y_start:idx_Y_end]
+
+        dq_dt_compiled(auxiliary_position_buffer, Q_component, Y_component)
+        dp_dt_compiled(momentum_buffer, Q_component, Y_component)
+
+        @. X_component = X_component + auxiliary_position_buffer * (dt / 2)
+        @. P_component = P_component + momentum_buffer * (dt / 2)
+
+        dq_dt_compiled(position_buffer, X_component, P_component)
+        dp_dt_compiled(auxiliary_momentum_buffer, X_component, P_component)
+
+        @. Q_component = Q_component + position_buffer * dt
+        @. Y_component = Y_component + auxiliary_momentum_buffer * dt
+
+        dq_dt_compiled(auxiliary_position_buffer, Q_component, Y_component)
+        dp_dt_compiled(momentum_buffer, Q_component, Y_component)
+
+        @. X_component = X_component + auxiliary_position_buffer * (dt / 2)
+        @. P_component = P_component + momentum_buffer * (dt / 2)
+    end
+    return nothing
+end
+
+@inline function compute_constraint_residual!(
+    result::Vector{Float64},
+    μ_val::Vector{Float64},
+    A::Matrix{Float64},
+    ATμ::Vector{Float64},
+    Z::Vector{Float64},
+    Ẑ::Vector{Float64},
+    Z_result::Vector{Float64},
+    dt::Float64,
+    dq_dt_compiled,
+    dp_dt_compiled,
+    auxiliary_position_buffer::Vector{Float64},
+    momentum_buffer::Vector{Float64},
+    position_buffer::Vector{Float64},
+    auxiliary_momentum_buffer::Vector{Float64},
+    d::Int,
+)
+    @inbounds begin
+        mul!(ATμ, A', μ_val)
+        @. Ẑ = Z + ATμ
+        strang_splitting_flow!(
+            Ẑ,
+            dt,
+            dq_dt_compiled,
+            dp_dt_compiled,
+            auxiliary_position_buffer,
+            momentum_buffer,
+            position_buffer,
+            auxiliary_momentum_buffer,
+            d,
+        )
+        @. Z_result = Ẑ + ATμ
+        mul!(result, A, Z_result)
+    end
+    return nothing
+end
 
 function CommonSolve.init(
     prob::WeberProblem,
@@ -54,96 +138,75 @@ function CommonSolve.step!(integrator::WeberIntegrator)
     buffers = integrator.buffers
     d = buffers.d  # degrees of freedom
 
-    # Extended phase space indices: Z = [Q, X, P, Y] where each component has d elements
-    # Q = positions, X = auxiliary positions, P = momenta, Y = auxiliary momenta
-    idx_Q_start = 1
-    idx_Q_end = d
-    idx_X_start = d + 1
-    idx_X_end = 2d
-    idx_P_start = 2d + 1
-    idx_P_end = 3d
-    idx_Y_start = 3d + 1
-    idx_Y_end = 4d
-
     # Buffer aliases using paper notation (see docs/theory/SemiExplicitIntegrator.md)
-    A = buffers.A              # projection matrix
-    Z = buffers.Z              # extended state Zₙ
-    Ẑ = buffers.Ẑ              # shifted/evolved state
+    A = buffers.A
+    Z = buffers.Z
+    Ẑ = buffers.Ẑ
     Z_result = buffers.Z_result
     position_buffer = buffers.position_buffer
     auxiliary_position_buffer = buffers.auxiliary_position_buffer
     momentum_buffer = buffers.momentum_buffer
     auxiliary_momentum_buffer = buffers.auxiliary_momentum_buffer
-    ATμ = buffers.ATμ          # constraint shift A^T μ
-    μ = buffers.μ              # Lagrange multipliers
-    μ_prev = buffers.μ_prev    # previous iteration
-    f_μ = buffers.f_μ          # nonlinear residual f(μ)
+    ATμ = buffers.ATμ
+    μ = buffers.μ
+    μ_prev = buffers.μ_prev
+    f_μ = buffers.f_μ
 
     q = integrator.q
     p = integrator.p
 
     # Step 1: Embed to extended space: Zₙ = (qₙ, qₙ, pₙ, pₙ)
-    @views begin
-        Z[idx_Q_start:idx_Q_end] .= q
-        Z[idx_X_start:idx_X_end] .= q
-        Z[idx_P_start:idx_P_end] .= p
-        Z[idx_Y_start:idx_Y_end] .= p
-    end
-
-    # Strang splitting flow map Φ̂ = Φ^A_{Δt/2} ∘ Φ^B_{Δt} ∘ Φ^A_{Δt/2}
-    function Φ̂(Z_vec::Vector{Float64})::Nothing
-        @views begin
-            Q_component = Z_vec[idx_Q_start:idx_Q_end]
-            X_component = Z_vec[idx_X_start:idx_X_end]
-            P_component = Z_vec[idx_P_start:idx_P_end]
-            Y_component = Z_vec[idx_Y_start:idx_Y_end]
-
-            # Flow A (half step): frozen (Q, Y), evolve (X, P) using H_A(q,y)
-            dq_dt_compiled(auxiliary_position_buffer, Q_component, Y_component)
-            dp_dt_compiled(momentum_buffer, Q_component, Y_component)
-
-            @. X_component = X_component + auxiliary_position_buffer * (dt / 2)
-            @. P_component = P_component + momentum_buffer * (dt / 2)
-
-            # Flow B (full step): frozen (X, P), evolve (Q, Y) using H_B(x,p)
-            dq_dt_compiled(position_buffer, X_component, P_component)
-            dp_dt_compiled(auxiliary_momentum_buffer, X_component, P_component)
-
-            @. Q_component = Q_component + position_buffer * dt
-            @. Y_component = Y_component + auxiliary_momentum_buffer * dt
-
-            # Flow A (half step): frozen (Q, Y), evolve (X, P) using H_A(q,y)
-            dq_dt_compiled(auxiliary_position_buffer, Q_component, Y_component)
-            dp_dt_compiled(momentum_buffer, Q_component, Y_component)
-
-            @. X_component = X_component + auxiliary_position_buffer * (dt / 2)
-            @. P_component = P_component + momentum_buffer * (dt / 2)
-        end
-        return nothing
-    end
-
-    # Nonlinear function f(μ) = A(Φ̂(Zₙ + A^T μ) + A^T μ)
-    function f!(result::Vector{Float64}, μ_val::Vector{Float64})::Nothing
-        mul!(ATμ, A', μ_val)       # ATμ = A^T μ
-        @. Ẑ = Z + ATμ             # Ẑₙ = Zₙ + A^T μ
-        Φ̂(Ẑ)                       # Ẑₙ₊₁ = Φ̂(Ẑₙ)
-        @. Z_result = Ẑ + ATμ      # Zₙ₊₁ = Ẑₙ₊₁ + A^T μ
-        mul!(result, A, Z_result)  # f(μ) = A · Zₙ₊₁
-        return nothing
+    @inbounds @views begin
+        Z[1:d] .= q
+        Z[(d+1):(2d)] .= q
+        Z[(2d+1):(3d)] .= p
+        Z[(3d+1):(4d)] .= p
     end
 
     # Step 2: Solve for μ such that f(μ) = 0 using relaxed fixed-point iteration
     relaxation = integrator.alg.relaxation
-    for iter = 1:maximum_iterations
-        f!(f_μ, μ)
+    for _ = 1:maximum_iterations
+        compute_constraint_residual!(
+            f_μ,
+            μ,
+            A,
+            ATμ,
+            Z,
+            Ẑ,
+            Z_result,
+            dt,
+            dq_dt_compiled,
+            dp_dt_compiled,
+            auxiliary_position_buffer,
+            momentum_buffer,
+            position_buffer,
+            auxiliary_momentum_buffer,
+            d,
+        )
         copyto!(μ_prev, μ)
-        @. μ = μ - relaxation * f_μ
+        @inbounds @. μ = μ - relaxation * f_μ
 
         # Check step convergence
         step_norm = norm(μ .- μ_prev)
         if step_norm < convergence_tolerance
             # Verify constraint satisfaction
-            f!(f_μ, μ)
+            compute_constraint_residual!(
+                f_μ,
+                μ,
+                A,
+                ATμ,
+                Z,
+                Ẑ,
+                Z_result,
+                dt,
+                dq_dt_compiled,
+                dp_dt_compiled,
+                auxiliary_position_buffer,
+                momentum_buffer,
+                position_buffer,
+                auxiliary_momentum_buffer,
+                d,
+            )
             if norm(f_μ) < convergence_tolerance
                 @goto converged
             end
@@ -151,7 +214,23 @@ function CommonSolve.step!(integrator::WeberIntegrator)
     end
 
     # Failed to converge
-    f!(f_μ, μ)
+    compute_constraint_residual!(
+        f_μ,
+        μ,
+        A,
+        ATμ,
+        Z,
+        Ẑ,
+        Z_result,
+        dt,
+        dq_dt_compiled,
+        dp_dt_compiled,
+        auxiliary_position_buffer,
+        momentum_buffer,
+        position_buffer,
+        auxiliary_momentum_buffer,
+        d,
+    )
     error(
         "Fixed-point iteration failed to converge after $maximum_iterations iterations (residual=$(norm(f_μ)), tolerance=$convergence_tolerance)",
     )
@@ -159,18 +238,30 @@ function CommonSolve.step!(integrator::WeberIntegrator)
     @label converged
 
     # Steps 3-5: Compute final state with converged μ
-    # Recompute to ensure consistency (solver's last f! call used previous μ)
-    mul!(ATμ, A', μ)           # ATμ = A^T μ
-    @. Ẑ = Z + ATμ             # Ẑₙ = Zₙ + A^T μ
-    Φ̂(Ẑ)                       # Ẑₙ₊₁ = Φ̂(Ẑₙ)
+    # Recompute to ensure consistency (solver's last call used previous μ)
+    @inbounds begin
+        mul!(ATμ, A', μ)
+        @. Ẑ = Z + ATμ
+        strang_splitting_flow!(
+            Ẑ,
+            dt,
+            dq_dt_compiled,
+            dp_dt_compiled,
+            auxiliary_position_buffer,
+            momentum_buffer,
+            position_buffer,
+            auxiliary_momentum_buffer,
+            d,
+        )
+    end
 
     # Step 5: Zₙ₊₁ = Ẑₙ₊₁ + A^T μ (symmetric projection)
-    @. Ẑ = Ẑ + ATμ
+    @inbounds @. Ẑ = Ẑ + ATμ
 
     # Step 6: Extract (qₙ₊₁, pₙ₊₁) from Zₙ₊₁
-    @views begin
-        integrator.q .= Ẑ[idx_Q_start:idx_Q_end]
-        integrator.p .= Ẑ[idx_P_start:idx_P_end]
+    @inbounds @views begin
+        integrator.q .= Ẑ[1:d]
+        integrator.p .= Ẑ[(2d+1):(3d)]
     end
 
     integrator.step_count += 1
@@ -178,9 +269,11 @@ function CommonSolve.step!(integrator::WeberIntegrator)
 
     # Store in history (in-place copy to pre-allocated vectors)
     idx = integrator.step_count + 1
-    integrator.t_history[idx] = integrator.t
-    integrator.q_history[idx] .= integrator.q
-    integrator.p_history[idx] .= integrator.p
+    @inbounds begin
+        integrator.t_history[idx] = integrator.t
+        integrator.q_history[idx] .= integrator.q
+        integrator.p_history[idx] .= integrator.p
+    end
 
     return integrator.t < integrator.t_end
 end
