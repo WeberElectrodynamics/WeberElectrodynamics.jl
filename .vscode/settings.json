@@ -35,5 +35,6 @@
             "env": {}
         }
     ],
-    "makefile.makefilePath": "papers/Computational-Weber-Electrodynamics/Makefile"
+    "makefile.makefilePath": "papers/Computational-Weber-Electrodynamics/Makefile",
+    "makefile.configureOnOpen": false
 }

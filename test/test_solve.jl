@@ -1,6 +1,6 @@
 @testset "CommonSolve Interface" begin
     @testset "solve basic" begin
-        prob = make_weber_problem(tspan=(0.0, 0.5), dt=0.001)
+        prob = make_weber_problem(tspan = (0.0, 0.5), dt = 0.001)
         sol = solve(prob)
 
         @test sol.retcode == :Success
@@ -10,8 +10,8 @@
     end
 
     @testset "solve with custom algorithm" begin
-        prob = make_weber_problem(tspan=(0.0, 0.1), dt=0.001)
-        alg = SymmetricProjectionIntegrator(relaxation=0.3)
+        prob = make_weber_problem(tspan = (0.0, 0.1), dt = 0.001)
+        alg = SymmetricProjectionIntegrator(relaxation = 0.3)
         sol = solve(prob, alg)
 
         @test sol.retcode == :Success
@@ -30,7 +30,7 @@
     end
 
     @testset "step!" begin
-        prob = make_weber_problem(tspan=(0.0, 1.0), dt=0.01)
+        prob = make_weber_problem(tspan = (0.0, 1.0), dt = 0.01)
         integrator = init(prob)
 
         # First step
@@ -44,7 +44,7 @@
         @test integrator.q != prob.q_initial || integrator.p != prob.p_initial
 
         # Continue stepping
-        for _ in 1:5
+        for _ = 1:5
             step!(integrator)
         end
         @test integrator.step_count == 6
@@ -52,7 +52,7 @@
     end
 
     @testset "step! returns false at end" begin
-        prob = make_weber_problem(tspan=(0.0, 0.05), dt=0.01)
+        prob = make_weber_problem(tspan = (0.0, 0.05), dt = 0.01)
         integrator = init(prob)
 
         # Step until done
@@ -68,7 +68,7 @@
     end
 
     @testset "solve!" begin
-        prob = make_weber_problem(tspan=(0.0, 0.5), dt=0.001)
+        prob = make_weber_problem(tspan = (0.0, 0.5), dt = 0.001)
         integrator = init(prob)
 
         # Step a few times first
@@ -86,7 +86,7 @@
     end
 
     @testset "solve vs init+solve! equivalence" begin
-        prob = make_weber_problem(tspan=(0.0, 0.5), dt=0.001)
+        prob = make_weber_problem(tspan = (0.0, 0.5), dt = 0.001)
 
         sol1 = solve(prob)
 
@@ -100,7 +100,7 @@
     end
 
     @testset "History pre-allocation" begin
-        prob = make_weber_problem(tspan=(0.0, 1.0), dt=0.001)
+        prob = make_weber_problem(tspan = (0.0, 1.0), dt = 0.001)
         integrator = init(prob)
 
         # Check history vectors are pre-allocated
@@ -111,7 +111,7 @@
     end
 
     @testset "Two-body system solve" begin
-        prob = make_coulomb_like_problem(tspan=(0.0, 1.0), dt=0.01)
+        prob = make_coulomb_like_problem(tspan = (0.0, 1.0), dt = 0.01)
         sol = solve(prob)
 
         @test sol.retcode == :Success
@@ -120,7 +120,7 @@
     end
 
     @testset "Weber system solve" begin
-        prob = make_weber_problem(tspan=(0.0, 0.5), dt=0.001)
+        prob = make_weber_problem(tspan = (0.0, 0.5), dt = 0.001)
         sol = solve(prob)
 
         @test sol.retcode == :Success
@@ -128,12 +128,18 @@
     end
 
     @testset "Custom tolerance" begin
-        system = WeberSystem(2, 2; masses=[1.0, 0.1], charges=[0.1, -0.1], c=4.0)
+        system = WeberSystem(2, 2; masses = [1.0, 0.1], charges = [0.1, -0.1], c = 4.0)
         q0 = [1.0, 0.0, -1.0, 0.0]
         p0 = [0.0, 0.05, 0.0, -0.05]
 
-        prob_tight = WeberProblem(system, (0.0, 0.1), q0, p0;
-            dt=0.001, convergence_tolerance=1e-14)
+        prob_tight = WeberProblem(
+            system,
+            (0.0, 0.1),
+            q0,
+            p0;
+            dt = 0.001,
+            convergence_tolerance = 1e-14,
+        )
         sol = solve(prob_tight)
         @test sol.retcode == :Success
     end

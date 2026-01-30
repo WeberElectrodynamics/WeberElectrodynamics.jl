@@ -19,7 +19,7 @@ r0 = 2.0                    # initial separation
 c_weber = 4.0               # Weber constant (finite speed of interaction)
 
 # Create Weber system (2 particles in 2D)
-system = WeberSystem(2, 2; masses=[m1, m2], charges=[q1, q2], c=c_weber)
+system = WeberSystem(2, 2; masses = [m1, m2], charges = [q1, q2], c = c_weber)
 
 # Initial conditions in center-of-mass frame
 M = m1 + m2
@@ -36,7 +36,7 @@ dt = 0.001
 tspan = (0.0, 2 * T_orbit)
 
 # Run simulation
-prob = WeberProblem(system, tspan, q0, p0; dt=dt)
+prob = WeberProblem(system, tspan, q0, p0; dt = dt)
 sol = solve(prob)
 
 # Extract trajectory data (subsample for plotting)
@@ -57,18 +57,26 @@ fig = @pgf TikzPicture(
             ylabel = raw"$y$",
             "axis equal",
             grid = "major",
-            "grid style" = "{gray!30}"
+            "grid style" = "{gray!30}",
         },
-        PlotInc({"blue!70!black", "no marks", "line width" = "0.6pt"},
-            Coordinates(x1_traj, y1_traj)),
-        PlotInc({"red!70!black", "no marks", "line width" = "0.6pt"},
-            Coordinates(x2_traj, y2_traj)),
+        PlotInc(
+            {"blue!70!black", "no marks", "line width" = "0.6pt"},
+            Coordinates(x1_traj, y1_traj),
+        ),
+        PlotInc(
+            {"red!70!black", "no marks", "line width" = "0.6pt"},
+            Coordinates(x2_traj, y2_traj),
+        ),
         # Mark initial positions
-        PlotInc({"blue!70!black", "only marks", mark = "o", "mark size" = "2pt"},
-            Coordinates([x1_traj[1]], [y1_traj[1]])),
-        PlotInc({"red!70!black", "only marks", mark = "o", "mark size" = "2pt"},
-            Coordinates([x2_traj[1]], [y2_traj[1]]))
-    )
+        PlotInc(
+            {"blue!70!black", "only marks", mark = "o", "mark size" = "2pt"},
+            Coordinates([x1_traj[1]], [y1_traj[1]]),
+        ),
+        PlotInc(
+            {"red!70!black", "only marks", mark = "o", "mark size" = "2pt"},
+            Coordinates([x2_traj[1]], [y2_traj[1]]),
+        ),
+    ),
 )
 
 pgfsave(joinpath(output_dir, "example1_trajectory.tikz"), fig)

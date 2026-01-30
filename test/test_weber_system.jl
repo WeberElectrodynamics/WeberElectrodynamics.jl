@@ -1,7 +1,7 @@
 @testset "Weber System" begin
     @testset "Weber Hamiltonian structure" begin
         # 2-body 2D Weber system
-        system = WeberSystem(2, 2; masses=[1.0, 0.5], charges=[1.0, -1.0], c=4.0)
+        system = WeberSystem(2, 2; masses = [1.0, 0.5], charges = [1.0, -1.0], c = 4.0)
 
         @test system.degrees_of_freedom == 4
         @test length(system.dq_dt_symbolic) == 4
@@ -18,7 +18,7 @@
         q1, q2 = 1.0, -1.0
         c = 1000.0  # Large c to make Weber ≈ Coulomb
 
-        system = WeberSystem(2, 2; masses=[m1, m2], charges=[q1, q2], c=c)
+        system = WeberSystem(2, 2; masses = [m1, m2], charges = [q1, q2], c = c)
 
         # Test at specific point: particles at x = ±1, no y offset
         q = [1.0, 0.0, -1.0, 0.0]  # particles at x=1 and x=-1
@@ -47,7 +47,7 @@
 
     @testset "Different dimensions" begin
         # 1D system
-        sys1d = WeberSystem(2, 1; masses=[1.0, 1.0], charges=[1.0, -1.0], c=1.0)
+        sys1d = WeberSystem(2, 1; masses = [1.0, 1.0], charges = [1.0, -1.0], c = 1.0)
         @test sys1d.degrees_of_freedom == 2
         @test length(sys1d.dq_dt_symbolic) == 2
 
@@ -59,18 +59,19 @@
         @test all(isfinite.(out1))
 
         # 2D system
-        sys2d = WeberSystem(2, 2; masses=[1.0, 1.0], charges=[1.0, -1.0], c=1.0)
+        sys2d = WeberSystem(2, 2; masses = [1.0, 1.0], charges = [1.0, -1.0], c = 1.0)
         @test sys2d.degrees_of_freedom == 4
 
         # 3D system
-        sys3d = WeberSystem(2, 3; masses=[1.0, 1.0], charges=[1.0, -1.0], c=1.0)
+        sys3d = WeberSystem(2, 3; masses = [1.0, 1.0], charges = [1.0, -1.0], c = 1.0)
         @test sys3d.degrees_of_freedom == 6
         @test length(sys3d.dq_dt_symbolic) == 6
     end
 
     @testset "Multiple particles" begin
         # 3-body system
-        sys3body = WeberSystem(3, 2; masses=[1.0, 1.0, 1.0], charges=[1.0, -1.0, 0.5], c=1.0)
+        sys3body =
+            WeberSystem(3, 2; masses = [1.0, 1.0, 1.0], charges = [1.0, -1.0, 0.5], c = 1.0)
         @test sys3body.degrees_of_freedom == 6
         @test sys3body.n_particles == 3
 
@@ -87,13 +88,13 @@
 
     @testset "Default speed of light" begin
         # Default c should be 1.0
-        system = WeberSystem(2, 2; masses=[1.0, 1.0], charges=[1.0, -1.0])
+        system = WeberSystem(2, 2; masses = [1.0, 1.0], charges = [1.0, -1.0])
         @test system.c == 1.0
     end
 
     @testset "Single particle system" begin
         # Single particle has no interactions, just kinetic energy
-        sys1 = WeberSystem(1, 2; masses=[2.0], charges=[1.0], c=1.0)
+        sys1 = WeberSystem(1, 2; masses = [2.0], charges = [1.0], c = 1.0)
         @test sys1.degrees_of_freedom == 2
 
         out_q = zeros(2)
@@ -119,7 +120,7 @@
         q1, q2 = 0.3, -0.3
         c = 4.0
 
-        system = WeberSystem(2, 2; masses=[m1, m2], charges=[q1, q2], c=c)
+        system = WeberSystem(2, 2; masses = [m1, m2], charges = [q1, q2], c = c)
 
         # Test state
         q = [1.0, 0.0, -1.0, 0.0]

@@ -5,7 +5,7 @@ abstract type WeberAlgorithm end
 struct SymmetricProjectionIntegrator <: WeberAlgorithm
     relaxation::Float64
 
-    function SymmetricProjectionIntegrator(; relaxation::Real=0.25)
+    function SymmetricProjectionIntegrator(; relaxation::Real = 0.25)
         @assert 0 < relaxation <= 1 "Relaxation must be in (0, 1], got $relaxation"
         new(Float64(relaxation))
     end
@@ -26,8 +26,8 @@ struct WeberProblem
         q_initial::AbstractVector,
         p_initial::AbstractVector;
         dt::Real,
-        convergence_tolerance::Real=1e-13,
-        maximum_iterations::Integer=100
+        convergence_tolerance::Real = 1e-13,
+        maximum_iterations::Integer = 100,
     )
         dof = system.degrees_of_freedom
         @assert length(q_initial) == dof "q_initial must have length $dof (got $(length(q_initial)))"
@@ -44,7 +44,7 @@ struct WeberProblem
             Vector{Float64}(p_initial),
             Float64(dt),
             Float64(convergence_tolerance),
-            Int(maximum_iterations)
+            Int(maximum_iterations),
         )
     end
 end
@@ -62,7 +62,7 @@ Base.getindex(sol::WeberSolution, i::Int) = (sol.t[i], sol.q[i], sol.p[i])
 Base.firstindex(sol::WeberSolution) = 1
 Base.lastindex(sol::WeberSolution) = length(sol)
 
-function Base.iterate(sol::WeberSolution, state=1)
+function Base.iterate(sol::WeberSolution, state = 1)
     state > length(sol) && return nothing
     return (sol[state], state + 1)
 end
@@ -97,7 +97,7 @@ mutable struct SymmetricProjectionBuffers
         d = degrees_of_freedom
         # Construct projection matrix A directly without intermediate allocations
         A = zeros(Float64, 2d, 4d)
-        @inbounds for i in 1:d
+        @inbounds for i = 1:d
             A[i, i] = 1.0           # I_d in top-left
             A[i, d+i] = -1.0      # -I_d in top-middle-left
             A[d+i, 2d+i] = 1.0  # I_d in bottom-middle-right

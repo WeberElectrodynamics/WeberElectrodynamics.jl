@@ -5,21 +5,21 @@
         @test alg.relaxation == 0.25
 
         # Custom relaxation
-        alg2 = SymmetricProjectionIntegrator(relaxation=0.5)
+        alg2 = SymmetricProjectionIntegrator(relaxation = 0.5)
         @test alg2.relaxation == 0.5
 
         # Edge case: relaxation = 1.0 is valid
-        @test SymmetricProjectionIntegrator(relaxation=1.0).relaxation == 1.0
+        @test SymmetricProjectionIntegrator(relaxation = 1.0).relaxation == 1.0
 
         # Validation: relaxation must be in (0, 1]
-        @test_throws AssertionError SymmetricProjectionIntegrator(relaxation=0.0)
-        @test_throws AssertionError SymmetricProjectionIntegrator(relaxation=-0.1)
-        @test_throws AssertionError SymmetricProjectionIntegrator(relaxation=1.5)
+        @test_throws AssertionError SymmetricProjectionIntegrator(relaxation = 0.0)
+        @test_throws AssertionError SymmetricProjectionIntegrator(relaxation = -0.1)
+        @test_throws AssertionError SymmetricProjectionIntegrator(relaxation = 1.5)
     end
 
     @testset "WeberSystem" begin
         # Basic construction
-        system = WeberSystem(2, 2; masses=[1.0, 0.5], charges=[1.0, -1.0], c=4.0)
+        system = WeberSystem(2, 2; masses = [1.0, 0.5], charges = [1.0, -1.0], c = 4.0)
 
         @test system isa WeberSystem
         @test system.n_particles == 2
@@ -41,51 +41,114 @@
 
     @testset "WeberSystem validation" begin
         # Valid cases
-        @test WeberSystem(1, 1; masses=[1.0], charges=[1.0], c=1.0) isa WeberSystem
-        @test WeberSystem(3, 3; masses=[1.0, 2.0, 3.0], charges=[1.0, -1.0, 0.5], c=299792458.0) isa WeberSystem
+        @test WeberSystem(1, 1; masses = [1.0], charges = [1.0], c = 1.0) isa WeberSystem
+        @test WeberSystem(
+            3,
+            3;
+            masses = [1.0, 2.0, 3.0],
+            charges = [1.0, -1.0, 0.5],
+            c = 299792458.0,
+        ) isa WeberSystem
 
         # Invalid: dims must be 1, 2, or 3
-        @test_throws AssertionError WeberSystem(2, 0; masses=[1.0, 1.0], charges=[1.0, -1.0], c=1.0)
-        @test_throws AssertionError WeberSystem(2, 4; masses=[1.0, 1.0], charges=[1.0, -1.0], c=1.0)
+        @test_throws AssertionError WeberSystem(
+            2,
+            0;
+            masses = [1.0, 1.0],
+            charges = [1.0, -1.0],
+            c = 1.0,
+        )
+        @test_throws AssertionError WeberSystem(
+            2,
+            4;
+            masses = [1.0, 1.0],
+            charges = [1.0, -1.0],
+            c = 1.0,
+        )
 
         # Invalid: masses and charges must match n_particles
-        @test_throws AssertionError WeberSystem(2, 2; masses=[1.0], charges=[1.0, -1.0], c=1.0)
-        @test_throws AssertionError WeberSystem(2, 2; masses=[1.0, 1.0], charges=[1.0], c=1.0)
+        @test_throws AssertionError WeberSystem(
+            2,
+            2;
+            masses = [1.0],
+            charges = [1.0, -1.0],
+            c = 1.0,
+        )
+        @test_throws AssertionError WeberSystem(
+            2,
+            2;
+            masses = [1.0, 1.0],
+            charges = [1.0],
+            c = 1.0,
+        )
 
         # Invalid: masses must be positive
-        @test_throws AssertionError WeberSystem(2, 2; masses=[1.0, -1.0], charges=[1.0, -1.0], c=1.0)
-        @test_throws AssertionError WeberSystem(2, 2; masses=[1.0, 0.0], charges=[1.0, -1.0], c=1.0)
+        @test_throws AssertionError WeberSystem(
+            2,
+            2;
+            masses = [1.0, -1.0],
+            charges = [1.0, -1.0],
+            c = 1.0,
+        )
+        @test_throws AssertionError WeberSystem(
+            2,
+            2;
+            masses = [1.0, 0.0],
+            charges = [1.0, -1.0],
+            c = 1.0,
+        )
 
         # Invalid: c must be positive
-        @test_throws AssertionError WeberSystem(2, 2; masses=[1.0, 1.0], charges=[1.0, -1.0], c=0.0)
-        @test_throws AssertionError WeberSystem(2, 2; masses=[1.0, 1.0], charges=[1.0, -1.0], c=-1.0)
+        @test_throws AssertionError WeberSystem(
+            2,
+            2;
+            masses = [1.0, 1.0],
+            charges = [1.0, -1.0],
+            c = 0.0,
+        )
+        @test_throws AssertionError WeberSystem(
+            2,
+            2;
+            masses = [1.0, 1.0],
+            charges = [1.0, -1.0],
+            c = -1.0,
+        )
 
         # Valid: charges can be zero, negative, or positive
-        @test WeberSystem(2, 2; masses=[1.0, 1.0], charges=[0.0, 0.0], c=1.0) isa WeberSystem
-        @test WeberSystem(2, 2; masses=[1.0, 1.0], charges=[-1.0, -1.0], c=1.0) isa WeberSystem
+        @test WeberSystem(2, 2; masses = [1.0, 1.0], charges = [0.0, 0.0], c = 1.0) isa
+              WeberSystem
+        @test WeberSystem(2, 2; masses = [1.0, 1.0], charges = [-1.0, -1.0], c = 1.0) isa
+              WeberSystem
     end
 
     @testset "WeberSystem different configurations" begin
         # 1D, 1 particle (minimal)
-        sys1 = WeberSystem(1, 1; masses=[1.0], charges=[1.0], c=1.0)
+        sys1 = WeberSystem(1, 1; masses = [1.0], charges = [1.0], c = 1.0)
         @test sys1.degrees_of_freedom == 1
 
         # 3D, 3 particles
-        sys2 = WeberSystem(3, 3; masses=[1.0, 2.0, 3.0], charges=[1.0, -1.0, 0.5], c=1.0)
+        sys2 =
+            WeberSystem(3, 3; masses = [1.0, 2.0, 3.0], charges = [1.0, -1.0, 0.5], c = 1.0)
         @test sys2.degrees_of_freedom == 9
         @test length(sys2.dq_dt_symbolic) == 9
         @test length(sys2.dp_dt_symbolic) == 9
 
         # 2D, 2 particles (common case)
-        sys3 = WeberSystem(2, 2; masses=[1.0, 0.1], charges=[-0.1, 0.1], c=4.0)
+        sys3 = WeberSystem(2, 2; masses = [1.0, 0.1], charges = [-0.1, 0.1], c = 4.0)
         @test sys3.degrees_of_freedom == 4
     end
 
     @testset "WeberProblem" begin
-        system = WeberSystem(2, 2; masses=[1.0, 0.5], charges=[1.0, -1.0], c=4.0)
+        system = WeberSystem(2, 2; masses = [1.0, 0.5], charges = [1.0, -1.0], c = 4.0)
 
         # Valid construction
-        prob = WeberProblem(system, (0.0, 1.0), [1.0, 0.0, -1.0, 0.0], [0.0, 0.1, 0.0, -0.1]; dt=0.01)
+        prob = WeberProblem(
+            system,
+            (0.0, 1.0),
+            [1.0, 0.0, -1.0, 0.0],
+            [0.0, 0.1, 0.0, -0.1];
+            dt = 0.01,
+        )
         @test prob.tspan == (0.0, 1.0)
         @test prob.q_initial == [1.0, 0.0, -1.0, 0.0]
         @test prob.p_initial == [0.0, 0.1, 0.0, -0.1]
@@ -94,20 +157,51 @@
         @test prob.maximum_iterations == 100  # default
 
         # Custom convergence_tolerance and maximum_iterations
-        prob2 = WeberProblem(system, (0.0, 1.0), [1.0, 0.0, -1.0, 0.0], [0.0, 0.1, 0.0, -0.1];
-            dt=0.01, convergence_tolerance=1e-10, maximum_iterations=50)
+        prob2 = WeberProblem(
+            system,
+            (0.0, 1.0),
+            [1.0, 0.0, -1.0, 0.0],
+            [0.0, 0.1, 0.0, -0.1];
+            dt = 0.01,
+            convergence_tolerance = 1e-10,
+            maximum_iterations = 50,
+        )
         @test prob2.convergence_tolerance == 1e-10
         @test prob2.maximum_iterations == 50
 
         # Validation errors
-        @test_throws AssertionError WeberProblem(system, (1.0, 0.0), [1.0, 0.0, -1.0, 0.0], [0.0, 0.1, 0.0, -0.1]; dt=0.01)  # tspan reversed
-        @test_throws AssertionError WeberProblem(system, (0.0, 1.0), [1.0, 0.0, -1.0, 0.0], [0.0, 0.1, 0.0, -0.1]; dt=-0.01)  # negative dt
-        @test_throws AssertionError WeberProblem(system, (0.0, 1.0), [1.0, 2.0], [0.0, 0.1, 0.0, -0.1]; dt=0.01)  # q length mismatch
-        @test_throws AssertionError WeberProblem(system, (0.0, 1.0), [1.0, 0.0, -1.0, 0.0], [0.0, 0.1]; dt=0.01)  # p length mismatch
+        @test_throws AssertionError WeberProblem(
+            system,
+            (1.0, 0.0),
+            [1.0, 0.0, -1.0, 0.0],
+            [0.0, 0.1, 0.0, -0.1];
+            dt = 0.01,
+        )  # tspan reversed
+        @test_throws AssertionError WeberProblem(
+            system,
+            (0.0, 1.0),
+            [1.0, 0.0, -1.0, 0.0],
+            [0.0, 0.1, 0.0, -0.1];
+            dt = -0.01,
+        )  # negative dt
+        @test_throws AssertionError WeberProblem(
+            system,
+            (0.0, 1.0),
+            [1.0, 2.0],
+            [0.0, 0.1, 0.0, -0.1];
+            dt = 0.01,
+        )  # q length mismatch
+        @test_throws AssertionError WeberProblem(
+            system,
+            (0.0, 1.0),
+            [1.0, 0.0, -1.0, 0.0],
+            [0.0, 0.1];
+            dt = 0.01,
+        )  # p length mismatch
     end
 
     @testset "WeberSolution" begin
-        prob = make_weber_problem(tspan=(0.0, 0.1))
+        prob = make_weber_problem(tspan = (0.0, 0.1))
         sol = solve(prob)
 
         @test sol isa WeberSolution
@@ -164,7 +258,7 @@
     end
 
     @testset "WeberSystem display" begin
-        system = WeberSystem(2, 2; masses=[1.0, 0.5], charges=[1.0, -1.0], c=4.0)
+        system = WeberSystem(2, 2; masses = [1.0, 0.5], charges = [1.0, -1.0], c = 4.0)
 
         # show(io, system)
         io = IOBuffer()

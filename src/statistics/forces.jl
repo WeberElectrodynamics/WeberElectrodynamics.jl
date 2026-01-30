@@ -18,29 +18,47 @@ function ForceComputationBuffers(dims::Int)
     ForceComputationBuffers(zeros(dims), zeros(dims), zeros(dims), zeros(dims))
 end
 
-function compute_force_timeseries(sol::WeberSolution,
+function compute_force_timeseries(
+    sol::WeberSolution,
     n_particles::Int,
     dims::Int,
     masses::Vector{Float64},
     charges::Vector{Float64},
     c::Float64;
-    stride::Int=1)::ForceData
+    stride::Int = 1,
+)::ForceData
     if stride <= 0
         throw(ArgumentError("stride must be positive, got $stride"))
     end
     if length(sol.t) < 2
-        throw(ArgumentError("solution must have at least 2 time points for force computation"))
+        throw(
+            ArgumentError(
+                "solution must have at least 2 time points for force computation",
+            ),
+        )
     end
     if length(masses) != n_particles
-        throw(ArgumentError("masses length ($(length(masses))) must equal n_particles ($n_particles)"))
+        throw(
+            ArgumentError(
+                "masses length ($(length(masses))) must equal n_particles ($n_particles)",
+            ),
+        )
     end
     if length(charges) != n_particles
-        throw(ArgumentError("charges length ($(length(charges))) must equal n_particles ($n_particles)"))
+        throw(
+            ArgumentError(
+                "charges length ($(length(charges))) must equal n_particles ($n_particles)",
+            ),
+        )
     end
     expected_dim = n_particles * dims
     actual_dim = length(sol.q[1])
     if actual_dim != expected_dim
-        throw(ArgumentError("dimension mismatch: n_particles=$n_particles × dims=$dims = $expected_dim, but solution has dimension $actual_dim"))
+        throw(
+            ArgumentError(
+                "dimension mismatch: n_particles=$n_particles × dims=$dims = $expected_dim, but solution has dimension $actual_dim",
+            ),
+        )
     end
     if c <= 0
         throw(ArgumentError("speed of light c must be positive, got $c"))
@@ -50,20 +68,24 @@ function compute_force_timeseries(sol::WeberSolution,
     n_steps = length(indices)
 
     if n_steps < 2
-        throw(ArgumentError("stride=$stride results in only $n_steps points; need at least 2 for acceleration computation"))
+        throw(
+            ArgumentError(
+                "stride=$stride results in only $n_steps points; need at least 2 for acceleration computation",
+            ),
+        )
     end
 
     dt = sol.t[indices[2]] - sol.t[indices[1]]
 
-    t_forces = sol.t[indices[1:end-1]]
+    t_forces = sol.t[indices[1:(end-1)]]
     n_force_steps = length(t_forces)
 
     # Use 3D arrays instead of nested vectors (avoids per-timestep allocations)
     velocities = Array{Float64}(undef, dims, n_steps, n_particles)
-    @inbounds for particle in 1:n_particles
+    @inbounds for particle = 1:n_particles
         m = masses[particle]
         for (i, idx) in enumerate(indices)
-            for d in 1:dims
+            for d = 1:dims
                 p_idx = (particle - 1) * dims + d
                 velocities[d, i, particle] = sol.p[idx][p_idx] / m
             end
@@ -71,18 +93,19 @@ function compute_force_timeseries(sol::WeberSolution,
     end
 
     accelerations = Array{Float64}(undef, dims, n_force_steps, n_particles)
-    @inbounds for particle in 1:n_particles
-        for t in 1:n_force_steps
-            for d in 1:dims
-                accelerations[d, t, particle] = (velocities[d, t+1, particle] - velocities[d, t, particle]) / dt
+    @inbounds for particle = 1:n_particles
+        for t = 1:n_force_steps
+            for d = 1:dims
+                accelerations[d, t, particle] =
+                    (velocities[d, t+1, particle] - velocities[d, t, particle]) / dt
             end
         end
     end
 
     positions = Array{Float64}(undef, dims, n_steps, n_particles)
-    @inbounds for particle in 1:n_particles
+    @inbounds for particle = 1:n_particles
         for (i, idx) in enumerate(indices)
-            for d in 1:dims
+            for d = 1:dims
                 q_idx = (particle - 1) * dims + d
                 positions[d, i, particle] = sol.q[idx][q_idx]
             end
@@ -92,16 +115,16 @@ function compute_force_timeseries(sol::WeberSolution,
     forces = Dict{Tuple{Int,Int},Vector{Vector{Float64}}}()
     buf = ForceComputationBuffers(dims)
 
-    for i in 1:n_particles
-        for j in (i+1):n_particles
+    for i = 1:n_particles
+        for j = (i+1):n_particles
             qi = charges[i]
             qj = charges[j]
 
             # Pre-allocate all force vectors before time loop
-            force_series = [Vector{Float64}(undef, dims) for _ in 1:n_force_steps]
-            neg_series = [Vector{Float64}(undef, dims) for _ in 1:n_force_steps]
+            force_series = [Vector{Float64}(undef, dims) for _ = 1:n_force_steps]
+            neg_series = [Vector{Float64}(undef, dims) for _ = 1:n_force_steps]
 
-            @inbounds for t in 1:n_force_steps
+            @inbounds for t = 1:n_force_steps
                 # Use views into 3D arrays
                 r_i = @view positions[:, t, i]
                 r_j = @view positions[:, t, j]
@@ -121,7 +144,9 @@ function compute_force_timeseries(sol::WeberSolution,
                 r_dot_a = dot(buf.r, buf.a)
                 r_hat_dot_v = dot(buf.r_hat, buf.v)
 
-                factor = (qi * qj / (r_norm^2)) * (1.0 + (1.0 / c^2) * (v_dot_v + r_dot_a - 1.5 * r_hat_dot_v^2))
+                factor =
+                    (qi * qj / (r_norm^2)) *
+                    (1.0 + (1.0 / c^2) * (v_dot_v + r_dot_a - 1.5 * r_hat_dot_v^2))
 
                 # In-place assignment to pre-allocated vectors
                 @. force_series[t] = factor * buf.r_hat
@@ -162,8 +187,8 @@ function check_newtons_third_law(force_data::ForceData)::NewtonsThirdLawData
     # Pre-allocate buffer for sum computation (avoids per-iteration allocation)
     sum_buf = zeros(dims)
 
-    for i in 1:n
-        for j in (i+1):n
+    for i = 1:n
+        for j = (i+1):n
             n_pairs += 1
 
             F_ij = force_data.forces[(i, j)]
@@ -174,7 +199,7 @@ function check_newtons_third_law(force_data::ForceData)::NewtonsThirdLawData
             sum_sq = 0.0
             max_val = 0.0
 
-            @inbounds for t in 1:n_times
+            @inbounds for t = 1:n_times
                 # Compute norm without temporary allocation
                 @. sum_buf = F_ij[t] + F_ji[t]
                 v = norm(sum_buf)
@@ -204,6 +229,6 @@ function check_newtons_third_law(force_data::ForceData)::NewtonsThirdLawData
         mean_violations,
         rms_violations,
         global_max,
-        n_pairs
+        n_pairs,
     )
 end

@@ -8,12 +8,16 @@ struct PhaseSpaceData
     angular_momentum::Union{Vector{Float64},Nothing}
 end
 
-function compute_phase_space_data(sol::WeberSolution, n_particles::Int, dims::Int,
+function compute_phase_space_data(
+    sol::WeberSolution,
+    n_particles::Int,
+    dims::Int,
     masses::Vector{Float64};
-    particle_pair::Tuple{Int,Int}=(1, 2),
-    stride::Int=1,
-    compute_angle::Bool=true,
-    compute_angular_momentum::Bool=true)::PhaseSpaceData
+    particle_pair::Tuple{Int,Int} = (1, 2),
+    stride::Int = 1,
+    compute_angle::Bool = true,
+    compute_angular_momentum::Bool = true,
+)::PhaseSpaceData
     if stride <= 0
         throw(ArgumentError("stride must be positive, got $stride"))
     end
@@ -30,7 +34,8 @@ function compute_phase_space_data(sol::WeberSolution, n_particles::Int, dims::In
     separation_distance_vals = zeros(n_points)
     radial_velocity_vals = zeros(n_points)
     theta_vals = compute_angle && dims >= 2 ? zeros(n_points) : nothing
-    angular_momentum_vals = compute_angular_momentum && dims >= 2 ? zeros(n_points) : nothing
+    angular_momentum_vals =
+        compute_angular_momentum && dims >= 2 ? zeros(n_points) : nothing
 
     m_i, m_j = masses[i], masses[j]
 
@@ -47,7 +52,7 @@ function compute_phase_space_data(sol::WeberSolution, n_particles::Int, dims::In
         p = sol.p[idx]
 
         # Extract positions and velocities (in-place)
-        @inbounds for d in 1:dims
+        @inbounds for d = 1:dims
             pos_i[d] = q[(i-1)*dims+d]
             pos_j[d] = q[(j-1)*dims+d]
             vel_i[d] = p[(i-1)*dims+d] / m_i
@@ -88,5 +93,11 @@ function compute_phase_space_data(sol::WeberSolution, n_particles::Int, dims::In
         end
     end
 
-    return PhaseSpaceData(t, separation_distance_vals, radial_velocity_vals, theta_vals, angular_momentum_vals)
+    return PhaseSpaceData(
+        t,
+        separation_distance_vals,
+        radial_velocity_vals,
+        theta_vals,
+        angular_momentum_vals,
+    )
 end

@@ -1,6 +1,6 @@
 @testset "Physics Validation" begin
     @testset "Energy conservation - Coulomb-like" begin
-        prob = make_coulomb_like_problem(tspan=(0.0, 5.0), dt=0.001)
+        prob = make_coulomb_like_problem(tspan = (0.0, 5.0), dt = 0.001)
         sol = solve(prob)
         masses = prob.system.masses
         charges = prob.system.charges
@@ -9,7 +9,7 @@
         E0 = E(sol.q[1], sol.p[1])
 
         max_error = 0.0
-        for i in 1:length(sol)
+        for i = 1:length(sol)
             Ei = E(sol.q[i], sol.p[i])
             error = abs(Ei - E0) / abs(E0)
             max_error = max(max_error, error)
@@ -19,7 +19,7 @@
     end
 
     @testset "Energy conservation - Weber" begin
-        prob = make_weber_problem(tspan=(0.0, 2.0), dt=0.0005)
+        prob = make_weber_problem(tspan = (0.0, 2.0), dt = 0.0005)
         sol = solve(prob)
         masses = prob.system.masses
         charges = prob.system.charges
@@ -29,7 +29,7 @@
         E0 = E(sol.q[1], sol.p[1])
 
         max_error = 0.0
-        for i in 1:length(sol)
+        for i = 1:length(sol)
             Ei = E(sol.q[i], sol.p[i])
             error = abs(Ei - E0) / abs(E0)
             max_error = max(max_error, error)
@@ -39,10 +39,17 @@
     end
 
     @testset "Newton's third law - Coulomb-like forces" begin
-        prob = make_coulomb_like_problem(tspan=(0.0, 1.0), dt=0.01)
+        prob = make_coulomb_like_problem(tspan = (0.0, 1.0), dt = 0.01)
         sol = solve(prob)
 
-        forces = compute_force_timeseries(sol, 2, 2, prob.system.masses, prob.system.charges, prob.system.c)
+        forces = compute_force_timeseries(
+            sol,
+            2,
+            2,
+            prob.system.masses,
+            prob.system.charges,
+            prob.system.c,
+        )
         n3 = check_newtons_third_law(forces)
 
         # F_12 = -F_21 should hold for Coulomb-like
@@ -50,10 +57,17 @@
     end
 
     @testset "Newton's third law - Weber forces" begin
-        prob = make_weber_problem(tspan=(0.0, 1.0), dt=0.001)
+        prob = make_weber_problem(tspan = (0.0, 1.0), dt = 0.001)
         sol = solve(prob)
 
-        forces = compute_force_timeseries(sol, 2, 2, prob.system.masses, prob.system.charges, prob.system.c)
+        forces = compute_force_timeseries(
+            sol,
+            2,
+            2,
+            prob.system.masses,
+            prob.system.charges,
+            prob.system.c,
+        )
         n3 = check_newtons_third_law(forces)
 
         # F_12 = -F_21 should hold for Weber (it's a central force)
@@ -61,7 +75,7 @@
     end
 
     @testset "Center of mass conservation" begin
-        prob = make_coulomb_like_problem(tspan=(0.0, 2.0), dt=0.01)
+        prob = make_coulomb_like_problem(tspan = (0.0, 2.0), dt = 0.01)
         sol = solve(prob)
 
         m1, m2 = prob.system.masses
@@ -74,7 +88,7 @@
         py_cm_0 = sol.p[1][2] + sol.p[1][4]
 
         # Check conservation at all times
-        for i in 1:length(sol)
+        for i = 1:length(sol)
             x_cm = (m1 * sol.q[i][1] + m2 * sol.q[i][3]) / M
             y_cm = (m1 * sol.q[i][2] + m2 * sol.q[i][4]) / M
             px_cm = sol.p[i][1] + sol.p[i][3]
@@ -92,7 +106,7 @@
     end
 
     @testset "Angular momentum conservation (Coulomb-like)" begin
-        prob = make_coulomb_like_problem(tspan=(0.0, 2.0), dt=0.01)
+        prob = make_coulomb_like_problem(tspan = (0.0, 2.0), dt = 0.01)
         sol = solve(prob)
 
         function angular_momentum(q, p)
@@ -102,7 +116,7 @@
 
         L0 = angular_momentum(sol.q[1], sol.p[1])
 
-        for i in 1:length(sol)
+        for i = 1:length(sol)
             Li = angular_momentum(sol.q[i], sol.p[i])
             @test Li ≈ L0 rtol = 1e-8
         end
@@ -110,7 +124,7 @@
 
     @testset "Symplectic integrator: no secular drift" begin
         # Long simulation to check for secular drift
-        prob = make_coulomb_like_problem(tspan=(0.0, 50.0), dt=0.01)
+        prob = make_coulomb_like_problem(tspan = (0.0, 50.0), dt = 0.01)
         sol = solve(prob)
 
         # Energy at beginning, middle, and end
@@ -133,13 +147,13 @@
     @testset "Phase space orbit closure (Weber)" begin
         # For a near-circular bound orbit, phase space should approximately close
         # Use Weber system
-        prob = make_weber_problem(tspan=(0.0, 20.0), dt=0.001)
+        prob = make_weber_problem(tspan = (0.0, 20.0), dt = 0.001)
         sol = solve(prob)
 
         # For a bound orbit, the particle should stay bounded
         r_min = Inf
         r_max = 0.0
-        for i in 1:length(sol)
+        for i = 1:length(sol)
             dx = sol.q[i][1] - sol.q[i][3]
             dy = sol.q[i][2] - sol.q[i][4]
             r = sqrt(dx^2 + dy^2)
@@ -155,7 +169,7 @@
 
     @testset "Bound vs unbound orbits" begin
         # Negative total energy = bound orbit
-        prob_bound = make_coulomb_like_problem(tspan=(0.0, 2.0), dt=0.01)
+        prob_bound = make_coulomb_like_problem(tspan = (0.0, 2.0), dt = 0.01)
         sol_bound = solve(prob_bound)
 
         masses = prob_bound.system.masses
@@ -165,7 +179,7 @@
 
         # Separation should remain bounded
         r_max = 0.0
-        for i in 1:length(sol_bound)
+        for i = 1:length(sol_bound)
             dx = sol_bound.q[i][1] - sol_bound.q[i][3]
             dy = sol_bound.q[i][2] - sol_bound.q[i][4]
             r = sqrt(dx^2 + dy^2)
@@ -180,10 +194,10 @@
         q1, q2 = 1.0, -1.0
 
         # Weber with very large c
-        sys_large_c = WeberSystem(2, 2; masses=[m1, m2], charges=[q1, q2], c=1e10)
+        sys_large_c = WeberSystem(2, 2; masses = [m1, m2], charges = [q1, q2], c = 1e10)
 
         # Weber with smaller c
-        sys_small_c = WeberSystem(2, 2; masses=[m1, m2], charges=[q1, q2], c=10.0)
+        sys_small_c = WeberSystem(2, 2; masses = [m1, m2], charges = [q1, q2], c = 10.0)
 
         # Test at specific point
         q = [1.0, 0.0, -1.0, 0.0]

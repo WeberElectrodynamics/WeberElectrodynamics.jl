@@ -7,12 +7,14 @@ struct EnergyData
     relative_energy_range::Float64
 end
 
-function compute_energy_timeseries(solution::WeberSolution,
+function compute_energy_timeseries(
+    solution::WeberSolution,
     total_energy_func::Function,
-    kinetic_energy_func::Union{Function,Nothing}=nothing,
-    potential_energy_func::Union{Function,Nothing}=nothing,
-    params=nothing;
-    stride::Int=1)::EnergyData
+    kinetic_energy_func::Union{Function,Nothing} = nothing,
+    potential_energy_func::Union{Function,Nothing} = nothing,
+    params = nothing;
+    stride::Int = 1,
+)::EnergyData
     if stride <= 0
         throw(ArgumentError("stride must be positive, got $stride"))
     end
@@ -26,13 +28,19 @@ function compute_energy_timeseries(solution::WeberSolution,
 
     total_energy = zeros(n_points)
     for (i, idx) in enumerate(indices)
-        total_energy[i] = total_energy_func(solution.q[idx], solution.p[idx], params, solution.t[idx])
+        total_energy[i] =
+            total_energy_func(solution.q[idx], solution.p[idx], params, solution.t[idx])
     end
 
     kinetic_energy = if !isnothing(kinetic_energy_func)
         ke = zeros(n_points)
         for (i, idx) in enumerate(indices)
-            ke[i] = kinetic_energy_func(solution.q[idx], solution.p[idx], params, solution.t[idx])
+            ke[i] = kinetic_energy_func(
+                solution.q[idx],
+                solution.p[idx],
+                params,
+                solution.t[idx],
+            )
         end
         ke
     else
@@ -42,7 +50,12 @@ function compute_energy_timeseries(solution::WeberSolution,
     potential_energy = if !isnothing(potential_energy_func)
         pe = zeros(n_points)
         for (i, idx) in enumerate(indices)
-            pe[i] = potential_energy_func(solution.q[idx], solution.p[idx], params, solution.t[idx])
+            pe[i] = potential_energy_func(
+                solution.q[idx],
+                solution.p[idx],
+                params,
+                solution.t[idx],
+            )
         end
         pe
     else
@@ -62,5 +75,12 @@ function compute_energy_timeseries(solution::WeberSolution,
         (E_max - E_min) / E_initial
     end
 
-    return EnergyData(t, total_energy, kinetic_energy, potential_energy, max_local_error, relative_energy_range)
+    return EnergyData(
+        t,
+        total_energy,
+        kinetic_energy,
+        potential_energy,
+        max_local_error,
+        relative_energy_range,
+    )
 end

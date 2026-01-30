@@ -1,9 +1,9 @@
 @testset "Statistics" begin
     # Setup: run simulations for testing
-    prob_coulomb = make_coulomb_like_problem(tspan=(0.0, 1.0), dt=0.01)
+    prob_coulomb = make_coulomb_like_problem(tspan = (0.0, 1.0), dt = 0.01)
     sol_coulomb = solve(prob_coulomb)
 
-    prob_weber = make_weber_problem(tspan=(0.0, 2.0), dt=0.001)
+    prob_weber = make_weber_problem(tspan = (0.0, 2.0), dt = 0.001)
     sol_weber = solve(prob_weber)
 
     @testset "TrajectoryData" begin
@@ -21,7 +21,7 @@
         end
 
         @testset "compute_trajectory_data with stride" begin
-            traj = compute_trajectory_data(sol_coulomb, 2, 2; stride=10)
+            traj = compute_trajectory_data(sol_coulomb, 2, 2; stride = 10)
 
             expected_points = length(1:10:length(sol_coulomb.t))
             @test size(traj.trajectories[1], 1) == expected_points
@@ -31,8 +31,8 @@
             traj = compute_trajectory_data(sol_coulomb, 2, 2)
 
             # Initial positions should match solution
-            for p in 1:2
-                for d in 1:2
+            for p = 1:2
+                for d = 1:2
                     idx = (p - 1) * 2 + d
                     @test traj.initial_positions[p][d] == sol_coulomb.q[1][idx]
                     @test traj.final_positions[p][d] == sol_coulomb.q[end][idx]
@@ -41,16 +41,26 @@
         end
 
         @testset "Validation errors" begin
-            @test_throws ArgumentError compute_trajectory_data(sol_coulomb, 2, 2; stride=0)
-            @test_throws ArgumentError compute_trajectory_data(sol_coulomb, 2, 2; stride=-1)
+            @test_throws ArgumentError compute_trajectory_data(
+                sol_coulomb,
+                2,
+                2;
+                stride = 0,
+            )
+            @test_throws ArgumentError compute_trajectory_data(
+                sol_coulomb,
+                2,
+                2;
+                stride = -1,
+            )
             @test_throws ArgumentError compute_trajectory_data(sol_coulomb, 3, 2)  # Wrong n_particles
             @test_throws ArgumentError compute_trajectory_data(sol_coulomb, 2, 3)  # Wrong dims
         end
 
         @testset "1D system" begin
             # Create a 1D 2-body system for this test
-            sys1d = WeberSystem(2, 1; masses=[1.0, 1.0], charges=[1.0, -1.0], c=1e10)
-            prob1d = WeberProblem(sys1d, (0.0, 0.5), [1.0, -1.0], [0.1, -0.1]; dt=0.01)
+            sys1d = WeberSystem(2, 1; masses = [1.0, 1.0], charges = [1.0, -1.0], c = 1e10)
+            prob1d = WeberProblem(sys1d, (0.0, 0.5), [1.0, -1.0], [0.1, -0.1]; dt = 0.01)
             sol1d = solve(prob1d)
             traj = compute_trajectory_data(sol1d, 2, 1)
             @test traj.n_particles == 2
@@ -66,13 +76,21 @@
         c = prob_weber.system.c
 
         total_energy(q, p, params, t) = weber_energy_2body_2d(q, p, masses, charges, c)
-        kinetic_energy(q, p, params, t) = sum(p[1:2] .^ 2) / (2 * masses[1]) + sum(p[3:4] .^ 2) / (2 * masses[2])
+        kinetic_energy(q, p, params, t) =
+            sum(p[1:2] .^ 2) / (2 * masses[1]) + sum(p[3:4] .^ 2) / (2 * masses[2])
         function potential_energy(q, p, params, t)
-            weber_energy_2body_2d(q, p, masses, charges, c) - kinetic_energy(q, p, params, t)
+            weber_energy_2body_2d(q, p, masses, charges, c) -
+            kinetic_energy(q, p, params, t)
         end
 
         @testset "compute_energy_timeseries basic" begin
-            energy = compute_energy_timeseries(sol_weber, total_energy, nothing, nothing, nothing)
+            energy = compute_energy_timeseries(
+                sol_weber,
+                total_energy,
+                nothing,
+                nothing,
+                nothing,
+            )
 
             @test energy isa EnergyData
             @test length(energy.t) == length(sol_weber.t)
@@ -82,7 +100,13 @@
         end
 
         @testset "compute_energy_timeseries with components" begin
-            energy = compute_energy_timeseries(sol_weber, total_energy, kinetic_energy, potential_energy, nothing)
+            energy = compute_energy_timeseries(
+                sol_weber,
+                total_energy,
+                kinetic_energy,
+                potential_energy,
+                nothing,
+            )
 
             @test !isnothing(energy.kinetic_energy)
             @test !isnothing(energy.potential_energy)
@@ -90,13 +114,20 @@
             @test length(energy.potential_energy) == length(sol_weber.t)
 
             # KE + PE = Total (approximately)
-            for i in 1:length(energy.t)
-                @test energy.kinetic_energy[i] + energy.potential_energy[i] ≈ energy.total_energy[i] rtol = 1e-10
+            for i = 1:length(energy.t)
+                @test energy.kinetic_energy[i] + energy.potential_energy[i] ≈
+                      energy.total_energy[i] rtol = 1e-10
             end
         end
 
         @testset "Energy statistics" begin
-            energy = compute_energy_timeseries(sol_weber, total_energy, nothing, nothing, nothing)
+            energy = compute_energy_timeseries(
+                sol_weber,
+                total_energy,
+                nothing,
+                nothing,
+                nothing,
+            )
 
             @test energy.max_local_error >= 0
             # For symplectic integrator, relative range should be small
@@ -106,7 +137,14 @@
         end
 
         @testset "compute_energy_timeseries with stride" begin
-            energy = compute_energy_timeseries(sol_weber, total_energy, nothing, nothing, nothing; stride=10)
+            energy = compute_energy_timeseries(
+                sol_weber,
+                total_energy,
+                nothing,
+                nothing,
+                nothing;
+                stride = 10,
+            )
 
             expected_points = length(1:10:length(sol_weber.t))
             @test length(energy.t) == expected_points
@@ -114,8 +152,22 @@
         end
 
         @testset "Validation errors" begin
-            @test_throws ArgumentError compute_energy_timeseries(sol_weber, total_energy, nothing, nothing, nothing; stride=0)
-            @test_throws ArgumentError compute_energy_timeseries(sol_weber, total_energy, nothing, nothing, nothing; stride=-1)
+            @test_throws ArgumentError compute_energy_timeseries(
+                sol_weber,
+                total_energy,
+                nothing,
+                nothing,
+                nothing;
+                stride = 0,
+            )
+            @test_throws ArgumentError compute_energy_timeseries(
+                sol_weber,
+                total_energy,
+                nothing,
+                nothing,
+                nothing;
+                stride = -1,
+            )
         end
     end
 
@@ -144,24 +196,61 @@
             F_21 = forces.forces[(2, 1)]
 
             # F_12 = -F_21
-            for t in 1:length(forces.t)
+            for t = 1:length(forces.t)
                 @test F_12[t] ≈ -F_21[t] atol = 1e-10
             end
         end
 
         @testset "compute_force_timeseries with stride" begin
-            forces = compute_force_timeseries(sol_coulomb, 2, 2, masses, charges, c; stride=5)
+            forces =
+                compute_force_timeseries(sol_coulomb, 2, 2, masses, charges, c; stride = 5)
 
             # Fewer time points due to stride
             @test length(forces.t) < length(sol_coulomb.t) - 1
         end
 
         @testset "Validation errors" begin
-            @test_throws ArgumentError compute_force_timeseries(sol_coulomb, 2, 2, masses, charges, c; stride=0)
-            @test_throws ArgumentError compute_force_timeseries(sol_coulomb, 3, 2, masses, charges, c)  # Wrong n_particles
-            @test_throws ArgumentError compute_force_timeseries(sol_coulomb, 2, 2, [1.0], charges, c)  # Wrong masses length
-            @test_throws ArgumentError compute_force_timeseries(sol_coulomb, 2, 2, masses, [1.0], c)  # Wrong charges length
-            @test_throws ArgumentError compute_force_timeseries(sol_coulomb, 2, 2, masses, charges, -1.0)  # Negative c
+            @test_throws ArgumentError compute_force_timeseries(
+                sol_coulomb,
+                2,
+                2,
+                masses,
+                charges,
+                c;
+                stride = 0,
+            )
+            @test_throws ArgumentError compute_force_timeseries(
+                sol_coulomb,
+                3,
+                2,
+                masses,
+                charges,
+                c,
+            )  # Wrong n_particles
+            @test_throws ArgumentError compute_force_timeseries(
+                sol_coulomb,
+                2,
+                2,
+                [1.0],
+                charges,
+                c,
+            )  # Wrong masses length
+            @test_throws ArgumentError compute_force_timeseries(
+                sol_coulomb,
+                2,
+                2,
+                masses,
+                [1.0],
+                c,
+            )  # Wrong charges length
+            @test_throws ArgumentError compute_force_timeseries(
+                sol_coulomb,
+                2,
+                2,
+                masses,
+                charges,
+                -1.0,
+            )  # Negative c
         end
     end
 
@@ -203,7 +292,7 @@
         end
 
         @testset "compute_phase_space_data with stride" begin
-            ps = compute_phase_space_data(sol_coulomb, 2, 2, masses; stride=10)
+            ps = compute_phase_space_data(sol_coulomb, 2, 2, masses; stride = 10)
 
             expected_points = length(1:10:length(sol_coulomb.t))
             @test length(ps.t) == expected_points
@@ -211,8 +300,10 @@
         end
 
         @testset "Different particle pairs" begin
-            ps_12 = compute_phase_space_data(sol_coulomb, 2, 2, masses; particle_pair=(1, 2))
-            ps_21 = compute_phase_space_data(sol_coulomb, 2, 2, masses; particle_pair=(2, 1))
+            ps_12 =
+                compute_phase_space_data(sol_coulomb, 2, 2, masses; particle_pair = (1, 2))
+            ps_21 =
+                compute_phase_space_data(sol_coulomb, 2, 2, masses; particle_pair = (2, 1))
 
             # separation_distance should be the same (distance is symmetric)
             @test ps_12.separation_distance ≈ ps_21.separation_distance
@@ -223,18 +314,41 @@
         end
 
         @testset "Disable optional computations" begin
-            ps = compute_phase_space_data(sol_coulomb, 2, 2, masses;
-                compute_angle=false,
-                compute_angular_momentum=false)
+            ps = compute_phase_space_data(
+                sol_coulomb,
+                2,
+                2,
+                masses;
+                compute_angle = false,
+                compute_angular_momentum = false,
+            )
 
             @test isnothing(ps.theta)
             @test isnothing(ps.angular_momentum)
         end
 
         @testset "Validation errors" begin
-            @test_throws ArgumentError compute_phase_space_data(sol_coulomb, 2, 2, masses; stride=0)
-            @test_throws ArgumentError compute_phase_space_data(sol_coulomb, 2, 2, masses; particle_pair=(0, 1))
-            @test_throws ArgumentError compute_phase_space_data(sol_coulomb, 2, 2, masses; particle_pair=(1, 3))
+            @test_throws ArgumentError compute_phase_space_data(
+                sol_coulomb,
+                2,
+                2,
+                masses;
+                stride = 0,
+            )
+            @test_throws ArgumentError compute_phase_space_data(
+                sol_coulomb,
+                2,
+                2,
+                masses;
+                particle_pair = (0, 1),
+            )
+            @test_throws ArgumentError compute_phase_space_data(
+                sol_coulomb,
+                2,
+                2,
+                masses;
+                particle_pair = (1, 3),
+            )
         end
 
         @testset "Positive separation distance" begin

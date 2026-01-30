@@ -6,7 +6,8 @@
         q2_charge = -sqrt(0.1)  # q1*q2 = -0.1 (attractive)
         c = 4.0
 
-        system = WeberSystem(2, 2; masses=[m1, m2], charges=[q1_charge, q2_charge], c=c)
+        system =
+            WeberSystem(2, 2; masses = [m1, m2], charges = [q1_charge, q2_charge], c = c)
 
         r0 = 2.0
         M = m1 + m2
@@ -15,35 +16,50 @@
         q0 = [-m2 / M * r0, 0.0, m1 / M * r0, 0.0]
         p0 = [0.0, m1 * (-m2 / M * v_circ * 0.9), 0.0, m2 * (m1 / M * v_circ * 0.9)]
 
-        prob = WeberProblem(system, (0.0, 1.0), q0, p0; dt=0.001)
+        prob = WeberProblem(system, (0.0, 1.0), q0, p0; dt = 0.001)
 
         # Solve
         sol = solve(prob)
         @test sol.retcode == :Success
 
         # Trajectories
-        traj = compute_trajectory_data(sol, 2, 2; stride=10)
+        traj = compute_trajectory_data(sol, 2, 2; stride = 10)
         @test traj.n_particles == 2
 
         # Energy
         function total_energy(q, p, params, t)
             weber_energy_2body_2d(q, p, [m1, m2], [q1_charge, q2_charge], c)
         end
-        energy = compute_energy_timeseries(sol, total_energy, nothing, nothing, nothing; stride=10)
+        energy = compute_energy_timeseries(
+            sol,
+            total_energy,
+            nothing,
+            nothing,
+            nothing;
+            stride = 10,
+        )
         @test energy.relative_energy_range < 1e-6
 
         # Forces
-        forces = compute_force_timeseries(sol, 2, 2, [m1, m2], [q1_charge, q2_charge], c; stride=10)
+        forces = compute_force_timeseries(
+            sol,
+            2,
+            2,
+            [m1, m2],
+            [q1_charge, q2_charge],
+            c;
+            stride = 10,
+        )
         n3 = check_newtons_third_law(forces)
         @test n3.global_max_violation < 1e-6
 
         # Phase space
-        ps = compute_phase_space_data(sol, 2, 2, [m1, m2]; stride=10)
+        ps = compute_phase_space_data(sol, 2, 2, [m1, m2]; stride = 10)
         @test all(ps.separation_distance .> 0)  # Particles don't collide
     end
 
     @testset "Stepped integration matches full solve" begin
-        prob = make_weber_problem(tspan=(0.0, 0.5))
+        prob = make_weber_problem(tspan = (0.0, 0.5))
 
         # Full solve
         sol_full = solve(prob)
@@ -60,7 +76,7 @@
     end
 
     @testset "Reproducibility" begin
-        prob = make_weber_problem(tspan=(0.0, 0.5))
+        prob = make_weber_problem(tspan = (0.0, 0.5))
 
         sol1 = solve(prob)
         sol2 = solve(prob)
@@ -73,7 +89,7 @@
     @testset "Different initial conditions" begin
         # Test with different orbital configurations
         for scale in [0.5, 1.0, 2.0]
-            system = WeberSystem(2, 2; masses=[1.0, 0.1], charges=[0.1, -0.1], c=4.0)
+            system = WeberSystem(2, 2; masses = [1.0, 0.1], charges = [0.1, -0.1], c = 4.0)
             r0 = 2.0 * scale
             m1, m2 = 1.0, 0.1
             M = m1 + m2
@@ -82,7 +98,7 @@
             q0 = [-m2 / M * r0, 0.0, m1 / M * r0, 0.0]
             p0 = [0.0, m1 * (-m2 / M * v_circ * 0.9), 0.0, m2 * (m1 / M * v_circ * 0.9)]
 
-            prob = WeberProblem(system, (0.0, 1.0), q0, p0; dt=0.001)
+            prob = WeberProblem(system, (0.0, 1.0), q0, p0; dt = 0.001)
             sol = solve(prob)
             @test sol.retcode == :Success
         end
@@ -90,7 +106,7 @@
 
     @testset "Long-time stability" begin
         # Run for many orbits with Coulomb-like (large c)
-        prob = make_coulomb_like_problem(tspan=(0.0, 10.0), dt=0.01)
+        prob = make_coulomb_like_problem(tspan = (0.0, 10.0), dt = 0.01)
         sol = solve(prob)
 
         @test sol.retcode == :Success
@@ -106,7 +122,7 @@
 
     @testset "API consistency" begin
         # Verify all exported functions work together
-        prob = make_coulomb_like_problem(tspan=(0.0, 0.5), dt=0.01)
+        prob = make_coulomb_like_problem(tspan = (0.0, 0.5), dt = 0.01)
 
         # Method 1: solve directly
         sol1 = solve(prob)
@@ -117,7 +133,7 @@
 
         # Method 3: init + step! loop + solve!
         int3 = init(prob)
-        for _ in 1:5
+        for _ = 1:5
             step!(int3)
         end
         sol3 = solve!(int3)
@@ -133,7 +149,7 @@
     end
 
     @testset "Statistics on same solution" begin
-        prob = make_coulomb_like_problem(tspan=(0.0, 1.0), dt=0.01)
+        prob = make_coulomb_like_problem(tspan = (0.0, 1.0), dt = 0.01)
         sol = solve(prob)
         masses = prob.system.masses
         charges = prob.system.charges

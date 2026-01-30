@@ -2,7 +2,11 @@
 
 CWE_DIR = papers/Computational-Weber-Electrodynamics
 
-.PHONY: cwe cwe-paper cwe-figures cwe-preview cwe-preview-open cwe-setup cwe-clean
+.PHONY: format cwe cwe-paper cwe-figures cwe-preview cwe-setup cwe-clean
+
+# Format all Julia files
+format:
+	julia -e 'using JuliaFormatter; format(".")'
 
 # Full build
 cwe:

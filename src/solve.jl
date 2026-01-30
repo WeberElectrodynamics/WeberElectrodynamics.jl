@@ -1,7 +1,10 @@
 using CommonSolve
 using LinearAlgebra: norm
 
-function CommonSolve.init(prob::WeberProblem, alg::SymmetricProjectionIntegrator=SymmetricProjectionIntegrator())
+function CommonSolve.init(
+    prob::WeberProblem,
+    alg::SymmetricProjectionIntegrator = SymmetricProjectionIntegrator(),
+)
     degrees_of_freedom = prob.system.degrees_of_freedom
 
     # Create workspace buffers (no params needed - baked into compiled functions)
@@ -10,8 +13,8 @@ function CommonSolve.init(prob::WeberProblem, alg::SymmetricProjectionIntegrator
     # Pre-allocate solution storage with all inner vectors
     n_steps = Int(ceil((prob.tspan[2] - prob.tspan[1]) / prob.dt))
     t_history = Vector{Float64}(undef, n_steps + 1)
-    q_history = [Vector{Float64}(undef, degrees_of_freedom) for _ in 1:(n_steps+1)]
-    p_history = [Vector{Float64}(undef, degrees_of_freedom) for _ in 1:(n_steps+1)]
+    q_history = [Vector{Float64}(undef, degrees_of_freedom) for _ = 1:(n_steps+1)]
+    p_history = [Vector{Float64}(undef, degrees_of_freedom) for _ = 1:(n_steps+1)]
 
     # Store initial conditions (in-place copy to pre-allocated vectors)
     t_history[1] = prob.tspan[1]
@@ -29,7 +32,7 @@ function CommonSolve.init(prob::WeberProblem, alg::SymmetricProjectionIntegrator
         buffers,
         t_history,
         q_history,
-        p_history
+        p_history,
     )
 end
 
@@ -131,7 +134,7 @@ function CommonSolve.step!(integrator::WeberIntegrator)
 
     # Step 2: Solve for μ such that f(μ) = 0 using relaxed fixed-point iteration
     relaxation = integrator.alg.relaxation
-    for iter in 1:maximum_iterations
+    for iter = 1:maximum_iterations
         f!(f_μ, μ)
         copyto!(μ_prev, μ)
         @. μ = μ - relaxation * f_μ
@@ -149,7 +152,9 @@ function CommonSolve.step!(integrator::WeberIntegrator)
 
     # Failed to converge
     f!(f_μ, μ)
-    error("Fixed-point iteration failed to converge after $maximum_iterations iterations (residual=$(norm(f_μ)), tolerance=$convergence_tolerance)")
+    error(
+        "Fixed-point iteration failed to converge after $maximum_iterations iterations (residual=$(norm(f_μ)), tolerance=$convergence_tolerance)",
+    )
 
     @label converged
 
@@ -201,11 +206,14 @@ function CommonSolve.solve!(integrator::WeberIntegrator)
         integrator.q_history[1:n],
         integrator.p_history[1:n],
         integrator.prob,
-        retcode
+        retcode,
     )
 end
 
-function CommonSolve.solve(prob::WeberProblem, alg::WeberAlgorithm=SymmetricProjectionIntegrator())
+function CommonSolve.solve(
+    prob::WeberProblem,
+    alg::WeberAlgorithm = SymmetricProjectionIntegrator(),
+)
     integrator = CommonSolve.init(prob, alg)
     CommonSolve.solve!(integrator)
 end

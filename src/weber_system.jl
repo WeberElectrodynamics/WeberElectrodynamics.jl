@@ -36,8 +36,8 @@ function _generate_phase_space_symbols(n_particles::Int, dims::Int)
     momentum_symbols = Vector{Symbol}(undef, n_total)
 
     idx = 1
-    for i in 1:n_particles
-        for d in 1:dims
+    for i = 1:n_particles
+        for d = 1:dims
             coordinate_symbols[idx] = Symbol(string(coord_names[d]) * string(i))
             momentum_symbols[idx] = Symbol(string(momentum_names[d]) * string(i))
             idx += 1
@@ -54,12 +54,12 @@ function _build_weber_hamiltonian(
     dims::Int,
     masses::Vector{Float64},
     charges::Vector{Float64},
-    c::Float64
+    c::Float64,
 )
     H = zero(eltype(q_vars))  # Start with symbolic zero
 
     # Kinetic energy: Σᵢ |pᵢ|² / (2mᵢ)
-    for i in 1:n_particles
+    for i = 1:n_particles
         p_start = (i - 1) * dims + 1
         p_end = i * dims
         p_squared = sum(p_vars[p_start:p_end] .^ 2)
@@ -68,8 +68,8 @@ function _build_weber_hamiltonian(
 
     # Weber potential energy: Σᵢ<ⱼ Uᵢⱼ
     c_squared = c^2
-    for i in 1:n_particles
-        for j in (i+1):n_particles
+    for i = 1:n_particles
+        for j = (i+1):n_particles
             # Position indices for particles i and j
             qi_start = (i - 1) * dims + 1
             qj_start = (j - 1) * dims + 1
@@ -80,14 +80,14 @@ function _build_weber_hamiltonian(
 
             # Relative position squared: Σ_d (qi_d - qj_d)²
             r_squared = zero(eltype(q_vars))
-            for d in 1:dims
+            for d = 1:dims
                 dq = q_vars[qi_start+d-1] - q_vars[qj_start+d-1]
                 r_squared = r_squared + dq^2
             end
             r = sqrt(r_squared)
 
             r_dot_v = zero(eltype(q_vars))
-            for d in 1:dims
+            for d = 1:dims
                 dq = q_vars[qi_start+d-1] - q_vars[qj_start+d-1]
                 dv = p_vars[pi_start+d-1] / masses[i] - p_vars[pj_start+d-1] / masses[j]
                 r_dot_v = r_dot_v + dq * dv
@@ -108,10 +108,13 @@ end
 # Constructor
 # =============================================================================
 
-function WeberSystem(n_particles::Int, dims::Int;
+function WeberSystem(
+    n_particles::Int,
+    dims::Int;
     masses::AbstractVector{<:Real},
     charges::AbstractVector{<:Real},
-    c::Real=1.0)
+    c::Real = 1.0,
+)
     # Validation
     @assert n_particles >= 1 "Must have at least 1 particle"
     @assert dims in (1, 2, 3) "Dimensions must be 1, 2, or 3, got $dims"
@@ -132,17 +135,27 @@ function WeberSystem(n_particles::Int, dims::Int;
 
     # Build Weber Hamiltonian symbolically
     hamiltonian_symbolic = _build_weber_hamiltonian(
-        q_vars, p_vars, n_particles, dims, masses_f64, charges_f64, c_f64
+        q_vars,
+        p_vars,
+        n_particles,
+        dims,
+        masses_f64,
+        charges_f64,
+        c_f64,
     )
 
     # Derive Hamilton's equations: dq/dt = ∂H/∂p, dp/dt = -∂H/∂q
-    dq_dt_symbolic = [Symbolics.derivative(hamiltonian_symbolic, p_vars[i]) for i in eachindex(p_vars)]
-    dp_dt_symbolic = [-Symbolics.derivative(hamiltonian_symbolic, q_vars[i]) for i in eachindex(q_vars)]
+    dq_dt_symbolic =
+        [Symbolics.derivative(hamiltonian_symbolic, p_vars[i]) for i in eachindex(p_vars)]
+    dp_dt_symbolic =
+        [-Symbolics.derivative(hamiltonian_symbolic, q_vars[i]) for i in eachindex(q_vars)]
 
     # Compile to fast numeric functions
     # Signature: func(out, q, p) - no params needed, they're baked in
-    dq_dt_compiled = Symbolics.build_function(dq_dt_symbolic, q_vars, p_vars, expression=Val{false})[2]
-    dp_dt_compiled = Symbolics.build_function(dp_dt_symbolic, q_vars, p_vars, expression=Val{false})[2]
+    dq_dt_compiled =
+        Symbolics.build_function(dq_dt_symbolic, q_vars, p_vars, expression = Val{false})[2]
+    dp_dt_compiled =
+        Symbolics.build_function(dp_dt_symbolic, q_vars, p_vars, expression = Val{false})[2]
 
     degrees_of_freedom = n_particles * dims
 
@@ -157,7 +170,7 @@ function WeberSystem(n_particles::Int, dims::Int;
         dp_dt_symbolic,
         dq_dt_compiled,
         dp_dt_compiled,
-        degrees_of_freedom
+        degrees_of_freedom,
     )
 end
 
@@ -166,7 +179,10 @@ end
 # =============================================================================
 
 function Base.show(io::IO, sys::WeberSystem)
-    print(io, "WeberSystem($(sys.n_particles) particles, $(sys.dims)D, $(sys.degrees_of_freedom) DOF)")
+    print(
+        io,
+        "WeberSystem($(sys.n_particles) particles, $(sys.dims)D, $(sys.degrees_of_freedom) DOF)",
+    )
 end
 
 function Base.show(io::IO, ::MIME"text/plain", sys::WeberSystem)
