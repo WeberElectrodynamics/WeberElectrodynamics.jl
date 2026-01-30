@@ -1,29 +1,7 @@
 using LinearAlgebra
 
-# =============================================================================
-# Algorithm Types
-# =============================================================================
-
-"""
-    WeberAlgorithm
-
-Abstract type for Weber electrodynamics integration algorithms.
-"""
 abstract type WeberAlgorithm end
 
-"""
-    SymmetricProjectionIntegrator <: WeberAlgorithm
-
-Semi-explicit symplectic integrator using symmetric projection for non-separable Hamiltonians.
-Second-order accurate. Uses relaxed fixed-point iteration for the nonlinear projection solve.
-
-# Constructor
-    SymmetricProjectionIntegrator(; relaxation=0.25)
-
-# Arguments
-- `relaxation::Float64`: Relaxation parameter for fixed-point iteration, must be in (0, 1].
-  Default 0.25. Higher values converge faster for well-conditioned problems but may diverge.
-"""
 struct SymmetricProjectionIntegrator <: WeberAlgorithm
     relaxation::Float64
 
@@ -33,33 +11,6 @@ struct SymmetricProjectionIntegrator <: WeberAlgorithm
     end
 end
 
-# =============================================================================
-# Problem Type
-# =============================================================================
-
-"""
-    WeberProblem
-
-Problem specification for Weber electrodynamics simulation.
-
-    WeberProblem(system, tspan, q_initial, p_initial; dt, convergence_tolerance=1e-13, maximum_iterations=100)
-
-# Arguments
-- `system::WeberSystem`: The n-body Weber system definition
-- `tspan::Tuple{Real,Real}`: Time span (t_start, t_end)
-- `q_initial::AbstractVector`: Initial positions (length = system.degrees_of_freedom)
-- `p_initial::AbstractVector`: Initial momenta (length = system.degrees_of_freedom)
-- `dt::Real`: Time step
-- `convergence_tolerance::Real=1e-13`: Tolerance for fixed-point iteration
-- `maximum_iterations::Int=100`: Maximum fixed-point iterations
-
-# Example
-```julia
-system = WeberSystem(2, 2; masses=[1.0, 0.1], charges=[-0.1, 0.1], c=4.0)
-prob = WeberProblem(system, (0.0, 100.0), q0, p0; dt=0.001)
-sol = solve(prob)
-```
-"""
 struct WeberProblem
     system::WeberSystem
     tspan::Tuple{Float64,Float64}
@@ -98,24 +49,6 @@ struct WeberProblem
     end
 end
 
-# =============================================================================
-# Solution Type
-# =============================================================================
-
-"""
-    WeberSolution
-
-Solution of a Weber electrodynamics problem.
-
-# Fields
-- `t`: Time points
-- `q`: Position vectors at each time
-- `p`: Momentum vectors at each time
-- `prob`: Reference to the problem
-- `retcode`: `:Success`, `:Failure`, or `:MaxIters`
-
-Supports indexing (`sol[i]`) and iteration.
-"""
 struct WeberSolution
     t::Vector{Float64}
     q::Vector{Vector{Float64}}
@@ -145,26 +78,6 @@ function Base.show(io::IO, ::MIME"text/plain", sol::WeberSolution)
     println(io, "  DOF: $(length(sol.q[1]))")
 end
 
-# =============================================================================
-# Integrator Buffers (Internal)
-# =============================================================================
-
-"""
-    SymmetricProjectionBuffers
-
-Pre-allocated workspace for the symmetric projection integrator.
-Internal type - not part of public API.
-
-Field names match notation in docs/theory/SemiExplicitIntegrator.md (Jayawardana-Ohsawa 2023):
-- `d`: degrees of freedom
-- `A`: projection matrix (2d × 4d)
-- `Z`: extended phase space state Zₙ = (q,q,p,p)
-- `Ẑ`: shifted/evolved state Ẑₙ₊₁
-- `Z_result`: final projected state Zₙ₊₁
-- `ATμ`: constraint shift A^T μ
-- `μ`: Lagrange multipliers for symmetric projection
-- `f_μ`: nonlinear residual f(μ) = A(Φ̂(Zₙ + A^T μ) + A^T μ)
-"""
 mutable struct SymmetricProjectionBuffers
     d::Int                          # degrees of freedom
     A::Matrix{Float64}              # projection matrix (2d × 4d)
@@ -186,9 +99,9 @@ mutable struct SymmetricProjectionBuffers
         A = zeros(Float64, 2d, 4d)
         @inbounds for i in 1:d
             A[i, i] = 1.0           # I_d in top-left
-            A[i, d + i] = -1.0      # -I_d in top-middle-left
-            A[d + i, 2d + i] = 1.0  # I_d in bottom-middle-right
-            A[d + i, 3d + i] = -1.0 # -I_d in bottom-right
+            A[i, d+i] = -1.0      # -I_d in top-middle-left
+            A[d+i, 2d+i] = 1.0  # I_d in bottom-middle-right
+            A[d+i, 3d+i] = -1.0 # -I_d in bottom-right
         end
 
         new(
@@ -209,16 +122,6 @@ mutable struct SymmetricProjectionBuffers
     end
 end
 
-# =============================================================================
-# Integrator Type (Iterator for CommonSolve)
-# =============================================================================
-
-"""
-    WeberIntegrator
-
-Mutable integrator state for stepped integration via CommonSolve interface.
-Access `t`, `q`, `p`, `step_count` during integration. Use `step!()` to advance, `solve!()` to complete.
-"""
 mutable struct WeberIntegrator
     prob::WeberProblem
     alg::SymmetricProjectionIntegrator

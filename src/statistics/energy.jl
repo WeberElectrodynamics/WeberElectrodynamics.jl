@@ -1,34 +1,18 @@
-"""
-Energy timeseries data from a solution.
-
-# Fields
-- `t`: Time points
-- `total_energy`: Total energy H(q, p) at each time point
-- `kinetic_energy`: Optional kinetic energy component
-- `potential_energy`: Optional potential energy component
-- `max_local_error`: Max deviation from initial energy
-- `relative_energy_range`: (E_max - E_min) / E_initial
-"""
 struct EnergyData
     t::Vector{Float64}
     total_energy::Vector{Float64}
-    kinetic_energy::Union{Vector{Float64}, Nothing}
-    potential_energy::Union{Vector{Float64}, Nothing}
+    kinetic_energy::Union{Vector{Float64},Nothing}
+    potential_energy::Union{Vector{Float64},Nothing}
     max_local_error::Float64
     relative_energy_range::Float64
 end
 
-"""
-    compute_energy_timeseries(sol, total_energy_func, [kinetic_energy_func], [potential_energy_func], params; stride=1) -> EnergyData
-
-Compute energy timeseries from a solution. Energy functions have signature `(q, p, params, t)`.
-"""
 function compute_energy_timeseries(solution::WeberSolution,
-                                   total_energy_func::Function,
-                                   kinetic_energy_func::Union{Function, Nothing}=nothing,
-                                   potential_energy_func::Union{Function, Nothing}=nothing,
-                                   params=nothing;
-                                   stride::Int=1)::EnergyData
+    total_energy_func::Function,
+    kinetic_energy_func::Union{Function,Nothing}=nothing,
+    potential_energy_func::Union{Function,Nothing}=nothing,
+    params=nothing;
+    stride::Int=1)::EnergyData
     if stride <= 0
         throw(ArgumentError("stride must be positive, got $stride"))
     end

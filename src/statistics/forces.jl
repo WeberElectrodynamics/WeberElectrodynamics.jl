@@ -1,21 +1,12 @@
 using LinearAlgebra
 
-"""
-Weber force timeseries between particle pairs.
-
-# Fields
-- `forces`: Dict mapping `(i,j)` to force vectors over time
-- `t`: Time points
-- `n_particles`, `dims`: System dimensions
-"""
 struct ForceData
-    forces::Dict{Tuple{Int,Int}, Vector{Vector{Float64}}}
+    forces::Dict{Tuple{Int,Int},Vector{Vector{Float64}}}
     t::Vector{Float64}
     n_particles::Int
     dims::Int
 end
 
-"""Pre-allocated buffers for force computation (internal)."""
 struct ForceComputationBuffers
     r::Vector{Float64}
     v::Vector{Float64}
@@ -27,18 +18,13 @@ function ForceComputationBuffers(dims::Int)
     ForceComputationBuffers(zeros(dims), zeros(dims), zeros(dims), zeros(dims))
 end
 
-"""
-    compute_force_timeseries(sol, n_particles, dims, masses, charges, c; stride=1) -> ForceData
-
-Compute Weber forces between all particle pairs from a solution.
-"""
 function compute_force_timeseries(sol::WeberSolution,
-                                  n_particles::Int,
-                                  dims::Int,
-                                  masses::Vector{Float64},
-                                  charges::Vector{Float64},
-                                  c::Float64;
-                                  stride::Int=1)::ForceData
+    n_particles::Int,
+    dims::Int,
+    masses::Vector{Float64},
+    charges::Vector{Float64},
+    c::Float64;
+    stride::Int=1)::ForceData
     if stride <= 0
         throw(ArgumentError("stride must be positive, got $stride"))
     end
@@ -103,7 +89,7 @@ function compute_force_timeseries(sol::WeberSolution,
         end
     end
 
-    forces = Dict{Tuple{Int,Int}, Vector{Vector{Float64}}}()
+    forces = Dict{Tuple{Int,Int},Vector{Vector{Float64}}}()
     buf = ForceComputationBuffers(dims)
 
     for i in 1:n_particles
@@ -150,40 +136,25 @@ function compute_force_timeseries(sol::WeberSolution,
     return ForceData(forces, t_forces, n_particles, dims)
 end
 
-"""
-Newton's third law violation analysis for Weber forces.
-
-# Fields
-- `pair_violations`: `|F_ij + F_ji|` timeseries per pair
-- `t`: Time points
-- `max_violations`, `mean_violations`, `rms_violations`: Statistics per pair
-- `global_max_violation`: Maximum across all pairs
-- `n_pairs`: Number of particle pairs
-"""
 struct NewtonsThirdLawData
-    pair_violations::Dict{Tuple{Int,Int}, Vector{Float64}}
+    pair_violations::Dict{Tuple{Int,Int},Vector{Float64}}
     t::Vector{Float64}
-    max_violations::Dict{Tuple{Int,Int}, Float64}
-    mean_violations::Dict{Tuple{Int,Int}, Float64}
-    rms_violations::Dict{Tuple{Int,Int}, Float64}
+    max_violations::Dict{Tuple{Int,Int},Float64}
+    mean_violations::Dict{Tuple{Int,Int},Float64}
+    rms_violations::Dict{Tuple{Int,Int},Float64}
     global_max_violation::Float64
     n_pairs::Int
 end
 
-"""
-    check_newtons_third_law(force_data) -> NewtonsThirdLawData
-
-Check Newton's third law violations in computed Weber forces.
-"""
 function check_newtons_third_law(force_data::ForceData)::NewtonsThirdLawData
     n = force_data.n_particles
     n_times = length(force_data.t)
     dims = force_data.dims
 
-    pair_violations = Dict{Tuple{Int,Int}, Vector{Float64}}()
-    max_violations = Dict{Tuple{Int,Int}, Float64}()
-    mean_violations = Dict{Tuple{Int,Int}, Float64}()
-    rms_violations = Dict{Tuple{Int,Int}, Float64}()
+    pair_violations = Dict{Tuple{Int,Int},Vector{Float64}}()
+    max_violations = Dict{Tuple{Int,Int},Float64}()
+    mean_violations = Dict{Tuple{Int,Int},Float64}()
+    rms_violations = Dict{Tuple{Int,Int},Float64}()
 
     global_max = 0.0
     n_pairs = 0

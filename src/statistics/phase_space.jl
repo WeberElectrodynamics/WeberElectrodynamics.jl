@@ -1,36 +1,19 @@
-# Phase space data computation
-
 using LinearAlgebra
 
-"""
-Phase space data for (r, ṙ) portraits.
-
-# Fields
-- `t`: Time points
-- `separation_distance`: Inter-particle separation |r_i - r_j|
-- `radial_velocity`: Radial velocity ṙ = (r · v) / |r|
-- `theta`: Angle in 2D (optional)
-- `angular_momentum`: Angular momentum L = r × v (optional)
-"""
 struct PhaseSpaceData
     t::Vector{Float64}
     separation_distance::Vector{Float64}
     radial_velocity::Vector{Float64}
-    theta::Union{Vector{Float64}, Nothing}
-    angular_momentum::Union{Vector{Float64}, Nothing}
+    theta::Union{Vector{Float64},Nothing}
+    angular_momentum::Union{Vector{Float64},Nothing}
 end
 
-"""
-    compute_phase_space_data(sol, n_particles, dims, masses; particle_pair=(1,2), stride=1, ...) -> PhaseSpaceData
-
-Extract phase space coordinates (r, ṙ) for a particle pair from a `WeberSolution`.
-"""
 function compute_phase_space_data(sol::WeberSolution, n_particles::Int, dims::Int,
-                                   masses::Vector{Float64};
-                                   particle_pair::Tuple{Int,Int}=(1, 2),
-                                   stride::Int=1,
-                                   compute_angle::Bool=true,
-                                   compute_angular_momentum::Bool=true)::PhaseSpaceData
+    masses::Vector{Float64};
+    particle_pair::Tuple{Int,Int}=(1, 2),
+    stride::Int=1,
+    compute_angle::Bool=true,
+    compute_angular_momentum::Bool=true)::PhaseSpaceData
     if stride <= 0
         throw(ArgumentError("stride must be positive, got $stride"))
     end
@@ -65,10 +48,10 @@ function compute_phase_space_data(sol::WeberSolution, n_particles::Int, dims::In
 
         # Extract positions and velocities (in-place)
         @inbounds for d in 1:dims
-            pos_i[d] = q[(i-1)*dims + d]
-            pos_j[d] = q[(j-1)*dims + d]
-            vel_i[d] = p[(i-1)*dims + d] / m_i
-            vel_j[d] = p[(j-1)*dims + d] / m_j
+            pos_i[d] = q[(i-1)*dims+d]
+            pos_j[d] = q[(j-1)*dims+d]
+            vel_i[d] = p[(i-1)*dims+d] / m_i
+            vel_j[d] = p[(j-1)*dims+d] / m_j
         end
 
         # Relative position and velocity (in-place)

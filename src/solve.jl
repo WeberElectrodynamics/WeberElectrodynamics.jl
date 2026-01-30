@@ -1,15 +1,6 @@
 using CommonSolve
 using LinearAlgebra: norm
 
-# =============================================================================
-# CommonSolve Interface Implementation
-# =============================================================================
-
-"""
-    init(prob, alg=SymmetricProjectionIntegrator()) -> WeberIntegrator
-
-Initialize an integrator for stepped integration. Use `step!()` to advance, `solve!()` to complete.
-"""
 function CommonSolve.init(prob::WeberProblem, alg::SymmetricProjectionIntegrator=SymmetricProjectionIntegrator())
     degrees_of_freedom = prob.system.degrees_of_freedom
 
@@ -19,8 +10,8 @@ function CommonSolve.init(prob::WeberProblem, alg::SymmetricProjectionIntegrator
     # Pre-allocate solution storage with all inner vectors
     n_steps = Int(ceil((prob.tspan[2] - prob.tspan[1]) / prob.dt))
     t_history = Vector{Float64}(undef, n_steps + 1)
-    q_history = [Vector{Float64}(undef, degrees_of_freedom) for _ in 1:(n_steps + 1)]
-    p_history = [Vector{Float64}(undef, degrees_of_freedom) for _ in 1:(n_steps + 1)]
+    q_history = [Vector{Float64}(undef, degrees_of_freedom) for _ in 1:(n_steps+1)]
+    p_history = [Vector{Float64}(undef, degrees_of_freedom) for _ in 1:(n_steps+1)]
 
     # Store initial conditions (in-place copy to pre-allocated vectors)
     t_history[1] = prob.tspan[1]
@@ -42,18 +33,6 @@ function CommonSolve.init(prob::WeberProblem, alg::SymmetricProjectionIntegrator
     )
 end
 
-"""
-    step!(integrator::WeberIntegrator)
-
-Advance the integrator by one time step.
-
-# Returns
-- `true` if step succeeded and integration should continue
-- `false` if integration is complete (reached t_end)
-
-# Throws
-- `ErrorException` if the fixed-point iteration fails to converge
-"""
 function CommonSolve.step!(integrator::WeberIntegrator)
     # Check if already done
     if integrator.t >= integrator.t_end - eps(integrator.t_end)
@@ -201,13 +180,6 @@ function CommonSolve.step!(integrator::WeberIntegrator)
     return integrator.t < integrator.t_end
 end
 
-"""
-    solve!(integrator::WeberIntegrator)
-
-Complete integration from current state to t_end.
-
-Returns a `WeberSolution` containing the full trajectory.
-"""
 function CommonSolve.solve!(integrator::WeberIntegrator)
     retcode = :Success
     try
@@ -233,11 +205,6 @@ function CommonSolve.solve!(integrator::WeberIntegrator)
     )
 end
 
-"""
-    solve(prob, alg=SymmetricProjectionIntegrator()) -> WeberSolution
-
-Solve a Weber electrodynamics problem and return the full trajectory.
-"""
 function CommonSolve.solve(prob::WeberProblem, alg::WeberAlgorithm=SymmetricProjectionIntegrator())
     integrator = CommonSolve.init(prob, alg)
     CommonSolve.solve!(integrator)

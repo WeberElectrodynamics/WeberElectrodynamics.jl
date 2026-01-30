@@ -1,47 +1,6 @@
 using Symbolics
 using Latexify: latexify
 
-# =============================================================================
-# WeberSystem: n-body Weber Electrodynamics Hamiltonian
-# =============================================================================
-
-"""
-    WeberSystem{H,QD,PD,QF,PF}
-
-Compiled n-body Weber electrodynamics Hamiltonian system.
-
-Contains physics parameters, symbolic expressions, and compiled numeric functions
-for efficient integration.
-
-# Constructor
-    WeberSystem(n_particles, dims; masses, charges, c=1.0)
-
-# Arguments
-- `n_particles::Int`: Number of particles (≥ 1)
-- `dims::Int`: Spatial dimensions (1, 2, or 3)
-- `masses::Vector{<:Real}`: Particle masses (length n_particles, all > 0)
-- `charges::Vector{<:Real}`: Particle charges (length n_particles)
-- `c::Real=1.0`: Speed of light (> 0)
-
-# Example
-```julia
-# 2-body system in 2D
-system = WeberSystem(2, 2;
-    masses = [1.0, 0.1],
-    charges = [-0.1, 0.1],
-    c = 4.0
-)
-```
-
-# Fields
-- `n_particles`, `dims`: System configuration
-- `masses`, `charges`, `c`: Physical parameters
-- `hamiltonian_symbolic`: Symbolic H(q, p) expression
-- `dq_dt_symbolic`: Symbolic dq/dt = ∂H/∂p
-- `dp_dt_symbolic`: Symbolic dp/dt = -∂H/∂q
-- `dq_dt_compiled`, `dp_dt_compiled`: Fast numeric functions
-- `degrees_of_freedom`: n_particles × dims
-"""
 struct WeberSystem{H,QD,PD,QF,PF}
     # Physics configuration
     n_particles::Int
@@ -88,19 +47,6 @@ function _generate_phase_space_symbols(n_particles::Int, dims::Int)
     return (coordinate_symbols, momentum_symbols)
 end
 
-# =============================================================================
-# Internal: Weber Hamiltonian Construction
-# =============================================================================
-
-"""
-Build the n-body Weber Hamiltonian symbolically.
-
-H = Σᵢ Tᵢ + Σᵢ<ⱼ Uᵢⱼ
-
-where:
-  Tᵢ = |pᵢ|² / (2mᵢ)
-  Uᵢⱼ = (qᵢqⱼ/rᵢⱼ)(1 - ṙᵢⱼ²/(2c²))
-"""
 function _build_weber_hamiltonian(
     q_vars::Vector,      # Symbolic position variables
     p_vars::Vector,      # Symbolic momentum variables
@@ -135,17 +81,15 @@ function _build_weber_hamiltonian(
             # Relative position squared: Σ_d (qi_d - qj_d)²
             r_squared = zero(eltype(q_vars))
             for d in 1:dims
-                dq = q_vars[qi_start + d - 1] - q_vars[qj_start + d - 1]
+                dq = q_vars[qi_start+d-1] - q_vars[qj_start+d-1]
                 r_squared = r_squared + dq^2
             end
             r = sqrt(r_squared)
 
-            # Relative radial velocity: ṙ = (r⃗ · v⃗) / r
-            # where v⃗ = ṙ⃗_i - ṙ⃗_j = p_i/m_i - p_j/m_j
             r_dot_v = zero(eltype(q_vars))
             for d in 1:dims
-                dq = q_vars[qi_start + d - 1] - q_vars[qj_start + d - 1]
-                dv = p_vars[pi_start + d - 1] / masses[i] - p_vars[pj_start + d - 1] / masses[j]
+                dq = q_vars[qi_start+d-1] - q_vars[qj_start+d-1]
+                dv = p_vars[pi_start+d-1] / masses[i] - p_vars[pj_start+d-1] / masses[j]
                 r_dot_v = r_dot_v + dq * dv
             end
             r_dot = r_dot_v / r
@@ -165,9 +109,9 @@ end
 # =============================================================================
 
 function WeberSystem(n_particles::Int, dims::Int;
-                     masses::AbstractVector{<:Real},
-                     charges::AbstractVector{<:Real},
-                     c::Real=1.0)
+    masses::AbstractVector{<:Real},
+    charges::AbstractVector{<:Real},
+    c::Real=1.0)
     # Validation
     @assert n_particles >= 1 "Must have at least 1 particle"
     @assert dims in (1, 2, 3) "Dimensions must be 1, 2, or 3, got $dims"
