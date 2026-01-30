@@ -36,7 +36,7 @@ function _generate_phase_space_symbols(n_particles::Int, dims::Int)
     momentum_symbols = Vector{Symbol}(undef, n_total)
 
     idx = 1
-    for i = 1:n_particles
+    @inbounds for i = 1:n_particles
         for d = 1:dims
             coordinate_symbols[idx] = Symbol(string(coord_names[d]) * string(i))
             momentum_symbols[idx] = Symbol(string(momentum_names[d]) * string(i))

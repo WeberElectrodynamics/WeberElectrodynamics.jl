@@ -31,8 +31,8 @@ function compute_trajectory_data(
     indices = 1:stride:length(sol.t)
     n_points = length(indices)
 
-    trajectories = Vector{Matrix{Float64}}(undef, n_particles)
-    # Pre-allocate all inner vectors (avoids per-particle comprehension allocations)
+    # Pre-allocate all trajectory matrices upfront (avoids per-particle allocations)
+    trajectories = [Matrix{Float64}(undef, n_points, dims) for _ = 1:n_particles]
     initial_positions = [Vector{Float64}(undef, dims) for _ = 1:n_particles]
     final_positions = [Vector{Float64}(undef, dims) for _ = 1:n_particles]
 
@@ -40,14 +40,13 @@ function compute_trajectory_data(
     final_idx = indices[end]
 
     for particle = 1:n_particles
-        traj = zeros(n_points, dims)
+        traj = trajectories[particle]
         @inbounds for (i, idx) in enumerate(indices)
             for d = 1:dims
                 coord_idx = (particle - 1) * dims + d
                 traj[i, d] = sol.q[idx][coord_idx]
             end
         end
-        trajectories[particle] = traj
 
         # In-place assignment to pre-allocated vectors
         @inbounds for d = 1:dims

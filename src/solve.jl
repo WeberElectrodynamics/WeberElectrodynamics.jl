@@ -151,6 +151,7 @@ function CommonSolve.step!(integrator::WeberIntegrator)
     μ = buffers.μ
     μ_prev = buffers.μ_prev
     f_μ = buffers.f_μ
+    diff_buffer = buffers.diff_buffer
 
     q = integrator.q
     p = integrator.p
@@ -186,8 +187,9 @@ function CommonSolve.step!(integrator::WeberIntegrator)
         copyto!(μ_prev, μ)
         @inbounds @. μ = μ - relaxation * f_μ
 
-        # Check step convergence
-        step_norm = norm(μ .- μ_prev)
+        # Check step convergence (use buffer to avoid temporary allocation)
+        @inbounds @. diff_buffer = μ - μ_prev
+        step_norm = norm(diff_buffer)
         if step_norm < convergence_tolerance
             # Verify constraint satisfaction
             compute_constraint_residual!(

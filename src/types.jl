@@ -92,6 +92,7 @@ mutable struct SymmetricProjectionBuffers
     μ::Vector{Float64}              # Lagrange multipliers (2d)
     μ_prev::Vector{Float64}         # previous iteration μ^(k-1) (2d)
     f_μ::Vector{Float64}            # nonlinear residual f(μ) (2d)
+    diff_buffer::Vector{Float64}    # workspace for μ - μ_prev (2d)
 
     function SymmetricProjectionBuffers(degrees_of_freedom::Int)
         d = degrees_of_freedom
@@ -118,6 +119,7 @@ mutable struct SymmetricProjectionBuffers
             zeros(Float64, 2d),          # μ (initialized to zero)
             Vector{Float64}(undef, 2d),  # μ_prev
             Vector{Float64}(undef, 2d),  # f_μ
+            Vector{Float64}(undef, 2d),  # diff_buffer
         )
     end
 end
