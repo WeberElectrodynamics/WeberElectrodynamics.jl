@@ -1,0 +1,39 @@
+{
+    "julia.environmentPath": "/Users/mac/.julia/environments/v1.12",
+    "latex-workshop.formatting.latex": "latexindent",
+    "latex-workshop.latex.autoBuild.run": "onSave",
+    "latex-workshop.latex.outDir": "%DIR%/build",
+    "latex-workshop.latex.recipes": [
+        {
+            "name": "pdflatex → copy",
+            "tools": [
+                "pdflatex",
+                "copy-pdf"
+            ]
+        }
+    ],
+    "latex-workshop.latex.tools": [
+        {
+            "name": "pdflatex",
+            "command": "pdflatex",
+            "args": [
+                "-synctex=1",
+                "-interaction=nonstopmode",
+                "-file-line-error",
+                "-output-directory=%OUTDIR%",
+                "%DOC%"
+            ],
+            "env": {}
+        },
+        {
+            "name": "copy-pdf",
+            "command": "cp",
+            "args": [
+                "%OUTDIR%/%DOCFILE%.pdf",
+                "%DIR%/"
+            ],
+            "env": {}
+        }
+    ],
+    "makefile.makefilePath": "papers/Computational-Weber-Electrodynamics/Makefile"
+}
