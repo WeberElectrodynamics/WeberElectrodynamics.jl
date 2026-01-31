@@ -1,7 +1,7 @@
 @testset "Weber System" begin
     @testset "Weber Hamiltonian structure" begin
         # 2-body 2D Weber system
-        system = WeberSystem(2, 2; masses = [1.0, 0.5], charges = [1.0, -1.0], c = 4.0)
+        system = WeberSystem(2, 2)
 
         @test system.degrees_of_freedom == 4
         @test length(system.dq_dt_symbolic) == 4
@@ -18,7 +18,8 @@
         q1, q2 = 1.0, -1.0
         c = 1000.0  # Large c to make Weber ≈ Coulomb
 
-        system = WeberSystem(2, 2; masses = [m1, m2], charges = [q1, q2], c = c)
+        system = WeberSystem(2, 2)
+        params = [m1, m2, q1, q2, c]
 
         # Test at specific point: particles at x = ±1, no y offset
         q = [1.0, 0.0, -1.0, 0.0]  # particles at x=1 and x=-1
@@ -26,8 +27,8 @@
 
         out_q = zeros(4)
         out_p = zeros(4)
-        system.dq_dt_compiled(out_q, q, p)
-        system.dp_dt_compiled(out_p, q, p)
+        system.dq_dt_compiled(out_q, q, p, params)
+        system.dp_dt_compiled(out_p, q, p, params)
 
         # dq/dt = ∂H/∂p ≈ p/m (Weber correction is small for large c)
         @test out_q[1] ≈ p[1] / m1 atol = 1e-6  # px1/m1
@@ -47,33 +48,36 @@
 
     @testset "Different dimensions" begin
         # 1D system
-        sys1d = WeberSystem(2, 1; masses = [1.0, 1.0], charges = [1.0, -1.0], c = 1.0)
+        sys1d = WeberSystem(2, 1)
         @test sys1d.degrees_of_freedom == 2
         @test length(sys1d.dq_dt_symbolic) == 2
 
+        params1d = [1.0, 1.0, 1.0, -1.0, 1.0]  # m1, m2, q1, q2, c
         out1 = zeros(2)
-        sys1d.dq_dt_compiled(out1, [1.0, -1.0], [0.5, -0.5])
+        sys1d.dq_dt_compiled(out1, [1.0, -1.0], [0.5, -0.5], params1d)
         # Weber's velocity-dependent potential affects dq/dt, so we just verify
         # the function runs and produces finite output of correct dimension
         @test length(out1) == 2
         @test all(isfinite.(out1))
 
         # 2D system
-        sys2d = WeberSystem(2, 2; masses = [1.0, 1.0], charges = [1.0, -1.0], c = 1.0)
+        sys2d = WeberSystem(2, 2)
         @test sys2d.degrees_of_freedom == 4
 
         # 3D system
-        sys3d = WeberSystem(2, 3; masses = [1.0, 1.0], charges = [1.0, -1.0], c = 1.0)
+        sys3d = WeberSystem(2, 3)
         @test sys3d.degrees_of_freedom == 6
         @test length(sys3d.dq_dt_symbolic) == 6
     end
 
     @testset "Multiple particles" begin
         # 3-body system
-        sys3body =
-            WeberSystem(3, 2; masses = [1.0, 1.0, 1.0], charges = [1.0, -1.0, 0.5], c = 1.0)
+        sys3body = WeberSystem(3, 2)
         @test sys3body.degrees_of_freedom == 6
         @test sys3body.n_particles == 3
+
+        # params: [m1, m2, m3, q1, q2, q3, c]
+        params3 = [1.0, 1.0, 1.0, 1.0, -1.0, 0.5, 1.0]
 
         # Should have 3 pairwise interactions in the Hamiltonian
         out_q = zeros(6)
@@ -82,28 +86,23 @@
         p = zeros(6)
 
         # Should run without error
-        sys3body.dq_dt_compiled(out_q, q, p)
-        sys3body.dp_dt_compiled(out_p, q, p)
-    end
-
-    @testset "Default speed of light" begin
-        # Default c should be 1.0
-        system = WeberSystem(2, 2; masses = [1.0, 1.0], charges = [1.0, -1.0])
-        @test system.c == 1.0
+        sys3body.dq_dt_compiled(out_q, q, p, params3)
+        sys3body.dp_dt_compiled(out_p, q, p, params3)
     end
 
     @testset "Single particle system" begin
         # Single particle has no interactions, just kinetic energy
-        sys1 = WeberSystem(1, 2; masses = [2.0], charges = [1.0], c = 1.0)
+        sys1 = WeberSystem(1, 2)
         @test sys1.degrees_of_freedom == 2
 
+        params1 = [2.0, 1.0, 1.0]  # m1, q1, c
         out_q = zeros(2)
         out_p = zeros(2)
         q = [1.0, 2.0]
         p = [0.5, 1.0]
 
-        sys1.dq_dt_compiled(out_q, q, p)
-        sys1.dp_dt_compiled(out_p, q, p)
+        sys1.dq_dt_compiled(out_q, q, p, params1)
+        sys1.dp_dt_compiled(out_p, q, p, params1)
 
         # dq/dt = p/m (free particle)
         @test out_q[1] ≈ 0.5 / 2.0  # px/m = 0.25
@@ -120,7 +119,7 @@
         q1, q2 = 0.3, -0.3
         c = 4.0
 
-        system = WeberSystem(2, 2; masses = [m1, m2], charges = [q1, q2], c = c)
+        system = WeberSystem(2, 2)
 
         # Test state
         q = [1.0, 0.0, -1.0, 0.0]
@@ -134,5 +133,17 @@
         # the symbolic Hamiltonian must be correct)
         @test E_manual isa Float64
         @test isfinite(E_manual)
+    end
+
+    @testset "Symbolic parameters in Hamiltonian" begin
+        system = WeberSystem(2, 2)
+        H_str = string(system.hamiltonian_symbolic)
+
+        # Hamiltonian should contain symbolic parameters, not numerical values
+        @test occursin("m1", H_str)
+        @test occursin("m2", H_str)
+        @test occursin("q1", H_str)
+        @test occursin("q2", H_str)
+        @test occursin("c", H_str)
     end
 end

@@ -16,6 +16,10 @@ struct WeberProblem
     tspan::Tuple{Float64,Float64}
     q_initial::Vector{Float64}
     p_initial::Vector{Float64}
+    masses::Vector{Float64}
+    charges::Vector{Float64}
+    c::Float64
+    params::Vector{Float64}
     dt::Float64
     convergence_tolerance::Float64
     maximum_iterations::Int
@@ -25,23 +29,40 @@ struct WeberProblem
         tspan::Tuple{Real,Real},
         q_initial::AbstractVector,
         p_initial::AbstractVector;
+        masses::AbstractVector{<:Real},
+        charges::AbstractVector{<:Real},
+        c::Real,
         dt::Real,
         convergence_tolerance::Real = 1e-13,
         maximum_iterations::Integer = 100,
     )
+        n_particles = system.n_particles
         dof = system.degrees_of_freedom
         @assert length(q_initial) == dof "q_initial must have length $dof (got $(length(q_initial)))"
         @assert length(p_initial) == dof "p_initial must have length $dof (got $(length(p_initial)))"
+        @assert length(masses) == n_particles "masses must have length $n_particles (got $(length(masses)))"
+        @assert length(charges) == n_particles "charges must have length $n_particles (got $(length(charges)))"
+        @assert all(m -> m > 0, masses) "All masses must be positive"
+        @assert c > 0 "Speed of light must be positive"
         @assert tspan[2] > tspan[1] "End time must be greater than start time"
         @assert dt > 0 "Time step must be positive"
         @assert convergence_tolerance > 0 "Convergence tolerance must be positive"
         @assert maximum_iterations > 0 "Maximum iterations must be positive"
+
+        masses_f64 = Vector{Float64}(masses)
+        charges_f64 = Vector{Float64}(charges)
+        c_f64 = Float64(c)
+        params = vcat(masses_f64, charges_f64, [c_f64])
 
         new(
             system,
             (Float64(tspan[1]), Float64(tspan[2])),
             Vector{Float64}(q_initial),
             Vector{Float64}(p_initial),
+            masses_f64,
+            charges_f64,
+            c_f64,
+            params,
             Float64(dt),
             Float64(convergence_tolerance),
             Int(maximum_iterations),

@@ -6,8 +6,7 @@
         q2_charge = -sqrt(0.1)  # q1*q2 = -0.1 (attractive)
         c = 4.0
 
-        system =
-            WeberSystem(2, 2; masses = [m1, m2], charges = [q1_charge, q2_charge], c = c)
+        system = WeberSystem(2, 2)
 
         r0 = 2.0
         M = m1 + m2
@@ -16,7 +15,8 @@
         q0 = [-m2 / M * r0, 0.0, m1 / M * r0, 0.0]
         p0 = [0.0, m1 * (-m2 / M * v_circ * 0.9), 0.0, m2 * (m1 / M * v_circ * 0.9)]
 
-        prob = WeberProblem(system, (0.0, 1.0), q0, p0; dt = 0.001)
+        prob = WeberProblem(system, (0.0, 1.0), q0, p0;
+            masses = [m1, m2], charges = [q1_charge, q2_charge], c = c, dt = 0.001)
 
         # Solve
         sol = solve(prob)
@@ -88,17 +88,21 @@
 
     @testset "Different initial conditions" begin
         # Test with different orbital configurations
+        m1, m2 = 1.0, 0.1
+        q1_charge, q2_charge = 0.1, -0.1
+        c = 4.0
+
         for scale in [0.5, 1.0, 2.0]
-            system = WeberSystem(2, 2; masses = [1.0, 0.1], charges = [0.1, -0.1], c = 4.0)
+            system = WeberSystem(2, 2)
             r0 = 2.0 * scale
-            m1, m2 = 1.0, 0.1
             M = m1 + m2
-            k = system.charges[1] * system.charges[2]
+            k = q1_charge * q2_charge
             v_circ = sqrt(abs(k) * M / (m1 * m2 * r0))
             q0 = [-m2 / M * r0, 0.0, m1 / M * r0, 0.0]
             p0 = [0.0, m1 * (-m2 / M * v_circ * 0.9), 0.0, m2 * (m1 / M * v_circ * 0.9)]
 
-            prob = WeberProblem(system, (0.0, 1.0), q0, p0; dt = 0.001)
+            prob = WeberProblem(system, (0.0, 1.0), q0, p0;
+                masses = [m1, m2], charges = [q1_charge, q2_charge], c = c, dt = 0.001)
             sol = solve(prob)
             @test sol.retcode == :Success
         end
@@ -112,8 +116,8 @@
         @test sol.retcode == :Success
 
         # Energy should be conserved
-        masses = [1.0, 0.5]
-        charges = prob.system.charges
+        masses = prob.masses
+        charges = prob.charges
         E(q, p) = coulomb_like_energy_2body_2d(q, p, masses, charges)
         E0 = E(sol.q[1], sol.p[1])
         E_final = E(sol.q[end], sol.p[end])
@@ -151,8 +155,8 @@
     @testset "Statistics on same solution" begin
         prob = make_coulomb_like_problem(tspan = (0.0, 1.0), dt = 0.01)
         sol = solve(prob)
-        masses = prob.system.masses
-        charges = prob.system.charges
+        masses = prob.masses
+        charges = prob.charges
 
         # All statistics should work on the same solution
         traj = compute_trajectory_data(sol, 2, 2)

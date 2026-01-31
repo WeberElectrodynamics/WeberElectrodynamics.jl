@@ -128,7 +128,7 @@
     end
 
     @testset "Custom tolerance" begin
-        system = WeberSystem(2, 2; masses = [1.0, 0.1], charges = [0.1, -0.1], c = 4.0)
+        system = WeberSystem(2, 2)
         q0 = [1.0, 0.0, -1.0, 0.0]
         p0 = [0.0, 0.05, 0.0, -0.05]
 
@@ -137,6 +137,9 @@
             (0.0, 0.1),
             q0,
             p0;
+            masses = [1.0, 0.1],
+            charges = [0.1, -0.1],
+            c = 4.0,
             dt = 0.001,
             convergence_tolerance = 1e-14,
         )

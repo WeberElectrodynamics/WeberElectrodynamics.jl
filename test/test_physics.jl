@@ -2,8 +2,8 @@
     @testset "Energy conservation - Coulomb-like" begin
         prob = make_coulomb_like_problem(tspan = (0.0, 5.0), dt = 0.001)
         sol = solve(prob)
-        masses = prob.system.masses
-        charges = prob.system.charges
+        masses = prob.masses
+        charges = prob.charges
 
         E(q, p) = coulomb_like_energy_2body_2d(q, p, masses, charges)
         E0 = E(sol.q[1], sol.p[1])
@@ -21,9 +21,9 @@
     @testset "Energy conservation - Weber" begin
         prob = make_weber_problem(tspan = (0.0, 2.0), dt = 0.0005)
         sol = solve(prob)
-        masses = prob.system.masses
-        charges = prob.system.charges
-        c = prob.system.c
+        masses = prob.masses
+        charges = prob.charges
+        c = prob.c
 
         E(q, p) = weber_energy_2body_2d(q, p, masses, charges, c)
         E0 = E(sol.q[1], sol.p[1])
@@ -46,9 +46,9 @@
             sol,
             2,
             2,
-            prob.system.masses,
-            prob.system.charges,
-            prob.system.c,
+            prob.masses,
+            prob.charges,
+            prob.c,
         )
         n3 = check_newtons_third_law(forces)
 
@@ -64,9 +64,9 @@
             sol,
             2,
             2,
-            prob.system.masses,
-            prob.system.charges,
-            prob.system.c,
+            prob.masses,
+            prob.charges,
+            prob.c,
         )
         n3 = check_newtons_third_law(forces)
 
@@ -78,7 +78,7 @@
         prob = make_coulomb_like_problem(tspan = (0.0, 2.0), dt = 0.01)
         sol = solve(prob)
 
-        m1, m2 = prob.system.masses
+        m1, m2 = prob.masses
         M = m1 + m2
 
         # Initial center of mass position and momentum
@@ -128,8 +128,8 @@
         sol = solve(prob)
 
         # Energy at beginning, middle, and end
-        masses = prob.system.masses
-        charges = prob.system.charges
+        masses = prob.masses
+        charges = prob.charges
         E(q, p) = coulomb_like_energy_2body_2d(q, p, masses, charges)
         E_start = E(sol.q[1], sol.p[1])
         E_mid = E(sol.q[length(sol)÷2], sol.p[length(sol)÷2])
@@ -172,8 +172,8 @@
         prob_bound = make_coulomb_like_problem(tspan = (0.0, 2.0), dt = 0.01)
         sol_bound = solve(prob_bound)
 
-        masses = prob_bound.system.masses
-        charges = prob_bound.system.charges
+        masses = prob_bound.masses
+        charges = prob_bound.charges
         E0 = coulomb_like_energy_2body_2d(sol_bound.q[1], sol_bound.p[1], masses, charges)
         @test E0 < 0  # Bound orbit has negative energy
 
@@ -193,21 +193,22 @@
         m1, m2 = 1.0, 0.5
         q1, q2 = 1.0, -1.0
 
-        # Weber with very large c
-        sys_large_c = WeberSystem(2, 2; masses = [m1, m2], charges = [q1, q2], c = 1e10)
-
-        # Weber with smaller c
-        sys_small_c = WeberSystem(2, 2; masses = [m1, m2], charges = [q1, q2], c = 10.0)
+        # Single system, different params
+        sys = WeberSystem(2, 2)
 
         # Test at specific point
         q = [1.0, 0.0, -1.0, 0.0]
         p = [0.0, 0.5, 0.0, -0.5]
 
+        # Params layout: [m1, m2, q1, q2, c]
+        params_large_c = [m1, m2, q1, q2, 1e10]
+        params_small_c = [m1, m2, q1, q2, 10.0]
+
         out_large_c = zeros(4)
         out_small_c = zeros(4)
 
-        sys_large_c.dp_dt_compiled(out_large_c, q, p)
-        sys_small_c.dp_dt_compiled(out_small_c, q, p)
+        sys.dp_dt_compiled(out_large_c, q, p, params_large_c)
+        sys.dp_dt_compiled(out_small_c, q, p, params_small_c)
 
         # Force magnitude should be similar but with small Weber correction for finite c
         @test norm(out_large_c) ≈ norm(out_small_c) rtol = 0.1

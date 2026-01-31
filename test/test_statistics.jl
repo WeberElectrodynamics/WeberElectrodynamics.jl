@@ -59,8 +59,17 @@
 
         @testset "1D system" begin
             # Create a 1D 2-body system for this test
-            sys1d = WeberSystem(2, 1; masses = [1.0, 1.0], charges = [1.0, -1.0], c = 1e10)
-            prob1d = WeberProblem(sys1d, (0.0, 0.5), [1.0, -1.0], [0.1, -0.1]; dt = 0.01)
+            sys1d = WeberSystem(2, 1)
+            prob1d = WeberProblem(
+                sys1d,
+                (0.0, 0.5),
+                [1.0, -1.0],
+                [0.1, -0.1];
+                masses = [1.0, 1.0],
+                charges = [1.0, -1.0],
+                c = 1e10,
+                dt = 0.01,
+            )
             sol1d = solve(prob1d)
             traj = compute_trajectory_data(sol1d, 2, 1)
             @test traj.n_particles == 2
@@ -71,9 +80,9 @@
 
     @testset "EnergyData" begin
         # Energy functions for 2-body Weber system
-        masses = prob_weber.system.masses
-        charges = prob_weber.system.charges
-        c = prob_weber.system.c
+        masses = prob_weber.masses
+        charges = prob_weber.charges
+        c = prob_weber.c
 
         total_energy(q, p, params, t) = weber_energy_2body_2d(q, p, masses, charges, c)
         kinetic_energy(q, p, params, t) =

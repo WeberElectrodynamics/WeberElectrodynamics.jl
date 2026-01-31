@@ -6,6 +6,7 @@ using LinearAlgebra: norm, mul!
     dt::Float64,
     dq_dt_compiled,
     dp_dt_compiled,
+    params::Vector{Float64},
     auxiliary_position_buffer::Vector{Float64},
     momentum_buffer::Vector{Float64},
     position_buffer::Vector{Float64},
@@ -27,20 +28,20 @@ using LinearAlgebra: norm, mul!
         P_component = Z_vec[idx_P_start:idx_P_end]
         Y_component = Z_vec[idx_Y_start:idx_Y_end]
 
-        dq_dt_compiled(auxiliary_position_buffer, Q_component, Y_component)
-        dp_dt_compiled(momentum_buffer, Q_component, Y_component)
+        dq_dt_compiled(auxiliary_position_buffer, Q_component, Y_component, params)
+        dp_dt_compiled(momentum_buffer, Q_component, Y_component, params)
 
         @. X_component = X_component + auxiliary_position_buffer * (dt / 2)
         @. P_component = P_component + momentum_buffer * (dt / 2)
 
-        dq_dt_compiled(position_buffer, X_component, P_component)
-        dp_dt_compiled(auxiliary_momentum_buffer, X_component, P_component)
+        dq_dt_compiled(position_buffer, X_component, P_component, params)
+        dp_dt_compiled(auxiliary_momentum_buffer, X_component, P_component, params)
 
         @. Q_component = Q_component + position_buffer * dt
         @. Y_component = Y_component + auxiliary_momentum_buffer * dt
 
-        dq_dt_compiled(auxiliary_position_buffer, Q_component, Y_component)
-        dp_dt_compiled(momentum_buffer, Q_component, Y_component)
+        dq_dt_compiled(auxiliary_position_buffer, Q_component, Y_component, params)
+        dp_dt_compiled(momentum_buffer, Q_component, Y_component, params)
 
         @. X_component = X_component + auxiliary_position_buffer * (dt / 2)
         @. P_component = P_component + momentum_buffer * (dt / 2)
@@ -59,6 +60,7 @@ end
     dt::Float64,
     dq_dt_compiled,
     dp_dt_compiled,
+    params::Vector{Float64},
     auxiliary_position_buffer::Vector{Float64},
     momentum_buffer::Vector{Float64},
     position_buffer::Vector{Float64},
@@ -73,6 +75,7 @@ end
             dt,
             dq_dt_compiled,
             dp_dt_compiled,
+            params,
             auxiliary_position_buffer,
             momentum_buffer,
             position_buffer,
@@ -131,9 +134,9 @@ function CommonSolve.step!(integrator::WeberIntegrator)
     convergence_tolerance = prob.convergence_tolerance
     maximum_iterations = prob.maximum_iterations
 
-    # Compiled functions from WeberSystem (params baked in)
     dq_dt_compiled = prob.system.dq_dt_compiled
     dp_dt_compiled = prob.system.dp_dt_compiled
+    params = prob.params
 
     buffers = integrator.buffers
     d = buffers.d  # degrees of freedom
@@ -178,6 +181,7 @@ function CommonSolve.step!(integrator::WeberIntegrator)
             dt,
             dq_dt_compiled,
             dp_dt_compiled,
+            params,
             auxiliary_position_buffer,
             momentum_buffer,
             position_buffer,
@@ -203,6 +207,7 @@ function CommonSolve.step!(integrator::WeberIntegrator)
                 dt,
                 dq_dt_compiled,
                 dp_dt_compiled,
+                params,
                 auxiliary_position_buffer,
                 momentum_buffer,
                 position_buffer,
@@ -227,6 +232,7 @@ function CommonSolve.step!(integrator::WeberIntegrator)
         dt,
         dq_dt_compiled,
         dp_dt_compiled,
+        params,
         auxiliary_position_buffer,
         momentum_buffer,
         position_buffer,
@@ -249,6 +255,7 @@ function CommonSolve.step!(integrator::WeberIntegrator)
             dt,
             dq_dt_compiled,
             dp_dt_compiled,
+            params,
             auxiliary_position_buffer,
             momentum_buffer,
             position_buffer,

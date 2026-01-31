@@ -15,14 +15,14 @@ function make_weber_problem(;
     q1 = sqrt(abs(k))
     q2 = -sign(k) * sqrt(abs(k))  # q1*q2 = -|k|*sign(k) = k for k < 0
 
-    system = WeberSystem(2, 2; masses = [m1, m2], charges = [q1, q2], c = c)
+    system = WeberSystem(2, 2)
 
     r0 = 2.0
     M = m1 + m2
     v_circ = sqrt(abs(k) * M / (m1 * m2 * r0))
     q0 = [-m2 / M * r0, 0.0, m1 / M * r0, 0.0]
     p0 = [0.0, m1 * (-m2 / M * v_circ * 0.9), 0.0, m2 * (m1 / M * v_circ * 0.9)]
-    WeberProblem(system, tspan, q0, p0; dt = dt)
+    WeberProblem(system, tspan, q0, p0; masses = [m1, m2], charges = [q1, q2], c = c, dt = dt)
 end
 
 """
@@ -41,14 +41,14 @@ function make_coulomb_like_problem(;
     q1 = sqrt(k)
     q2 = -sqrt(k)  # q1*q2 = -k (attractive)
 
-    system = WeberSystem(2, 2; masses = [m1, m2], charges = [q1, q2], c = 1e10)
+    system = WeberSystem(2, 2)
 
     r0 = 2.0
     M = m1 + m2
     v_circ = sqrt(k * M / (m1 * m2 * r0))
     q0 = [-m2 / M * r0, 0.0, m1 / M * r0, 0.0]
     p0 = [0.0, m1 * (-m2 / M * v_circ), 0.0, m2 * (m1 / M * v_circ)]
-    WeberProblem(system, tspan, q0, p0; dt = dt)
+    WeberProblem(system, tspan, q0, p0; masses = [m1, m2], charges = [q1, q2], c = 1e10, dt = dt)
 end
 
 # =============================================================================
