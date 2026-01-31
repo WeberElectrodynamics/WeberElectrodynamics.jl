@@ -84,12 +84,12 @@
         charges = prob_weber.charges
         c = prob_weber.c
 
-        total_energy(q, p, params, t) = weber_energy_2body_2d(q, p, masses, charges, c)
-        kinetic_energy(q, p, params, t) =
+        total_energy(q, p, params) = weber_energy_2body_2d(q, p, masses, charges, c)
+        kinetic_energy(q, p, params) =
             sum(p[1:2] .^ 2) / (2 * masses[1]) + sum(p[3:4] .^ 2) / (2 * masses[2])
-        function potential_energy(q, p, params, t)
+        function potential_energy(q, p, params)
             weber_energy_2body_2d(q, p, masses, charges, c) -
-            kinetic_energy(q, p, params, t)
+            kinetic_energy(q, p, params)
         end
 
         @testset "compute_energy_timeseries basic" begin

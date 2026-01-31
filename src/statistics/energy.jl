@@ -29,7 +29,7 @@ function compute_energy_timeseries(
     total_energy = zeros(n_points)
     for (i, idx) in enumerate(indices)
         total_energy[i] =
-            total_energy_func(solution.q[idx], solution.p[idx], params, solution.t[idx])
+            total_energy_func(solution.q[idx], solution.p[idx], params)
     end
 
     kinetic_energy = if !isnothing(kinetic_energy_func)
@@ -39,7 +39,6 @@ function compute_energy_timeseries(
                 solution.q[idx],
                 solution.p[idx],
                 params,
-                solution.t[idx],
             )
         end
         ke
@@ -54,7 +53,6 @@ function compute_energy_timeseries(
                 solution.q[idx],
                 solution.p[idx],
                 params,
-                solution.t[idx],
             )
         end
         pe
