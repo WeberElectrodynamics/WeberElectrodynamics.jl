@@ -2,7 +2,7 @@
 
 ## Constants and units
 
-We use absolute system of units throughout this document, unless otherwise specified. 
+We use absolute system of units throughout this document, unless otherwise specified.
 
 |              | Description                        | SI Unit                             | Gauss-Weber absolute units         |
 | ------------ | ---------------------------------- | ----------------------------------- | ---------------------------------- |
@@ -122,9 +122,11 @@ $$U = \frac{q_1 q_2}{r}\left(1 - \frac{\dot{r}^2}{2c^2}\right)$$
 
 ## Weber Force
 
+The force can be derived from the potential in two ways. The first assumes $r$ is an explicit function of time. The second assumes $r$ is only a function of the coordinates.
+
 ### Explicit Time Parameterization of $r$ and $\dot{r}$
 
-If $r$ and $\dot{r}$ are both functions of time, that is, $r = r(t)$ and $\dot{r} = \dot{r}(t)$, then the force on particle 1 due to particle 2 can be derived from the potential energy using $\vec{F}_{12} = -\nabla_1 U$. Since $\nabla_1 r = \hat{r}$ (where $\hat{r}$ points from particle 2 to particle 1), we have:
+If $r$ and $\dot{r}$ are both functions of time, that is, $r = r(t)$ and $\dot{r} = \dot{r}(t)$, then the force on particle 1 due to particle 2 is:
 
 $$\vec{F}_{12} = -\frac{dU}{dr}\hat{r}$$
 
@@ -164,9 +166,9 @@ $$S = \frac{q_1 q_2}{r}\left(1 + \frac{\dot{r}^2}{2c^2}\right)$$
 
 $$L = T - S$$
 
-In the following, we use $q_i$ to denote generalized coordinates. For a 2-particle system in 3D: 
+In the following, we use $q_i$ to denote generalized coordinates. For a 2-particle system in 3D:
 
-$$\begin{pmatrix} \dot{q}_1 \\ \dot{q}_2 \\ \dot{q}_3 \\ \dot{q}_4 \\ \dot{q}_5 \\ \dot{q}_6 \end{pmatrix} = \begin{pmatrix} \dot{x}_1 \\ \dot{y}_1 \\ \dot{z}_1 \\ \dot{x}_2 \\ \dot{y}_2 \\ \dot{z}_2 \end{pmatrix}$$ 
+$$\begin{pmatrix} \dot{q}_1 \\ \dot{q}_2 \\ \dot{q}_3 \\ \dot{q}_4 \\ \dot{q}_5 \\ \dot{q}_6 \end{pmatrix} = \begin{pmatrix} \dot{x}_1 \\ \dot{y}_1 \\ \dot{z}_1 \\ \dot{x}_2 \\ \dot{y}_2 \\ \dot{z}_2 \end{pmatrix}$$
 
 The generalized coordinates should not be confused with the electric charges. The Hamiltonian is defined as:
 
