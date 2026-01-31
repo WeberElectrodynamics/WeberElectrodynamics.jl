@@ -84,8 +84,8 @@ function compute_force_timeseries(
     velocities = Array{Float64}(undef, dims, n_steps, n_particles)
     @inbounds for particle = 1:n_particles
         m = masses[particle]
-        for (i, idx) in enumerate(indices)
-            for d = 1:dims
+        @inbounds for (i, idx) in enumerate(indices)
+            @inbounds for d = 1:dims
                 p_idx = (particle - 1) * dims + d
                 velocities[d, i, particle] = sol.p[idx][p_idx] / m
             end
@@ -94,8 +94,8 @@ function compute_force_timeseries(
 
     accelerations = Array{Float64}(undef, dims, n_force_steps, n_particles)
     @inbounds for particle = 1:n_particles
-        for t = 1:n_force_steps
-            for d = 1:dims
+        @inbounds for t = 1:n_force_steps
+            @inbounds for d = 1:dims
                 accelerations[d, t, particle] =
                     (velocities[d, t+1, particle] - velocities[d, t, particle]) / dt
             end
@@ -104,8 +104,8 @@ function compute_force_timeseries(
 
     positions = Array{Float64}(undef, dims, n_steps, n_particles)
     @inbounds for particle = 1:n_particles
-        for (i, idx) in enumerate(indices)
-            for d = 1:dims
+        @inbounds for (i, idx) in enumerate(indices)
+            @inbounds for d = 1:dims
                 q_idx = (particle - 1) * dims + d
                 positions[d, i, particle] = sol.q[idx][q_idx]
             end

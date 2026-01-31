@@ -42,7 +42,7 @@ function compute_trajectory_data(
     for particle = 1:n_particles
         traj = trajectories[particle]
         @inbounds for (i, idx) in enumerate(indices)
-            for d = 1:dims
+            @inbounds for d = 1:dims
                 coord_idx = (particle - 1) * dims + d
                 traj[i, d] = sol.q[idx][coord_idx]
             end

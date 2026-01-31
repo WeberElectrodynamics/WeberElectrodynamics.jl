@@ -31,6 +31,8 @@ export compute_trajectory_data
 
 include("statistics/energy.jl")
 export EnergyData
+export PairEnergyData
+export EnergyStatistics
 export compute_energy_timeseries
 
 include("statistics/forces.jl")
@@ -48,8 +50,10 @@ export compute_phase_space_data
 # =============================================================================
 function plot_trajectories end
 function plot_energy end
+function plot_pair_energy end
+function plot_energy_errors end
 function plot_forces end
 function plot_phase_space end
-export plot_trajectories, plot_energy, plot_forces, plot_phase_space
+export plot_trajectories, plot_energy, plot_pair_energy, plot_energy_errors, plot_forces, plot_phase_space
 
 end

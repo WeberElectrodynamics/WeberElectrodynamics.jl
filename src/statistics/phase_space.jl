@@ -47,7 +47,7 @@ function compute_phase_space_data(
     rel_pos = zeros(dims)
     rel_vel = zeros(dims)
 
-    for (k, idx) in enumerate(indices)
+    @inbounds for (k, idx) in enumerate(indices)
         q = sol.q[idx]
         p = sol.p[idx]
 

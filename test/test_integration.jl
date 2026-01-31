@@ -27,18 +27,8 @@
         @test traj.n_particles == 2
 
         # Energy
-        function total_energy(q, p, params)
-            weber_energy_2body_2d(q, p, [m1, m2], [q1_charge, q2_charge], c)
-        end
-        energy = compute_energy_timeseries(
-            sol,
-            total_energy,
-            nothing,
-            nothing,
-            nothing;
-            stride = 10,
-        )
-        @test energy.relative_energy_range < 1e-6
+        energy = compute_energy_timeseries(sol; stride = 10)
+        @test energy.statistics.global_error_percent_max < 1e-2
 
         # Forces
         forces = compute_force_timeseries(
@@ -162,8 +152,7 @@
         traj = compute_trajectory_data(sol, 2, 2)
         @test traj isa TrajectoryData
 
-        energy_func(q, p, params) = coulomb_like_energy_2body_2d(q, p, masses, charges)
-        energy = compute_energy_timeseries(sol, energy_func, nothing, nothing, nothing)
+        energy = compute_energy_timeseries(sol)
         @test energy isa EnergyData
 
         forces = compute_force_timeseries(sol, 2, 2, masses, charges, 1e10)

@@ -1,7 +1,7 @@
 using Symbolics
 using Latexify: latexify
 
-struct WeberSystem{H,QD,PD,QF,PF,PS}
+struct WeberSystem{H,QD,PD,QF,PF,HF,PS}
     n_particles::Int
     dims::Int
 
@@ -15,6 +15,7 @@ struct WeberSystem{H,QD,PD,QF,PF,PS}
 
     dq_dt_compiled::QF
     dp_dt_compiled::PF
+    hamiltonian_compiled::HF
 
     degrees_of_freedom::Int
 end
@@ -130,6 +131,8 @@ function WeberSystem(n_particles::Int, dims::Int)
         Symbolics.build_function(dq_dt_symbolic, q_vars, p_vars, param_symbols, expression = Val{false})[2]
     dp_dt_compiled =
         Symbolics.build_function(dp_dt_symbolic, q_vars, p_vars, param_symbols, expression = Val{false})[2]
+    hamiltonian_compiled =
+        Symbolics.build_function(hamiltonian_symbolic, q_vars, p_vars, param_symbols, expression = Val{false})
 
     degrees_of_freedom = n_particles * dims
 
@@ -144,6 +147,7 @@ function WeberSystem(n_particles::Int, dims::Int)
         dp_dt_symbolic,
         dq_dt_compiled,
         dp_dt_compiled,
+        hamiltonian_compiled,
         degrees_of_freedom,
     )
 end

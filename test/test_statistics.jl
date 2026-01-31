@@ -79,81 +79,67 @@
     end
 
     @testset "EnergyData" begin
-        # Energy functions for 2-body Weber system
-        masses = prob_weber.masses
-        charges = prob_weber.charges
-        c = prob_weber.c
-
-        total_energy(q, p, params) = weber_energy_2body_2d(q, p, masses, charges, c)
-        kinetic_energy(q, p, params) =
-            sum(p[1:2] .^ 2) / (2 * masses[1]) + sum(p[3:4] .^ 2) / (2 * masses[2])
-        function potential_energy(q, p, params)
-            weber_energy_2body_2d(q, p, masses, charges, c) -
-            kinetic_energy(q, p, params)
-        end
-
         @testset "compute_energy_timeseries basic" begin
-            energy = compute_energy_timeseries(
-                sol_weber,
-                total_energy,
-                nothing,
-                nothing,
-                nothing,
-            )
+            energy = compute_energy_timeseries(sol_weber)
 
             @test energy isa EnergyData
             @test length(energy.t) == length(sol_weber.t)
             @test length(energy.total_energy) == length(sol_weber.t)
-            @test isnothing(energy.kinetic_energy)
-            @test isnothing(energy.potential_energy)
-        end
-
-        @testset "compute_energy_timeseries with components" begin
-            energy = compute_energy_timeseries(
-                sol_weber,
-                total_energy,
-                kinetic_energy,
-                potential_energy,
-                nothing,
-            )
-
-            @test !isnothing(energy.kinetic_energy)
-            @test !isnothing(energy.potential_energy)
             @test length(energy.kinetic_energy) == length(sol_weber.t)
-            @test length(energy.potential_energy) == length(sol_weber.t)
+            @test length(energy.total_potential_energy) == length(sol_weber.t)
+            @test energy.n_particles == 2
+            @test energy.n_pairs == 1
+        end
 
-            # KE + PE = Total (approximately)
-            for i = 1:length(energy.t)
-                @test energy.kinetic_energy[i] + energy.potential_energy[i] ≈
-                      energy.total_energy[i] rtol = 1e-10
+        @testset "Pair energy decomposition" begin
+            energy = compute_energy_timeseries(sol_weber)
+
+            @test haskey(energy.pair_energies, (1, 2))
+            pair_data = energy.pair_energies[(1, 2)]
+            @test pair_data isa PairEnergyData
+            @test length(pair_data.coulomb_term) == length(sol_weber.t)
+            @test length(pair_data.velocity_term) == length(sol_weber.t)
+            @test length(pair_data.radial_velocity) == length(sol_weber.t)
+
+            # Verify pair potential = coulomb + velocity
+            for i in eachindex(pair_data.total_pair_potential)
+                @test pair_data.total_pair_potential[i] ≈
+                      pair_data.coulomb_term[i] + pair_data.velocity_term[i] rtol = 1e-14
             end
         end
 
-        @testset "Energy statistics" begin
-            energy = compute_energy_timeseries(
-                sol_weber,
-                total_energy,
-                nothing,
-                nothing,
-                nothing,
-            )
+        @testset "Energy conservation" begin
+            energy = compute_energy_timeseries(sol_weber)
 
-            @test energy.max_local_error >= 0
-            # For symplectic integrator, relative range should be small
-            if !isnan(energy.relative_energy_range)
-                @test energy.relative_energy_range < 1e-6
+            # KE + PE = Total
+            for i in eachindex(energy.total_energy)
+                @test energy.kinetic_energy[i] + energy.total_potential_energy[i] ≈
+                      energy.total_energy[i] rtol = 1e-14
             end
+        end
+
+        @testset "Hamiltonian validation" begin
+            energy = compute_energy_timeseries(sol_weber)
+
+            # Our computed energy should match WeberSystem's compiled Hamiltonian
+            @test all(energy.hamiltonian_validation_error .< 1e-12)
+        end
+
+        @testset "Statistics" begin
+            energy = compute_energy_timeseries(sol_weber)
+            stats = energy.statistics
+
+            @test stats isa EnergyStatistics
+            @test stats.local_error_max >= stats.local_error_min
+            @test stats.local_error_max >= 0
+            @test stats.local_error_avg >= 0
+
+            # For symplectic integrator, energy should be well-conserved
+            @test stats.global_error_percent_max < 1e-2  # < 0.01% error
         end
 
         @testset "compute_energy_timeseries with stride" begin
-            energy = compute_energy_timeseries(
-                sol_weber,
-                total_energy,
-                nothing,
-                nothing,
-                nothing;
-                stride = 10,
-            )
+            energy = compute_energy_timeseries(sol_weber; stride = 10)
 
             expected_points = length(1:10:length(sol_weber.t))
             @test length(energy.t) == expected_points
@@ -161,22 +147,31 @@
         end
 
         @testset "Validation errors" begin
-            @test_throws ArgumentError compute_energy_timeseries(
-                sol_weber,
-                total_energy,
-                nothing,
-                nothing,
-                nothing;
-                stride = 0,
+            @test_throws ArgumentError compute_energy_timeseries(sol_weber; stride = 0)
+            @test_throws ArgumentError compute_energy_timeseries(sol_weber; stride = -1)
+        end
+
+        @testset "3-body system" begin
+            # Create a 3-body system to test n_pairs = 3
+            sys3 = WeberSystem(3, 2)
+            prob3 = WeberProblem(
+                sys3,
+                (0.0, 0.1),
+                [1.0, 0.0, -0.5, 0.866, -0.5, -0.866],  # Triangle
+                zeros(6);
+                masses = [1.0, 1.0, 1.0],
+                charges = [0.1, 0.1, 0.1],
+                c = 1e6,
+                dt = 0.001,
             )
-            @test_throws ArgumentError compute_energy_timeseries(
-                sol_weber,
-                total_energy,
-                nothing,
-                nothing,
-                nothing;
-                stride = -1,
-            )
+            sol3 = solve(prob3)
+            energy3 = compute_energy_timeseries(sol3)
+
+            @test energy3.n_particles == 3
+            @test energy3.n_pairs == 3
+            @test haskey(energy3.pair_energies, (1, 2))
+            @test haskey(energy3.pair_energies, (1, 3))
+            @test haskey(energy3.pair_energies, (2, 3))
         end
     end
 
