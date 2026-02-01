@@ -2,7 +2,6 @@ module WeberElectrodynamicsPlotsExt
 
 using WeberElectrodynamics
 using Plots
-using LaTeXStrings
 using LinearAlgebra
 using Printf
 
@@ -14,19 +13,18 @@ const PLOT_DEFAULTS = (
     framestyle = :box,
     grid = true,
     gridalpha = 0.2,
-    tickfontsize = 8,
-    guidefontsize = 10,
-    legendfontsize = 8,
-    titlefontsize = 10,
+    tickfontsize = 10,
+    guidefontsize = 11,
+    legendfontsize = 9,
+    titlefontsize = 12,
     dpi = 300,
     linewidth = 1.5,
     markersize = 4,
     margin = 8Plots.mm,
-    left_margin = 12Plots.mm,
-    bottom_margin = 10Plots.mm,
-    top_margin = 5Plots.mm,
+    left_margin = 15Plots.mm,
+    bottom_margin = 12Plots.mm,
+    top_margin = 8Plots.mm,
     right_margin = 15Plots.mm,
-    fontfamily = "serif",
     foreground_color_legend = nothing,
     background_color_legend = nothing,
 )
@@ -106,17 +104,18 @@ function WeberElectrodynamics.plot_energy(data::EnergyData)::Plots.Plot
 
     # Panel 1: Energy components
     p1 = plot(;
+        title = "Energy Conservation",
         xlabel = "",
-        ylabel = L"Energy",
+        ylabel = "Energy",
         legend = :outertopright,
         PLOT_DEFAULTS...,
     )
-    plot!(p1, data.t, data.total_energy, label = L"Total $E$", linewidth = 2, color = :black)
+    plot!(p1, data.t, data.total_energy, label = "Total E", linewidth = 2, color = :black)
     plot!(
         p1,
         data.t,
         data.kinetic_energy,
-        label = L"Kinetic $T$",
+        label = "Kinetic T",
         linewidth = 1.5,
         color = :steelblue,
     )
@@ -124,7 +123,7 @@ function WeberElectrodynamics.plot_energy(data::EnergyData)::Plots.Plot
         p1,
         data.t,
         data.total_potential_energy,
-        label = L"Potential $U$",
+        label = "Potential U",
         linewidth = 1.5,
         color = :firebrick,
     )
@@ -135,11 +134,11 @@ function WeberElectrodynamics.plot_energy(data::EnergyData)::Plots.Plot
     max_idx = argmax(relative_error)
 
     p2 = plot(;
-        xlabel = L"Time $t$",
-        ylabel = L"|\Delta E / E_0|}",
+        title = "Relative Energy Error",
+        xlabel = "Time t",
+        ylabel = "|ΔE/E₀|",
         legend = :outertopright,
         yscale = :log10,
-        yformatter = :scientific,
         PLOT_DEFAULTS...,
     )
     plot!(p2, data.t, relative_error, label = "", linewidth = 1.5, color = :black)
@@ -194,17 +193,17 @@ function WeberElectrodynamics.plot_pair_energy(
 
     # Panel 1: Energy components
     p1 = plot(;
+        title = "Pair ($i,$j) Weber Potential",
         xlabel = "",
-        ylabel = L"Energy",
+        ylabel = "Energy",
         legend = :outertopright,
-        title = L"Pair (%$i, %$j) Energy Components",
         PLOT_DEFAULTS...,
     )
     plot!(
         p1,
         data.t,
         pair_data.coulomb_term,
-        label = L"Coulomb $q_i q_j / r$",
+        label = "Coulomb qᵢqⱼ/r",
         linewidth = 1.5,
         color = :firebrick,
     )
@@ -212,7 +211,7 @@ function WeberElectrodynamics.plot_pair_energy(
         p1,
         data.t,
         pair_data.velocity_term,
-        label = L"Velocity $-q_i q_j \dot{r}^2 / 2c^2 r$",
+        label = "Velocity term",
         linewidth = 1.5,
         color = :steelblue,
     )
@@ -220,7 +219,7 @@ function WeberElectrodynamics.plot_pair_energy(
         p1,
         data.t,
         pair_data.total_pair_potential,
-        label = L"Total",
+        label = "Total",
         linewidth = 2,
         color = :black,
     )
@@ -229,8 +228,9 @@ function WeberElectrodynamics.plot_pair_energy(
     rdot = pair_data.radial_velocity
 
     p2 = plot(;
-        xlabel = L"Time $t$",
-        ylabel = L"Radial Velocity $\dot{r}$",
+        title = "Radial Dynamics",
+        xlabel = "Time t",
+        ylabel = "Radial Velocity ṙ",
         legend = :outertopright,
         PLOT_DEFAULTS...,
     )
@@ -263,7 +263,7 @@ function WeberElectrodynamics.plot_pair_energy(
     )
 
     # Overlay the actual line
-    plot!(p2, data.t, rdot, label = L"\dot{r}", linewidth = 1.5, color = :black)
+    plot!(p2, data.t, rdot, label = "ṙ", linewidth = 1.5, color = :black)
 
     # Zero reference line
     hline!(p2, [0.0], linestyle = :dash, color = :gray, linewidth = 1, label = "")
@@ -276,7 +276,7 @@ function WeberElectrodynamics.plot_pair_energy(
         fillrange = 0,
         fillalpha = 0.3,
         fillcolor = :steelblue,
-        label = L"Approaching $(\dot{r}<0)$",
+        label = "Approaching (ṙ<0)",
         linewidth = 0,
     )
     plot!(
@@ -286,7 +286,7 @@ function WeberElectrodynamics.plot_pair_energy(
         fillrange = 0,
         fillalpha = 0.3,
         fillcolor = :firebrick,
-        label = L"Separating $(\dot{r}>0)$",
+        label = "Separating (ṙ>0)",
         linewidth = 0,
     )
 
@@ -316,12 +316,11 @@ function WeberElectrodynamics.plot_energy_errors(data::EnergyData)::Plots.Plot
 
     # Panel 1: Local error
     p1 = plot(;
-        xlabel = "",
-        ylabel = L"|E_t - E_{t-1}|}",
-        yscale = :log10,
-        yformatter = :scientific,
-        legend = :outertopright,
         title = "Local Energy Error",
+        xlabel = "",
+        ylabel = "|Eₜ - Eₜ₋₁|",
+        yscale = :log10,
+        legend = :outertopright,
         PLOT_DEFAULTS...,
     )
     plot!(p1, data.t[2:end], local_errors_plot, label = "", linewidth = 1, color = :steelblue)
@@ -344,12 +343,11 @@ function WeberElectrodynamics.plot_energy_errors(data::EnergyData)::Plots.Plot
 
     # Panel 2: Global error percentage
     p2 = plot(;
-        xlabel = "",
-        ylabel = L"Global Error $(\%)$",
-        yscale = :log10,
-        yformatter = :scientific,
-        legend = :outertopright,
         title = "Global Energy Drift",
+        xlabel = "",
+        ylabel = "Global Error (%)",
+        yscale = :log10,
+        legend = :outertopright,
         PLOT_DEFAULTS...,
     )
     plot!(p2, data.t, global_percent_plot, label = "", linewidth = 1.5, color = :firebrick)
@@ -366,12 +364,11 @@ function WeberElectrodynamics.plot_energy_errors(data::EnergyData)::Plots.Plot
     max_h_err = maximum(data.hamiltonian_validation_error)
 
     p3 = plot(;
-        xlabel = L"Time $t$",
-        ylabel = L"|H_\mathrm{computed} - H_\mathrm{compiled}|}",
-        yscale = :log10,
-        yformatter = :scientific,
-        legend = :outertopright,
         title = "Hamiltonian Validation",
+        xlabel = "Time t",
+        ylabel = "|H_computed - H_compiled|",
+        yscale = :log10,
+        legend = :outertopright,
         PLOT_DEFAULTS...,
     )
     plot!(p3, data.t, h_error, label = "", linewidth = 1, color = :black)
@@ -394,8 +391,9 @@ function WeberElectrodynamics.plot_forces(data::ForceData)::Plots.Plot
     n = data.n_particles
 
     plt = plot(;
-        xlabel = L"Time $t$",
-        ylabel = L"|F|",
+        title = "Weber Force Magnitudes",
+        xlabel = "Time t",
+        ylabel = "|F|",
         legend = :outertopright,
         size = _single_panel_size(),
         palette = :tab10,
@@ -411,7 +409,7 @@ function WeberElectrodynamics.plot_forces(data::ForceData)::Plots.Plot
                 magnitudes[t] = norm(F_ij[t])
             end
 
-            plot!(plt, data.t, magnitudes, label = L"F_{%$i,%$j}", linewidth = 1.5)
+            plot!(plt, data.t, magnitudes, label = "F($i,$j)", linewidth = 1.5)
         end
     end
 
@@ -421,10 +419,12 @@ end
 """Plot (r, ṙ) phase space portrait."""
 function WeberElectrodynamics.plot_phase_space(data::PhaseSpaceData)::Plots.Plot
     plt = plot(;
-        xlabel = L"r",
-        ylabel = L"\dot{r}",
+        title = "Phase Space Portrait",
+        xlabel = "Separation r",
+        ylabel = "Radial Velocity ṙ",
         size = _square_size(),
         legend = :outertopright,
+        legendfontsize = 10,
         PLOT_DEFAULTS...,
     )
 
@@ -465,8 +465,9 @@ end
 
 function _plot_trajectories_1d(data::TrajectoryData)::Plots.Plot
     plt = plot(;
-        xlabel = L"Time Index",
-        ylabel = L"x",
+        title = "1D Particle Trajectories",
+        xlabel = "Time Index",
+        ylabel = "x",
         legend = :outertopright,
         size = _single_panel_size(),
         palette = :tab10,
@@ -504,8 +505,9 @@ end
 
 function _plot_trajectories_2d(data::TrajectoryData)::Plots.Plot
     plt = plot(;
-        xlabel = L"x",
-        ylabel = L"y",
+        title = "2D Particle Trajectories",
+        xlabel = "x",
+        ylabel = "y",
         aspect_ratio = :equal,
         legend = :outertopright,
         size = _square_size(),
@@ -545,9 +547,10 @@ end
 
 function _plot_trajectories_3d(data::TrajectoryData)::Plots.Plot
     plt = plot(;
-        xlabel = L"x",
-        ylabel = L"y",
-        zlabel = L"z",
+        title = "3D Particle Trajectories",
+        xlabel = "x",
+        ylabel = "y",
+        zlabel = "z",
         legend = :outertopright,
         size = (SINGLE_COLUMN_WIDTH, round(Int, SINGLE_COLUMN_WIDTH * 0.85)),
         palette = :tab10,
