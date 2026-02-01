@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-02-01
+
+### Breaking Changes
+- Remove `ForceData`, `compute_force_timeseries`, `NewtonsThirdLawData`, `check_newtons_third_law`
+- Remove `compute_phase_space_data` standalone function
+- Remove `plot_forces` (replaced by `plot_pair_forces`)
+- Change `plot_phase_space` to accept `PairForceData` instead of `PhaseSpaceData`
+
+### Added
+- `PairForceData` struct for single-pair force analysis with Weber force decomposition
+- `ForceStatistics` struct with min, max, mean, range for force magnitude
+- `compute_pair_force_timeseries` function for computing forces on a single particle pair
+- Weber force vector form decomposition (Coulomb + v·v + r·a + rv² terms)
+- Weber force radial form decomposition (Coulomb + ṙ² + r·r̈ terms)
+- `PhaseSpaceData` embedded in `PairForceData` to avoid redundant computation
+- `plot_pair_forces` with 4-panel vertical layout (magnitude, components, vector form, radial form)
+
+### Changed
+- Phase space data (r, ṙ, θ, L) now computed once within force computation loop
+- Signed scalar plotting for force decomposition terms (positive = repulsion, negative = attraction)
+
 ## [1.0.0] - 2026-02-01
 
 ### Breaking Changes
