@@ -36,10 +36,9 @@ export EnergyStatistics
 export compute_energy_timeseries
 
 include("statistics/forces.jl")
-export ForceData
-export compute_force_timeseries
-export NewtonsThirdLawData
-export check_newtons_third_law
+export PairForceData
+export ForceStatistics
+export compute_pair_force_timeseries
 
 include("statistics/phase_space.jl")
 export PhaseSpaceData
@@ -52,8 +51,8 @@ function plot_trajectories end
 function plot_energy end
 function plot_pair_energy end
 function plot_energy_errors end
-function plot_forces end
+function plot_pair_forces end
 function plot_phase_space end
-export plot_trajectories, plot_energy, plot_pair_energy, plot_energy_errors, plot_forces, plot_phase_space
+export plot_trajectories, plot_energy, plot_pair_energy, plot_energy_errors, plot_pair_forces, plot_phase_space
 
 end

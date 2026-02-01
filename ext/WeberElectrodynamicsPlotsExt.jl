@@ -385,33 +385,146 @@ function WeberElectrodynamics.plot_energy_errors(data::EnergyData)::Plots.Plot
     return plt
 end
 
-"""Plot force magnitudes between particle pairs over time."""
-function WeberElectrodynamics.plot_forces(data::ForceData)::Plots.Plot
-    n_times = length(data.t)
-    n = data.n_particles
+"""
+    plot_pair_forces(data::PairForceData) -> Plot
 
-    plt = plot(;
-        title = "Weber Force Magnitudes",
-        xlabel = "Time t",
+Plot comprehensive Weber force analysis for a particle pair.
+
+Four-panel vertical layout (1×4):
+1. Force magnitude |F| with min/max/mean/range statistics
+2. Force components (Fx, Fy, [Fz]) as stacked colored lines
+3. Vector form decomposition (4 terms: Coulomb, v·v, r·a, -(r̂·v)²)
+4. Radial form decomposition (3 terms: Coulomb, -ṙ²/2c², r·r̈/c²)
+
+Decomposition terms are shown as signed scalars (positive = repulsion, negative = attraction).
+"""
+function WeberElectrodynamics.plot_pair_forces(data::PairForceData)::Plots.Plot
+    n_times = length(data.t)
+    dims = data.dims
+    i, j = data.pair
+
+    # Color palette for force components
+    component_colors = [:steelblue, :firebrick, :forestgreen]
+    component_labels = ["Fx", "Fy", "Fz"]
+
+    # Color palette for decomposition terms
+    decomp_colors = [:black, :steelblue, :firebrick, :forestgreen]
+
+    # =========================================================================
+    # Panel 1: Force Magnitude with Statistics
+    # =========================================================================
+    p1 = plot(;
+        title = "Force Magnitude |F| — Pair ($i,$j)",
+        xlabel = "",
         ylabel = "|F|",
         legend = :outertopright,
-        size = _single_panel_size(),
-        palette = :tab10,
+        PLOT_DEFAULTS...,
+    )
+    plot!(p1, data.t, data.magnitude, label = "", linewidth = 1.5, color = :black)
+
+    # Statistics reference lines
+    stats = data.stats
+    hline!(
+        p1,
+        [stats.max],
+        linestyle = :dash,
+        linewidth = 1,
+        color = :firebrick,
+        label = "max = $(_format_scientific(stats.max))",
+    )
+    hline!(
+        p1,
+        [stats.min],
+        linestyle = :dash,
+        linewidth = 1,
+        color = :steelblue,
+        label = "min = $(_format_scientific(stats.min))",
+    )
+    hline!(
+        p1,
+        [stats.mean],
+        linestyle = :dot,
+        linewidth = 1,
+        color = :gray,
+        label = "mean = $(_format_scientific(stats.mean))",
+    )
+
+    # =========================================================================
+    # Panel 2: Force Components (Fx, Fy, Fz)
+    # =========================================================================
+    p2 = plot(;
+        title = "Force Components",
+        xlabel = "",
+        ylabel = "Force",
+        legend = :outertopright,
         PLOT_DEFAULTS...,
     )
 
-    for i = 1:n
-        for j = (i+1):n
-            F_ij = data.forces[(i, j)]
-
-            magnitudes = Vector{Float64}(undef, n_times)
-            for t = 1:n_times
-                magnitudes[t] = norm(F_ij[t])
-            end
-
-            plot!(plt, data.t, magnitudes, label = "F($i,$j)", linewidth = 1.5)
-        end
+    for d = 1:dims
+        component = [data.force[t][d] for t = 1:n_times]
+        plot!(
+            p2,
+            data.t,
+            component,
+            label = component_labels[d],
+            linewidth = 1.5,
+            color = component_colors[d],
+        )
     end
+    hline!(p2, [0.0], linestyle = :dash, color = :gray, linewidth = 0.5, label = "")
+
+    # =========================================================================
+    # Panel 3: Vector Form Decomposition (4 terms as signed scalars)
+    # =========================================================================
+    p3 = plot(;
+        title = "Vector Form: F = Coulomb·(1 + (v·v + r·a - 1.5(r̂·v)²)/c²)",
+        xlabel = "",
+        ylabel = "Signed Force",
+        legend = :outertopright,
+        PLOT_DEFAULTS...,
+    )
+
+    # Compute signed scalar magnitudes for each term
+    # Use sign from first component (they're all parallel to r̂)
+    coulomb_signed = [sign(data.coulomb[t][1]) * norm(data.coulomb[t]) for t = 1:n_times]
+    vv_signed = [sign(data.vector_term_vv[t][1]) * norm(data.vector_term_vv[t]) for t = 1:n_times]
+    ra_signed = [sign(data.vector_term_ra[t][1]) * norm(data.vector_term_ra[t]) for t = 1:n_times]
+    rv2_signed = [sign(data.vector_term_rv2[t][1]) * norm(data.vector_term_rv2[t]) for t = 1:n_times]
+
+    plot!(p3, data.t, coulomb_signed, label = "Coulomb", linewidth = 1.5, color = decomp_colors[1])
+    plot!(p3, data.t, vv_signed, label = "v·v/c²", linewidth = 1.5, color = decomp_colors[2])
+    plot!(p3, data.t, ra_signed, label = "r·a/c²", linewidth = 1.5, color = decomp_colors[3])
+    plot!(p3, data.t, rv2_signed, label = "-1.5(r̂·v)²/c²", linewidth = 1.5, color = decomp_colors[4])
+    hline!(p3, [0.0], linestyle = :dash, color = :gray, linewidth = 0.5, label = "")
+
+    # =========================================================================
+    # Panel 4: Radial Form Decomposition (3 terms as signed scalars)
+    # =========================================================================
+    p4 = plot(;
+        title = "Radial Form: F = Coulomb·(1 - ṙ²/(2c²) + r·r̈/c²)",
+        xlabel = "Time t",
+        ylabel = "Signed Force",
+        legend = :outertopright,
+        PLOT_DEFAULTS...,
+    )
+
+    # Reuse coulomb_signed from above
+    rdot2_signed = [sign(data.radial_term_rdot2[t][1]) * norm(data.radial_term_rdot2[t]) for t = 1:n_times]
+    rddot_signed = [sign(data.radial_term_rddot[t][1]) * norm(data.radial_term_rddot[t]) for t = 1:n_times]
+
+    plot!(p4, data.t, coulomb_signed, label = "Coulomb", linewidth = 1.5, color = decomp_colors[1])
+    plot!(p4, data.t, rdot2_signed, label = "-ṙ²/(2c²)", linewidth = 1.5, color = decomp_colors[2])
+    plot!(p4, data.t, rddot_signed, label = "r·r̈/c²", linewidth = 1.5, color = decomp_colors[3])
+    hline!(p4, [0.0], linestyle = :dash, color = :gray, linewidth = 0.5, label = "")
+
+    # =========================================================================
+    # Combine into 1×4 vertical layout
+    # =========================================================================
+    plt = plot(
+        p1, p2, p3, p4,
+        layout = grid(4, 1, heights = [0.25, 0.25, 0.25, 0.25]),
+        size = (SINGLE_COLUMN_WIDTH, round(Int, SINGLE_COLUMN_WIDTH * 2)),
+    )
 
     return plt
 end

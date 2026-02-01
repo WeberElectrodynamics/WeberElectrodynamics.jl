@@ -1,32 +1,50 @@
 using LinearAlgebra
 
-struct ForceData
-    forces::Dict{Tuple{Int,Int},Vector{Vector{Float64}}}
+struct ForceStatistics
+    min::Float64
+    max::Float64
+    mean::Float64
+    range::Float64
+end
+
+struct PairForceData
+    # Metadata
     t::Vector{Float64}
-    n_particles::Int
     dims::Int
+    pair::Tuple{Int,Int}
+
+    # Total force (vector per timestep)
+    force::Vector{Vector{Float64}}
+    magnitude::Vector{Float64}
+    stats::ForceStatistics
+
+    # Shared Coulomb term (base for both decompositions)
+    coulomb::Vector{Vector{Float64}}
+
+    # Vector form decomposition (3 additional terms, Coulomb shared)
+    # F = coulomb * (1 + (v·v + r·a - 1.5*(r̂·v)²) / c²)
+    vector_term_vv::Vector{Vector{Float64}}
+    vector_term_ra::Vector{Vector{Float64}}
+    vector_term_rv2::Vector{Vector{Float64}}
+
+    # Radial form decomposition (2 additional terms, Coulomb shared)
+    # F = coulomb * (1 - ṙ²/(2c²) + r·r̈/c²)
+    radial_term_rdot2::Vector{Vector{Float64}}
+    radial_term_rddot::Vector{Vector{Float64}}
 end
 
-struct ForceComputationBuffers
-    r::Vector{Float64}
-    v::Vector{Float64}
-    a::Vector{Float64}
-    r_hat::Vector{Float64}
-end
-
-function ForceComputationBuffers(dims::Int)
-    ForceComputationBuffers(zeros(dims), zeros(dims), zeros(dims), zeros(dims))
-end
-
-function compute_force_timeseries(
+function compute_pair_force_timeseries(
     sol::WeberSolution,
+    pair::Tuple{Int,Int},
     n_particles::Int,
     dims::Int,
     masses::Vector{Float64},
     charges::Vector{Float64},
     c::Float64;
     stride::Int = 1,
-)::ForceData
+)::PairForceData
+    i, j = pair
+
     if stride <= 0
         throw(ArgumentError("stride must be positive, got $stride"))
     end
@@ -36,6 +54,12 @@ function compute_force_timeseries(
                 "solution must have at least 2 time points for force computation",
             ),
         )
+    end
+    if i < 1 || i > n_particles || j < 1 || j > n_particles
+        throw(ArgumentError("pair indices must be in range 1:$n_particles, got ($i, $j)"))
+    end
+    if i == j
+        throw(ArgumentError("pair indices must be different, got ($i, $j)"))
     end
     if length(masses) != n_particles
         throw(
@@ -76,159 +100,140 @@ function compute_force_timeseries(
     end
 
     dt = sol.t[indices[2]] - sol.t[indices[1]]
-
     t_forces = sol.t[indices[1:(end-1)]]
     n_force_steps = length(t_forces)
 
-    # Use 3D arrays instead of nested vectors (avoids per-timestep allocations)
-    velocities = Array{Float64}(undef, dims, n_steps, n_particles)
-    @inbounds for particle = 1:n_particles
-        m = masses[particle]
-        @inbounds for (i, idx) in enumerate(indices)
-            @inbounds for d = 1:dims
-                p_idx = (particle - 1) * dims + d
-                velocities[d, i, particle] = sol.p[idx][p_idx] / m
-            end
+    # Extract positions and velocities for the pair
+    mi = masses[i]
+    mj = masses[j]
+    qi_start = (i - 1) * dims
+    qj_start = (j - 1) * dims
+
+    # Build position and velocity arrays for both particles
+    positions_i = Array{Float64}(undef, dims, n_steps)
+    positions_j = Array{Float64}(undef, dims, n_steps)
+    velocities_i = Array{Float64}(undef, dims, n_steps)
+    velocities_j = Array{Float64}(undef, dims, n_steps)
+
+    @inbounds for (step_idx, sol_idx) in enumerate(indices)
+        for d = 1:dims
+            positions_i[d, step_idx] = sol.q[sol_idx][qi_start+d]
+            positions_j[d, step_idx] = sol.q[sol_idx][qj_start+d]
+            velocities_i[d, step_idx] = sol.p[sol_idx][qi_start+d] / mi
+            velocities_j[d, step_idx] = sol.p[sol_idx][qj_start+d] / mj
         end
     end
 
-    accelerations = Array{Float64}(undef, dims, n_force_steps, n_particles)
-    @inbounds for particle = 1:n_particles
-        @inbounds for t = 1:n_force_steps
-            @inbounds for d = 1:dims
-                accelerations[d, t, particle] =
-                    (velocities[d, t+1, particle] - velocities[d, t, particle]) / dt
-            end
+    # Compute accelerations via finite difference
+    accelerations_i = Array{Float64}(undef, dims, n_force_steps)
+    accelerations_j = Array{Float64}(undef, dims, n_force_steps)
+
+    @inbounds for t = 1:n_force_steps
+        for d = 1:dims
+            accelerations_i[d, t] = (velocities_i[d, t+1] - velocities_i[d, t]) / dt
+            accelerations_j[d, t] = (velocities_j[d, t+1] - velocities_j[d, t]) / dt
         end
     end
 
-    positions = Array{Float64}(undef, dims, n_steps, n_particles)
-    @inbounds for particle = 1:n_particles
-        @inbounds for (i, idx) in enumerate(indices)
-            @inbounds for d = 1:dims
-                q_idx = (particle - 1) * dims + d
-                positions[d, i, particle] = sol.q[idx][q_idx]
-            end
+    # Pre-allocate output arrays
+    force = [Vector{Float64}(undef, dims) for _ = 1:n_force_steps]
+    magnitude = Vector{Float64}(undef, n_force_steps)
+    coulomb = [Vector{Float64}(undef, dims) for _ = 1:n_force_steps]
+    vector_term_vv = [Vector{Float64}(undef, dims) for _ = 1:n_force_steps]
+    vector_term_ra = [Vector{Float64}(undef, dims) for _ = 1:n_force_steps]
+    vector_term_rv2 = [Vector{Float64}(undef, dims) for _ = 1:n_force_steps]
+    radial_term_rdot2 = [Vector{Float64}(undef, dims) for _ = 1:n_force_steps]
+    radial_term_rddot = [Vector{Float64}(undef, dims) for _ = 1:n_force_steps]
+
+    # Working buffers
+    r_vec = zeros(dims)
+    v_vec = zeros(dims)
+    a_vec = zeros(dims)
+    r_hat = zeros(dims)
+
+    c2 = c * c
+    k = charges[i] * charges[j]
+
+    sum_mag = 0.0
+    min_mag = Inf
+    max_mag = -Inf
+
+    @inbounds for t = 1:n_force_steps
+        # Relative quantities
+        for d = 1:dims
+            r_vec[d] = positions_i[d, t] - positions_j[d, t]
+            v_vec[d] = velocities_i[d, t] - velocities_j[d, t]
+            a_vec[d] = accelerations_i[d, t] - accelerations_j[d, t]
+        end
+
+        r = norm(r_vec)
+        @. r_hat = r_vec / r
+
+        # Dot products
+        v_dot_v = dot(v_vec, v_vec)
+        r_dot_a = dot(r_vec, a_vec)
+        rhat_dot_v = dot(r_hat, v_vec)
+
+        # Radial quantities
+        r_dot = dot(r_vec, v_vec) / r
+        r_ddot = (r_dot_a + v_dot_v - rhat_dot_v^2) / r
+
+        # Coulomb base vector: (k / r²) * r̂
+        coulomb_coeff = k / (r * r)
+        @. coulomb[t] = coulomb_coeff * r_hat
+
+        # Vector form terms
+        # term_vv = coulomb * (v·v / c²)
+        vv_coeff = v_dot_v / c2
+        @. vector_term_vv[t] = coulomb[t] * vv_coeff
+
+        # term_ra = coulomb * (r·a / c²)
+        ra_coeff = r_dot_a / c2
+        @. vector_term_ra[t] = coulomb[t] * ra_coeff
+
+        # term_rv2 = coulomb * (-1.5 * (r̂·v)² / c²)
+        rv2_coeff = -1.5 * rhat_dot_v^2 / c2
+        @. vector_term_rv2[t] = coulomb[t] * rv2_coeff
+
+        # Radial form terms
+        # term_rdot2 = coulomb * (-ṙ² / (2c²))
+        rdot2_coeff = -r_dot^2 / (2 * c2)
+        @. radial_term_rdot2[t] = coulomb[t] * rdot2_coeff
+
+        # term_rddot = coulomb * (r * r̈ / c²)
+        rddot_coeff = r * r_ddot / c2
+        @. radial_term_rddot[t] = coulomb[t] * rddot_coeff
+
+        # Total force (using vector form)
+        @. force[t] = coulomb[t] + vector_term_vv[t] + vector_term_ra[t] + vector_term_rv2[t]
+
+        # Magnitude
+        mag = norm(force[t])
+        magnitude[t] = mag
+        sum_mag += mag
+        if mag < min_mag
+            min_mag = mag
+        end
+        if mag > max_mag
+            max_mag = mag
         end
     end
 
-    forces = Dict{Tuple{Int,Int},Vector{Vector{Float64}}}()
-    buf = ForceComputationBuffers(dims)
+    mean_mag = sum_mag / n_force_steps
+    stats = ForceStatistics(min_mag, max_mag, mean_mag, max_mag - min_mag)
 
-    for i = 1:n_particles
-        for j = (i+1):n_particles
-            qi = charges[i]
-            qj = charges[j]
-
-            # Pre-allocate all force vectors before time loop
-            force_series = [Vector{Float64}(undef, dims) for _ = 1:n_force_steps]
-            neg_series = [Vector{Float64}(undef, dims) for _ = 1:n_force_steps]
-
-            @inbounds for t = 1:n_force_steps
-                # Use views into 3D arrays
-                r_i = @view positions[:, t, i]
-                r_j = @view positions[:, t, j]
-                v_i = @view velocities[:, t, i]
-                v_j = @view velocities[:, t, j]
-                a_i = @view accelerations[:, t, i]
-                a_j = @view accelerations[:, t, j]
-
-                @. buf.r = r_i - r_j
-                @. buf.v = v_i - v_j
-                @. buf.a = a_i - a_j
-
-                r_norm = norm(buf.r)
-                @. buf.r_hat = buf.r / r_norm
-
-                v_dot_v = dot(buf.v, buf.v)
-                r_dot_a = dot(buf.r, buf.a)
-                r_hat_dot_v = dot(buf.r_hat, buf.v)
-
-                factor =
-                    (qi * qj / (r_norm^2)) *
-                    (1.0 + (1.0 / c^2) * (v_dot_v + r_dot_a - 1.5 * r_hat_dot_v^2))
-
-                # In-place assignment to pre-allocated vectors
-                @. force_series[t] = factor * buf.r_hat
-                @. neg_series[t] = -force_series[t]
-            end
-
-            forces[(i, j)] = force_series
-            forces[(j, i)] = neg_series
-        end
-    end
-
-    return ForceData(forces, t_forces, n_particles, dims)
-end
-
-struct NewtonsThirdLawData
-    pair_violations::Dict{Tuple{Int,Int},Vector{Float64}}
-    t::Vector{Float64}
-    max_violations::Dict{Tuple{Int,Int},Float64}
-    mean_violations::Dict{Tuple{Int,Int},Float64}
-    rms_violations::Dict{Tuple{Int,Int},Float64}
-    global_max_violation::Float64
-    n_pairs::Int
-end
-
-function check_newtons_third_law(force_data::ForceData)::NewtonsThirdLawData
-    n = force_data.n_particles
-    n_times = length(force_data.t)
-    dims = force_data.dims
-
-    pair_violations = Dict{Tuple{Int,Int},Vector{Float64}}()
-    max_violations = Dict{Tuple{Int,Int},Float64}()
-    mean_violations = Dict{Tuple{Int,Int},Float64}()
-    rms_violations = Dict{Tuple{Int,Int},Float64}()
-
-    global_max = 0.0
-    n_pairs = 0
-
-    # Pre-allocate buffer for sum computation (avoids per-iteration allocation)
-    sum_buf = zeros(dims)
-
-    for i = 1:n
-        for j = (i+1):n
-            n_pairs += 1
-
-            F_ij = force_data.forces[(i, j)]
-            F_ji = force_data.forces[(j, i)]
-
-            violations = Vector{Float64}(undef, n_times)
-            sum_val = 0.0
-            sum_sq = 0.0
-            max_val = 0.0
-
-            @inbounds for t = 1:n_times
-                # Compute norm without temporary allocation
-                @. sum_buf = F_ij[t] + F_ji[t]
-                v = norm(sum_buf)
-                violations[t] = v
-                sum_val += v
-                sum_sq += v * v
-                if v > max_val
-                    max_val = v
-                end
-            end
-
-            pair_violations[(i, j)] = violations
-            max_violations[(i, j)] = max_val
-            mean_violations[(i, j)] = sum_val / n_times
-            rms_violations[(i, j)] = sqrt(sum_sq / n_times)
-
-            if max_val > global_max
-                global_max = max_val
-            end
-        end
-    end
-
-    return NewtonsThirdLawData(
-        pair_violations,
-        force_data.t,
-        max_violations,
-        mean_violations,
-        rms_violations,
-        global_max,
-        n_pairs,
+    return PairForceData(
+        t_forces,
+        dims,
+        pair,
+        force,
+        magnitude,
+        stats,
+        coulomb,
+        vector_term_vv,
+        vector_term_ra,
+        vector_term_rv2,
+        radial_term_rdot2,
+        radial_term_rddot,
     )
 end

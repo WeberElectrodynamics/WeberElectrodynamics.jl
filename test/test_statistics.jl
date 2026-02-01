@@ -175,47 +175,72 @@
         end
     end
 
-    @testset "ForceData" begin
+    @testset "PairForceData" begin
         masses = [1.0, 0.5]
         charges = [1.0, -1.0]
         c = 1e6  # Large c for Coulomb limit
 
-        @testset "compute_force_timeseries basic" begin
-            forces = compute_force_timeseries(sol_coulomb, 2, 2, masses, charges, c)
+        @testset "compute_pair_force_timeseries basic" begin
+            forces = compute_pair_force_timeseries(sol_coulomb, (1, 2), 2, 2, masses, charges, c)
 
-            @test forces isa ForceData
-            @test forces.n_particles == 2
+            @test forces isa PairForceData
+            @test forces.pair == (1, 2)
             @test forces.dims == 2
             @test length(forces.t) == length(sol_coulomb.t) - 1  # Forces need acceleration
 
-            # Should have forces for both (1,2) and (2,1)
-            @test haskey(forces.forces, (1, 2))
-            @test haskey(forces.forces, (2, 1))
+            # Check all components are present
+            @test length(forces.force) == length(forces.t)
+            @test length(forces.magnitude) == length(forces.t)
+            @test length(forces.coulomb) == length(forces.t)
+            @test length(forces.vector_term_vv) == length(forces.t)
+            @test length(forces.vector_term_ra) == length(forces.t)
+            @test length(forces.vector_term_rv2) == length(forces.t)
+            @test length(forces.radial_term_rdot2) == length(forces.t)
+            @test length(forces.radial_term_rddot) == length(forces.t)
         end
 
-        @testset "Force symmetry (Newton's third law)" begin
-            forces = compute_force_timeseries(sol_coulomb, 2, 2, masses, charges, c)
+        @testset "ForceStatistics" begin
+            forces = compute_pair_force_timeseries(sol_coulomb, (1, 2), 2, 2, masses, charges, c)
+            stats = forces.stats
 
-            F_12 = forces.forces[(1, 2)]
-            F_21 = forces.forces[(2, 1)]
+            @test stats isa ForceStatistics
+            @test stats.min <= stats.max
+            @test stats.mean >= stats.min
+            @test stats.mean <= stats.max
+            @test stats.range ≈ stats.max - stats.min
+        end
 
-            # F_12 = -F_21
+        @testset "Weber force decomposition consistency" begin
+            forces = compute_pair_force_timeseries(sol_weber, (1, 2), 2, 2, masses, charges, 1e6)
+
+            # Vector form: F = Coulomb + v·v term + r·a term + rv² term
             for t = 1:length(forces.t)
-                @test F_12[t] ≈ -F_21[t] atol = 1e-10
+                force_from_terms = forces.coulomb[t] .+ forces.vector_term_vv[t] .+
+                                   forces.vector_term_ra[t] .+ forces.vector_term_rv2[t]
+                @test forces.force[t] ≈ force_from_terms rtol = 1e-12
+            end
+
+            # Radial form: F = Coulomb + rdot² term + rddot term
+            # Should equal vector form
+            for t = 1:length(forces.t)
+                force_radial = forces.coulomb[t] .+ forces.radial_term_rdot2[t] .+
+                               forces.radial_term_rddot[t]
+                @test forces.force[t] ≈ force_radial rtol = 1e-10
             end
         end
 
-        @testset "compute_force_timeseries with stride" begin
+        @testset "compute_pair_force_timeseries with stride" begin
             forces =
-                compute_force_timeseries(sol_coulomb, 2, 2, masses, charges, c; stride = 5)
+                compute_pair_force_timeseries(sol_coulomb, (1, 2), 2, 2, masses, charges, c; stride = 5)
 
             # Fewer time points due to stride
             @test length(forces.t) < length(sol_coulomb.t) - 1
         end
 
         @testset "Validation errors" begin
-            @test_throws ArgumentError compute_force_timeseries(
+            @test_throws ArgumentError compute_pair_force_timeseries(
                 sol_coulomb,
+                (1, 2),
                 2,
                 2,
                 masses,
@@ -223,61 +248,60 @@
                 c;
                 stride = 0,
             )
-            @test_throws ArgumentError compute_force_timeseries(
+            @test_throws ArgumentError compute_pair_force_timeseries(
                 sol_coulomb,
+                (1, 2),
                 3,
                 2,
                 masses,
                 charges,
                 c,
             )  # Wrong n_particles
-            @test_throws ArgumentError compute_force_timeseries(
+            @test_throws ArgumentError compute_pair_force_timeseries(
                 sol_coulomb,
+                (1, 2),
                 2,
                 2,
                 [1.0],
                 charges,
                 c,
             )  # Wrong masses length
-            @test_throws ArgumentError compute_force_timeseries(
+            @test_throws ArgumentError compute_pair_force_timeseries(
                 sol_coulomb,
+                (1, 2),
                 2,
                 2,
                 masses,
                 [1.0],
                 c,
             )  # Wrong charges length
-            @test_throws ArgumentError compute_force_timeseries(
+            @test_throws ArgumentError compute_pair_force_timeseries(
                 sol_coulomb,
+                (1, 2),
                 2,
                 2,
                 masses,
                 charges,
                 -1.0,
             )  # Negative c
-        end
-    end
-
-    @testset "NewtonsThirdLawData" begin
-        masses = [1.0, 0.5]
-        charges = [1.0, -1.0]
-        c = 1e6
-
-        forces = compute_force_timeseries(sol_coulomb, 2, 2, masses, charges, c)
-
-        @testset "check_newtons_third_law" begin
-            n3 = check_newtons_third_law(forces)
-
-            @test n3 isa NewtonsThirdLawData
-            @test n3.n_pairs == 1  # One pair for 2 particles
-            @test length(n3.t) == length(forces.t)
-            @test haskey(n3.pair_violations, (1, 2))
-            @test haskey(n3.max_violations, (1, 2))
-            @test haskey(n3.mean_violations, (1, 2))
-            @test haskey(n3.rms_violations, (1, 2))
-
-            # Violations should be small for Coulomb
-            @test n3.global_max_violation < 1e-8
+            @test_throws ArgumentError compute_pair_force_timeseries(
+                sol_coulomb,
+                (1, 3),
+                2,
+                2,
+                masses,
+                charges,
+                c,
+            )  # Invalid pair index
+            @test_throws ArgumentError compute_pair_force_timeseries(
+                sol_coulomb,
+                (1, 1),
+                2,
+                2,
+                masses,
+                charges,
+                c,
+            )  # Same particle pair
         end
     end
 

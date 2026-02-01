@@ -31,8 +31,9 @@
         @test energy.statistics.global_error_percent_max < 1e-2
 
         # Forces
-        forces = compute_force_timeseries(
+        forces = compute_pair_force_timeseries(
             sol,
+            (1, 2),
             2,
             2,
             [m1, m2],
@@ -40,8 +41,8 @@
             c;
             stride = 10,
         )
-        n3 = check_newtons_third_law(forces)
-        @test n3.global_max_violation < 1e-6
+        @test forces isa PairForceData
+        @test forces.stats.min > 0
 
         # Phase space
         ps = compute_phase_space_data(sol, 2, 2, [m1, m2]; stride = 10)
@@ -155,11 +156,8 @@
         energy = compute_energy_timeseries(sol)
         @test energy isa EnergyData
 
-        forces = compute_force_timeseries(sol, 2, 2, masses, charges, 1e10)
-        @test forces isa ForceData
-
-        n3 = check_newtons_third_law(forces)
-        @test n3 isa NewtonsThirdLawData
+        forces = compute_pair_force_timeseries(sol, (1, 2), 2, 2, masses, charges, 1e10)
+        @test forces isa PairForceData
 
         ps = compute_phase_space_data(sol, 2, 2, masses)
         @test ps isa PhaseSpaceData

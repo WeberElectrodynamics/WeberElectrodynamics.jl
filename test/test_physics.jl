@@ -38,40 +38,59 @@
         @test max_error < 1e-6
     end
 
-    @testset "Newton's third law - Coulomb-like forces" begin
+    @testset "Weber force decomposition - Coulomb-like" begin
         prob = make_coulomb_like_problem(tspan = (0.0, 1.0), dt = 0.01)
         sol = solve(prob)
 
-        forces = compute_force_timeseries(
+        forces = compute_pair_force_timeseries(
             sol,
+            (1, 2),
             2,
             2,
             prob.masses,
             prob.charges,
             prob.c,
         )
-        n3 = check_newtons_third_law(forces)
 
-        # F_12 = -F_21 should hold for Coulomb-like
-        @test n3.global_max_violation < 1e-10
+        # For large c (Coulomb limit), Weber correction terms should be small
+        # Vector form: F ≈ Coulomb (v·v, r·a, rv² terms should be negligible)
+        for t in 1:length(forces.t)
+            coulomb_mag = norm(forces.coulomb[t])
+            vv_mag = norm(forces.vector_term_vv[t])
+            ra_mag = norm(forces.vector_term_ra[t])
+            rv2_mag = norm(forces.vector_term_rv2[t])
+
+            # Weber corrections should be tiny relative to Coulomb
+            @test vv_mag / coulomb_mag < 1e-10
+            @test ra_mag / coulomb_mag < 1e-10
+            @test rv2_mag / coulomb_mag < 1e-10
+        end
     end
 
-    @testset "Newton's third law - Weber forces" begin
+    @testset "Weber force decomposition - consistency" begin
         prob = make_weber_problem(tspan = (0.0, 1.0), dt = 0.001)
         sol = solve(prob)
 
-        forces = compute_force_timeseries(
+        forces = compute_pair_force_timeseries(
             sol,
+            (1, 2),
             2,
             2,
             prob.masses,
             prob.charges,
             prob.c,
         )
-        n3 = check_newtons_third_law(forces)
 
-        # F_12 = -F_21 should hold for Weber (it's a central force)
-        @test n3.global_max_violation < 1e-6
+        # Vector form and radial form should give same total force
+        for t in 1:length(forces.t)
+            force_vector = forces.coulomb[t] .+ forces.vector_term_vv[t] .+
+                           forces.vector_term_ra[t] .+ forces.vector_term_rv2[t]
+            force_radial = forces.coulomb[t] .+ forces.radial_term_rdot2[t] .+
+                           forces.radial_term_rddot[t]
+
+            @test forces.force[t] ≈ force_vector rtol = 1e-12
+            @test force_vector ≈ force_radial rtol = 1e-10
+        end
     end
 
     @testset "Center of mass conservation" begin
