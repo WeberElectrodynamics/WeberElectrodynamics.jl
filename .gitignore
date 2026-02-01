@@ -58,6 +58,7 @@ benchmark/tune.json
 *.tmp
 tmp/
 temp/
+examples/gr-temp/
 
 # Logs
 *.log
