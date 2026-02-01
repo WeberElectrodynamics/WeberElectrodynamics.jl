@@ -44,9 +44,8 @@
         @test forces isa PairForceData
         @test forces.stats.min > 0
 
-        # Phase space
-        ps = compute_phase_space_data(sol, 2, 2, [m1, m2]; stride = 10)
-        @test all(ps.separation_distance .> 0)  # Particles don't collide
+        # Phase space (embedded in force data)
+        @test all(forces.phase_space.separation_distance .> 0)  # Particles don't collide
     end
 
     @testset "Stepped integration matches full solve" begin
@@ -158,13 +157,11 @@
 
         forces = compute_pair_force_timeseries(sol, (1, 2), 2, 2, masses, charges, 1e10)
         @test forces isa PairForceData
-
-        ps = compute_phase_space_data(sol, 2, 2, masses)
-        @test ps isa PhaseSpaceData
+        @test forces.phase_space isa PhaseSpaceData
 
         # All should have consistent time lengths
         @test length(traj.trajectories[1][:, 1]) == length(sol.t)
         @test length(energy.t) == length(sol.t)
-        @test length(ps.t) == length(sol.t)
+        @test length(forces.t) == length(sol.t) - 1  # Force data loses 1 timestep for acceleration
     end
 end

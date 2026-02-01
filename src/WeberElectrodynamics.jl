@@ -38,11 +38,8 @@ export compute_energy_timeseries
 include("statistics/forces.jl")
 export PairForceData
 export ForceStatistics
-export compute_pair_force_timeseries
-
-include("statistics/phase_space.jl")
 export PhaseSpaceData
-export compute_phase_space_data
+export compute_pair_force_timeseries
 
 # =============================================================================
 # Plotting (Extension)

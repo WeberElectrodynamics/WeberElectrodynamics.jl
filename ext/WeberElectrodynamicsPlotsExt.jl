@@ -529,10 +529,20 @@ function WeberElectrodynamics.plot_pair_forces(data::PairForceData)::Plots.Plot
     return plt
 end
 
-"""Plot (r, ṙ) phase space portrait."""
-function WeberElectrodynamics.plot_phase_space(data::PhaseSpaceData)::Plots.Plot
+"""
+    plot_phase_space(data::PairForceData) -> Plot
+
+Plot (r, ṙ) phase space portrait for a particle pair.
+
+Shows the trajectory in separation distance vs radial velocity space,
+with markers for initial and final states.
+"""
+function WeberElectrodynamics.plot_phase_space(data::PairForceData)::Plots.Plot
+    ps = data.phase_space
+    i, j = data.pair
+
     plt = plot(;
-        title = "Phase Space Portrait",
+        title = "Phase Space Portrait — Pair ($i,$j)",
         xlabel = "Separation r",
         ylabel = "Radial Velocity ṙ",
         size = _square_size(),
@@ -543,8 +553,8 @@ function WeberElectrodynamics.plot_phase_space(data::PhaseSpaceData)::Plots.Plot
 
     plot!(
         plt,
-        data.separation_distance,
-        data.radial_velocity,
+        ps.separation_distance,
+        ps.radial_velocity,
         label = "",
         linewidth = 1.5,
         color = :black,
@@ -552,8 +562,8 @@ function WeberElectrodynamics.plot_phase_space(data::PhaseSpaceData)::Plots.Plot
 
     scatter!(
         plt,
-        [data.separation_distance[1]],
-        [data.radial_velocity[1]],
+        [ps.separation_distance[1]],
+        [ps.radial_velocity[1]],
         marker = :circle,
         markersize = 6,
         color = :steelblue,
@@ -561,8 +571,8 @@ function WeberElectrodynamics.plot_phase_space(data::PhaseSpaceData)::Plots.Plot
     )
     scatter!(
         plt,
-        [data.separation_distance[end]],
-        [data.radial_velocity[end]],
+        [ps.separation_distance[end]],
+        [ps.radial_velocity[end]],
         marker = :square,
         markersize = 6,
         color = :firebrick,

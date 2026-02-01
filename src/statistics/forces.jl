@@ -7,6 +7,14 @@ struct ForceStatistics
     range::Float64
 end
 
+struct PhaseSpaceData
+    t::Vector{Float64}
+    separation_distance::Vector{Float64}
+    radial_velocity::Vector{Float64}
+    theta::Union{Vector{Float64},Nothing}
+    angular_momentum::Union{Vector{Float64},Nothing}
+end
+
 struct PairForceData
     # Metadata
     t::Vector{Float64}
@@ -31,6 +39,9 @@ struct PairForceData
     # F = coulomb * (1 - ṙ²/(2c²) + r·r̈/c²)
     radial_term_rdot2::Vector{Vector{Float64}}
     radial_term_rddot::Vector{Vector{Float64}}
+
+    # Phase space data (computed at same timesteps, reuses r and ṙ)
+    phase_space::PhaseSpaceData
 end
 
 function compute_pair_force_timeseries(
@@ -145,6 +156,12 @@ function compute_pair_force_timeseries(
     radial_term_rdot2 = [Vector{Float64}(undef, dims) for _ = 1:n_force_steps]
     radial_term_rddot = [Vector{Float64}(undef, dims) for _ = 1:n_force_steps]
 
+    # Phase space arrays (reuse computed r and ṙ)
+    separation_distance = Vector{Float64}(undef, n_force_steps)
+    radial_velocity_arr = Vector{Float64}(undef, n_force_steps)
+    theta_arr = dims >= 2 ? Vector{Float64}(undef, n_force_steps) : nothing
+    angular_momentum_arr = dims >= 2 ? Vector{Float64}(undef, n_force_steps) : nothing
+
     # Working buffers
     r_vec = zeros(dims)
     v_vec = zeros(dims)
@@ -177,6 +194,23 @@ function compute_pair_force_timeseries(
         # Radial quantities
         r_dot = dot(r_vec, v_vec) / r
         r_ddot = (r_dot_a + v_dot_v - rhat_dot_v^2) / r
+
+        # Phase space data (reuse r and r_dot)
+        separation_distance[t] = r
+        radial_velocity_arr[t] = r_dot
+        if !isnothing(theta_arr)
+            theta_arr[t] = atan(r_vec[2], r_vec[1])
+        end
+        if !isnothing(angular_momentum_arr)
+            if dims == 2
+                angular_momentum_arr[t] = r_vec[1] * v_vec[2] - r_vec[2] * v_vec[1]
+            elseif dims == 3
+                cx = r_vec[2] * v_vec[3] - r_vec[3] * v_vec[2]
+                cy = r_vec[3] * v_vec[1] - r_vec[1] * v_vec[3]
+                cz = r_vec[1] * v_vec[2] - r_vec[2] * v_vec[1]
+                angular_momentum_arr[t] = sqrt(cx^2 + cy^2 + cz^2)
+            end
+        end
 
         # Coulomb base vector: (k / r²) * r̂
         coulomb_coeff = k / (r * r)
@@ -222,6 +256,14 @@ function compute_pair_force_timeseries(
     mean_mag = sum_mag / n_force_steps
     stats = ForceStatistics(min_mag, max_mag, mean_mag, max_mag - min_mag)
 
+    phase_space = PhaseSpaceData(
+        t_forces,
+        separation_distance,
+        radial_velocity_arr,
+        theta_arr,
+        angular_momentum_arr,
+    )
+
     return PairForceData(
         t_forces,
         dims,
@@ -235,5 +277,6 @@ function compute_pair_force_timeseries(
         vector_term_rv2,
         radial_term_rdot2,
         radial_term_rddot,
+        phase_space,
     )
 end

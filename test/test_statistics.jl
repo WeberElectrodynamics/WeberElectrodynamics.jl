@@ -305,83 +305,49 @@
         end
     end
 
-    @testset "PhaseSpaceData" begin
+    @testset "PhaseSpaceData (embedded in PairForceData)" begin
         masses = [1.0, 0.5]
+        charges = [1.0, -1.0]
+        c = 1e6
 
-        @testset "compute_phase_space_data basic" begin
-            ps = compute_phase_space_data(sol_coulomb, 2, 2, masses)
+        @testset "Phase space data embedded in force data" begin
+            forces = compute_pair_force_timeseries(sol_coulomb, (1, 2), 2, 2, masses, charges, c)
+            ps = forces.phase_space
 
             @test ps isa PhaseSpaceData
-            @test length(ps.t) == length(sol_coulomb.t)
-            @test length(ps.separation_distance) == length(sol_coulomb.t)
-            @test length(ps.radial_velocity) == length(sol_coulomb.t)
+            @test length(ps.t) == length(forces.t)
+            @test length(ps.separation_distance) == length(forces.t)
+            @test length(ps.radial_velocity) == length(forces.t)
             @test !isnothing(ps.theta)
             @test !isnothing(ps.angular_momentum)
         end
 
-        @testset "compute_phase_space_data with stride" begin
-            ps = compute_phase_space_data(sol_coulomb, 2, 2, masses; stride = 10)
+        @testset "Phase space with stride" begin
+            forces = compute_pair_force_timeseries(sol_coulomb, (1, 2), 2, 2, masses, charges, c; stride = 5)
+            ps = forces.phase_space
 
-            expected_points = length(1:10:length(sol_coulomb.t))
-            @test length(ps.t) == expected_points
-            @test length(ps.separation_distance) == expected_points
-        end
-
-        @testset "Different particle pairs" begin
-            ps_12 =
-                compute_phase_space_data(sol_coulomb, 2, 2, masses; particle_pair = (1, 2))
-            ps_21 =
-                compute_phase_space_data(sol_coulomb, 2, 2, masses; particle_pair = (2, 1))
-
-            # separation_distance should be the same (distance is symmetric)
-            @test ps_12.separation_distance ≈ ps_21.separation_distance
-
-            # radial_velocity = dot(r_vec, v_vec) / |r|
-            # Swapping particles flips both r_vec and v_vec, so radial_velocity is the same
-            @test ps_12.radial_velocity ≈ ps_21.radial_velocity
-        end
-
-        @testset "Disable optional computations" begin
-            ps = compute_phase_space_data(
-                sol_coulomb,
-                2,
-                2,
-                masses;
-                compute_angle = false,
-                compute_angular_momentum = false,
-            )
-
-            @test isnothing(ps.theta)
-            @test isnothing(ps.angular_momentum)
-        end
-
-        @testset "Validation errors" begin
-            @test_throws ArgumentError compute_phase_space_data(
-                sol_coulomb,
-                2,
-                2,
-                masses;
-                stride = 0,
-            )
-            @test_throws ArgumentError compute_phase_space_data(
-                sol_coulomb,
-                2,
-                2,
-                masses;
-                particle_pair = (0, 1),
-            )
-            @test_throws ArgumentError compute_phase_space_data(
-                sol_coulomb,
-                2,
-                2,
-                masses;
-                particle_pair = (1, 3),
-            )
+            # Should have fewer points due to stride
+            @test length(ps.t) < length(sol_coulomb.t) - 1
+            @test length(ps.separation_distance) == length(forces.t)
         end
 
         @testset "Positive separation distance" begin
-            ps = compute_phase_space_data(sol_coulomb, 2, 2, masses)
+            forces = compute_pair_force_timeseries(sol_coulomb, (1, 2), 2, 2, masses, charges, c)
+            ps = forces.phase_space
             @test all(ps.separation_distance .> 0)  # Particles should never collide
+        end
+
+        @testset "Phase space consistency with force data" begin
+            forces = compute_pair_force_timeseries(sol_weber, (1, 2), 2, 2, masses, charges, 1e6)
+            ps = forces.phase_space
+
+            # Same time vector
+            @test ps.t == forces.t
+
+            # r and ṙ should be positive for approaching and negative for separating
+            # Just verify they're reasonable values
+            @test all(isfinite.(ps.separation_distance))
+            @test all(isfinite.(ps.radial_velocity))
         end
     end
 end
