@@ -9,28 +9,6 @@ struct MomentumData
     dims::Int
 end
 
-"""
-    compute_momentum_timeseries(sol::WeberSolution; stride::Int=1) -> MomentumData
-
-Compute total linear and angular momentum timeseries for a Weber simulation.
-
-Automatically extracts particle count and parameters from the solution.
-
-# Arguments
-- `sol::WeberSolution`: Solution from `solve(prob)`
-- `stride::Int=1`: Sample every `stride`-th timestep
-
-# Returns
-`MomentumData` containing:
-- Total linear momentum vector P = sum_i p_i at each timestep
-- Total angular momentum L = sum_i r_i x p_i at each timestep (2D/3D only)
-- Momentum magnitudes for plotting
-
-# Physics
-- Linear momentum: P_total = sum_{i=1}^{N} p_i
-- Angular momentum (2D): L_z = sum_{i=1}^{N} (x_i * p_{y,i} - y_i * p_{x,i})
-- Angular momentum (3D): L = sum_{i=1}^{N} r_i x p_i
-"""
 function compute_momentum_timeseries(solution::WeberSolution; stride::Int=1)::MomentumData
     if stride <= 0
         throw(ArgumentError("stride must be positive, got $stride"))
