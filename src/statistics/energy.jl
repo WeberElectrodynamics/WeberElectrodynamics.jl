@@ -1,9 +1,3 @@
-"""
-Energy analysis for Weber electrodynamics simulations.
-
-Provides pair-wise energy decomposition and comprehensive error statistics.
-"""
-
 struct PairEnergyData
     pair::Tuple{Int,Int}
     coulomb_term::Vector{Float64}
@@ -41,11 +35,6 @@ struct EnergyData
     n_pairs::Int
 end
 
-"""
-    compute_total_kinetic_energy(p, masses, dims) -> Float64
-
-Compute total kinetic energy: Σᵢ pᵢ²/(2mᵢ)
-"""
 function compute_total_kinetic_energy(
     p::AbstractVector{Float64},
     masses::AbstractVector{Float64},
@@ -63,16 +52,6 @@ function compute_total_kinetic_energy(
     return KE
 end
 
-"""
-    compute_pair_weber_components(q, p, i, j, masses, charges, c, dims) -> (coulomb, velocity, rdot)
-
-Compute Weber potential components for particle pair (i, j).
-
-Returns:
-- coulomb_term: qᵢqⱼ/r
-- velocity_term: -qᵢqⱼ/r * ṙ²/(2c²)
-- rdot: radial velocity ṙ = (r⃗·v⃗)/r
-"""
 function compute_pair_weber_components(
     q::AbstractVector{Float64},
     p::AbstractVector{Float64},
@@ -98,7 +77,6 @@ function compute_pair_weber_components(
     end
     r = sqrt(r_squared)
 
-    # Compute r⃗·v⃗ where v⃗ = vᵢ - vⱼ
     r_dot_v = 0.0
     @inbounds for d = 0:(dims-1)
         dq = q[qi_start+d] - q[qj_start+d]
@@ -120,11 +98,6 @@ function compute_pair_weber_components(
     return (coulomb_term, velocity_term, rdot)
 end
 
-"""
-    compute_energy_statistics(total_energy) -> EnergyStatistics
-
-Compute local and global error statistics from energy timeseries.
-"""
 function compute_energy_statistics(total_energy::Vector{Float64})::EnergyStatistics
     n = length(total_energy)
     E_initial = total_energy[1]
@@ -188,25 +161,6 @@ function compute_energy_statistics(total_energy::Vector{Float64})::EnergyStatist
     )
 end
 
-"""
-    compute_energy_timeseries(solution; stride=1) -> EnergyData
-
-Compute comprehensive energy analysis for a Weber simulation.
-
-Automatically extracts particle count and parameters from the solution.
-Computes pair-wise energy decomposition and validates against the compiled Hamiltonian.
-
-# Arguments
-- `solution::WeberSolution`: Solution from `solve(prob)`
-- `stride::Int=1`: Sample every `stride`-th timestep
-
-# Returns
-`EnergyData` containing:
-- Time and energy timeseries
-- Pair-wise energy decomposition (Coulomb, velocity terms, radial velocity)
-- Error statistics (local and global)
-- Validation error vs compiled Hamiltonian
-"""
 function compute_energy_timeseries(solution::WeberSolution; stride::Int = 1)::EnergyData
     if stride <= 0
         throw(ArgumentError("stride must be positive, got $stride"))
