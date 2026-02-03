@@ -41,6 +41,10 @@ export ForceStatistics
 export PhaseSpaceData
 export compute_pair_force_timeseries
 
+include("statistics/momentum.jl")
+export MomentumData
+export compute_momentum_timeseries
+
 # =============================================================================
 # Plotting (Extension)
 # =============================================================================
@@ -50,6 +54,7 @@ function plot_pair_energy end
 function plot_energy_errors end
 function plot_pair_forces end
 function plot_phase_space end
-export plot_trajectories, plot_energy, plot_pair_energy, plot_energy_errors, plot_pair_forces, plot_phase_space
+function plot_momentum end
+export plot_trajectories, plot_energy, plot_pair_energy, plot_energy_errors, plot_pair_forces, plot_phase_space, plot_momentum
 
 end

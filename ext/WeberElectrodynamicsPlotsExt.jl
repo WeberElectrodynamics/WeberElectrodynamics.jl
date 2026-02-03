@@ -582,6 +582,143 @@ function WeberElectrodynamics.plot_phase_space(data::PairForceData)::Plots.Plot
     return plt
 end
 
+"""
+    plot_momentum(data::MomentumData) -> Plot
+
+Plot total momentum timeseries with comprehensive visualization.
+
+Two-panel layout:
+1. Linear momentum components (Px, Py, [Pz]) with magnitude |P|
+2. Angular momentum (2D: scalar Lz, 3D: components and magnitude)
+   For 1D systems, shows only the linear momentum panel.
+
+Conservation of momentum is indicated by horizontal lines staying constant.
+"""
+function WeberElectrodynamics.plot_momentum(data::MomentumData)::Plots.Plot
+    dims = data.dims
+
+    # Color palette for momentum components
+    component_colors = [:steelblue, :firebrick, :forestgreen]
+    component_labels = ["Px", "Py", "Pz"]
+
+    # =========================================================================
+    # Panel 1: Linear Momentum Components + Magnitude
+    # =========================================================================
+    p1 = plot(;
+        title = "Total Linear Momentum",
+        xlabel = dims == 1 || isnothing(data.angular_momentum) ? "Time t" : "",
+        ylabel = "Momentum P",
+        legend = :outertopright,
+        PLOT_DEFAULTS...,
+    )
+
+    # Plot each component
+    for d = 1:dims
+        plot!(
+            p1,
+            data.t,
+            data.linear_momentum_components[:, d],
+            label = component_labels[d],
+            linewidth = 1.5,
+            color = component_colors[d],
+        )
+    end
+
+    # Plot magnitude
+    plot!(
+        p1,
+        data.t,
+        data.linear_momentum_magnitude,
+        label = "|P|",
+        linewidth = 2,
+        color = :black,
+        linestyle = :dash,
+    )
+
+    # Zero reference line
+    hline!(p1, [0.0], linestyle = :dot, color = :gray, linewidth = 0.5, label = "")
+
+    # For 1D systems, return single panel
+    if dims == 1 || isnothing(data.angular_momentum)
+        return plot(p1, size = _single_panel_size())
+    end
+
+    # =========================================================================
+    # Panel 2: Angular Momentum
+    # =========================================================================
+    if dims == 2
+        # 2D: scalar angular momentum Lz
+        p2 = plot(;
+            title = "Total Angular Momentum (z-component)",
+            xlabel = "Time t",
+            ylabel = "Angular Momentum Lz",
+            legend = :outertopright,
+            PLOT_DEFAULTS...,
+        )
+
+        plot!(
+            p2,
+            data.t,
+            data.angular_momentum,
+            label = "Lz",
+            linewidth = 1.5,
+            color = :black,
+        )
+
+        # Zero reference line
+        hline!(p2, [0.0], linestyle = :dot, color = :gray, linewidth = 0.5, label = "")
+
+    else  # dims == 3
+        # 3D: angular momentum vector components + magnitude
+        L_labels = ["Lx", "Ly", "Lz"]
+
+        p2 = plot(;
+            title = "Total Angular Momentum",
+            xlabel = "Time t",
+            ylabel = "Angular Momentum L",
+            legend = :outertopright,
+            PLOT_DEFAULTS...,
+        )
+
+        for d = 1:3
+            L_component = [data.angular_momentum[t][d] for t = 1:length(data.t)]
+            plot!(
+                p2,
+                data.t,
+                L_component,
+                label = L_labels[d],
+                linewidth = 1.5,
+                color = component_colors[d],
+            )
+        end
+
+        # Plot magnitude
+        plot!(
+            p2,
+            data.t,
+            data.angular_momentum_magnitude,
+            label = "|L|",
+            linewidth = 2,
+            color = :black,
+            linestyle = :dash,
+        )
+
+        # Zero reference line
+        hline!(p2, [0.0], linestyle = :dot, color = :gray, linewidth = 0.5, label = "")
+    end
+
+    # =========================================================================
+    # Combine into 2-panel layout
+    # =========================================================================
+    plt = plot(
+        p1, p2,
+        layout = grid(2, 1, heights = [0.5, 0.5]),
+        size = _multi_panel_size(2),
+    )
+
+    return plt
+end
+
 # =============================================================================
 # Internal helpers
 # =============================================================================

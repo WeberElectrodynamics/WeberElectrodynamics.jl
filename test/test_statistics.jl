@@ -350,4 +350,113 @@
             @test all(isfinite.(ps.radial_velocity))
         end
     end
+
+    @testset "MomentumData" begin
+        @testset "compute_momentum_timeseries basic" begin
+            momentum = compute_momentum_timeseries(sol_weber)
+
+            @test momentum isa MomentumData
+            @test length(momentum.t) == length(sol_weber.t)
+            @test length(momentum.linear_momentum) == length(sol_weber.t)
+            @test length(momentum.linear_momentum_magnitude) == length(sol_weber.t)
+            @test momentum.n_particles == 2
+            @test momentum.dims == 2
+        end
+
+        @testset "Linear momentum components" begin
+            momentum = compute_momentum_timeseries(sol_weber)
+
+            # Verify component matrix dimensions
+            @test size(momentum.linear_momentum_components) == (length(sol_weber.t), 2)
+
+            # Verify components match vector data
+            for t = 1:length(momentum.t)
+                for d = 1:2
+                    @test momentum.linear_momentum_components[t, d] == momentum.linear_momentum[t][d]
+                end
+            end
+        end
+
+        @testset "Angular momentum present for 2D" begin
+            momentum = compute_momentum_timeseries(sol_weber)
+
+            @test !isnothing(momentum.angular_momentum)
+            @test momentum.angular_momentum isa Vector{Float64}
+            @test length(momentum.angular_momentum) == length(sol_weber.t)
+        end
+
+        @testset "Momentum conservation (isolated system)" begin
+            momentum = compute_momentum_timeseries(sol_weber)
+
+            # For an isolated system, total momentum should be conserved
+            # Check that momentum stays approximately constant
+            P_initial = momentum.linear_momentum_magnitude[1]
+            for t in eachindex(momentum.linear_momentum_magnitude)
+                @test momentum.linear_momentum_magnitude[t] ≈ P_initial rtol = 1e-10
+            end
+
+            # Angular momentum should also be conserved
+            L_initial = momentum.angular_momentum[1]
+            for t in eachindex(momentum.angular_momentum)
+                @test momentum.angular_momentum[t] ≈ L_initial rtol = 1e-10
+            end
+        end
+
+        @testset "compute_momentum_timeseries with stride" begin
+            momentum = compute_momentum_timeseries(sol_weber; stride = 10)
+
+            expected_points = length(1:10:length(sol_weber.t))
+            @test length(momentum.t) == expected_points
+            @test length(momentum.linear_momentum) == expected_points
+        end
+
+        @testset "Validation errors" begin
+            @test_throws ArgumentError compute_momentum_timeseries(sol_weber; stride = 0)
+            @test_throws ArgumentError compute_momentum_timeseries(sol_weber; stride = -1)
+        end
+
+        @testset "1D system (no angular momentum)" begin
+            # Create a 1D 2-body system
+            sys1d = WeberSystem(2, 1)
+            prob1d = WeberProblem(
+                sys1d,
+                (0.0, 0.5),
+                [1.0, -1.0],
+                [0.1, -0.1];
+                masses = [1.0, 1.0],
+                charges = [1.0, -1.0],
+                c = 1e10,
+                dt = 0.01,
+            )
+            sol1d = solve(prob1d)
+            momentum = compute_momentum_timeseries(sol1d)
+
+            @test momentum.dims == 1
+            @test isnothing(momentum.angular_momentum)
+            @test isnothing(momentum.angular_momentum_magnitude)
+        end
+
+        @testset "3D system" begin
+            # Create a 3D 2-body system
+            sys3d = WeberSystem(2, 3)
+            prob3d = WeberProblem(
+                sys3d,
+                (0.0, 0.5),
+                [1.0, 0.0, 0.0, -1.0, 0.0, 0.0],
+                [0.0, 0.1, 0.0, 0.0, -0.1, 0.0];
+                masses = [1.0, 1.0],
+                charges = [1.0, -1.0],
+                c = 1e10,
+                dt = 0.01,
+            )
+            sol3d = solve(prob3d)
+            momentum = compute_momentum_timeseries(sol3d)
+
+            @test momentum.dims == 3
+            @test !isnothing(momentum.angular_momentum)
+            @test momentum.angular_momentum isa Vector{Vector{Float64}}
+            @test length(momentum.angular_momentum[1]) == 3
+            @test !isnothing(momentum.angular_momentum_magnitude)
+        end
+    end
 end
