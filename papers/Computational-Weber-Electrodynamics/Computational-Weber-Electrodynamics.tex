@@ -83,17 +83,11 @@ where $r^2 = (x_1 - x_2)^2 + (y_1 - y_2)^2 + (z_1 - z_2)^2$ is the squared dista
 
 In SI units, \eqref{potential} and \eqref{force} would have a factor of $1/(4\pi \epsilon_0)$ multiplying the right-hand side, where $\epsilon_0$ is the permittivity of free space. We choose to omit this factor by using an alternative system of units that better suits our computational purposes, see Section~\ref{units}.
 
-The force \eqref{force} can be derived from the potential \eqref{potential}, see equation \eqref{euler_lagrange}.
+Weber's electrodynamics is an \textit{action at a distance} theory. It satisfies Newton's third law of motion in the \textit{strong form} and thus $\vec{F}_{21} = -\vec{F}_{12}$ is true in general. Therefore, energy, momentum and angular momentum are always conserved. Weber's force law \eqref{force} generalizes Coulomb's law for electrostatics to include \textit{velocity dependent} (magnetic) and \textit{acceleration dependent} (induction) forces. This general setup has a significant \textit{computational advantage} compared to Maxwell-Heaviside's field formalism together with the Lorentz force law. We discuss this advantage in more detail in Section~\ref{details}. We also have $\vec{F}_{12} = m_1\vec{a}_1$ and $\vec{F}_{21} = m_2\vec{a}_2$, where $m_1$ and $m_2$ are the \textit{inertial masses} of the particles and $\vec{a}_1$ and $\vec{a}_2$ are their accelerations with respect to an \textit{inertial frame of reference}. We discuss frames of reference in more detail in Section~\ref{details}.
 
-We also have $\vec{F}_{12} = m_1\vec{a}_1$ and $\vec{F}_{21} = m_2\vec{a}_2$, where $m_1$ and $m_2$ are the \textit{inertial masses} of the particles and $\vec{a}_1$ and $\vec{a}_2$ are their accelerations with respect to an \textit{inertial frame of reference}. We discuss frames of reference in more detail in Section~\ref{details}.
+Helmholtz argued in the 19th century that Weber's model violates the \textit{principle of conservation of energy}, see \citet{assis-weber-vol4}. Weber replied with great detail to these claims and proved energy conservation extensively in his 6th and 7th memoirs. \citep{assis-weber-vol4} Weber proved that his force \eqref{force} can be derived from the potential \eqref{potential}, see equation \eqref{euler_lagrange}. Therefore, it is a conservative force and the work done is path-independant. Nowadays, Weber's electrodynamics is said to be valid only for small velocities (\textit{quasi-static approximation}) compared to $c$ and is not suitable for describing electromagnetic radiation. This might be the biggest point of critique against Weber's electrodynamics. Yet, the third term (acceleration dependant term) in \eqref{force} naturally falls of as $1/r$, leaving the door open for alternative theories of radiation.
 
-This setup satisfies Newton's third law of motion and therefore $\vec{F}_{21} = -\vec{F}_{12}$ is true in general. Therefore, energy, momentum and angular momentum are always conserved. This is a significant \textit{computational advantage} of Weber's electrodynamics compared to Maxwell-Heaviside's field formalism together with the Lorentz force law. We discuss this advantage in more detail in Section~\ref{details}.
-
-Weber's force law \eqref{force} generalizes Coulomb's law for electrostatics to include \textit{velocity dependent} (magnetic) and \textit{acceleration dependent} (induction) forces. Helmholtz argued in the 19th century that Weber's model violates the \textit{principle of conservation of energy}, see \citet{assis-weber-vol4}. Weber replied with great detail to these claims and proved energy conservation extensively in his 6th and 7th memoirs. \citep{}
-
-Nowadays, Weber's electrodynamics is said to be valid only for small velocities (\textit{quasi-static approximation}) compared to $c$ and is not suitable for describing electromagnetic radiation. But the validity of these statements is being challenged since the 1990's as part of a renewed interest in Weber's electrodynamics, see \citep{}.
-
-To test the strengths and weaknesses of Weber's electrodynamics, we provide a computational framework for investigating $n$-body systems of charged particles through numerical simulations. This allows us to explore the dynamics of charged particles interacting via Weber's force law \eqref{force} in various configurations and scenarios. Important aspects like energy, momentum and angular momentum conservation can be verified numerically. Furthermore, it paves the way for studying complex systems with oscillatory behavior and wave phenomena within the context of Weber's electrodynamics.
+The validity of criticism towards Weber's electrodynamics is being challenged since the 1990's as part of a renewed interest in Weber's electrodynamics, see \citep{}. To test the strengths and weaknesses of Weber's electrodynamics, we provide a computational framework for investigating $n$-body systems of charged particles through numerical simulations. This allows us to explore the dynamics of charged particles interacting via Weber's force law \eqref{force} in various configurations and scenarios. Important aspects like energy, momentum and angular momentum conservation can be verified numerically. Furthermore, it paves the way for studying complex systems with oscillatory behavior and wave phenomena within the context of Weber's electrodynamics.
 
 \section{Lagrangian and Hamiltonian formulation of Weber's electrodynamics}\label{LH}
 The Lagrangian and Hamiltonian formulation of Weber's electrodynamics was introduced in 1868 by Carl Neumann, see English translation in \citep{assis-weber-vol4}. The standard formalism is described in modern notation in \citet{assis-weber}. We repeat some of the main equations and derive the general Hamiltonian and associated canonical equations for $n$ particles.
@@ -124,7 +118,7 @@ Although the following expression is not directly relevant for our goals, it is 
     F_{12}^x = \frac{d}{dt}\frac{\partial S}{\partial \dot{x}_1} - \frac{\partial S}{\partial x_1} = \qq \frac{(x_1 - x_2)}{r_{12}^3} \left(1 - \frac{\dot{r}^2}{2c^2} + \frac{r\ddot{r}}{c^2}\right)
 \end{equation}
 
-with analogous equations for particle 2 and for the $y$ and $z$ directions. This completes our Lagrangian formulation of Weber's electrodynamics.
+with analogous equations for particle 2 and for the $y$ and $z$ directions.
 
 \subsection{Hamiltonian for 2 particles}
 The Hamiltonian, by definition, is derived from the Lagrangian. For two particles in three spatial dimensions, it is given by
@@ -189,13 +183,7 @@ and
 with analogous equations for the $y$ and $z$ directions. Note that $\dot{p}_{x_1} + \dot{p}_{x_2} = 0$, but $\dot{x}_1 - \dot{x}_2 \neq 0$ in general.
 
 \subsection{Conserved quantities and symmetries}
-Weber's electrodynamics for 2 particles conserves energy, momentum and angular momentum. These conserved quantities arise from symmetries in the Hamiltonian \eqref{h_box} according to Noether's theorem.
-
-The conservation of energy follows from the \textit{time-translation symmetry} of the Hamiltonian, meaning that the Hamiltonian has no explicit time dependence.
-
-The conservation of linear momentum arises from the \textit{translational symmetry} of the Hamiltonian, meaning that shifting all particle positions by a constant vector does not change the form of the Hamiltonian.
-
-The conservation of angular momentum is a consequence of the \textit{rotational symmetry} of the Hamiltonian, indicating that rotating the entire system around any axis does not alter the Hamiltonian's structure.
+Weber's electrodynamics for 2 particles conserves energy, momentum and angular momentum. These conserved quantities arise from symmetries in the Hamiltonian \eqref{h_box} according to Noether's theorem. The conservation of energy follows from the \textit{time-translation symmetry} of the Hamiltonian, meaning that the Hamiltonian has no explicit time dependence. The conservation of linear momentum arises from the \textit{translational symmetry} of the Hamiltonian, meaning that shifting all particle positions by a constant vector does not change the form of the Hamiltonian. The conservation of angular momentum is a consequence of the \textit{rotational symmetry} of the Hamiltonian, indicating that rotating the entire system around any axis does change the form of the Hamiltonian. These symmetries arrise from the fact that Weber's electrodynamics only relies on what Assis calls \textit{relational quantities}, see Section~\ref{details}.
 
 \subsection{Hamiltonian for \texorpdfstring{$n$}{n} particles}
 For a system with $n$ particles, the Hamiltonian \eqref{H} generalizes to:
@@ -305,7 +293,7 @@ A numerical method is called \textit{symplectic} if it preserves the \textit{pha
     -\frac{\qq \dot{r}_{ij}^2}{2 c^2 r_{ij}}
 \end{equation}
 
-is both a function of the positions and momenta. Standard symplectic methods methods cannot be applied directly. Recent work by \citep{Pihajoki2015} and \citep{Tao2016} introduced explicit symplectic methods using the clever extended phase space method introduced by \citep{Pihajoki2015}. Building on these approaches, \citep{Jayawardana2023} developed a semi-explicit symplectic integrator for non-seperable Hamiltonian systems that also preserves quadratic invariants, see \citep{Ohsawa2023}. As of today, this is the most suitable method for our purposes. We describe it briefly here.
+is both a function of the positions and momenta. Standard symplectic methods methods cannot be applied directly. Recent work by \citep{Pihajoki2015} and \citep{Tao2016} introduced explicit symplectic methods using the clever extended phase space method introduced by \citep{Pihajoki2015}. Building on these approaches, \citep{Jayawardana2023} developed a semi-explicit symplectic integrator for non-seperable Hamiltonian systems that also preserves quadratic invariants, see \citep{Ohsawa2023}. As of today, this is one of the most suitable methods for our purposes. We describe it briefly here.
 
 We introduce compact vector notation $\mathbf{q} = (x_1, y_1, z_1, \ldots, x_n, y_n, z_n) \in \mathbb{R}^{3n}$ for positions and $\mathbf{p} = (p_{x_1}, p_{y_1}, p_{z_1}, \ldots, p_{x_n}, p_{y_n}, p_{z_n}) \in \mathbb{R}^{3n}$ for momenta, so that $\mathbf{z} = (\mathbf{q}, \mathbf{p}) \in \mathbb{R}^{6n}$ as in \eqref{z}. The extended phase space doubles the phase space by introducing another pair of positions and momenta $\mathbf{x} \in \mathbb{R}^{3n}$ and $\mathbf{y} \in \mathbb{R}^{3n}$, giving the state vector in extended phase space
 
