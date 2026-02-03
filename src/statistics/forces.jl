@@ -20,6 +20,7 @@ struct PairForceData
     t::Vector{Float64}
     dims::Int
     pair::Tuple{Int,Int}
+    charge_product::Float64  # k = q_i * q_j, determines repulsion/attraction sign
 
     # Total force (vector per timestep)
     force::Vector{Vector{Float64}}
@@ -268,6 +269,7 @@ function compute_pair_force_timeseries(
         t_forces,
         dims,
         pair,
+        k,
         force,
         magnitude,
         stats,

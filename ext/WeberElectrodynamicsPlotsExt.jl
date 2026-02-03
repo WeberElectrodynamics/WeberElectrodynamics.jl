@@ -484,12 +484,13 @@ function WeberElectrodynamics.plot_pair_forces(data::PairForceData)::Plots.Plot
         PLOT_DEFAULTS...,
     )
 
-    # Compute signed scalar magnitudes for each term
-    # Use sign from first component (they're all parallel to r̂)
-    coulomb_signed = [sign(data.coulomb[t][1]) * norm(data.coulomb[t]) for t = 1:n_times]
-    vv_signed = [sign(data.vector_term_vv[t][1]) * norm(data.vector_term_vv[t]) for t = 1:n_times]
-    ra_signed = [sign(data.vector_term_ra[t][1]) * norm(data.vector_term_ra[t]) for t = 1:n_times]
-    rv2_signed = [sign(data.vector_term_rv2[t][1]) * norm(data.vector_term_rv2[t]) for t = 1:n_times]
+    # Signed scalars: positive = repulsion, negative = attraction
+    # sign(k) gives physics; sign(dot(term, coulomb)) gives coefficient sign
+    k_sign = sign(data.charge_product)
+    coulomb_signed = [k_sign * norm(data.coulomb[t]) for t = 1:n_times]
+    vv_signed = [sign(dot(data.vector_term_vv[t], data.coulomb[t])) * k_sign * norm(data.vector_term_vv[t]) for t = 1:n_times]
+    ra_signed = [sign(dot(data.vector_term_ra[t], data.coulomb[t])) * k_sign * norm(data.vector_term_ra[t]) for t = 1:n_times]
+    rv2_signed = [sign(dot(data.vector_term_rv2[t], data.coulomb[t])) * k_sign * norm(data.vector_term_rv2[t]) for t = 1:n_times]
 
     plot!(p3, data.t, coulomb_signed, label = "Coulomb", linewidth = 1.5, color = decomp_colors[1])
     plot!(p3, data.t, vv_signed, label = "v·v/c²", linewidth = 1.5, color = decomp_colors[2])
@@ -508,9 +509,9 @@ function WeberElectrodynamics.plot_pair_forces(data::PairForceData)::Plots.Plot
         PLOT_DEFAULTS...,
     )
 
-    # Reuse coulomb_signed from above
-    rdot2_signed = [sign(data.radial_term_rdot2[t][1]) * norm(data.radial_term_rdot2[t]) for t = 1:n_times]
-    rddot_signed = [sign(data.radial_term_rddot[t][1]) * norm(data.radial_term_rddot[t]) for t = 1:n_times]
+    # Reuse coulomb_signed and k_sign from above
+    rdot2_signed = [sign(dot(data.radial_term_rdot2[t], data.coulomb[t])) * k_sign * norm(data.radial_term_rdot2[t]) for t = 1:n_times]
+    rddot_signed = [sign(dot(data.radial_term_rddot[t], data.coulomb[t])) * k_sign * norm(data.radial_term_rddot[t]) for t = 1:n_times]
 
     plot!(p4, data.t, coulomb_signed, label = "Coulomb", linewidth = 1.5, color = decomp_colors[1])
     plot!(p4, data.t, rdot2_signed, label = "-ṙ²/(2c²)", linewidth = 1.5, color = decomp_colors[2])
