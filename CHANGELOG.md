@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-02-03
+
+### Added
+- `MomentumData` struct for total linear and angular momentum analysis
+- `compute_momentum_timeseries` function for computing momentum conservation
+- `plot_momentum` with 2-panel layout (linear momentum components + angular momentum)
+- Support for 1D (linear only), 2D (Lz scalar), and 3D (L vector) momentum analysis
+- Momentum tests including conservation checks for isolated systems
+- Momentum analysis section in example notebook
+
+### Changed
+- Remove docstrings from `energy.jl` and `momentum.jl` (documentation in code comments)
+- Remove problematic unicode comment from `energy.jl`
+
 ## [2.0.0] - 2026-02-01
 
 ### Breaking Changes
