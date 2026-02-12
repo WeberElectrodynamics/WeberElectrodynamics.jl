@@ -22,6 +22,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Chain encounter fallback for overlapping close-pair components
 - Preallocated regularization buffers integrated into solver workspace
 - New theory/design documentation for regularized integration workflow
+- Regularization backend selection: `:lifted_pair` and `:adaptive_cartesian`
+- Backend fallback policy for unsupported lifted dimensions (1D/3D) with optional warning
+- 2D true lifted pair split stepping path (external midpoint + LC lifted midpoint)
+- Extended diagnostics for backend usage and fallback accounting
+- New 4-body singular encounter reference notebook: `examples/four_body_regularized_reference.ipynb`
+
+### Changed
+- Improved 2D Levi-Civita lift branch handling near singular/axis-degenerate states
+- Stabilized lifted substep time scaling by freezing the monitor within each substep
 
 ## [2.1.0] - 2026-02-03
 
