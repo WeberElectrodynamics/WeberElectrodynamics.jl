@@ -6,6 +6,11 @@ const REG_MODE_NONE = UInt8(0)
 const REG_MODE_PAIR = UInt8(1)
 const REG_MODE_CHAIN = UInt8(2)
 
+const REG_BACKEND_ADAPTIVE = :adaptive_cartesian
+const REG_BACKEND_LIFTED = :lifted_pair
+const REG_BACKEND_DISABLED = :disabled
+const REG_BACKEND_MIXED = :mixed
+
 struct SymmetricProjectionIntegrator <: WeberAlgorithm
     relaxation::Float64
 
@@ -25,6 +30,8 @@ struct RegularizationOptions
     constraint_tolerance::Float64
     g_floor::Float64
     chain_enabled::Bool
+    backend::Symbol
+    warn_on_fallback::Bool
 
     function RegularizationOptions(
         ;
@@ -37,6 +44,8 @@ struct RegularizationOptions
         constraint_tolerance::Real = 1e-12,
         g_floor::Real = 1e-12,
         chain_enabled::Bool = true,
+        backend::Symbol = REG_BACKEND_LIFTED,
+        warn_on_fallback::Bool = true,
     )
         if !isnothing(r_on)
             @assert r_on > 0 "regularization_r_on must be positive"
@@ -52,6 +61,7 @@ struct RegularizationOptions
         if !isnothing(r_on) && !isnothing(r_off)
             @assert r_off > r_on "regularization_r_off must be greater than regularization_r_on"
         end
+        @assert backend in (REG_BACKEND_ADAPTIVE, REG_BACKEND_LIFTED) "regularization_backend must be :adaptive_cartesian or :lifted_pair"
 
         new(
             enabled,
@@ -63,27 +73,44 @@ struct RegularizationOptions
             Float64(constraint_tolerance),
             Float64(g_floor),
             chain_enabled,
+            backend,
+            warn_on_fallback,
         )
     end
 end
 
 mutable struct RegularizationDiagnostics
     enabled::Bool
+    requested_backend::Symbol
+    used_backend::Symbol
     activation_count::Int
     deactivation_count::Int
     active_steps::Int
     pair_steps::Int
+    adaptive_pair_steps::Int
+    lifted_pair_steps::Int
     chain_steps::Int
     unregularized_steps::Int
+    backend_fallback_steps::Int
     total_substeps::Int
     max_substeps_used::Int
     max_constraint_violation::Float64
     min_encounter_distance::Float64
     mode_history::Vector{UInt8}
 
-    function RegularizationDiagnostics(enabled::Bool, n_steps::Int)
+    function RegularizationDiagnostics(
+        enabled::Bool,
+        n_steps::Int,
+        requested_backend::Symbol,
+        used_backend::Symbol,
+    )
         new(
             enabled,
+            requested_backend,
+            used_backend,
+            0,
+            0,
+            0,
             0,
             0,
             0,
@@ -102,6 +129,7 @@ end
 mutable struct RegularizationBuffers
     n_particles::Int
     dims::Int
+    dof::Int
     n_pairs::Int
 
     pair_i::Vector{Int}
@@ -125,23 +153,59 @@ mutable struct RegularizationBuffers
     r_on::Float64
     r_off::Float64
 
+    effective_backend::Symbol
+    backend_fallback::Bool
+
     chain_order::Vector{Int}
     chain_used::Vector{Bool}
 
     rel_q::Vector{Float64}
     rel_p::Vector{Float64}
+    rel_qdot::Vector{Float64}
+    rel_pdot::Vector{Float64}
+
+    pair_R::Vector{Float64}
+    pair_P::Vector{Float64}
+    pair_R_mid::Vector{Float64}
+    pair_P_mid::Vector{Float64}
+    pair_Rdot::Vector{Float64}
+    pair_Pdot::Vector{Float64}
+
     lc_u::Vector{Float64}
     lc_U::Vector{Float64}
+    lc_u_mid::Vector{Float64}
+    lc_U_mid::Vector{Float64}
+    lc_du_tau::Vector{Float64}
+    lc_dU_tau::Vector{Float64}
+    lc_du_tau_mid::Vector{Float64}
+    lc_dU_tau_mid::Vector{Float64}
+
+    temp_rel_q::Vector{Float64}
+    temp_rel_p::Vector{Float64}
+
     ks_u::Vector{Float64}
     ks_U::Vector{Float64}
     ks_J::Matrix{Float64}
     ks_n::Vector{Float64}
 
+    params_pair::Vector{Float64}
+    dq_full::Vector{Float64}
+    dp_full::Vector{Float64}
+    dq_pair::Vector{Float64}
+    dp_pair::Vector{Float64}
+    dq_ext::Vector{Float64}
+    dp_ext::Vector{Float64}
+    q_mid::Vector{Float64}
+    p_mid::Vector{Float64}
+
     function RegularizationBuffers(
         n_particles::Int,
         dims::Int,
+        dof::Int,
         r_on::Float64,
         r_off::Float64,
+        effective_backend::Symbol,
+        backend_fallback::Bool,
     )
         n_pairs = n_particles * (n_particles - 1) ÷ 2
         pair_i = Vector{Int}(undef, n_pairs)
@@ -158,6 +222,7 @@ mutable struct RegularizationBuffers
         new(
             n_particles,
             dims,
+            dof,
             n_pairs,
             pair_i,
             pair_j,
@@ -175,16 +240,43 @@ mutable struct RegularizationBuffers
             0,
             r_on,
             r_off,
+            effective_backend,
+            backend_fallback,
             Vector{Int}(undef, n_particles),
             Vector{Bool}(undef, n_particles),
             Vector{Float64}(undef, max(dims, 3)),
             Vector{Float64}(undef, max(dims, 3)),
+            Vector{Float64}(undef, max(dims, 3)),
+            Vector{Float64}(undef, max(dims, 3)),
+            Vector{Float64}(undef, max(dims, 3)),
+            Vector{Float64}(undef, max(dims, 3)),
+            Vector{Float64}(undef, max(dims, 3)),
+            Vector{Float64}(undef, max(dims, 3)),
+            Vector{Float64}(undef, max(dims, 3)),
+            Vector{Float64}(undef, max(dims, 3)),
             Vector{Float64}(undef, 2),
             Vector{Float64}(undef, 2),
+            Vector{Float64}(undef, 2),
+            Vector{Float64}(undef, 2),
+            Vector{Float64}(undef, 2),
+            Vector{Float64}(undef, 2),
+            Vector{Float64}(undef, 2),
+            Vector{Float64}(undef, 2),
+            Vector{Float64}(undef, max(dims, 3)),
+            Vector{Float64}(undef, max(dims, 3)),
             Vector{Float64}(undef, 4),
             Vector{Float64}(undef, 4),
             Matrix{Float64}(undef, 3, 4),
             Vector{Float64}(undef, 4),
+            Vector{Float64}(undef, 2n_particles + 1),
+            Vector{Float64}(undef, dof),
+            Vector{Float64}(undef, dof),
+            Vector{Float64}(undef, dof),
+            Vector{Float64}(undef, dof),
+            Vector{Float64}(undef, dof),
+            Vector{Float64}(undef, dof),
+            Vector{Float64}(undef, dof),
+            Vector{Float64}(undef, dof),
         )
     end
 end
@@ -223,6 +315,8 @@ struct WeberProblem
         regularization_constraint_tolerance::Real = 1e-12,
         regularization_g_floor::Real = 1e-12,
         regularization_chain_enabled::Bool = true,
+        regularization_backend::Symbol = REG_BACKEND_LIFTED,
+        regularization_warn_on_fallback::Bool = true,
     )
         n_particles = system.n_particles
         dof = system.degrees_of_freedom
@@ -252,6 +346,8 @@ struct WeberProblem
             constraint_tolerance = regularization_constraint_tolerance,
             g_floor = regularization_g_floor,
             chain_enabled = regularization_chain_enabled,
+            backend = regularization_backend,
+            warn_on_fallback = regularization_warn_on_fallback,
         )
 
         new(
@@ -300,6 +396,7 @@ function Base.show(io::IO, ::MIME"text/plain", sol::WeberSolution)
     println(io, "  t: $(sol.t[1]) → $(sol.t[end]) ($(length(sol)) points)")
     println(io, "  DOF: $(length(sol.q[1]))")
     if sol.regularization.enabled
+        println(io, "  Regularization backend: requested=$(sol.regularization.requested_backend), used=$(sol.regularization.used_backend)")
         println(io, "  Regularization steps: pair=$(sol.regularization.pair_steps), chain=$(sol.regularization.chain_steps), cartesian=$(sol.regularization.unregularized_steps)")
     end
 end
@@ -326,6 +423,17 @@ end
         end
     end
     return min_r
+end
+
+@inline function _resolve_regularization_backend(
+    dims::Int,
+    options::RegularizationOptions,
+)
+    requested = options.backend
+    if requested == REG_BACKEND_LIFTED && dims != 2
+        return REG_BACKEND_ADAPTIVE, true
+    end
+    return requested, false
 end
 
 mutable struct SymmetricProjectionBuffers
@@ -370,8 +478,16 @@ mutable struct SymmetricProjectionBuffers
         r_off = isnothing(reg_options.r_off) ? (reg_options.r_off_factor * min_pair_distance) : reg_options.r_off
         r_on_value = Float64(max(r_on, reg_options.g_floor))
         r_off_value = Float64(max(r_off, r_on_value * 1.01))
-        regularization_buffers =
-            RegularizationBuffers(n_particles, dims, r_on_value, r_off_value)
+        effective_backend, backend_fallback = _resolve_regularization_backend(dims, reg_options)
+        regularization_buffers = RegularizationBuffers(
+            n_particles,
+            dims,
+            d,
+            r_on_value,
+            r_off_value,
+            effective_backend,
+            backend_fallback,
+        )
 
         new(
             d,

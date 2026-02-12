@@ -273,6 +273,11 @@ end
         if y < 0
             u2 = -u2
         end
+        if abs(u2) > 100 * eps(Float64)
+            u1 = y / (2 * u2)
+        else
+            u1 = 0.0
+        end
     end
 
     rb.lc_u[1] = u1

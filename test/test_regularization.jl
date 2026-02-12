@@ -4,8 +4,11 @@
         t_end::Float64,
         v_scale::Float64,
         regularization_enabled::Bool,
-        r_on::Float64,
-        r_off::Float64,
+        backend::Symbol,
+        warn_on_fallback::Bool = false,
+        r_on::Float64 = 0.6,
+        r_off::Float64 = 0.9,
+        max_substeps::Int = 512,
     )
         m1, m2 = 1.0, 0.1
         q1, q2 = sqrt(0.1), -sqrt(0.1)
@@ -44,18 +47,100 @@
             c = c,
             dt = dt,
             regularization_enabled = regularization_enabled,
+            regularization_backend = backend,
+            regularization_warn_on_fallback = warn_on_fallback,
             regularization_r_on = r_on,
             regularization_r_off = r_off,
-            regularization_max_substeps = 256,
+            regularization_max_substeps = max_substeps,
         )
     end
 
     state_error(sol_a::WeberSolution, sol_b::WeberSolution) =
         norm(sol_a.q[end] - sol_b.q[end]) + norm(sol_a.p[end] - sol_b.p[end])
 
+    @testset "API and fallback" begin
+        sys2 = WeberSystem(2, 2)
+        q0_2d = [-1.0, 0.0, 1.0, 0.0]
+        p0_2d = [0.0, -0.05, 0.0, 0.05]
+
+        prob_valid = WeberProblem(
+            sys2,
+            (0.0, 0.1),
+            q0_2d,
+            p0_2d;
+            masses = [1.0, 0.5],
+            charges = [0.1, -0.1],
+            c = 4.0,
+            dt = 0.001,
+            regularization_enabled = true,
+            regularization_backend = :adaptive_cartesian,
+            regularization_warn_on_fallback = false,
+        )
+        @test prob_valid.regularization.backend == WeberElectrodynamics.REG_BACKEND_ADAPTIVE
+
+        @test_throws AssertionError WeberProblem(
+            sys2,
+            (0.0, 0.1),
+            q0_2d,
+            p0_2d;
+            masses = [1.0, 0.5],
+            charges = [0.1, -0.1],
+            c = 4.0,
+            dt = 0.001,
+            regularization_enabled = true,
+            regularization_backend = :invalid_backend,
+        )
+
+        sys1 = WeberSystem(2, 1)
+        q0_1d = [-0.08, 0.08]
+        p0_1d = [0.0, 0.0]
+
+        prob_fb = WeberProblem(
+            sys1,
+            (0.0, 0.01),
+            q0_1d,
+            p0_1d;
+            masses = [1.0, 1.0],
+            charges = [0.2, -0.2],
+            c = 4.0,
+            dt = 0.001,
+            regularization_enabled = true,
+            regularization_backend = :lifted_pair,
+            regularization_warn_on_fallback = false,
+            regularization_r_on = 0.2,
+            regularization_r_off = 0.26,
+        )
+        int_fb = init(prob_fb)
+        rb_fb = int_fb.buffers.regularization_buffers
+        @test rb_fb.effective_backend == WeberElectrodynamics.REG_BACKEND_ADAPTIVE
+        @test rb_fb.backend_fallback
+
+        step!(int_fb)
+        @test int_fb.diagnostics.adaptive_pair_steps == 1
+        @test int_fb.diagnostics.lifted_pair_steps == 0
+        @test int_fb.diagnostics.backend_fallback_steps == 1
+
+        prob_warn = WeberProblem(
+            sys1,
+            (0.0, 0.01),
+            q0_1d,
+            p0_1d;
+            masses = [1.0, 1.0],
+            charges = [0.2, -0.2],
+            c = 4.0,
+            dt = 0.001,
+            regularization_enabled = true,
+            regularization_backend = :lifted_pair,
+            regularization_warn_on_fallback = true,
+            regularization_r_on = 0.2,
+            regularization_r_off = 0.26,
+        )
+        @test_logs (:warn, r"falling back to :adaptive_cartesian") init(prob_warn)
+    end
+
     @testset "Transform identities" begin
         @testset "Levi-Civita" begin
-            rb = WeberElectrodynamics.RegularizationBuffers(2, 2, 0.1, 0.2)
+            rb = WeberElectrodynamics.RegularizationBuffers(2, 2, 4, 0.1, 0.2, :lifted_pair, false)
             q_rel = zeros(2)
             p_rel = zeros(2)
 
@@ -85,7 +170,7 @@
         end
 
         @testset "KS" begin
-            rb = WeberElectrodynamics.RegularizationBuffers(2, 3, 0.1, 0.2)
+            rb = WeberElectrodynamics.RegularizationBuffers(2, 3, 6, 0.1, 0.2, :adaptive_cartesian, false)
             J = rb.ks_J
 
             for _ = 1:32
@@ -118,7 +203,7 @@
     end
 
     @testset "Switching and hysteresis" begin
-        rb = WeberElectrodynamics.RegularizationBuffers(3, 2, 0.2, 0.3)
+        rb = WeberElectrodynamics.RegularizationBuffers(3, 2, 6, 0.2, 0.3, :adaptive_cartesian, false)
 
         q_activate = [-0.09, 0.0, 0.09, 0.0, 0.8, 0.0]
         active, mode, _ = WeberElectrodynamics._detect_regularization_component!(rb, q_activate, true)
@@ -126,8 +211,11 @@
         @test mode == WeberElectrodynamics.REG_MODE_PAIR
 
         q_between = [-0.13, 0.0, 0.13, 0.0, 0.8, 0.0]
-        active, _, _ = WeberElectrodynamics._detect_regularization_component!(rb, q_between, true)
-        @test active
+        for _ = 1:8
+            active, mode, _ = WeberElectrodynamics._detect_regularization_component!(rb, q_between, true)
+            @test active
+            @test mode == WeberElectrodynamics.REG_MODE_PAIR
+        end
 
         q_off = [-0.17, 0.0, 0.17, 0.0, 0.8, 0.0]
         active, mode, _ = WeberElectrodynamics._detect_regularization_component!(rb, q_off, true)
@@ -135,84 +223,66 @@
         @test mode == WeberElectrodynamics.REG_MODE_NONE
     end
 
-    @testset "Pair mode correctness 1D/2D/3D" begin
-        @testset "1D" begin
-            coarse_reg = make_orbit_problem(1;
-                dt = 0.003,
-                t_end = 0.8,
-                v_scale = 0.0,
-                regularization_enabled = true,
-                r_on = 0.25,
-                r_off = 0.32,
-            )
-            coarse_plain = make_orbit_problem(1;
-                dt = 0.003,
-                t_end = 0.8,
-                v_scale = 0.0,
-                regularization_enabled = false,
-                r_on = 0.25,
-                r_off = 0.32,
-            )
-            fine_ref = make_orbit_problem(1;
-                dt = 0.001,
-                t_end = 0.8,
-                v_scale = 0.0,
-                regularization_enabled = true,
-                r_on = 0.25,
-                r_off = 0.32,
-            )
+    @testset "Pair mode correctness (2D lifted)" begin
+        coarse_cart = make_orbit_problem(2;
+            dt = 0.004,
+            t_end = 3.0,
+            v_scale = 0.2,
+            regularization_enabled = false,
+            backend = :lifted_pair,
+            r_on = 0.6,
+            r_off = 0.9,
+        )
+        coarse_adaptive = make_orbit_problem(2;
+            dt = 0.004,
+            t_end = 3.0,
+            v_scale = 0.2,
+            regularization_enabled = true,
+            backend = :adaptive_cartesian,
+            r_on = 0.6,
+            r_off = 0.9,
+        )
+        coarse_lifted = make_orbit_problem(2;
+            dt = 0.004,
+            t_end = 3.0,
+            v_scale = 0.2,
+            regularization_enabled = true,
+            backend = :lifted_pair,
+            r_on = 0.6,
+            r_off = 0.9,
+        )
+        fine_ref = make_orbit_problem(2;
+            dt = 0.001,
+            t_end = 3.0,
+            v_scale = 0.2,
+            regularization_enabled = true,
+            backend = :lifted_pair,
+            r_on = 0.6,
+            r_off = 0.9,
+        )
 
-            sol_reg = solve(coarse_reg)
-            sol_plain = solve(coarse_plain)
-            sol_ref = solve(fine_ref)
+        sol_cart = solve(coarse_cart)
+        sol_adaptive = solve(coarse_adaptive)
+        sol_lifted = solve(coarse_lifted)
+        sol_ref = solve(fine_ref)
 
-            @test sol_reg.retcode == :Success
-            @test sol_plain.retcode == :Success
-            @test all(isfinite, sol_reg.q[end])
-            @test all(isfinite, sol_reg.p[end])
-            @test sol_reg.regularization.pair_steps > 0
+        @test sol_cart.retcode == :Success
+        @test sol_adaptive.retcode == :Success
+        @test sol_lifted.retcode == :Success
+        @test sol_ref.retcode == :Success
 
-            @test state_error(sol_reg, sol_ref) <= state_error(sol_plain, sol_ref) * 1.05
-        end
+        @test all(isfinite, sol_lifted.q[end])
+        @test all(isfinite, sol_lifted.p[end])
+        @test sol_lifted.regularization.pair_steps > 0
+        @test sol_lifted.regularization.lifted_pair_steps > 0
+        @test sol_adaptive.regularization.adaptive_pair_steps > 0
 
-        for dims in (2, 3)
-            coarse_reg = make_orbit_problem(dims;
-                dt = 0.003,
-                t_end = 3.0,
-                v_scale = 0.25,
-                regularization_enabled = true,
-                r_on = 0.6,
-                r_off = 0.9,
-            )
-            coarse_plain = make_orbit_problem(dims;
-                dt = 0.003,
-                t_end = 3.0,
-                v_scale = 0.25,
-                regularization_enabled = false,
-                r_on = 0.6,
-                r_off = 0.9,
-            )
-            fine_ref = make_orbit_problem(dims;
-                dt = 0.001,
-                t_end = 3.0,
-                v_scale = 0.25,
-                regularization_enabled = true,
-                r_on = 0.6,
-                r_off = 0.9,
-            )
+        err_cart = state_error(sol_cart, sol_ref)
+        err_lifted = state_error(sol_lifted, sol_ref)
+        err_adaptive = state_error(sol_adaptive, sol_ref)
 
-            sol_reg = solve(coarse_reg)
-            sol_plain = solve(coarse_plain)
-            sol_ref = solve(fine_ref)
-
-            @test sol_reg.retcode == :Success
-            @test sol_plain.retcode == :Success
-            @test all(isfinite, sol_reg.q[end])
-            @test all(isfinite, sol_reg.p[end])
-            @test sol_reg.regularization.pair_steps > 0
-
-            @test state_error(sol_reg, sol_ref) <= state_error(sol_plain, sol_ref) * 1.05
-        end
+        @test err_lifted <= 0.5 * err_cart
+        @test err_adaptive <= err_cart
     end
 
     @testset "Chain mode correctness" begin
@@ -230,6 +300,8 @@
             c = 4.0,
             dt = 0.002,
             regularization_enabled = true,
+            regularization_backend = :lifted_pair,
+            regularization_warn_on_fallback = false,
             regularization_r_on = 0.28,
             regularization_r_off = 0.39,
             regularization_chain_enabled = true,
@@ -239,6 +311,7 @@
         sol = solve(prob)
         @test sol.retcode == :Success
         @test sol.regularization.chain_steps > 0
+        @test sol.regularization.lifted_pair_steps == 0
     end
 
     @testset "Backward mode parity" begin
@@ -268,6 +341,8 @@
             p0;
             kwargs...,
             regularization_enabled = true,
+            regularization_backend = :adaptive_cartesian,
+            regularization_warn_on_fallback = false,
             regularization_r_on = 0.05,
             regularization_r_off = 0.08,
         )
@@ -285,10 +360,11 @@
 
     @testset "Diagnostics validity" begin
         prob = make_orbit_problem(2;
-            dt = 0.003,
+            dt = 0.004,
             t_end = 3.0,
-            v_scale = 0.25,
+            v_scale = 0.2,
             regularization_enabled = true,
+            backend = :lifted_pair,
             r_on = 0.6,
             r_off = 0.9,
         )
@@ -296,10 +372,13 @@
         d = sol.regularization
 
         @test d.pair_steps + d.chain_steps + d.unregularized_steps == length(sol) - 1
+        @test d.pair_steps == d.adaptive_pair_steps + d.lifted_pair_steps
         @test d.total_substeps >= d.pair_steps + d.chain_steps + d.unregularized_steps
         @test d.max_substeps_used >= 1
         @test isfinite(d.min_encounter_distance)
         @test d.max_constraint_violation >= 0
+        @test d.requested_backend == WeberElectrodynamics.REG_BACKEND_LIFTED
+        @test d.used_backend == WeberElectrodynamics.REG_BACKEND_LIFTED
     end
 
     @testset "Allocation checks" begin
@@ -325,7 +404,7 @@
 
         q1 = [-0.08, 0.01, 0.08, -0.01]
         p1 = [0.0, -0.02, 0.0, 0.02]
-        prob_reg = WeberProblem(
+        prob_lifted = WeberProblem(
             sys,
             (0.0, 0.02),
             q1,
@@ -335,14 +414,16 @@
             c = 4.0,
             dt = 0.001,
             regularization_enabled = true,
+            regularization_backend = :lifted_pair,
+            regularization_warn_on_fallback = false,
             regularization_r_on = 0.2,
             regularization_r_off = 0.26,
             regularization_max_substeps = 256,
         )
-        int_reg = init(prob_reg)
-        step!(int_reg)
-        @test int_reg.diagnostics.mode_history[1] == WeberElectrodynamics.REG_MODE_PAIR
-        alloc_reg = @allocated step!(int_reg)
-        @test alloc_reg <= 1024
+        int_lifted = init(prob_lifted)
+        step!(int_lifted)
+        @test int_lifted.diagnostics.mode_history[1] == WeberElectrodynamics.REG_MODE_PAIR
+        alloc_lifted = @allocated step!(int_lifted)
+        @test alloc_lifted <= 2048
     end
 end

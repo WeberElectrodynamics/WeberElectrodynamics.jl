@@ -232,12 +232,31 @@ end
     return nothing
 end
 
+@inline function _merge_used_backend!(
+    diagnostics::RegularizationDiagnostics,
+    backend::Symbol,
+)
+    if !diagnostics.enabled || backend == REG_BACKEND_DISABLED
+        return nothing
+    end
+
+    if diagnostics.used_backend == REG_BACKEND_DISABLED
+        diagnostics.used_backend = backend
+    elseif diagnostics.used_backend != backend
+        diagnostics.used_backend = REG_BACKEND_MIXED
+    end
+
+    return nothing
+end
+
 @inline function _update_diagnostics!(
     integrator::WeberIntegrator,
     mode::UInt8,
     substeps::Int,
     min_distance::Float64,
     max_constraint_violation::Float64,
+    pair_backend::Symbol,
+    backend_fallback_step::Bool,
 )
     diagnostics = integrator.diagnostics
     idx = integrator.step_count
@@ -260,9 +279,19 @@ end
     if mode == REG_MODE_PAIR
         diagnostics.active_steps += 1
         diagnostics.pair_steps += 1
+        if pair_backend == REG_BACKEND_LIFTED
+            diagnostics.lifted_pair_steps += 1
+        else
+            diagnostics.adaptive_pair_steps += 1
+        end
+        _merge_used_backend!(diagnostics, pair_backend)
+        if backend_fallback_step
+            diagnostics.backend_fallback_steps += 1
+        end
     elseif mode == REG_MODE_CHAIN
         diagnostics.active_steps += 1
         diagnostics.chain_steps += 1
+        _merge_used_backend!(diagnostics, REG_BACKEND_ADAPTIVE)
     else
         diagnostics.unregularized_steps += 1
     end
@@ -287,6 +316,320 @@ end
     return nothing
 end
 
+@inline function _set_pair_params!(
+    rb::RegularizationBuffers,
+    prob::WeberProblem,
+    i::Int,
+    j::Int,
+)
+    n = rb.n_particles
+    params_pair = rb.params_pair
+    masses = prob.masses
+    charges = prob.charges
+
+    @inbounds begin
+        for k = 1:n
+            params_pair[k] = masses[k]
+            params_pair[n+k] = 0.0
+        end
+        params_pair[n+i] = charges[i]
+        params_pair[n+j] = charges[j]
+        params_pair[2n+1] = prob.c
+    end
+
+    return nothing
+end
+
+@inline function _compute_full_pair_external_derivatives!(
+    rb::RegularizationBuffers,
+    q_state::Vector{Float64},
+    p_state::Vector{Float64},
+    prob::WeberProblem,
+)
+    system = prob.system
+    system.dq_dt_compiled(rb.dq_full, q_state, p_state, prob.params)
+    system.dp_dt_compiled(rb.dp_full, q_state, p_state, prob.params)
+    system.dq_dt_compiled(rb.dq_pair, q_state, p_state, rb.params_pair)
+    system.dp_dt_compiled(rb.dp_pair, q_state, p_state, rb.params_pair)
+
+    @inbounds @. rb.dq_ext = rb.dq_full - rb.dq_pair
+    @inbounds @. rb.dp_ext = rb.dp_full - rb.dp_pair
+
+    return nothing
+end
+
+@inline function _external_half_step_midpoint!(
+    q::Vector{Float64},
+    p::Vector{Float64},
+    dt_half::Float64,
+    prob::WeberProblem,
+    rb::RegularizationBuffers,
+)
+    if dt_half <= 0
+        return nothing
+    end
+
+    _compute_full_pair_external_derivatives!(rb, q, p, prob)
+
+    midpoint_scale = dt_half * 0.5
+    @inbounds @. rb.q_mid = q + midpoint_scale * rb.dq_ext
+    @inbounds @. rb.p_mid = p + midpoint_scale * rb.dp_ext
+
+    _compute_full_pair_external_derivatives!(rb, rb.q_mid, rb.p_mid, prob)
+
+    @inbounds @. q = q + dt_half * rb.dq_ext
+    @inbounds @. p = p + dt_half * rb.dp_ext
+
+    return nothing
+end
+
+@inline function _extract_pair_2d_state!(
+    rb::RegularizationBuffers,
+    q_state::Vector{Float64},
+    p_state::Vector{Float64},
+    masses::Vector{Float64},
+    i::Int,
+    j::Int,
+)
+    mi = masses[i]
+    mj = masses[j]
+    M = mi + mj
+    mu = mi * mj / M
+
+    i0 = (i - 1) * 2
+    j0 = (j - 1) * 2
+
+    @inbounds for d = 1:2
+        qi = q_state[i0+d]
+        qj = q_state[j0+d]
+        pi = p_state[i0+d]
+        pj = p_state[j0+d]
+
+        rb.pair_R[d] = (mi * qi + mj * qj) / M
+        rb.pair_P[d] = pi + pj
+
+        rb.rel_q[d] = qi - qj
+        rb.rel_p[d] = mu * (pi / mi - pj / mj)
+    end
+
+    return mi, mj, mu, M
+end
+
+@inline function _extract_pair_2d_derivatives!(
+    rb::RegularizationBuffers,
+    dq_state::Vector{Float64},
+    dp_state::Vector{Float64},
+    i::Int,
+    j::Int,
+    mi::Float64,
+    mj::Float64,
+    mu::Float64,
+    M::Float64,
+)
+    i0 = (i - 1) * 2
+    j0 = (j - 1) * 2
+
+    @inbounds for d = 1:2
+        dqi = dq_state[i0+d]
+        dqj = dq_state[j0+d]
+        dpi = dp_state[i0+d]
+        dpj = dp_state[j0+d]
+
+        rb.pair_Rdot[d] = (mi * dqi + mj * dqj) / M
+        rb.pair_Pdot[d] = dpi + dpj
+
+        rb.rel_qdot[d] = dqi - dqj
+        rb.rel_pdot[d] = mu * (dpi / mi - dpj / mj)
+    end
+
+    return nothing
+end
+
+@inline function _write_pair_state_2d!(
+    q_state::Vector{Float64},
+    p_state::Vector{Float64},
+    i::Int,
+    j::Int,
+    mi::Float64,
+    mj::Float64,
+    M::Float64,
+    R::Vector{Float64},
+    P::Vector{Float64},
+    rel_q::Vector{Float64},
+    rel_p::Vector{Float64},
+)
+    i0 = (i - 1) * 2
+    j0 = (j - 1) * 2
+
+    αi = mj / M
+    αj = mi / M
+    βi = mi / M
+    βj = mj / M
+
+    @inbounds begin
+        q_state[i0+1] = R[1] + αi * rel_q[1]
+        q_state[i0+2] = R[2] + αi * rel_q[2]
+        q_state[j0+1] = R[1] - αj * rel_q[1]
+        q_state[j0+2] = R[2] - αj * rel_q[2]
+
+        p_state[i0+1] = βi * P[1] + rel_p[1]
+        p_state[i0+2] = βi * P[2] + rel_p[2]
+        p_state[j0+1] = βj * P[1] - rel_p[1]
+        p_state[j0+2] = βj * P[2] - rel_p[2]
+    end
+
+    return nothing
+end
+
+@inline function _compute_lc_tau_derivatives!(
+    du_tau::Vector{Float64},
+    dU_tau::Vector{Float64},
+    u::Vector{Float64},
+    p_rel::Vector{Float64},
+    qdot_rel::Vector{Float64},
+    pdot_rel::Vector{Float64},
+    g_scale::Float64,
+    g_floor::Float64,
+)
+    u1 = u[1]
+    u2 = u[2]
+
+    r = u1 * u1 + u2 * u2
+    r_geom = max(r, g_floor)
+
+    inv_2r = 0.5 / r_geom
+    du1_dt = inv_2r * (u1 * qdot_rel[1] + u2 * qdot_rel[2])
+    du2_dt = inv_2r * (-u2 * qdot_rel[1] + u1 * qdot_rel[2])
+
+    dU1_dt =
+        2 * (u1 * pdot_rel[1] + u2 * pdot_rel[2]) +
+        2 * (du1_dt * p_rel[1] + du2_dt * p_rel[2])
+    dU2_dt =
+        2 * (-u2 * pdot_rel[1] + u1 * pdot_rel[2]) +
+        2 * (-du2_dt * p_rel[1] + du1_dt * p_rel[2])
+
+    du_tau[1] = g_scale * du1_dt
+    du_tau[2] = g_scale * du2_dt
+    dU_tau[1] = g_scale * dU1_dt
+    dU_tau[2] = g_scale * dU2_dt
+
+    return r_geom
+end
+
+@inline function _lifted_pair_substep_2d!(
+    q::Vector{Float64},
+    p::Vector{Float64},
+    dt_sub::Float64,
+    prob::WeberProblem,
+    rb::RegularizationBuffers,
+    i::Int,
+    j::Int,
+)
+    system = prob.system
+    masses = prob.masses
+    g_floor = prob.regularization.g_floor
+
+    prev_u1 = rb.lc_u[1]
+    prev_u2 = rb.lc_u[2]
+    prev_u_norm2 = prev_u1 * prev_u1 + prev_u2 * prev_u2
+
+    system.dq_dt_compiled(rb.dq_pair, q, p, rb.params_pair)
+    system.dp_dt_compiled(rb.dp_pair, q, p, rb.params_pair)
+
+    mi, mj, mu, M = _extract_pair_2d_state!(rb, q, p, masses, i, j)
+    _extract_pair_2d_derivatives!(rb, rb.dq_pair, rb.dp_pair, i, j, mi, mj, mu, M)
+
+    _lc_lift!(rb)
+    if prev_u_norm2 > 0
+        dot_u = rb.lc_u[1] * prev_u1 + rb.lc_u[2] * prev_u2
+        if dot_u < 0
+            rb.lc_u[1] = -rb.lc_u[1]
+            rb.lc_u[2] = -rb.lc_u[2]
+            rb.lc_U[1] = -rb.lc_U[1]
+            rb.lc_U[2] = -rb.lc_U[2]
+        end
+    end
+    r_eff = max(rb.lc_u[1] * rb.lc_u[1] + rb.lc_u[2] * rb.lc_u[2], g_floor)
+    _compute_lc_tau_derivatives!(
+        rb.lc_du_tau,
+        rb.lc_dU_tau,
+        rb.lc_u,
+        rb.rel_p,
+        rb.rel_qdot,
+        rb.rel_pdot,
+        r_eff,
+        g_floor,
+    )
+
+    dτ = dt_sub / r_eff
+
+    @inbounds for d = 1:2
+        rb.lc_u_mid[d] = rb.lc_u[d] + 0.5 * dτ * rb.lc_du_tau[d]
+        rb.lc_U_mid[d] = rb.lc_U[d] + 0.5 * dτ * rb.lc_dU_tau[d]
+
+        rb.pair_R_mid[d] = rb.pair_R[d] + 0.5 * dt_sub * rb.pair_Rdot[d]
+        rb.pair_P_mid[d] = rb.pair_P[d] + 0.5 * dt_sub * rb.pair_Pdot[d]
+    end
+
+    _lc_project!(rb.temp_rel_q, rb.temp_rel_p, rb.lc_u_mid, rb.lc_U_mid)
+
+    copyto!(rb.q_mid, q)
+    copyto!(rb.p_mid, p)
+    _write_pair_state_2d!(
+        rb.q_mid,
+        rb.p_mid,
+        i,
+        j,
+        mi,
+        mj,
+        M,
+        rb.pair_R_mid,
+        rb.pair_P_mid,
+        rb.temp_rel_q,
+        rb.temp_rel_p,
+    )
+
+    system.dq_dt_compiled(rb.dq_pair, rb.q_mid, rb.p_mid, rb.params_pair)
+    system.dp_dt_compiled(rb.dp_pair, rb.q_mid, rb.p_mid, rb.params_pair)
+    _extract_pair_2d_derivatives!(rb, rb.dq_pair, rb.dp_pair, i, j, mi, mj, mu, M)
+
+    _compute_lc_tau_derivatives!(
+        rb.lc_du_tau_mid,
+        rb.lc_dU_tau_mid,
+        rb.lc_u_mid,
+        rb.temp_rel_p,
+        rb.rel_qdot,
+        rb.rel_pdot,
+        r_eff,
+        g_floor,
+    )
+
+    @inbounds for d = 1:2
+        rb.lc_u[d] = rb.lc_u[d] + dτ * rb.lc_du_tau_mid[d]
+        rb.lc_U[d] = rb.lc_U[d] + dτ * rb.lc_dU_tau_mid[d]
+
+        rb.pair_R[d] = rb.pair_R[d] + dt_sub * rb.pair_Rdot[d]
+        rb.pair_P[d] = rb.pair_P[d] + dt_sub * rb.pair_Pdot[d]
+    end
+
+    _lc_project!(rb.rel_q, rb.rel_p, rb.lc_u, rb.lc_U)
+    _write_pair_state_2d!(
+        q,
+        p,
+        i,
+        j,
+        mi,
+        mj,
+        M,
+        rb.pair_R,
+        rb.pair_P,
+        rb.rel_q,
+        rb.rel_p,
+    )
+
+    return nothing
+end
+
 @inline function _step_unregularized!(
     integrator::WeberIntegrator,
     dt_step::Float64,
@@ -301,11 +644,19 @@ end
     )
 
     _store_state!(integrator, dt_step)
-    _update_diagnostics!(integrator, REG_MODE_NONE, 1, Inf, 0.0)
+    _update_diagnostics!(
+        integrator,
+        REG_MODE_NONE,
+        1,
+        Inf,
+        0.0,
+        REG_BACKEND_DISABLED,
+        false,
+    )
     return nothing
 end
 
-@inline function _step_regularized_pair!(
+@inline function _step_regularized_pair_adaptive!(
     integrator::WeberIntegrator,
     dt_step::Float64,
     min_distance::Float64,
@@ -356,7 +707,55 @@ end
     end
 
     _store_state!(integrator, dt_step)
-    _update_diagnostics!(integrator, REG_MODE_PAIR, substeps, min_distance, max_constraint)
+    _update_diagnostics!(
+        integrator,
+        REG_MODE_PAIR,
+        substeps,
+        min_distance,
+        max_constraint,
+        REG_BACKEND_ADAPTIVE,
+        rb.backend_fallback,
+    )
+    return nothing
+end
+
+@inline function _step_regularized_pair_lifted_2d!(
+    integrator::WeberIntegrator,
+    dt_step::Float64,
+    min_distance::Float64,
+)
+    prob = integrator.prob
+    rb = integrator.buffers.regularization_buffers
+
+    i = rb.active_anchor_i
+    j = rb.active_anchor_j
+
+    _set_pair_params!(rb, prob, i, j)
+
+    reg = prob.regularization
+    base_substeps = rb.r_on / max(min_distance, reg.g_floor)
+    substeps = Int(ceil(1.5 * base_substeps))
+    substeps = clamp(substeps, 1, reg.max_substeps)
+
+    dt_sub = dt_step / substeps
+    dt_half = 0.5 * dt_sub
+
+    @inbounds for _ = 1:substeps
+        _external_half_step_midpoint!(integrator.q, integrator.p, dt_half, prob, rb)
+        _lifted_pair_substep_2d!(integrator.q, integrator.p, dt_sub, prob, rb, i, j)
+        _external_half_step_midpoint!(integrator.q, integrator.p, dt_half, prob, rb)
+    end
+
+    _store_state!(integrator, dt_step)
+    _update_diagnostics!(
+        integrator,
+        REG_MODE_PAIR,
+        substeps,
+        min_distance,
+        0.0,
+        REG_BACKEND_LIFTED,
+        rb.backend_fallback,
+    )
     return nothing
 end
 
@@ -413,7 +812,15 @@ end
     end
 
     _store_state!(integrator, dt_step)
-    _update_diagnostics!(integrator, REG_MODE_CHAIN, substeps, min_distance, max_constraint)
+    _update_diagnostics!(
+        integrator,
+        REG_MODE_CHAIN,
+        substeps,
+        min_distance,
+        max_constraint,
+        REG_BACKEND_ADAPTIVE,
+        false,
+    )
     return nothing
 end
 
@@ -443,8 +850,10 @@ end
 
     if mode == REG_MODE_CHAIN
         _step_regularized_chain!(integrator, dt_step, min_distance)
+    elseif rb.effective_backend == REG_BACKEND_LIFTED && rb.dims == 2
+        _step_regularized_pair_lifted_2d!(integrator, dt_step, min_distance)
     else
-        _step_regularized_pair!(integrator, dt_step, min_distance)
+        _step_regularized_pair_adaptive!(integrator, dt_step, min_distance)
     end
 
     return nothing
@@ -454,13 +863,21 @@ end
     diagnostics::RegularizationDiagnostics,
     n_steps::Int,
 )
-    out = RegularizationDiagnostics(diagnostics.enabled, n_steps)
+    out = RegularizationDiagnostics(
+        diagnostics.enabled,
+        n_steps,
+        diagnostics.requested_backend,
+        diagnostics.used_backend,
+    )
     out.activation_count = diagnostics.activation_count
     out.deactivation_count = diagnostics.deactivation_count
     out.active_steps = diagnostics.active_steps
     out.pair_steps = diagnostics.pair_steps
+    out.adaptive_pair_steps = diagnostics.adaptive_pair_steps
+    out.lifted_pair_steps = diagnostics.lifted_pair_steps
     out.chain_steps = diagnostics.chain_steps
     out.unregularized_steps = diagnostics.unregularized_steps
+    out.backend_fallback_steps = diagnostics.backend_fallback_steps
     out.total_substeps = diagnostics.total_substeps
     out.max_substeps_used = diagnostics.max_substeps_used
     out.max_constraint_violation = diagnostics.max_constraint_violation
@@ -480,6 +897,7 @@ function CommonSolve.init(
     degrees_of_freedom = prob.system.degrees_of_freedom
 
     buffers = SymmetricProjectionBuffers(prob)
+    rb = buffers.regularization_buffers
 
     n_steps = Int(ceil((prob.tspan[2] - prob.tspan[1]) / prob.dt))
     t_history = Vector{Float64}(undef, n_steps + 1)
@@ -490,7 +908,14 @@ function CommonSolve.init(
     q_history[1] .= prob.q_initial
     p_history[1] .= prob.p_initial
 
-    diagnostics = RegularizationDiagnostics(prob.regularization.enabled, n_steps)
+    requested_backend = prob.regularization.enabled ? prob.regularization.backend : REG_BACKEND_DISABLED
+    used_backend = prob.regularization.enabled ? rb.effective_backend : REG_BACKEND_DISABLED
+    diagnostics =
+        RegularizationDiagnostics(prob.regularization.enabled, n_steps, requested_backend, used_backend)
+
+    if prob.regularization.enabled && rb.backend_fallback && prob.regularization.warn_on_fallback
+        @warn "regularization_backend=:lifted_pair is currently supported only for 2D; falling back to :adaptive_cartesian for $(prob.system.dims)D"
+    end
 
     WeberIntegrator(
         prob,

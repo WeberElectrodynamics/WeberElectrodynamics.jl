@@ -70,6 +70,8 @@ $$
 
 Choosing \(g\to 0\) near collision slows physical time and removes blow-ups in the transformed vector field.
 
+For discrete midpoint-type schemes, a common practical choice is to evaluate \(g\) at substep start and keep it fixed over that substep. This preserves a consistent physical-time increment while retaining close-encounter slowing from the \(g\)-dependence between substeps.
+
 ## 1D Binary Regularization
 
 For a 1D relative coordinate \(x\), define \(r=|x|\) and local chart sign \(s\in\{+1,-1\}\):
