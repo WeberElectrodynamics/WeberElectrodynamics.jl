@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.0] - 2026-02-12
+
+### Breaking Changes
+- Add regularization configuration to `WeberProblem` and enable regularization by default
+- Extend `WeberSolution` with regularization diagnostics payload
+- Integrator stepping now dispatches between Cartesian and regularized encounter paths
+
+### Added
+- `RegularizationOptions` public type with encounter/switching/substep controls
+- `RegularizationDiagnostics` public type with activation, mode, substep, and KS-constraint metrics
+- Adaptive close-encounter dispatch with hysteresis (`r_on`/`r_off`)
+- Pair regularization path (1D square-map scaffold, 2D Levi-Civita lift, 3D KS lift with constraint projection)
+- Chain encounter fallback for overlapping close-pair components
+- Preallocated regularization buffers integrated into solver workspace
+- New theory/design documentation for regularized integration workflow
+
 ## [2.1.0] - 2026-02-03
 
 ### Added

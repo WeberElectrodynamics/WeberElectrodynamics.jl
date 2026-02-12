@@ -13,6 +13,13 @@ include("types.jl")
 export WeberProblem
 export WeberSolution
 export WeberIntegrator
+export RegularizationOptions
+export RegularizationDiagnostics
+
+# =============================================================================
+# Regularization Helpers
+# =============================================================================
+include("regularization.jl")
 
 # =============================================================================
 # CommonSolve Interface

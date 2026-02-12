@@ -12,4 +12,5 @@ using Symbolics
     include("test_statistics.jl")
     include("test_integration.jl")
     include("test_physics.jl")
+    include("test_regularization.jl")
 end

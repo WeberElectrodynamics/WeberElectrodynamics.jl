@@ -89,58 +89,14 @@ end
     return nothing
 end
 
-function CommonSolve.init(
+@inline function _projected_cartesian_step!(
+    q::Vector{Float64},
+    p::Vector{Float64},
+    dt_step::Float64,
     prob::WeberProblem,
-    alg::SymmetricProjectionIntegrator = SymmetricProjectionIntegrator(),
+    alg::SymmetricProjectionIntegrator,
+    buffers::SymmetricProjectionBuffers,
 )
-    degrees_of_freedom = prob.system.degrees_of_freedom
-
-    # Create workspace buffers (no params needed - baked into compiled functions)
-    buffers = SymmetricProjectionBuffers(degrees_of_freedom)
-
-    # Pre-allocate solution storage with all inner vectors
-    n_steps = Int(ceil((prob.tspan[2] - prob.tspan[1]) / prob.dt))
-    t_history = Vector{Float64}(undef, n_steps + 1)
-    q_history = [Vector{Float64}(undef, degrees_of_freedom) for _ = 1:(n_steps+1)]
-    p_history = [Vector{Float64}(undef, degrees_of_freedom) for _ = 1:(n_steps+1)]
-
-    # Store initial conditions (in-place copy to pre-allocated vectors)
-    t_history[1] = prob.tspan[1]
-    q_history[1] .= prob.q_initial
-    p_history[1] .= prob.p_initial
-
-    WeberIntegrator(
-        prob,
-        alg,
-        prob.tspan[1],
-        prob.tspan[2],
-        copy(prob.q_initial),
-        copy(prob.p_initial),
-        0,
-        buffers,
-        t_history,
-        q_history,
-        p_history,
-    )
-end
-
-function CommonSolve.step!(integrator::WeberIntegrator)
-    max_steps = length(integrator.t_history) - 1
-
-    # Check if already done
-    if integrator.step_count >= max_steps || integrator.t >= integrator.t_end - eps(integrator.t_end)
-        integrator.t = integrator.t_end
-        return false
-    end
-
-    prob = integrator.prob
-    dt = prob.dt
-    is_final_step = integrator.step_count == max_steps - 1
-    dt_step = is_final_step ? (integrator.t_end - integrator.t) : dt
-    if dt_step <= 0
-        integrator.t = integrator.t_end
-        return false
-    end
     convergence_tolerance = prob.convergence_tolerance
     maximum_iterations = prob.maximum_iterations
 
@@ -148,10 +104,8 @@ function CommonSolve.step!(integrator::WeberIntegrator)
     dp_dt_compiled = prob.system.dp_dt_compiled
     params = prob.params
 
-    buffers = integrator.buffers
-    d = buffers.d  # degrees of freedom
+    d = buffers.d
 
-    # Buffer aliases using paper notation (see docs/theory/SemiExplicitIntegrator.md)
     A = buffers.A
     A_transpose = buffers.A_transpose
     Z = buffers.Z
@@ -167,10 +121,6 @@ function CommonSolve.step!(integrator::WeberIntegrator)
     f_μ = buffers.f_μ
     diff_buffer = buffers.diff_buffer
 
-    q = integrator.q
-    p = integrator.p
-
-    # Step 1: Embed to extended space: Zₙ = (qₙ, qₙ, pₙ, pₙ)
     @inbounds @views begin
         Z[1:d] .= q
         Z[(d+1):(2d)] .= q
@@ -178,8 +128,7 @@ function CommonSolve.step!(integrator::WeberIntegrator)
         Z[(3d+1):(4d)] .= p
     end
 
-    # Step 2: Solve for μ such that f(μ) = 0 using relaxed fixed-point iteration
-    relaxation = integrator.alg.relaxation
+    relaxation = alg.relaxation
     for _ = 1:maximum_iterations
         compute_constraint_residual!(
             f_μ,
@@ -203,11 +152,9 @@ function CommonSolve.step!(integrator::WeberIntegrator)
         copyto!(μ_prev, μ)
         @inbounds @. μ = μ - relaxation * f_μ
 
-        # Check step convergence (use buffer to avoid temporary allocation)
         @inbounds @. diff_buffer = μ - μ_prev
         step_norm = norm(diff_buffer)
         if step_norm < convergence_tolerance
-            # Verify constraint satisfaction
             compute_constraint_residual!(
                 f_μ,
                 μ,
@@ -233,7 +180,6 @@ function CommonSolve.step!(integrator::WeberIntegrator)
         end
     end
 
-    # Failed to converge
     compute_constraint_residual!(
         f_μ,
         μ,
@@ -259,8 +205,6 @@ function CommonSolve.step!(integrator::WeberIntegrator)
 
     @label converged
 
-    # Steps 3-5: Compute final state with converged μ
-    # Recompute to ensure consistency (solver's last call used previous μ)
     @inbounds begin
         mul!(ATμ, A_transpose, μ)
         @. Ẑ = Z + ATμ
@@ -278,27 +222,313 @@ function CommonSolve.step!(integrator::WeberIntegrator)
         )
     end
 
-    # Step 5: Zₙ₊₁ = Ẑₙ₊₁ + A^T μ (symmetric projection)
     @inbounds @. Ẑ = Ẑ + ATμ
 
-    # Step 6: Extract (qₙ₊₁, pₙ₊₁) from Zₙ₊₁
     @inbounds @views begin
-        integrator.q .= Ẑ[1:d]
-        integrator.p .= Ẑ[(2d+1):(3d)]
+        q .= Ẑ[1:d]
+        p .= Ẑ[(2d+1):(3d)]
     end
 
+    return nothing
+end
+
+@inline function _update_diagnostics!(
+    integrator::WeberIntegrator,
+    mode::UInt8,
+    substeps::Int,
+    min_distance::Float64,
+    max_constraint_violation::Float64,
+)
+    diagnostics = integrator.diagnostics
+    idx = integrator.step_count
+    if idx <= length(diagnostics.mode_history)
+        diagnostics.mode_history[idx] = mode
+    end
+
+    diagnostics.total_substeps += substeps
+    if substeps > diagnostics.max_substeps_used
+        diagnostics.max_substeps_used = substeps
+    end
+
+    if isfinite(min_distance)
+        diagnostics.min_encounter_distance = min(diagnostics.min_encounter_distance, min_distance)
+    end
+    if max_constraint_violation > diagnostics.max_constraint_violation
+        diagnostics.max_constraint_violation = max_constraint_violation
+    end
+
+    if mode == REG_MODE_PAIR
+        diagnostics.active_steps += 1
+        diagnostics.pair_steps += 1
+    elseif mode == REG_MODE_CHAIN
+        diagnostics.active_steps += 1
+        diagnostics.chain_steps += 1
+    else
+        diagnostics.unregularized_steps += 1
+    end
+
+    return nothing
+end
+
+@inline function _store_state!(integrator::WeberIntegrator, dt_step::Float64)
     integrator.step_count += 1
     integrator.t += dt_step
     if integrator.t > integrator.t_end
         integrator.t = integrator.t_end
     end
 
-    # Store in history (in-place copy to pre-allocated vectors)
     idx = integrator.step_count + 1
     @inbounds begin
         integrator.t_history[idx] = integrator.t
         integrator.q_history[idx] .= integrator.q
         integrator.p_history[idx] .= integrator.p
+    end
+
+    return nothing
+end
+
+@inline function _step_unregularized!(
+    integrator::WeberIntegrator,
+    dt_step::Float64,
+)
+    _projected_cartesian_step!(
+        integrator.q,
+        integrator.p,
+        dt_step,
+        integrator.prob,
+        integrator.alg,
+        integrator.buffers,
+    )
+
+    _store_state!(integrator, dt_step)
+    _update_diagnostics!(integrator, REG_MODE_NONE, 1, Inf, 0.0)
+    return nothing
+end
+
+@inline function _step_regularized_pair!(
+    integrator::WeberIntegrator,
+    dt_step::Float64,
+    min_distance::Float64,
+)
+    prob = integrator.prob
+    rb = integrator.buffers.regularization_buffers
+    dims = rb.dims
+
+    i = rb.active_anchor_i
+    j = rb.active_anchor_j
+
+    reg = prob.regularization
+    substeps = Int(ceil(rb.r_on / max(min_distance, reg.g_floor)))
+    substeps = clamp(substeps, 1, reg.max_substeps)
+
+    dt_sub = dt_step / substeps
+    max_constraint = 0.0
+
+    @inbounds for _ = 1:substeps
+        _extract_pair_relative_state!(rb, integrator.q, integrator.p, prob.masses, i, j)
+
+        if dims == 1
+            x = rb.rel_q[1]
+            px = rb.rel_p[1]
+            s = x >= 0 ? 1.0 : -1.0
+            u = sqrt(abs(x))
+            rb.lc_u[1] = u
+            rb.lc_U[1] = 2 * s * u * px
+        elseif dims == 2
+            _lc_lift!(rb)
+            _lc_project!(rb.rel_q, rb.rel_p, rb.lc_u, rb.lc_U)
+        elseif dims == 3
+            _ks_lift!(rb)
+            c_err = _ks_project_constraint!(rb.ks_U, rb.ks_u, rb.ks_n)
+            if c_err > max_constraint
+                max_constraint = c_err
+            end
+        end
+
+        _projected_cartesian_step!(
+            integrator.q,
+            integrator.p,
+            dt_sub,
+            prob,
+            integrator.alg,
+            integrator.buffers,
+        )
+    end
+
+    _store_state!(integrator, dt_step)
+    _update_diagnostics!(integrator, REG_MODE_PAIR, substeps, min_distance, max_constraint)
+    return nothing
+end
+
+@inline function _step_regularized_chain!(
+    integrator::WeberIntegrator,
+    dt_step::Float64,
+    min_distance::Float64,
+)
+    prob = integrator.prob
+    rb = integrator.buffers.regularization_buffers
+    reg = prob.regularization
+
+    omega = _component_omega(rb)
+    g = max(1.0 / max(omega, eps(Float64)), reg.g_floor)
+
+    substeps = Int(ceil(dt_step / g))
+    substeps = clamp(substeps, 1, reg.max_substeps)
+
+    dt_sub = dt_step / substeps
+    max_constraint = 0.0
+
+    dims = rb.dims
+    chain_count = rb.active_count
+
+    @inbounds for _ = 1:substeps
+        if dims == 2
+            for idx = 1:(chain_count-1)
+                i = rb.chain_order[idx]
+                j = rb.chain_order[idx+1]
+                _extract_pair_relative_state!(rb, integrator.q, integrator.p, prob.masses, i, j)
+                _lc_lift!(rb)
+            end
+        elseif dims == 3
+            for idx = 1:(chain_count-1)
+                i = rb.chain_order[idx]
+                j = rb.chain_order[idx+1]
+                _extract_pair_relative_state!(rb, integrator.q, integrator.p, prob.masses, i, j)
+                _ks_lift!(rb)
+                c_err = _ks_project_constraint!(rb.ks_U, rb.ks_u, rb.ks_n)
+                if c_err > max_constraint
+                    max_constraint = c_err
+                end
+            end
+        end
+
+        _projected_cartesian_step!(
+            integrator.q,
+            integrator.p,
+            dt_sub,
+            prob,
+            integrator.alg,
+            integrator.buffers,
+        )
+    end
+
+    _store_state!(integrator, dt_step)
+    _update_diagnostics!(integrator, REG_MODE_CHAIN, substeps, min_distance, max_constraint)
+    return nothing
+end
+
+@inline function _step_regularized_dispatch!(
+    integrator::WeberIntegrator,
+    dt_step::Float64,
+)
+    prob = integrator.prob
+    reg = prob.regularization
+    rb = integrator.buffers.regularization_buffers
+    diagnostics = integrator.diagnostics
+
+    was_active = rb.is_active
+    active, mode, min_distance =
+        _detect_regularization_component!(rb, integrator.q, reg.chain_enabled)
+
+    if !was_active && active
+        diagnostics.activation_count += 1
+    elseif was_active && !active
+        diagnostics.deactivation_count += 1
+    end
+
+    if !active
+        _step_unregularized!(integrator, dt_step)
+        return nothing
+    end
+
+    if mode == REG_MODE_CHAIN
+        _step_regularized_chain!(integrator, dt_step, min_distance)
+    else
+        _step_regularized_pair!(integrator, dt_step, min_distance)
+    end
+
+    return nothing
+end
+
+@inline function _clone_diagnostics(
+    diagnostics::RegularizationDiagnostics,
+    n_steps::Int,
+)
+    out = RegularizationDiagnostics(diagnostics.enabled, n_steps)
+    out.activation_count = diagnostics.activation_count
+    out.deactivation_count = diagnostics.deactivation_count
+    out.active_steps = diagnostics.active_steps
+    out.pair_steps = diagnostics.pair_steps
+    out.chain_steps = diagnostics.chain_steps
+    out.unregularized_steps = diagnostics.unregularized_steps
+    out.total_substeps = diagnostics.total_substeps
+    out.max_substeps_used = diagnostics.max_substeps_used
+    out.max_constraint_violation = diagnostics.max_constraint_violation
+    out.min_encounter_distance = diagnostics.min_encounter_distance
+
+    if n_steps > 0
+        @inbounds out.mode_history[1:n_steps] .= diagnostics.mode_history[1:n_steps]
+    end
+
+    return out
+end
+
+function CommonSolve.init(
+    prob::WeberProblem,
+    alg::SymmetricProjectionIntegrator = SymmetricProjectionIntegrator(),
+)
+    degrees_of_freedom = prob.system.degrees_of_freedom
+
+    buffers = SymmetricProjectionBuffers(prob)
+
+    n_steps = Int(ceil((prob.tspan[2] - prob.tspan[1]) / prob.dt))
+    t_history = Vector{Float64}(undef, n_steps + 1)
+    q_history = [Vector{Float64}(undef, degrees_of_freedom) for _ = 1:(n_steps+1)]
+    p_history = [Vector{Float64}(undef, degrees_of_freedom) for _ = 1:(n_steps+1)]
+
+    t_history[1] = prob.tspan[1]
+    q_history[1] .= prob.q_initial
+    p_history[1] .= prob.p_initial
+
+    diagnostics = RegularizationDiagnostics(prob.regularization.enabled, n_steps)
+
+    WeberIntegrator(
+        prob,
+        alg,
+        prob.tspan[1],
+        prob.tspan[2],
+        copy(prob.q_initial),
+        copy(prob.p_initial),
+        0,
+        buffers,
+        diagnostics,
+        t_history,
+        q_history,
+        p_history,
+    )
+end
+
+function CommonSolve.step!(integrator::WeberIntegrator)
+    max_steps = length(integrator.t_history) - 1
+
+    if integrator.step_count >= max_steps || integrator.t >= integrator.t_end - eps(integrator.t_end)
+        integrator.t = integrator.t_end
+        return false
+    end
+
+    prob = integrator.prob
+    dt = prob.dt
+    is_final_step = integrator.step_count == max_steps - 1
+    dt_step = is_final_step ? (integrator.t_end - integrator.t) : dt
+    if dt_step <= 0
+        integrator.t = integrator.t_end
+        return false
+    end
+
+    if prob.regularization.enabled
+        _step_regularized_dispatch!(integrator, dt_step)
+    else
+        _step_unregularized!(integrator, dt_step)
     end
 
     return integrator.step_count < max_steps
@@ -308,7 +538,6 @@ function CommonSolve.solve!(integrator::WeberIntegrator)
     retcode = :Success
     try
         while CommonSolve.step!(integrator)
-            # Continue stepping
         end
     catch e
         if e isa ErrorException && contains(e.msg, "Fixed-point iteration failed")
@@ -318,14 +547,16 @@ function CommonSolve.solve!(integrator::WeberIntegrator)
         end
     end
 
-    # Trim history to actual steps taken
     n = integrator.step_count + 1
+    diagnostics = _clone_diagnostics(integrator.diagnostics, integrator.step_count)
+
     WeberSolution(
         integrator.t_history[1:n],
         integrator.q_history[1:n],
         integrator.p_history[1:n],
         integrator.prob,
         retcode,
+        diagnostics,
     )
 end
 

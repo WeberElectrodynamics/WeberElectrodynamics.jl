@@ -2,12 +2,190 @@ using LinearAlgebra
 
 abstract type WeberAlgorithm end
 
+const REG_MODE_NONE = UInt8(0)
+const REG_MODE_PAIR = UInt8(1)
+const REG_MODE_CHAIN = UInt8(2)
+
 struct SymmetricProjectionIntegrator <: WeberAlgorithm
     relaxation::Float64
 
     function SymmetricProjectionIntegrator(; relaxation::Real = 0.25)
         @assert 0 < relaxation <= 1 "Relaxation must be in (0, 1], got $relaxation"
         new(Float64(relaxation))
+    end
+end
+
+struct RegularizationOptions
+    enabled::Bool
+    r_on::Union{Nothing,Float64}
+    r_off::Union{Nothing,Float64}
+    r_on_factor::Float64
+    r_off_factor::Float64
+    max_substeps::Int
+    constraint_tolerance::Float64
+    g_floor::Float64
+    chain_enabled::Bool
+
+    function RegularizationOptions(
+        ;
+        enabled::Bool = true,
+        r_on::Union{Nothing,Real} = nothing,
+        r_off::Union{Nothing,Real} = nothing,
+        r_on_factor::Real = 0.15,
+        r_off_factor::Real = 0.25,
+        max_substeps::Integer = 512,
+        constraint_tolerance::Real = 1e-12,
+        g_floor::Real = 1e-12,
+        chain_enabled::Bool = true,
+    )
+        if !isnothing(r_on)
+            @assert r_on > 0 "regularization_r_on must be positive"
+        end
+        if !isnothing(r_off)
+            @assert r_off > 0 "regularization_r_off must be positive"
+        end
+        @assert r_on_factor > 0 "regularization_r_on_factor must be positive"
+        @assert r_off_factor > 0 "regularization_r_off_factor must be positive"
+        @assert max_substeps > 0 "regularization_max_substeps must be positive"
+        @assert constraint_tolerance > 0 "regularization_constraint_tolerance must be positive"
+        @assert g_floor > 0 "regularization_g_floor must be positive"
+        if !isnothing(r_on) && !isnothing(r_off)
+            @assert r_off > r_on "regularization_r_off must be greater than regularization_r_on"
+        end
+
+        new(
+            enabled,
+            isnothing(r_on) ? nothing : Float64(r_on),
+            isnothing(r_off) ? nothing : Float64(r_off),
+            Float64(r_on_factor),
+            Float64(r_off_factor),
+            Int(max_substeps),
+            Float64(constraint_tolerance),
+            Float64(g_floor),
+            chain_enabled,
+        )
+    end
+end
+
+mutable struct RegularizationDiagnostics
+    enabled::Bool
+    activation_count::Int
+    deactivation_count::Int
+    active_steps::Int
+    pair_steps::Int
+    chain_steps::Int
+    unregularized_steps::Int
+    total_substeps::Int
+    max_substeps_used::Int
+    max_constraint_violation::Float64
+    min_encounter_distance::Float64
+    mode_history::Vector{UInt8}
+
+    function RegularizationDiagnostics(enabled::Bool, n_steps::Int)
+        new(
+            enabled,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0.0,
+            Inf,
+            fill(REG_MODE_NONE, n_steps),
+        )
+    end
+end
+
+mutable struct RegularizationBuffers
+    n_particles::Int
+    dims::Int
+    n_pairs::Int
+
+    pair_i::Vector{Int}
+    pair_j::Vector{Int}
+    pair_distance::Vector{Float64}
+
+    adjacency::Matrix{Bool}
+    visited::Vector{Bool}
+    queue::Vector{Int}
+
+    component_nodes::Vector{Int}
+    component_mask::Vector{Bool}
+    active_nodes::Vector{Int}
+    active_count::Int
+
+    is_active::Bool
+    active_mode::UInt8
+    active_anchor_i::Int
+    active_anchor_j::Int
+
+    r_on::Float64
+    r_off::Float64
+
+    chain_order::Vector{Int}
+    chain_used::Vector{Bool}
+
+    rel_q::Vector{Float64}
+    rel_p::Vector{Float64}
+    lc_u::Vector{Float64}
+    lc_U::Vector{Float64}
+    ks_u::Vector{Float64}
+    ks_U::Vector{Float64}
+    ks_J::Matrix{Float64}
+    ks_n::Vector{Float64}
+
+    function RegularizationBuffers(
+        n_particles::Int,
+        dims::Int,
+        r_on::Float64,
+        r_off::Float64,
+    )
+        n_pairs = n_particles * (n_particles - 1) ÷ 2
+        pair_i = Vector{Int}(undef, n_pairs)
+        pair_j = Vector{Int}(undef, n_pairs)
+        idx = 1
+        @inbounds for i = 1:n_particles
+            for j = (i+1):n_particles
+                pair_i[idx] = i
+                pair_j[idx] = j
+                idx += 1
+            end
+        end
+
+        new(
+            n_particles,
+            dims,
+            n_pairs,
+            pair_i,
+            pair_j,
+            Vector{Float64}(undef, n_pairs),
+            Matrix{Bool}(undef, n_particles, n_particles),
+            Vector{Bool}(undef, n_particles),
+            Vector{Int}(undef, n_particles),
+            Vector{Int}(undef, n_particles),
+            Vector{Bool}(undef, n_particles),
+            Vector{Int}(undef, n_particles),
+            0,
+            false,
+            REG_MODE_NONE,
+            0,
+            0,
+            r_on,
+            r_off,
+            Vector{Int}(undef, n_particles),
+            Vector{Bool}(undef, n_particles),
+            Vector{Float64}(undef, max(dims, 3)),
+            Vector{Float64}(undef, max(dims, 3)),
+            Vector{Float64}(undef, 2),
+            Vector{Float64}(undef, 2),
+            Vector{Float64}(undef, 4),
+            Vector{Float64}(undef, 4),
+            Matrix{Float64}(undef, 3, 4),
+            Vector{Float64}(undef, 4),
+        )
     end
 end
 
@@ -23,6 +201,7 @@ struct WeberProblem
     dt::Float64
     convergence_tolerance::Float64
     maximum_iterations::Int
+    regularization::RegularizationOptions
 
     function WeberProblem(
         system::WeberSystem,
@@ -35,6 +214,15 @@ struct WeberProblem
         dt::Real,
         convergence_tolerance::Real = 1e-13,
         maximum_iterations::Integer = 100,
+        regularization_enabled::Bool = true,
+        regularization_r_on::Union{Nothing,Real} = nothing,
+        regularization_r_off::Union{Nothing,Real} = nothing,
+        regularization_r_on_factor::Real = 0.15,
+        regularization_r_off_factor::Real = 0.25,
+        regularization_max_substeps::Integer = 512,
+        regularization_constraint_tolerance::Real = 1e-12,
+        regularization_g_floor::Real = 1e-12,
+        regularization_chain_enabled::Bool = true,
     )
         n_particles = system.n_particles
         dof = system.degrees_of_freedom
@@ -54,6 +242,18 @@ struct WeberProblem
         c_f64 = Float64(c)
         params = vcat(masses_f64, charges_f64, [c_f64])
 
+        regularization = RegularizationOptions(
+            enabled = regularization_enabled,
+            r_on = regularization_r_on,
+            r_off = regularization_r_off,
+            r_on_factor = regularization_r_on_factor,
+            r_off_factor = regularization_r_off_factor,
+            max_substeps = regularization_max_substeps,
+            constraint_tolerance = regularization_constraint_tolerance,
+            g_floor = regularization_g_floor,
+            chain_enabled = regularization_chain_enabled,
+        )
+
         new(
             system,
             (Float64(tspan[1]), Float64(tspan[2])),
@@ -66,6 +266,7 @@ struct WeberProblem
             Float64(dt),
             Float64(convergence_tolerance),
             Int(maximum_iterations),
+            regularization,
         )
     end
 end
@@ -76,6 +277,7 @@ struct WeberSolution
     p::Vector{Vector{Float64}}
     prob::WeberProblem
     retcode::Symbol
+    regularization::RegularizationDiagnostics
 end
 
 Base.length(sol::WeberSolution) = length(sol.t)
@@ -97,53 +299,97 @@ function Base.show(io::IO, ::MIME"text/plain", sol::WeberSolution)
     println(io, "  retcode: $(sol.retcode)")
     println(io, "  t: $(sol.t[1]) → $(sol.t[end]) ($(length(sol)) points)")
     println(io, "  DOF: $(length(sol.q[1]))")
+    if sol.regularization.enabled
+        println(io, "  Regularization steps: pair=$(sol.regularization.pair_steps), chain=$(sol.regularization.chain_steps), cartesian=$(sol.regularization.unregularized_steps)")
+    end
+end
+
+@inline function _compute_min_pair_distance(
+    q::Vector{Float64},
+    n_particles::Int,
+    dims::Int,
+)::Float64
+    min_r = Inf
+    @inbounds for i = 1:n_particles
+        qi_start = (i - 1) * dims
+        for j = (i + 1):n_particles
+            qj_start = (j - 1) * dims
+            r2 = 0.0
+            for d = 1:dims
+                dq = q[qi_start+d] - q[qj_start+d]
+                r2 += dq * dq
+            end
+            r = sqrt(r2)
+            if r < min_r
+                min_r = r
+            end
+        end
+    end
+    return min_r
 end
 
 mutable struct SymmetricProjectionBuffers
-    d::Int                          # degrees of freedom
-    A::Matrix{Float64}              # projection matrix (2d × 4d)
-    A_transpose::Transpose{Float64,Matrix{Float64}}  # cached transpose view (4d × 2d)
-    Z::Vector{Float64}              # extended state Zₙ (4d)
-    Ẑ::Vector{Float64}              # shifted/evolved state (4d)
-    Z_result::Vector{Float64}       # final projected state Zₙ₊₁ (4d)
+    d::Int
+    A::Matrix{Float64}
+    A_transpose::Transpose{Float64,Matrix{Float64}}
+    Z::Vector{Float64}
+    Ẑ::Vector{Float64}
+    Z_result::Vector{Float64}
     position_buffer::Vector{Float64}
     auxiliary_position_buffer::Vector{Float64}
     momentum_buffer::Vector{Float64}
     auxiliary_momentum_buffer::Vector{Float64}
-    ATμ::Vector{Float64}            # constraint shift A^T μ (4d)
-    μ::Vector{Float64}              # Lagrange multipliers (2d)
-    μ_prev::Vector{Float64}         # previous iteration μ^(k-1) (2d)
-    f_μ::Vector{Float64}            # nonlinear residual f(μ) (2d)
-    diff_buffer::Vector{Float64}    # workspace for μ - μ_prev (2d)
+    ATμ::Vector{Float64}
+    μ::Vector{Float64}
+    μ_prev::Vector{Float64}
+    f_μ::Vector{Float64}
+    diff_buffer::Vector{Float64}
+    regularization_buffers::RegularizationBuffers
 
-    function SymmetricProjectionBuffers(degrees_of_freedom::Int)
-        d = degrees_of_freedom
-        # Construct projection matrix A directly without intermediate allocations
+    function SymmetricProjectionBuffers(prob::WeberProblem)
+        d = prob.system.degrees_of_freedom
+        n_particles = prob.system.n_particles
+        dims = prob.system.dims
+
         A = zeros(Float64, 2d, 4d)
         @inbounds for i = 1:d
-            A[i, i] = 1.0           # I_d in top-left
-            A[i, d+i] = -1.0      # -I_d in top-middle-left
-            A[d+i, 2d+i] = 1.0  # I_d in bottom-middle-right
-            A[d+i, 3d+i] = -1.0 # -I_d in bottom-right
+            A[i, i] = 1.0
+            A[i, d+i] = -1.0
+            A[d+i, 2d+i] = 1.0
+            A[d+i, 3d+i] = -1.0
         end
         A_transpose = transpose(A)
+
+        min_pair_distance = _compute_min_pair_distance(prob.q_initial, n_particles, dims)
+        if !isfinite(min_pair_distance) || min_pair_distance <= 0
+            min_pair_distance = 1.0
+        end
+
+        reg_options = prob.regularization
+        r_on = isnothing(reg_options.r_on) ? (reg_options.r_on_factor * min_pair_distance) : reg_options.r_on
+        r_off = isnothing(reg_options.r_off) ? (reg_options.r_off_factor * min_pair_distance) : reg_options.r_off
+        r_on_value = Float64(max(r_on, reg_options.g_floor))
+        r_off_value = Float64(max(r_off, r_on_value * 1.01))
+        regularization_buffers =
+            RegularizationBuffers(n_particles, dims, r_on_value, r_off_value)
 
         new(
             d,
             A,
             A_transpose,
-            Vector{Float64}(undef, 4d),  # Z
-            Vector{Float64}(undef, 4d),  # Ẑ
-            Vector{Float64}(undef, 4d),  # Z_result
-            Vector{Float64}(undef, d),   # position_buffer
-            Vector{Float64}(undef, d),   # auxiliary_position_buffer
-            Vector{Float64}(undef, d),   # momentum_buffer
-            Vector{Float64}(undef, d),   # auxiliary_momentum_buffer
-            Vector{Float64}(undef, 4d),  # ATμ
-            zeros(Float64, 2d),          # μ (initialized to zero)
-            Vector{Float64}(undef, 2d),  # μ_prev
-            Vector{Float64}(undef, 2d),  # f_μ
-            Vector{Float64}(undef, 2d),  # diff_buffer
+            Vector{Float64}(undef, 4d),
+            Vector{Float64}(undef, 4d),
+            Vector{Float64}(undef, 4d),
+            Vector{Float64}(undef, d),
+            Vector{Float64}(undef, d),
+            Vector{Float64}(undef, d),
+            Vector{Float64}(undef, d),
+            Vector{Float64}(undef, 4d),
+            zeros(Float64, 2d),
+            Vector{Float64}(undef, 2d),
+            Vector{Float64}(undef, 2d),
+            Vector{Float64}(undef, 2d),
+            regularization_buffers,
         )
     end
 end
@@ -157,7 +403,7 @@ mutable struct WeberIntegrator
     p::Vector{Float64}
     step_count::Int
     buffers::SymmetricProjectionBuffers
-    # Solution accumulator
+    diagnostics::RegularizationDiagnostics
     t_history::Vector{Float64}
     q_history::Vector{Vector{Float64}}
     p_history::Vector{Vector{Float64}}

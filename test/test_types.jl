@@ -91,6 +91,10 @@
         @test prob.convergence_tolerance == 1e-13  # default
         @test prob.maximum_iterations == 100  # default
         @test prob.params == [1.0, 0.5, 1.0, -1.0, 4.0]  # [m1, m2, q1, q2, c]
+        @test prob.regularization.enabled == true
+        @test prob.regularization.r_on === nothing
+        @test prob.regularization.r_off === nothing
+        @test prob.regularization.max_substeps == 512
 
         # Custom convergence_tolerance and maximum_iterations
         prob2 = WeberProblem(
@@ -104,9 +108,17 @@
             dt = 0.01,
             convergence_tolerance = 1e-10,
             maximum_iterations = 50,
+            regularization_enabled = false,
+            regularization_r_on = 0.2,
+            regularization_r_off = 0.3,
+            regularization_max_substeps = 64,
         )
         @test prob2.convergence_tolerance == 1e-10
         @test prob2.maximum_iterations == 50
+        @test prob2.regularization.enabled == false
+        @test prob2.regularization.r_on == 0.2
+        @test prob2.regularization.r_off == 0.3
+        @test prob2.regularization.max_substeps == 64
 
         # Validation errors
         @test_throws AssertionError WeberProblem(
@@ -189,6 +201,7 @@
         @test sol.retcode == :Success
         @test length(sol) > 1
         @test length(sol.t) == length(sol.q) == length(sol.p)
+        @test sol.regularization isa RegularizationDiagnostics
 
         # Indexing
         t, q, p = sol[1]
