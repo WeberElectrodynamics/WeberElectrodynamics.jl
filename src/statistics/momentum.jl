@@ -39,11 +39,12 @@ function compute_momentum_timeseries(solution::WeberSolution; stride::Int=1)::Mo
         angular_momentum_magnitude = nothing
     elseif dims == 2
         angular_momentum = Vector{Float64}(undef, n_points)
-        angular_momentum_magnitude = angular_momentum  # Same array for 2D (Lz is scalar)
+        angular_momentum_magnitude = Vector{Float64}(undef, n_points)
     else  # dims == 3
         angular_momentum = [Vector{Float64}(undef, 3) for _ = 1:n_points]
         angular_momentum_magnitude = Vector{Float64}(undef, n_points)
     end
+    P = Vector{Float64}(undef, dims)
 
     # Main computation loop
     @inbounds for (pt_idx, sol_idx) in enumerate(indices)
@@ -51,18 +52,21 @@ function compute_momentum_timeseries(solution::WeberSolution; stride::Int=1)::Mo
         p = solution.p[sol_idx]
 
         # Linear momentum: P_total = sum_i p_i
-        P = zeros(dims)
+        fill!(P, 0.0)
         for i = 1:n_particles
             for d = 1:dims
                 coord_idx = (i - 1) * dims + d
                 P[d] += p[coord_idx]
             end
         end
-        linear_momentum[pt_idx] .= P
+        P_mag_sq = 0.0
         for d = 1:dims
-            linear_momentum_components[pt_idx, d] = P[d]
+            P_d = P[d]
+            linear_momentum[pt_idx][d] = P_d
+            linear_momentum_components[pt_idx, d] = P_d
+            P_mag_sq += P_d * P_d
         end
-        linear_momentum_magnitude[pt_idx] = sqrt(sum(P .^ 2))
+        linear_momentum_magnitude[pt_idx] = sqrt(P_mag_sq)
 
         # Angular momentum: L_total = sum_i r_i x p_i
         if dims == 2
@@ -74,6 +78,7 @@ function compute_momentum_timeseries(solution::WeberSolution; stride::Int=1)::Mo
                 L_z += q[x_idx] * p[y_idx] - q[y_idx] * p[x_idx]
             end
             angular_momentum[pt_idx] = L_z
+            angular_momentum_magnitude[pt_idx] = abs(L_z)
         elseif dims == 3
             # 3D: L = sum_i r_i x p_i
             Lx, Ly, Lz = 0.0, 0.0, 0.0
@@ -86,7 +91,9 @@ function compute_momentum_timeseries(solution::WeberSolution; stride::Int=1)::Mo
                 Ly += q[z_idx] * p[x_idx] - q[x_idx] * p[z_idx]
                 Lz += q[x_idx] * p[y_idx] - q[y_idx] * p[x_idx]
             end
-            angular_momentum[pt_idx] .= [Lx, Ly, Lz]
+            angular_momentum[pt_idx][1] = Lx
+            angular_momentum[pt_idx][2] = Ly
+            angular_momentum[pt_idx][3] = Lz
             angular_momentum_magnitude[pt_idx] = sqrt(Lx^2 + Ly^2 + Lz^2)
         end
     end

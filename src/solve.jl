@@ -1,5 +1,5 @@
 using CommonSolve
-using LinearAlgebra: norm, mul!
+using LinearAlgebra: norm, mul!, Transpose
 
 @inline function strang_splitting_flow!(
     Z_vec::Vector{Float64},
@@ -53,6 +53,7 @@ end
     result::Vector{Float64},
     μ_val::Vector{Float64},
     A::Matrix{Float64},
+    A_transpose::Transpose{Float64,Matrix{Float64}},
     ATμ::Vector{Float64},
     Z::Vector{Float64},
     Ẑ::Vector{Float64},
@@ -68,7 +69,7 @@ end
     d::Int,
 )
     @inbounds begin
-        mul!(ATμ, A', μ_val)
+        mul!(ATμ, A_transpose, μ_val)
         @. Ẑ = Z + ATμ
         strang_splitting_flow!(
             Ẑ,
@@ -124,13 +125,22 @@ function CommonSolve.init(
 end
 
 function CommonSolve.step!(integrator::WeberIntegrator)
+    max_steps = length(integrator.t_history) - 1
+
     # Check if already done
-    if integrator.t >= integrator.t_end - eps(integrator.t_end)
+    if integrator.step_count >= max_steps || integrator.t >= integrator.t_end - eps(integrator.t_end)
+        integrator.t = integrator.t_end
         return false
     end
 
     prob = integrator.prob
     dt = prob.dt
+    is_final_step = integrator.step_count == max_steps - 1
+    dt_step = is_final_step ? (integrator.t_end - integrator.t) : dt
+    if dt_step <= 0
+        integrator.t = integrator.t_end
+        return false
+    end
     convergence_tolerance = prob.convergence_tolerance
     maximum_iterations = prob.maximum_iterations
 
@@ -143,6 +153,7 @@ function CommonSolve.step!(integrator::WeberIntegrator)
 
     # Buffer aliases using paper notation (see docs/theory/SemiExplicitIntegrator.md)
     A = buffers.A
+    A_transpose = buffers.A_transpose
     Z = buffers.Z
     Ẑ = buffers.Ẑ
     Z_result = buffers.Z_result
@@ -174,11 +185,12 @@ function CommonSolve.step!(integrator::WeberIntegrator)
             f_μ,
             μ,
             A,
+            A_transpose,
             ATμ,
             Z,
             Ẑ,
             Z_result,
-            dt,
+            dt_step,
             dq_dt_compiled,
             dp_dt_compiled,
             params,
@@ -200,11 +212,12 @@ function CommonSolve.step!(integrator::WeberIntegrator)
                 f_μ,
                 μ,
                 A,
+                A_transpose,
                 ATμ,
                 Z,
                 Ẑ,
                 Z_result,
-                dt,
+                dt_step,
                 dq_dt_compiled,
                 dp_dt_compiled,
                 params,
@@ -225,11 +238,12 @@ function CommonSolve.step!(integrator::WeberIntegrator)
         f_μ,
         μ,
         A,
+        A_transpose,
         ATμ,
         Z,
         Ẑ,
         Z_result,
-        dt,
+        dt_step,
         dq_dt_compiled,
         dp_dt_compiled,
         params,
@@ -248,11 +262,11 @@ function CommonSolve.step!(integrator::WeberIntegrator)
     # Steps 3-5: Compute final state with converged μ
     # Recompute to ensure consistency (solver's last call used previous μ)
     @inbounds begin
-        mul!(ATμ, A', μ)
+        mul!(ATμ, A_transpose, μ)
         @. Ẑ = Z + ATμ
         strang_splitting_flow!(
             Ẑ,
-            dt,
+            dt_step,
             dq_dt_compiled,
             dp_dt_compiled,
             params,
@@ -274,7 +288,10 @@ function CommonSolve.step!(integrator::WeberIntegrator)
     end
 
     integrator.step_count += 1
-    integrator.t = prob.tspan[1] + integrator.step_count * dt
+    integrator.t += dt_step
+    if integrator.t > integrator.t_end
+        integrator.t = integrator.t_end
+    end
 
     # Store in history (in-place copy to pre-allocated vectors)
     idx = integrator.step_count + 1
@@ -284,7 +301,7 @@ function CommonSolve.step!(integrator::WeberIntegrator)
         integrator.p_history[idx] .= integrator.p
     end
 
-    return integrator.t < integrator.t_end
+    return integrator.step_count < max_steps
 end
 
 function CommonSolve.solve!(integrator::WeberIntegrator)

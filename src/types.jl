@@ -102,6 +102,7 @@ end
 mutable struct SymmetricProjectionBuffers
     d::Int                          # degrees of freedom
     A::Matrix{Float64}              # projection matrix (2d × 4d)
+    A_transpose::Transpose{Float64,Matrix{Float64}}  # cached transpose view (4d × 2d)
     Z::Vector{Float64}              # extended state Zₙ (4d)
     Ẑ::Vector{Float64}              # shifted/evolved state (4d)
     Z_result::Vector{Float64}       # final projected state Zₙ₊₁ (4d)
@@ -125,10 +126,12 @@ mutable struct SymmetricProjectionBuffers
             A[d+i, 2d+i] = 1.0  # I_d in bottom-middle-right
             A[d+i, 3d+i] = -1.0 # -I_d in bottom-right
         end
+        A_transpose = transpose(A)
 
         new(
             d,
             A,
+            A_transpose,
             Vector{Float64}(undef, 4d),  # Z
             Vector{Float64}(undef, 4d),  # Ẑ
             Vector{Float64}(undef, 4d),  # Z_result

@@ -385,6 +385,26 @@
             @test length(momentum.angular_momentum) == length(sol_weber.t)
         end
 
+        @testset "2D angular momentum magnitude is absolute value" begin
+            sys2d = WeberSystem(2, 2)
+            prob2d = WeberProblem(
+                sys2d,
+                (0.0, 0.01),
+                [1.0, 0.0, -1.0, 0.0],
+                [0.0, -1.0, 0.0, 1.0];
+                masses = [1.0, 1.0],
+                charges = [0.0, 0.0],
+                c = 1e6,
+                dt = 0.01,
+            )
+            sol2d = solve(prob2d)
+            momentum2d = compute_momentum_timeseries(sol2d)
+
+            @test momentum2d.angular_momentum[1] < 0
+            @test momentum2d.angular_momentum_magnitude[1] ≈ abs(momentum2d.angular_momentum[1])
+            @test all(momentum2d.angular_momentum_magnitude .>= 0)
+        end
+
         @testset "Momentum conservation (isolated system)" begin
             momentum = compute_momentum_timeseries(sol_weber)
 

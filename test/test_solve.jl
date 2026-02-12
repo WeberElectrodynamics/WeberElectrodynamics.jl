@@ -67,6 +67,20 @@
         @test step!(integrator) == false
     end
 
+    @testset "step! clamps final step to tspan end" begin
+        prob = make_weber_problem(tspan = (0.0, 1.0), dt = 0.3)
+        integrator = init(prob)
+        while step!(integrator)
+        end
+
+        @test integrator.t ≈ prob.tspan[2]
+        @test integrator.t <= prob.tspan[2] + eps(prob.tspan[2])
+
+        sol = solve(prob)
+        @test sol.t[end] ≈ prob.tspan[2]
+        @test sol.t[end] <= prob.tspan[2] + eps(prob.tspan[2])
+    end
+
     @testset "solve!" begin
         prob = make_weber_problem(tspan = (0.0, 0.5), dt = 0.001)
         integrator = init(prob)
