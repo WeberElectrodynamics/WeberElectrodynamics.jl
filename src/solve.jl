@@ -669,6 +669,7 @@ end
     j = rb.active_anchor_j
 
     reg = prob.regularization
+    constraint_tolerance = reg.constraint_tolerance
     substeps = Int(ceil(rb.r_on / max(min_distance, reg.g_floor)))
     substeps = clamp(substeps, 1, reg.max_substeps)
 
@@ -691,6 +692,9 @@ end
         elseif dims == 3
             _ks_lift!(rb)
             c_err = _ks_project_constraint!(rb.ks_U, rb.ks_u, rb.ks_n)
+            if c_err <= constraint_tolerance
+                c_err = 0.0
+            end
             if c_err > max_constraint
                 max_constraint = c_err
             end
@@ -767,6 +771,7 @@ end
     prob = integrator.prob
     rb = integrator.buffers.regularization_buffers
     reg = prob.regularization
+    constraint_tolerance = reg.constraint_tolerance
 
     omega = _component_omega(rb)
     g = max(1.0 / max(omega, eps(Float64)), reg.g_floor)
@@ -795,6 +800,9 @@ end
                 _extract_pair_relative_state!(rb, integrator.q, integrator.p, prob.masses, i, j)
                 _ks_lift!(rb)
                 c_err = _ks_project_constraint!(rb.ks_U, rb.ks_u, rb.ks_n)
+                if c_err <= constraint_tolerance
+                    c_err = 0.0
+                end
                 if c_err > max_constraint
                     max_constraint = c_err
                 end
@@ -843,7 +851,7 @@ end
         diagnostics.deactivation_count += 1
     end
 
-    if !active
+    if !active || mode == REG_MODE_NONE
         _step_unregularized!(integrator, dt_step)
         return nothing
     end

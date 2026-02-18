@@ -426,6 +426,13 @@ end
 )
     _compute_pair_distances!(rb, q)
 
+    if rb.n_pairs == 0
+        rb.is_active = false
+        rb.active_mode = REG_MODE_NONE
+        rb.active_count = 0
+        return false, REG_MODE_NONE, Inf
+    end
+
     min_pair_idx, min_r = _find_min_pair(rb)
 
     if rb.is_active
@@ -447,18 +454,18 @@ end
 
             _build_adjacency!(rb, rb.r_on)
             _build_component_from_anchor!(rb, rb.active_anchor_i, rb.active_anchor_j)
-
-            if rb.active_count > 2 && chain_enabled
-                rb.active_mode = REG_MODE_CHAIN
-                _build_chain_order!(rb, q)
-            else
-                rb.active_mode = REG_MODE_PAIR
-            end
         end
     end
 
-    if rb.is_active && rb.active_mode == REG_MODE_CHAIN
-        _build_chain_order!(rb, q)
+    if rb.is_active
+        if rb.active_count == 2
+            rb.active_mode = REG_MODE_PAIR
+        elseif rb.active_count > 2 && chain_enabled
+            rb.active_mode = REG_MODE_CHAIN
+            _build_chain_order!(rb, q)
+        else
+            rb.active_mode = REG_MODE_NONE
+        end
     end
 
     return rb.is_active, rb.active_mode, min_r

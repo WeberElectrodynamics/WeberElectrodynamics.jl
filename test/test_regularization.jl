@@ -221,6 +221,55 @@
         active, mode, _ = WeberElectrodynamics._detect_regularization_component!(rb, q_off, true)
         @test !active
         @test mode == WeberElectrodynamics.REG_MODE_NONE
+
+        q_pair = [-0.09, 0.0, 0.09, 0.0, 1.0, 0.0]
+        active, mode, _ = WeberElectrodynamics._detect_regularization_component!(rb, q_pair, true)
+        @test active
+        @test mode == WeberElectrodynamics.REG_MODE_PAIR
+
+        q_chain = [-0.09, 0.0, 0.09, 0.0, 0.2, 0.0]
+        active, mode, _ = WeberElectrodynamics._detect_regularization_component!(rb, q_chain, true)
+        @test active
+        @test mode == WeberElectrodynamics.REG_MODE_CHAIN
+
+        q_pair_again = [-0.09, 0.0, 0.09, 0.0, 0.6, 0.0]
+        active, mode, _ = WeberElectrodynamics._detect_regularization_component!(rb, q_pair_again, true)
+        @test active
+        @test mode == WeberElectrodynamics.REG_MODE_PAIR
+    end
+
+    @testset "Chain-disabled overlap fallback" begin
+        rb = WeberElectrodynamics.RegularizationBuffers(3, 2, 6, 0.2, 0.3, :adaptive_cartesian, false)
+        q_overlap = [-0.09, 0.0, 0.09, 0.0, 0.2, 0.0]
+        active, mode, _ = WeberElectrodynamics._detect_regularization_component!(rb, q_overlap, false)
+        @test active
+        @test rb.active_count > 2
+        @test mode == WeberElectrodynamics.REG_MODE_NONE
+
+        sys = WeberSystem(3, 2)
+        q0 = [-0.09, 0.0, 0.09, 0.0, 0.2, 0.0]
+        p0 = [0.0, 0.02, 0.0, 0.0, 0.0, -0.02]
+        prob = WeberProblem(
+            sys,
+            (0.0, 0.1),
+            q0,
+            p0;
+            masses = [1.0, 1.0, 1.0],
+            charges = [0.1, -0.2, 0.1],
+            c = 4.0,
+            dt = 0.001,
+            regularization_enabled = true,
+            regularization_backend = :adaptive_cartesian,
+            regularization_warn_on_fallback = false,
+            regularization_r_on = 0.2,
+            regularization_r_off = 0.3,
+            regularization_chain_enabled = false,
+        )
+        sol = solve(prob)
+        @test sol.retcode == :Success
+        @test sol.regularization.pair_steps == 0
+        @test sol.regularization.chain_steps == 0
+        @test sol.regularization.unregularized_steps == length(sol) - 1
     end
 
     @testset "Pair mode correctness (2D lifted)" begin
@@ -356,6 +405,30 @@
         @test sol_off.t == sol_on.t
         @test all(sol_off.q .== sol_on.q)
         @test all(sol_off.p .== sol_on.p)
+    end
+
+    @testset "Single-particle regularization safety" begin
+        sys = WeberSystem(1, 2)
+        q0 = [0.0, 0.0]
+        p0 = [0.0, 0.0]
+        prob = WeberProblem(
+            sys,
+            (0.0, 0.1),
+            q0,
+            p0;
+            masses = [1.0],
+            charges = [0.0],
+            c = 4.0,
+            dt = 0.01,
+            regularization_enabled = true,
+            regularization_backend = :adaptive_cartesian,
+            regularization_warn_on_fallback = false,
+        )
+        sol = solve(prob)
+        @test sol.retcode == :Success
+        @test sol.regularization.pair_steps == 0
+        @test sol.regularization.chain_steps == 0
+        @test sol.regularization.unregularized_steps == length(sol) - 1
     end
 
     @testset "Diagnostics validity" begin

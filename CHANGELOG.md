@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.1] - 2026-02-18
+
+### Fixed
+- Prevent regularization dispatch from crashing on single-particle (`n_pairs=0`) systems
+- Recompute encounter mode each step so active components can transition between pair and chain modes
+- Enforce documented Cartesian fallback when overlapping components are active and `regularization_chain_enabled=false`
+- Apply `regularization_constraint_tolerance` to KS residual diagnostics thresholding
+
 ## [3.0.0] - 2026-02-12
 
 ### Breaking Changes
