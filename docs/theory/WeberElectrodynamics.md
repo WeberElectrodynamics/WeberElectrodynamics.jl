@@ -17,6 +17,7 @@ We use absolute system of units throughout this document, unless otherwise speci
 ### Mass and Charge of Particle 1 and Particle 2
 
 $$m_1, q_1$$
+
 $$m_2, q_2$$
 
 ### Positions for Particle 1 and Particle 2
@@ -24,16 +25,19 @@ $$m_2, q_2$$
 #### Position
 
 $$x_1(t), y_1(t), z_1(t)$$
+
 $$x_2(t), y_2(t), z_2(t)$$
 
 #### Velocity
 
 $$\dot{x}_1(t), \dot{y}_1(t), \dot{z}_1(t)$$
+
 $$\dot{x}_2(t), \dot{y}_2(t), \dot{z}_2(t)$$
 
 #### Acceleration
 
 $$\ddot{x}_1(t), \ddot{y}_1(t), \ddot{z}_1(t)$$
+
 $$\ddot{x}_2(t), \ddot{y}_2(t), \ddot{z}_2(t)$$
 
 ### Vector notation for Particle 1 and Particle 2
@@ -53,10 +57,15 @@ $$\vec{a}_1 = (\ddot{x}_1(t), \ddot{y}_1(t), \ddot{z}_1(t)), \quad \vec{a}_2 = (
 ### Momenta for Particle 1 and Particle 2
 
 $$p_{x_1} = m_1 \dot{x}_1$$
+
 $$p_{y_1} = m_1 \dot{y}_1$$
+
 $$p_{z_1} = m_1 \dot{z}_1$$
+
 $$p_{x_2} = m_2 \dot{x}_2$$
+
 $$p_{y_2} = m_2 \dot{y}_2$$
+
 $$p_{z_2} = m_2 \dot{z}_2$$
 
 ### Relative Coordinates and Vectors for Particle 1 and Particle 2
@@ -64,19 +73,25 @@ $$p_{z_2} = m_2 \dot{z}_2$$
 #### Relative position
 
 $$x = x_1 - x_2$$
+
 $$y = y_1 - y_2$$
+
 $$z = z_1 - z_2$$
 
 #### Relative velocity
 
 $$\dot{x} = \dot{x}_1 - \dot{x}_2$$
+
 $$\dot{y} = \dot{y}_1 - \dot{y}_2$$
+
 $$\dot{z} = \dot{z}_1 - \dot{z}_2$$
 
 #### Relative acceleration
 
 $$\ddot{x} = \ddot{x}_1 - \ddot{x}_2$$
+
 $$\ddot{y} = \ddot{y}_1 - \ddot{y}_2$$
+
 $$\ddot{z} = \ddot{z}_1 - \ddot{z}_2$$
 
 #### Relative vectors
@@ -192,7 +207,7 @@ where $r_{ij}$ is the distance between particles $i$ and $j$, and $\dot{r}_{ij}$
 
 The Hamiltonian for n charges is then given by
 
-$$H = \sum_i^n T_i + \sum_{i<j}^n U_{ij}$$
+$$H = \sum_i^n T_i + \sum_{i\lt j}^n U_{ij}$$
 
 ## Euler-Lagrange equations
 

@@ -49,17 +49,17 @@ $$
 Hamilton's equations in fictitious time $\tau$ are
 
 $$
-q'=\frac{\partial \mathcal{K}}{\partial p},\quad
-p'=-\frac{\partial \mathcal{K}}{\partial q},\quad
-t'=\frac{\partial \mathcal{K}}{\partial p_t}=g,\quad
-p_t'=-\frac{\partial \mathcal{K}}{\partial t},
+\frac{dq}{d\tau}=\frac{\partial \mathcal{K}}{\partial p},\quad
+\frac{dp}{d\tau}=-\frac{\partial \mathcal{K}}{\partial q},\quad
+\frac{dt}{d\tau}=\frac{\partial \mathcal{K}}{\partial p_t}=g,\quad
+\frac{dp_t}{d\tau}=-\frac{\partial \mathcal{K}}{\partial t}.
 $$
 
-where $'\equiv d/d\tau$. On the physical manifold $H+p_t=0$:
+On the physical manifold $H+p_t=0$:
 
 $$
-q'=g\,\frac{\partial H}{\partial p},\quad
-p'=-g\,\frac{\partial H}{\partial q},\quad
+\frac{dq}{d\tau}=g\,\frac{\partial H}{\partial p},\quad
+\frac{dp}{d\tau}=-g\,\frac{\partial H}{\partial q},\quad
 \frac{dt}{d\tau}=g.
 $$
 
@@ -236,9 +236,9 @@ $$
 In transformed canonical variables $(Q,P)$:
 
 $$
-Q'=g\,\frac{\partial H}{\partial P},\quad
-P'=-g\,\frac{\partial H}{\partial Q},\quad
-t'=g.
+\frac{dQ}{d\tau}=g\,\frac{\partial H}{\partial P},\quad
+\frac{dP}{d\tau}=-g\,\frac{\partial H}{\partial Q},\quad
+\frac{dt}{d\tau}=g.
 $$
 
 When multiple KS pairs are active, constraints $\Psi_a(Q,P)=0$ are enforced for each pair.
@@ -267,7 +267,7 @@ This reduces subtraction of large nearby numbers and improves robustness in few-
 ## Key Mathematical Outcomes
 
 - Binary collision singularities are removed from the transformed vector field.
-- Physical time is recovered by integrating $t'=g$.
+- Physical time is recovered by integrating $\frac{dt}{d\tau}=g$.
 - Canonical structure is preserved by coordinate maps plus extended-phase-space Hamiltonian flow.
 - 1D, 2D, and 3D binary regularizations share the same pattern:
   singular radius $r$ becomes quadratic in regularized coordinates and is canceled by $dt=r\,d\tau$.
