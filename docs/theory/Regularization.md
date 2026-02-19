@@ -14,7 +14,7 @@ This document is self-contained and independent of any specific implementation.
 Consider a Hamiltonian of the form
 
 $$
-H(q,p,t)=\sum_{i=1}^N \frac{\|p_i\|^2}{2m_i}+\sum_{1\le i<j\le N}\frac{\kappa_{ij}}{r_{ij}}+R(q,p,t),
+H(q,p,t)=\sum_{i=1}^N \frac{\|p_i\|^2}{2m_i}+\sum_{1\le i\lt j\le N}\frac{\kappa_{ij}}{r_{ij}}+R(q,p,t),
 $$
 
 where
@@ -224,12 +224,12 @@ g=r_{ab}\ \text{(single active pair)},
 $$
 
 $$
-g=\left(\sum_{i<j}\frac{w_{ij}}{r_{ij}}\right)^{-1}\ \text{(global close-encounter monitor)},
+g=\left(\sum_{i\lt j}\frac{w_{ij}}{r_{ij}}\right)^{-1}\ \text{(global close-encounter monitor)},
 $$
 
 $$
 g=\frac{1}{\alpha T+\beta\Omega+\gamma},\quad
-\Omega=\sum_{i<j}\frac{w_{ij}}{r_{ij}},\quad
+\Omega=\sum_{i\lt j}\frac{w_{ij}}{r_{ij}},\quad
 \alpha,\beta,\gamma\ge 0.
 $$
 
