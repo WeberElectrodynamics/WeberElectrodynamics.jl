@@ -219,9 +219,9 @@
         q = [1.0, 0.0, -1.0, 0.0]
         p = [0.0, 0.5, 0.0, -0.5]
 
-        # Params layout: [m1, m2, q1, q2, c]
-        params_large_c = [m1, m2, q1, q2, 1e10]
-        params_small_c = [m1, m2, q1, q2, 10.0]
+        # Params layout: [m1, m2, q1, q2, c, κ₁₂]; κ=1 (Zöllner disabled)
+        params_large_c = [m1, m2, q1, q2, 1e10, 1.0]
+        params_small_c = [m1, m2, q1, q2, 10.0, 1.0]
 
         out_large_c = zeros(4)
         out_small_c = zeros(4)

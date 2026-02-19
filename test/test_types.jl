@@ -35,8 +35,8 @@
         @test !isnothing(system.dq_dt_compiled)
         @test !isnothing(system.dp_dt_compiled)
 
-        # Symbolic parameters exist
-        @test length(system.param_symbols) == 5  # m1, m2, q1, q2, c
+        # Symbolic parameters exist: [m1, m2, q1, q2, c, kappa_1_2]
+        @test length(system.param_symbols) == 6  # m1, m2, q1, q2, c, κ₁₂
         @test length(system.q_symbols) == 4  # x1, y1, x2, y2
         @test length(system.p_symbols) == 4  # px1, py1, px2, py2
     end
@@ -90,7 +90,11 @@
         @test prob.dt == 0.01
         @test prob.convergence_tolerance == 1e-13  # default
         @test prob.maximum_iterations == 100  # default
-        @test prob.params == [1.0, 0.5, 1.0, -1.0, 4.0]  # [m1, m2, q1, q2, c]
+        # params = [m1, m2, q1, q2, c, κ₁₂]; charges +1/-1 are unlike so κ=1 (Zöllner disabled)
+        @test prob.params == [1.0, 0.5, 1.0, -1.0, 4.0, 1.0]
+        @test prob.kappas == [1.0]  # unlike charges but Zöllner disabled → κ=1
+        @test prob.zollner.enabled == false
+        @test prob.zollner.a == 0.0
         @test prob.regularization.enabled == true
         @test prob.regularization.r_on === nothing
         @test prob.regularization.r_off === nothing

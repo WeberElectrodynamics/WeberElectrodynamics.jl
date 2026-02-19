@@ -19,7 +19,8 @@
         c = 1000.0  # Large c to make Weber ≈ Coulomb
 
         system = WeberSystem(2, 2)
-        params = [m1, m2, q1, q2, c]
+        # params = [m1, m2, q1, q2, c, κ₁₂]; κ=1 (Zöllner disabled)
+        params = [m1, m2, q1, q2, c, 1.0]
 
         # Test at specific point: particles at x = ±1, no y offset
         q = [1.0, 0.0, -1.0, 0.0]  # particles at x=1 and x=-1
@@ -52,7 +53,7 @@
         @test sys1d.degrees_of_freedom == 2
         @test length(sys1d.dq_dt_symbolic) == 2
 
-        params1d = [1.0, 1.0, 1.0, -1.0, 1.0]  # m1, m2, q1, q2, c
+        params1d = [1.0, 1.0, 1.0, -1.0, 1.0, 1.0]  # m1, m2, q1, q2, c, κ₁₂
         out1 = zeros(2)
         sys1d.dq_dt_compiled(out1, [1.0, -1.0], [0.5, -0.5], params1d)
         # Weber's velocity-dependent potential affects dq/dt, so we just verify
@@ -76,8 +77,8 @@
         @test sys3body.degrees_of_freedom == 6
         @test sys3body.n_particles == 3
 
-        # params: [m1, m2, m3, q1, q2, q3, c]
-        params3 = [1.0, 1.0, 1.0, 1.0, -1.0, 0.5, 1.0]
+        # params: [m1, m2, m3, q1, q2, q3, c, κ₁₂, κ₁₃, κ₂₃]; all κ=1 (Zöllner disabled)
+        params3 = [1.0, 1.0, 1.0, 1.0, -1.0, 0.5, 1.0, 1.0, 1.0, 1.0]
 
         # Should have 3 pairwise interactions in the Hamiltonian
         out_q = zeros(6)
