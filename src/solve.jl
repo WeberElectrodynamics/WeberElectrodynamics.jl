@@ -326,6 +326,7 @@ end
     params_pair = rb.params_pair
     masses = prob.masses
     charges = prob.charges
+    kappas = prob.kappas
 
     @inbounds begin
         for k = 1:n
@@ -335,6 +336,12 @@ end
         params_pair[n+i] = charges[i]
         params_pair[n+j] = charges[j]
         params_pair[2n+1] = prob.c
+        # Copy kappas; charges for non-(i,j) pairs are zero so their κ values
+        # do not affect the force, but the buffer must have the right length.
+        n_pairs = rb.n_pairs
+        for k = 1:n_pairs
+            params_pair[2n+1+k] = kappas[k]
+        end
     end
 
     return nothing

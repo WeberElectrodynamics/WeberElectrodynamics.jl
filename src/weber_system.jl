@@ -43,7 +43,15 @@ end
 function _generate_param_symbols(n_particles::Int)
     mass_symbols = [Symbol("m$i") for i = 1:n_particles]
     charge_symbols = [Symbol("q$i") for i = 1:n_particles]
-    return (mass_symbols, charge_symbols, :c)
+    kappa_symbols = [
+        Symbol("kappa_$(i)_$(j)") for i = 1:n_particles for j = (i+1):n_particles
+    ]
+    return (mass_symbols, charge_symbols, :c, kappa_symbols)
+end
+
+# Pair (i,j) with i<j maps to this 1-based index in the kappas vector.
+@inline function _pair_index(i::Int, j::Int, n::Int)::Int
+    return (i - 1) * (2n - i) ÷ 2 + (j - i)
 end
 
 function _build_weber_hamiltonian(
@@ -52,6 +60,7 @@ function _build_weber_hamiltonian(
     m_vars::Vector,
     charge_vars::Vector,
     c_var,
+    kappa_vars::Vector,
     n_particles::Int,
     dims::Int,
 )
@@ -88,7 +97,9 @@ function _build_weber_hamiltonian(
             end
             r_dot = r_dot_v / r
 
-            k = charge_vars[i] * charge_vars[j]
+            pair_idx = _pair_index(i, j, n_particles)
+            kappa = kappa_vars[pair_idx]
+            k = kappa * charge_vars[i] * charge_vars[j]
             U_ij = k / r * (1 - r_dot^2 / (2 * c_squared))
             H = H + U_ij
         end
@@ -105,12 +116,13 @@ function WeberSystem(n_particles::Int, dims::Int)
     q_vars = [Symbolics.variable(sym) for sym in coordinate_symbols]
     p_vars = [Symbolics.variable(sym) for sym in momentum_symbols]
 
-    mass_symbols, charge_symbols, c_symbol = _generate_param_symbols(n_particles)
+    mass_symbols, charge_symbols, c_symbol, kappa_syms = _generate_param_symbols(n_particles)
     m_vars = [Symbolics.variable(sym) for sym in mass_symbols]
     charge_vars = [Symbolics.variable(sym) for sym in charge_symbols]
     c_var = Symbolics.variable(c_symbol)
+    kappa_vars = [Symbolics.variable(sym) for sym in kappa_syms]
 
-    param_symbols = vcat(m_vars, charge_vars, [c_var])
+    param_symbols = vcat(m_vars, charge_vars, [c_var], kappa_vars)
 
     hamiltonian_symbolic = _build_weber_hamiltonian(
         q_vars,
@@ -118,6 +130,7 @@ function WeberSystem(n_particles::Int, dims::Int)
         m_vars,
         charge_vars,
         c_var,
+        kappa_vars,
         n_particles,
         dims,
     )

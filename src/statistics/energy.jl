@@ -1,7 +1,9 @@
 struct PairEnergyData
     pair::Tuple{Int,Int}
+    kappa::Float64
     coulomb_term::Vector{Float64}
     velocity_term::Vector{Float64}
+    zollner_extra_potential::Vector{Float64}
     total_pair_potential::Vector{Float64}
     radial_velocity::Vector{Float64}
 end
@@ -28,6 +30,7 @@ struct EnergyData
     total_energy::Vector{Float64}
     kinetic_energy::Vector{Float64}
     total_potential_energy::Vector{Float64}
+    total_zollner_residual::Vector{Float64}
     pair_energies::Dict{Tuple{Int,Int},PairEnergyData}
     statistics::EnergyStatistics
     hamiltonian_validation_error::Vector{Float64}
@@ -61,7 +64,8 @@ function compute_pair_weber_components(
     charges::AbstractVector{Float64},
     c::Float64,
     dims::Int,
-)::Tuple{Float64,Float64,Float64}
+    kappa::Float64 = 1.0,
+)::Tuple{Float64,Float64,Float64,Float64}
     qi_start = (i - 1) * dims + 1
     qj_start = (j - 1) * dims + 1
 
@@ -87,15 +91,21 @@ function compute_pair_weber_components(
     end
     rdot = r_dot_v / r
 
-    # Coulomb term: qᵢqⱼ/r
-    @inbounds k = charges[i] * charges[j]
-    coulomb_term = k / r
+    # Base charge product
+    @inbounds base_k = charges[i] * charges[j]
 
-    # Velocity-dependent term: -qᵢqⱼ/r * ṙ²/(2c²)
+    # κ-scaled Coulomb term: κ·qᵢqⱼ/r
+    coulomb_term = kappa * base_k / r
+
+    # Velocity-dependent term: -κ·qᵢqⱼ/r * ṙ²/(2c²)
     c_squared = c^2
     velocity_term = -coulomb_term * rdot^2 / (2 * c_squared)
 
-    return (coulomb_term, velocity_term, rdot)
+    # Zöllner extra potential: (κ-1)·qᵢqⱼ/r · (1 - ṙ²/(2c²))
+    # This is the emergent 'gravitational' residual from the mismatch.
+    zollner_extra = (kappa - 1.0) * base_k / r * (1.0 - rdot^2 / (2 * c_squared))
+
+    return (coulomb_term, velocity_term, rdot, zollner_extra)
 end
 
 function compute_energy_statistics(total_energy::Vector{Float64})::EnergyStatistics
@@ -194,11 +204,15 @@ function compute_energy_timeseries(solution::WeberSolution; stride::Int = 1)::En
     n_pairs = n_particles * (n_particles - 1) ÷ 2
 
     # Initialize pair energy storage with pre-sized Dict
+    kappas = prob.kappas
     pair_energies = sizehint!(Dict{Tuple{Int,Int},PairEnergyData}(), n_pairs)
     for i = 1:n_particles
         for j = (i+1):n_particles
+            kappa_ij = kappas[_pair_index(i, j, n_particles)]
             pair_energies[(i, j)] = PairEnergyData(
                 (i, j),
+                kappa_ij,
+                Vector{Float64}(undef, n_points),
                 Vector{Float64}(undef, n_points),
                 Vector{Float64}(undef, n_points),
                 Vector{Float64}(undef, n_points),
@@ -206,6 +220,8 @@ function compute_energy_timeseries(solution::WeberSolution; stride::Int = 1)::En
             )
         end
     end
+
+    total_zollner_residual = zeros(Float64, n_points)
 
     # Main computation loop
     @inbounds for (pt_idx, sol_idx) in enumerate(indices)
@@ -218,20 +234,25 @@ function compute_energy_timeseries(solution::WeberSolution; stride::Int = 1)::En
 
         # Pair-wise potential energies
         PE_total = 0.0
+        zollner_sum = 0.0
         for i = 1:n_particles
             for j = (i+1):n_particles
-                coulomb, velocity, rdot =
-                    compute_pair_weber_components(q, p, i, j, masses, charges, c, dims)
+                kappa_ij = kappas[_pair_index(i, j, n_particles)]
+                coulomb, velocity, rdot, zollner_extra =
+                    compute_pair_weber_components(q, p, i, j, masses, charges, c, dims, kappa_ij)
                 pair_data = pair_energies[(i, j)]
                 pair_data.coulomb_term[pt_idx] = coulomb
                 pair_data.velocity_term[pt_idx] = velocity
+                pair_data.zollner_extra_potential[pt_idx] = zollner_extra
                 pair_data.total_pair_potential[pt_idx] = coulomb + velocity
                 pair_data.radial_velocity[pt_idx] = rdot
                 PE_total += coulomb + velocity
+                zollner_sum += zollner_extra
             end
         end
         total_potential_energy[pt_idx] = PE_total
         total_energy[pt_idx] = KE + PE_total
+        total_zollner_residual[pt_idx] = zollner_sum
 
         # Validate against compiled Hamiltonian
         H_compiled = hamiltonian_compiled(q, p, params)
@@ -246,6 +267,7 @@ function compute_energy_timeseries(solution::WeberSolution; stride::Int = 1)::En
         total_energy,
         kinetic_energy,
         total_potential_energy,
+        total_zollner_residual,
         pair_energies,
         statistics,
         hamiltonian_validation,

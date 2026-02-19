@@ -20,6 +20,42 @@ struct SymmetricProjectionIntegrator <: WeberAlgorithm
     end
 end
 
+struct ZollnerOptions
+    enabled::Bool
+    a::Float64
+
+    function ZollnerOptions(; enabled::Bool = false, a::Real = 0.0)
+        if enabled
+            @assert a > 0 "Zöllner mismatch parameter a must be positive when enabled, got $a"
+        end
+        new(enabled, Float64(a))
+    end
+end
+
+# Compute per-pair Zöllner coupling factors κ_ij.
+# κ_ij = 1+a for unlike-sign charge pairs, 1.0 for like-sign pairs.
+# Returns a vector of length n_particles*(n_particles-1)/2, ordered by (i<j).
+function _compute_zollner_kappas(
+    charges::Vector{Float64},
+    zollner::ZollnerOptions,
+    n_particles::Int,
+)::Vector{Float64}
+    n_pairs = n_particles * (n_particles - 1) ÷ 2
+    kappas = ones(Float64, n_pairs)
+    if zollner.enabled
+        idx = 1
+        @inbounds for i = 1:n_particles
+            for j = (i+1):n_particles
+                if sign(charges[i]) != sign(charges[j])
+                    kappas[idx] = 1.0 + zollner.a
+                end
+                idx += 1
+            end
+        end
+    end
+    return kappas
+end
+
 struct RegularizationOptions
     enabled::Bool
     r_on::Union{Nothing,Float64}
@@ -268,7 +304,7 @@ mutable struct RegularizationBuffers
             Vector{Float64}(undef, 4),
             Matrix{Float64}(undef, 3, 4),
             Vector{Float64}(undef, 4),
-            Vector{Float64}(undef, 2n_particles + 1),
+            Vector{Float64}(undef, 2n_particles + 1 + n_pairs),
             Vector{Float64}(undef, dof),
             Vector{Float64}(undef, dof),
             Vector{Float64}(undef, dof),
@@ -289,11 +325,13 @@ struct WeberProblem
     masses::Vector{Float64}
     charges::Vector{Float64}
     c::Float64
+    kappas::Vector{Float64}
     params::Vector{Float64}
     dt::Float64
     convergence_tolerance::Float64
     maximum_iterations::Int
     regularization::RegularizationOptions
+    zollner::ZollnerOptions
 
     function WeberProblem(
         system::WeberSystem,
@@ -317,6 +355,8 @@ struct WeberProblem
         regularization_chain_enabled::Bool = true,
         regularization_backend::Symbol = REG_BACKEND_LIFTED,
         regularization_warn_on_fallback::Bool = true,
+        zollner_enabled::Bool = false,
+        zollner_a::Real = 0.0,
     )
         n_particles = system.n_particles
         dof = system.degrees_of_freedom
@@ -334,7 +374,10 @@ struct WeberProblem
         masses_f64 = Vector{Float64}(masses)
         charges_f64 = Vector{Float64}(charges)
         c_f64 = Float64(c)
-        params = vcat(masses_f64, charges_f64, [c_f64])
+
+        zollner = ZollnerOptions(enabled = zollner_enabled, a = Float64(zollner_a))
+        kappas = _compute_zollner_kappas(charges_f64, zollner, n_particles)
+        params = vcat(masses_f64, charges_f64, [c_f64], kappas)
 
         regularization = RegularizationOptions(
             enabled = regularization_enabled,
@@ -358,11 +401,13 @@ struct WeberProblem
             masses_f64,
             charges_f64,
             c_f64,
+            kappas,
             params,
             Float64(dt),
             Float64(convergence_tolerance),
             Int(maximum_iterations),
             regularization,
+            zollner,
         )
     end
 end

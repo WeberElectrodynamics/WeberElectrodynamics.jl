@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.0.0] - 2026-02-19
+
+### Breaking Changes
+- **`params` vector structure extended**: now `[m₁,…,mₙ, q₁,…,qₙ, c, κ₁₂, κ₁₃, …, κ_{N-1,N}]`
+  (length `2N + 1 + N(N-1)/2`). Direct callers of `system.hamiltonian_compiled` or
+  `system.dp_dt_compiled` must append per-pair κ values (all `1.0` to reproduce standard Weber).
+- `compute_pair_weber_components` return type changed from 3-tuple to 4-tuple: added
+  `zollner_extra_potential` as the fourth element.
+- `PairEnergyData` struct gained new fields `kappa`, `zollner_extra_potential`, and
+  `zollner_extra_force`; code that pattern-matches on the struct must be updated.
+
+### Added
+- `ZollnerOptions` struct: `ZollnerOptions(enabled=false, a=0.0)` for configuring the
+  Zöllner electrogravitational mismatch parameter.
+- `zollner_enabled` and `zollner_a` keyword arguments on `WeberProblem`.
+- `kappas::Vector{Float64}` field on `WeberProblem` storing per-pair coupling factors κ_ij.
+- `_pair_index(i, j, n)` helper for pair indexing in the κ vector.
+- Four new plot functions: `plot_zollner_energy`, `plot_zollner_force_residual`,
+  `plot_weber_vs_zollner`, `plot_zollner_phase_space`.
+- Comprehensive Zöllner test suite in `test/test_zollner.jl`.
+
+### Fixed
+- `plot_weber_vs_zollner`: trajectory arrays were indexed as `[dim, :]` (2 points) instead of
+  `[:, dim]` (all timesteps), producing straight line segments instead of full orbits.
+
+### Changed
+- Rewrote `examples/four_body_regularized_reference.ipynb`: analytically-derived initial
+  conditions (closed-form speed from target energy ratio η = KE/|PE₀|), square geometry with
+  alternating (+,−,+,−) charges, four Zöllner runs (a = 0, 0.02, 0.05, 0.10), extensive
+  relative-coordinate analysis (pairwise separations, phase portraits, Zöllner scaling).
+
 ## [3.0.1] - 2026-02-18
 
 ### Fixed

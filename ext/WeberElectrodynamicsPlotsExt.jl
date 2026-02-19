@@ -851,4 +851,270 @@ function _plot_trajectories_3d(data::TrajectoryData)::Plots.Plot
     return plt
 end
 
+
+# =============================================================================
+# Zöllner Electrogravitation Plots
+# =============================================================================
+
+"""
+    plot_zollner_energy(data::EnergyData) -> Plot
+
+Two-panel visualization of the Zöllner mismatch contribution to energy.
+
+Panel 1: Total potential energy with the Zöllner extra contribution per pair overlaid.
+Panel 2: Aggregate Zöllner residual (emergent gravitational energy) vs total energy.
+
+When Zöllner is disabled (all κ = 1), both Zöllner traces are identically zero.
+"""
+function WeberElectrodynamics.plot_zollner_energy(data::EnergyData)::Plots.Plot
+    colors = [:steelblue, :firebrick, :forestgreen, :darkorchid, :darkorange]
+
+    # Panel 1: Total potential + Zöllner extra per pair
+    p1 = plot(;
+        title = "Potential Energy with Zöllner Contribution",
+        xlabel = "",
+        ylabel = "Energy",
+        legend = :outertopright,
+        PLOT_DEFAULTS...,
+    )
+    plot!(
+        p1, data.t, data.total_potential_energy,
+        label = "Total V", linewidth = 2, color = :black,
+    )
+    for (pair_idx, ((i, j), pdata)) in enumerate(sort(collect(data.pair_energies), by = x -> x[1]))
+        c = colors[mod1(pair_idx, length(colors))]
+        kappa_str = @sprintf("%.4g", pdata.kappa)
+        plot!(
+            p1, data.t, pdata.total_pair_potential,
+            label = "V($i,$j) κ=$kappa_str", linewidth = 1.2,
+            color = c, linestyle = :solid,
+        )
+        plot!(
+            p1, data.t, pdata.zollner_extra_potential,
+            label = "ΔV_Z($i,$j)", linewidth = 1.0,
+            color = c, linestyle = :dash,
+        )
+    end
+
+    # Panel 2: Zöllner residual vs total energy
+    p2 = plot(;
+        title = "Zöllner Gravitational Residual",
+        xlabel = "Time",
+        ylabel = "Energy",
+        legend = :outertopright,
+        PLOT_DEFAULTS...,
+    )
+    plot!(
+        p2, data.t, data.total_energy,
+        label = "Total E", linewidth = 2, color = :black,
+    )
+    plot!(
+        p2, data.t, data.total_zollner_residual,
+        label = "Σ ΔV_Zöllner (emergent gravity)", linewidth = 1.8,
+        color = :firebrick, linestyle = :dash,
+    )
+
+    return plot(
+        p1, p2;
+        layout = grid(2, 1),
+        size = _multi_panel_size(2),
+    )
+end
+
+"""
+    plot_zollner_force_residual(data::PairForceData) -> Plot
+
+Two-panel visualization of the Zöllner extra force for one particle pair.
+
+Panel 1: Total force magnitude alongside the Zöllner extra magnitude |（κ-1)·F_Coulomb|.
+Panel 2: Ratio of extra Zöllner force to total force — shows relative size of mismatch.
+
+Useful for verifying that `a` is small (ratio ≪ 1) while the emergent gravity is present.
+"""
+function WeberElectrodynamics.plot_zollner_force_residual(data::PairForceData)::Plots.Plot
+    i, j = data.pair
+    kappa_str = @sprintf("%.4g", data.kappa)
+
+    # Panel 1: Total magnitude vs Zöllner extra
+    p1 = plot(;
+        title = "Force Magnitude — Pair ($i,$j), κ=$kappa_str",
+        xlabel = "",
+        ylabel = "|F|",
+        legend = :outertopright,
+        PLOT_DEFAULTS...,
+    )
+    plot!(
+        p1, data.t, data.magnitude,
+        label = "|F_total|", linewidth = 2, color = :steelblue,
+    )
+    plot!(
+        p1, data.t, data.zollner_extra_magnitude,
+        label = "|(κ-1)·F_Coulomb|", linewidth = 1.5,
+        color = :firebrick, linestyle = :dash,
+    )
+
+    # Panel 2: Ratio (κ-1)*F_coulomb / F_total
+    ratio = ifelse.(
+        data.magnitude .> eps(Float64),
+        data.zollner_extra_magnitude ./ data.magnitude,
+        zeros(length(data.magnitude)),
+    )
+
+    p2 = plot(;
+        title = "Relative Zöllner Contribution",
+        xlabel = "Time",
+        ylabel = "|ΔF_Zöllner| / |F_total|",
+        legend = :outertopright,
+        PLOT_DEFAULTS...,
+    )
+    plot!(
+        p2, data.t, ratio,
+        label = "(κ-1) fraction", linewidth = 1.5, color = :firebrick,
+    )
+    delta_kappa_str = @sprintf("%.4g", abs(data.kappa - 1.0))
+    hline!(p2, [abs(data.kappa - 1.0)];
+        label = "a = $delta_kappa_str",
+        linewidth = 1.0, color = :black, linestyle = :dot)
+
+    return plot(
+        p1, p2;
+        layout = grid(2, 1),
+        size = _multi_panel_size(2),
+    )
+end
+
+"""
+    plot_weber_vs_zollner(sol1, sol2; labels=["Weber", "Zöllner"]) -> Plot
+
+Overlay trajectories from two solutions (same initial conditions, different κ) to
+visualise the orbital divergence introduced by the Zöllner mismatch.
+
+Both solutions must have the same number of particles and dimensions.
+Solid lines = `sol1`, dashed lines = `sol2`.
+"""
+function WeberElectrodynamics.plot_weber_vs_zollner(
+    sol1::WeberSolution,
+    sol2::WeberSolution;
+    labels::Vector{String} = ["Weber", "Zöllner"],
+)::Plots.Plot
+    n1 = sol1.prob.system.n_particles
+    n2 = sol2.prob.system.n_particles
+    dims = sol1.prob.system.dims
+    @assert n1 == n2 "Both solutions must have the same number of particles"
+    @assert dims == sol2.prob.system.dims "Both solutions must have the same dimensions"
+    @assert dims in (2, 3) "Trajectory comparison only supported for 2D and 3D"
+
+    traj1 = compute_trajectory_data(sol1, n1, dims)
+    traj2 = compute_trajectory_data(sol2, n2, dims)
+
+    colors = [:steelblue, :firebrick, :forestgreen, :darkorchid, :darkorange]
+
+    plt = plot(;
+        title = "Trajectory Comparison: $(labels[1]) vs $(labels[2])",
+        xlabel = "x",
+        ylabel = dims == 3 ? "y" : "y",
+        legend = :outertopright,
+        aspect_ratio = :equal,
+        PLOT_DEFAULTS...,
+        size = _square_size(),
+    )
+
+    if dims == 2
+        for particle = 1:n1
+            c = colors[mod1(particle, length(colors))]
+            plot!(
+                plt,
+                traj1.trajectories[particle][:, 1],
+                traj1.trajectories[particle][:, 2];
+                label = "P$particle $(labels[1])",
+                linewidth = 1.5, color = c, linestyle = :solid,
+            )
+            plot!(
+                plt,
+                traj2.trajectories[particle][:, 1],
+                traj2.trajectories[particle][:, 2];
+                label = "P$particle $(labels[2])",
+                linewidth = 1.5, color = c, linestyle = :dash,
+            )
+        end
+    else  # 3D
+        for particle = 1:n1
+            c = colors[mod1(particle, length(colors))]
+            plot!(
+                plt,
+                traj1.trajectories[particle][:, 1],
+                traj1.trajectories[particle][:, 2],
+                traj1.trajectories[particle][:, 3];
+                label = "P$particle $(labels[1])",
+                linewidth = 1.5, color = c, linestyle = :solid,
+            )
+            plot!(
+                plt,
+                traj2.trajectories[particle][:, 1],
+                traj2.trajectories[particle][:, 2],
+                traj2.trajectories[particle][:, 3];
+                label = "P$particle $(labels[2])",
+                linewidth = 1.5, color = c, linestyle = :dash,
+            )
+        end
+    end
+
+    return plt
+end
+
+"""
+    plot_zollner_phase_space(data1, data2; labels=["Weber","Zöllner"]) -> Plot
+
+Overlaid (r, ṙ) phase portrait for the same pair from two different simulations.
+
+Shows how the Zöllner mismatch shifts the phase-space orbit — e.g., orbits that are open
+in standard Weber may curve inward under Zöllner gravity.
+Solid = `data1`, dashed = `data2`.
+"""
+function WeberElectrodynamics.plot_zollner_phase_space(
+    data1::PairForceData,
+    data2::PairForceData;
+    labels::Vector{String} = ["Weber", "Zöllner"],
+)::Plots.Plot
+    i, j = data1.pair
+    plt = plot(;
+        title = "Phase Space (r, ṙ) — Pair ($i,$j): $(labels[1]) vs $(labels[2])",
+        xlabel = "r (separation)",
+        ylabel = "ṙ (radial velocity)",
+        legend = :outertopright,
+        PLOT_DEFAULTS...,
+        size = _square_size(),
+    )
+
+    plot!(
+        plt,
+        data1.phase_space.separation_distance,
+        data1.phase_space.radial_velocity;
+        label = labels[1],
+        linewidth = 1.5, color = :steelblue, linestyle = :solid,
+    )
+    scatter!(
+        plt,
+        [data1.phase_space.separation_distance[1]],
+        [data1.phase_space.radial_velocity[1]];
+        marker = :circle, markersize = 6, color = :steelblue, label = "",
+    )
+
+    plot!(
+        plt,
+        data2.phase_space.separation_distance,
+        data2.phase_space.radial_velocity;
+        label = labels[2],
+        linewidth = 1.5, color = :firebrick, linestyle = :dash,
+    )
+    scatter!(
+        plt,
+        [data2.phase_space.separation_distance[1]],
+        [data2.phase_space.radial_velocity[1]];
+        marker = :circle, markersize = 6, color = :firebrick, label = "",
+    )
+
+    return plt
+end
+
 end # module

@@ -15,6 +15,7 @@ export WeberSolution
 export WeberIntegrator
 export RegularizationOptions
 export RegularizationDiagnostics
+export ZollnerOptions
 
 # =============================================================================
 # Regularization Helpers
@@ -62,6 +63,11 @@ function plot_energy_errors end
 function plot_pair_forces end
 function plot_phase_space end
 function plot_momentum end
+function plot_zollner_energy end
+function plot_zollner_force_residual end
+function plot_weber_vs_zollner end
+function plot_zollner_phase_space end
 export plot_trajectories, plot_energy, plot_pair_energy, plot_energy_errors, plot_pair_forces, plot_phase_space, plot_momentum
+export plot_zollner_energy, plot_zollner_force_residual, plot_weber_vs_zollner, plot_zollner_phase_space
 
 end
