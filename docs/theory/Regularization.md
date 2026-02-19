@@ -30,6 +30,7 @@ For each close pair \((i,j)\), use center-of-mass and relative variables:
 $$
 R_{ij}=\frac{m_i q_i+m_j q_j}{m_i+m_j},\quad r_{ij}=q_i-q_j,
 $$
+
 $$
 P_{ij}=p_i+p_j,\quad p_{ij}=\mu_{ij}\left(\frac{p_i}{m_i}-\frac{p_j}{m_j}\right),\quad
 \mu_{ij}=\frac{m_i m_j}{m_i+m_j}.
@@ -162,9 +163,11 @@ For 3D relative coordinate \(\mathbf{r}=(x_1,x_2,x_3)\), introduce \(u=(u_1,u_2,
 $$
 x_1=u_1^2-u_2^2-u_3^2+u_4^2,
 $$
+
 $$
 x_2=2(u_1u_2-u_3u_4),
 $$
+
 $$
 x_3=2(u_1u_3+u_2u_4).
 $$
@@ -219,9 +222,11 @@ $$
 dt=g\,d\tau,\quad
 g=r_{ab}\ \text{(single active pair)},
 $$
+
 $$
 g=\left(\sum_{i<j}\frac{w_{ij}}{r_{ij}}\right)^{-1}\ \text{(global close-encounter monitor)},
 $$
+
 $$
 g=\frac{1}{\alpha T+\beta\Omega+\gamma},\quad
 \Omega=\sum_{i<j}\frac{w_{ij}}{r_{ij}},\quad
