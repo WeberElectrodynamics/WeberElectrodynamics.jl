@@ -10,7 +10,7 @@ We consider two charged particles with charges $e, e'$ and inertial masses $\var
 
 $$\mu = \frac{\varepsilon\varepsilon'}{\varepsilon + \varepsilon'}.$$
 
-Separation $r$, radial velocity $\dot{r} = dr/dt$, radial acceleration $\ddot{r} = d^2r/dt^2$. The constant $c$ is Weber's electrodynamic constant, related to the speed of light by $c_W = \sqrt{2}\,c_{\text{light}}$. For full notation see [WeberElectrodynamics.md](WeberElectrodynamics.md).
+Separation $r$, radial velocity $\dot{r} = dr/dt$, radial acceleration $\ddot{r} = d^2r/dt^2$. Throughout this document $c$ denotes the speed of light ($c = c_{\text{light}}$), consistent with [WeberElectrodynamics.md](WeberElectrodynamics.md). Weber's original works used the electrodynamic constant $c_W = \sqrt{2}\,c$; formulas transcribed from the Memoirs are converted to the $c = c_{\text{light}}$ convention unless otherwise noted.
 
 ## Weber Force and Effective Inertial Mass
 
@@ -48,11 +48,15 @@ For like charges ($ee' > 0$), $\rho > 0$ and $\mu_{\text{eff}}$ changes sign at 
 
 ### Definition
 
-Weber defines (Sixth Memoir, §9.9):
+Weber defines (Sixth Memoir, §9.9), in his original notation using $c_W$:
 
-$$\rho = 2\left(\frac{1}{\varepsilon} + \frac{1}{\varepsilon'}\right)\frac{ee'}{c^2} = \frac{2ee'}{\mu c^2}.$$
+$$\rho_W = 2\left(\frac{1}{\varepsilon} + \frac{1}{\varepsilon'}\right)\frac{ee'}{c_W^2} = \frac{2ee'}{\mu c_W^2}.$$
 
-The factor of 2 compared to the effective-mass derivation above reflects Weber's convention for the radial force law; both forms yield the same critical distance.
+Since $c_W^2 = 2c^2$, this is identical to the effective-mass definition:
+
+$$\rho_W = \frac{2ee'}{\mu \cdot 2c^2} = \frac{ee'}{\mu c^2} = \rho.$$
+
+Both forms yield the same critical distance; the apparent factor of 2 arises solely from Weber's use of $c_W$ rather than $c$.
 
 ### Sign dependence
 
@@ -65,9 +69,9 @@ Weber estimated (§9.14) that for oscillation frequencies matching visible light
 
 ### General force law
 
-In the Seventh Memoir (§13.5), Weber derived the general expression for the repulsive force including external acceleration $f$:
+In the Seventh Memoir (§13.5), Weber derived the general expression for the repulsive force including external acceleration $f$ (shown here in Weber's original $c_W$ convention):
 
-$$-\frac{dV}{dr} = \frac{ee'}{r(r - \rho)}\left(1 - \frac{\dot{r}^2}{c^2} + \frac{2r}{c^2}f\right).$$
+$$-\frac{dV}{dr} = \frac{ee'}{r(r - \rho)}\left(1 - \frac{\dot{r}^2}{c_W^2} + \frac{2r}{c_W^2}f\right).$$
 
 The denominator $r(r - \rho)$ reveals the structure: a singularity at $r = \rho$ where the force diverges, and a sign change across it.
 
@@ -75,17 +79,17 @@ The denominator $r(r - \rho)$ reveals the structure: a singularity at $r = \rho$
 
 For two like particles ($\rho > 0$) with purely radial motion and $\dot{r} = 0$ at $r = r_0$, Weber's integrated equation of motion (§9.9) is
 
-$$\frac{\dot{r}^2}{c^2} = \frac{r - r_0}{r - \rho}\cdot\frac{\rho}{r_0}.$$
+$$\frac{\dot{r}^2}{c^2} = \frac{r - r_0}{r - \rho}\cdot\frac{2\rho}{r_0}.$$
 
 The requirement $\dot{r}^2 \geq 0$ partitions the motion into two regimes depending on where $r_0$ lies relative to $\rho$:
 
 ### Distant state ($r_0 > \rho$)
 
-The right-hand side is non-negative only for $r \geq r_0$. The particles approach from infinity, decelerate, reach closest approach $r_0 > \rho$, and recede. This is ordinary Coulomb-like scattering. The maximum velocity satisfies $\dot{r}^2 \leq (\rho/r_0)c^2 < c^2$.
+The right-hand side is non-negative only for $r \geq r_0$. The particles approach from infinity, decelerate, reach closest approach $r_0 > \rho$, and recede. This is ordinary Coulomb-like scattering. The maximum velocity satisfies $\dot{r}^2 \leq 2(\rho/r_0)c^2 < 2c^2$.
 
 ### Molecular state ($r_0 < \rho$)
 
-The right-hand side is non-negative only for $r \leq r_0$. The particles oscillate between $r = r_0$ and $r = 0$, never reaching $\rho$ from below. As $r \to 0$, the velocity approaches $\dot{r}^2 \to c^2$. Weber called this a "molecular movement."
+The right-hand side is non-negative only for $r \leq r_0$. The particles oscillate between $r = r_0$ and $r = 0$, never reaching $\rho$ from below. As $r \to 0$, the velocity approaches $\dot{r}^2 \to 2c^2$. Weber called this a "molecular movement."
 
 ### Impenetrability of the barrier
 
@@ -103,15 +107,15 @@ Two like charges in the molecular state ($r_0 < \rho$) form what Weber called an
 
 For small amplitude ($r_0 \ll \rho$) and vanishing transverse velocity ($\alpha_0 \to 0$):
 
-$$2\vartheta = \frac{4r_0}{c}.$$
+$$2\vartheta = \frac{2\sqrt{2}\,r_0}{c}.$$
 
-The period is proportional to the amplitude $r_0$, with coefficient $4/c$ for small oscillations, decreasing to $2/c$ at the maximum amplitude $r_0 = \rho$.
+The period is proportional to the amplitude $r_0$, with coefficient $2\sqrt{2}/c$ for small oscillations, decreasing to $\sqrt{2}/c$ at the maximum amplitude $r_0 = \rho$.
 
 ### Transverse motion
 
 When the particles also have a relative transverse velocity $\alpha_0$, the equation of motion generalises (§9.11) to
 
-$$\frac{\dot{r}^2}{c^2} = \frac{r - r_0}{r - \rho}\cdot\frac{\rho}{r_0} + \frac{r + r_0}{r}\cdot\frac{\alpha_0^2}{c^2}.$$
+$$\frac{\dot{r}^2}{c^2} = \frac{r - r_0}{r - \rho}\left(\frac{2\rho}{r_0} + \frac{\alpha_0^2(r + r_0)}{rc^2}\right).$$
 
 The same two-state structure persists. However, no stable circular orbit exists for like charges below $\rho$ (§9.13): the attraction always exceeds the centripetal requirement, so any transverse motion still results in radial oscillation with inward spiralling tendency.
 

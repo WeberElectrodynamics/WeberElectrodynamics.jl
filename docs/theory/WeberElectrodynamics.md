@@ -8,7 +8,7 @@ We use absolute system of units throughout this document, unless otherwise speci
 | ------------ | ---------------------------------- | ----------------------------------- | ---------------------------------- |
 | $q^2$        | electric charge squared            | $C^2$                               | $\frac{mg \cdot mm^3}{s^2}$        |
 | $\epsilon_0$ | permittivity of free space         | $\frac{C^2\cdot s^2}{kg \cdot m^3}$ | dimensionless                      |
-| $c$          | Meters per second (speed of light) | $\frac{\text{m}}{\text{s}}$         | $\frac{mm}{s}$                     |
+| $c$          | speed of light                     | $\frac{\text{m}}{\text{s}}$         | $\frac{mm}{s}$                     |
 | $q_i$        | electric charge of particle i      | $C$                                 | $\sqrt{\frac{mg \cdot mm^3}{s^2}}$ |
 | $m_i$        | mass of particle i                 | $kg$                                | $mg$                               |
 
@@ -133,6 +133,7 @@ In SI units:
 $$U_{SI} = \frac{1}{4\pi\epsilon_0} \frac{q_1 q_2}{r}\left(1 - \frac{\dot{r}^2}{2c^2}\right)$$
 
 In absolute units:
+
 $$U = \frac{q_1 q_2}{r}\left(1 - \frac{\dot{r}^2}{2c^2}\right)$$
 
 ## Weber Force
@@ -187,7 +188,7 @@ $$\begin{pmatrix} \dot{q}_1 \\ \dot{q}_2 \\ \dot{q}_3 \\ \dot{q}_4 \\ \dot{q}_5 
 
 The generalized coordinates should not be confused with the electric charges. The Hamiltonian is defined as:
 
-$$H = \left(\sum_i^6 \dot{q}_{i}\frac{\partial L}{\partial \dot{q}_{i}}\right) - L$$
+$$H = \left(\sum_{i=1}^{6} \dot{q}_{i}\frac{\partial L}{\partial \dot{q}_{i}}\right) - L$$
 
 Performing the algebraic expansion yields:
 
@@ -207,7 +208,7 @@ where $r_{ij}$ is the distance between particles $i$ and $j$, and $\dot{r}_{ij}$
 
 The Hamiltonian for n charges is then given by
 
-$$H = \sum_i^n T_i + \sum_{i\lt j}^n U_{ij}$$
+$$H = \sum_{i=1}^{n} T_i + \sum_{i\lt j}^{n} U_{ij}$$
 
 ## Euler-Lagrange equations
 

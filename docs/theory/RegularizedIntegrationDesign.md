@@ -151,3 +151,5 @@ Regularization workspaces are preallocated and reused:
 - LC/KS temporary state buffers
 
 No per-step heap allocation is required in regularization helper kernels; unregularized allocation profile is unchanged.
+
+See also: [Regularization.md](Regularization.md), [SemiExplicitIntegrator.md](SemiExplicitIntegrator.md), [WeberElectrodynamics.md](WeberElectrodynamics.md).

@@ -28,7 +28,7 @@ $\kappa_{ij}$ may have either sign, and $R$ is the remaining non-collision-singu
 For each close pair $(i,j)$, use center-of-mass and relative variables:
 
 $$
-R_{ij}=\frac{m_i q_i+m_j q_j}{m_i+m_j},\quad r_{ij}=q_i-q_j,
+R_{ij}=\frac{m_i q_i+m_j q_j}{m_i+m_j},\quad \vec{r}_{ij}=q_i-q_j,
 $$
 
 $$
@@ -36,7 +36,7 @@ P_{ij}=p_i+p_j,\quad p_{ij}=\mu_{ij}\left(\frac{p_i}{m_i}-\frac{p_j}{m_j}\right)
 \mu_{ij}=\frac{m_i m_j}{m_i+m_j}.
 $$
 
-The singular part is always in the relative coordinate $r_{ij}$, so regularization is applied there.
+The singular part is always in the relative coordinate $\vec{r}_{ij}$ (with scalar distance $r_{ij} = \|\vec{r}_{ij}\|$), so regularization is applied there.
 
 ## Time Regularization in Extended Phase Space
 
@@ -283,3 +283,5 @@ This reduces subtraction of large nearby numbers and improves robustness in few-
   [A New Class of Symplectic Integrators for the Gravitational N-body Problem](https://arxiv.org/abs/0803.4441)
 - Time-transformed Hamiltonian form for many-singularity few-body integration:
   [Algorithmic Regularization with Velocity-Dependent Forces](https://arxiv.org/abs/1306.0197)
+
+See also: [SemiExplicitIntegrator.md](SemiExplicitIntegrator.md), [RegularizedIntegrationDesign.md](RegularizedIntegrationDesign.md), [WeberElectrodynamics.md](WeberElectrodynamics.md).

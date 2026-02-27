@@ -53,7 +53,7 @@ The required kinetic energy $T_0$ must be positive, which imposes $E > U_0$.
 
 The condition $\dot{r}_{ij} = 0$ means the rate of change of the separation $r_{ij}$ is zero: particles are neither approaching nor receding at $t = 0$. It is satisfied whenever the instantaneous velocity of every particle is perpendicular to all separation vectors connecting it to other particles. Two constructions cover all cases considered in this document:
 
-**Tangential momenta (2D).** Place all particles in a plane. Assign each particle a momentum directed perpendicular to the position vector in that plane (i.e.\ tangential to the circle on which it sits). For any pair, the relative velocity is then tangential to the line connecting the two particles, so $\vec{r}_{ij} \cdot \dot{\vec{r}}_{ij} = 0$.
+**Tangential momenta (2D).** Place all particles in a plane. Assign each particle a momentum directed perpendicular to the position vector in that plane (i.e.,tangential to the circle on which it sits). For any pair, the relative velocity is then tangential to the line connecting the two particles, so $\vec{r}_{ij} \cdot \dot{\vec{r}}_{ij} = 0$.
 
 **Rigid rotation (3D).** For any configuration rotating rigidly with angular velocity $\vec{\omega}$, set
 
@@ -158,13 +158,13 @@ Key values:
 | $\sqrt{2}$ | parabolic escape | $E = 0$ |
 | $> \sqrt{2}$ | hyperbolic (unbound) | $E > 0$ |
 
-The orbit is bound if and only if $E < 0$, i.e.\ $\eta_v < \sqrt{2}$.
+The orbit is bound if and only if $E < 0$, i.e.,$\eta_v < \sqrt{2}$.
 
 **Inverse problem.** Given target energy $E < 0$ and separation $r_0$, the required velocity scale is
 
 $$\eta_v = \sqrt{2\left(1 + \frac{E r_0}{|k|}\right)}$$
 
-This requires $|E| \leq |k|/r_0$, i.e.\ the target energy cannot be more negative than the purely radial-fall energy.
+This requires $|E| \leq |k|/r_0$, i.e.,the target energy cannot be more negative than the purely radial-fall energy.
 
 ### Method from Energy and Angular Momentum
 
@@ -423,7 +423,7 @@ $$|\vec{L}| = I\omega = \sqrt{2 I (E - U_0)}$$
 
 A large-$I$ axis (rotation in a plane that sweeps far from the axis) gives larger angular momentum at the same energy. A small-$I$ axis (rotation close to a symmetry axis) gives smaller angular momentum and larger $\omega$.
 
-This degree of freedom is useful when simulating different dynamical regimes — e.g.\ slowly tumbling vs.\ rapidly spinning — at the same total energy.
+This degree of freedom is useful when simulating different dynamical regimes — e.g.,slowly tumbling vs.rapidly spinning — at the same total energy.
 
 ## Zöllner-Modified Initial Conditions
 
@@ -518,7 +518,7 @@ Both $r_0 - r > 0$ and $\rho - r > 0$ (since $r < r_0 < \rho$), so $\dot{r}^2 > 
 
 Choose the sign of $\dot{r}$: negative for approaching, positive for receding. The momenta are
 
-$$\vec{p}_1(0) = -\mu\dot{r}\,\hat{r}, \qquad \vec{p}_2(0) = +\mu\dot{r}\,\hat{r}$$
+$$\vec{p}_1(0) = +\mu\dot{r}\,\hat{r}, \qquad \vec{p}_2(0) = -\mu\dot{r}\,\hat{r}$$
 
 where $\hat{r} = (\vec{r}_1 - \vec{r}_2)/r$. These satisfy $\vec{p}_1 + \vec{p}_2 = \vec{0}$.
 
@@ -550,7 +550,7 @@ For purely radial oscillation ($\alpha_0 = 0$):
 
 $$r_0 = \frac{k}{E}$$
 
-Sub-critical feasibility requires $r_0 < \rho$, i.e.\ $E > k/\rho = \mu c^2$. The minimum sub-critical energy (maximum amplitude $r_0 = \rho$) is
+Sub-critical feasibility requires $r_0 < \rho$, i.e.,$E > k/\rho = \mu c^2$. The minimum sub-critical energy (maximum amplitude $r_0 = \rho$) is
 
 $$E_{\min} = \frac{k}{\rho} = \mu c^2$$
 
@@ -625,7 +625,7 @@ This construction is approximate: the nucleus oscillation and orbital motion cou
 | --- | --- | --- |
 | Any attractive configuration ($k < 0$) | $E < 0$ | $E = 0$ (escape) |
 | Two-body attractive, fixed $r_0$ | $\eta_v < \sqrt{2}$ | $E = 0$, $\eta_v = \sqrt{2}$ |
-| Two-body attractive, fixed $r_0$, fix $E$ | $r_0 < |k|/|E|$ | $r_0 = |k|/|E|$ (circular) |
+| Two-body attractive, fixed $r_0$, fix $E$ | $r_0 < |k|/|E|$ | $r_0 = |k|/|E|$ (zero velocity) |
 | $N$-body polygon, $\eta$ | $\eta < 1$ | $\eta = 1$, $E = 0$ |
 | $N$-body polygon, fix $E < 0$ | $T_0 < |U_0|$ | $T_0 = |U_0|$, $E = 0$ |
 | Like-charge pair, sub-critical | $r_0 < \rho$ | $E = \mu c^2$ (barrier) |
@@ -635,7 +635,7 @@ This construction is approximate: the nucleus oscillation and orbital motion cou
 
 | System | $U_0$ | $v$ or $\omega$ |
 | --- | --- | --- |
-| 2-body attractive, sep.\ $r_0$ | $k/r_0$ | $\eta_v\sqrt{|k|/(\mu r_0)}$ |
+| 2-body attractive, sep.$r_0$ | $k/r_0$ | $\eta_v\sqrt{|k|/(\mu r_0)}$ |
 | 4-body square, radius $R$ | $(Q^2/R)(1-2\sqrt{2})$ | $\sqrt{\eta|U_0|/(2m)}$ |
 | 6-body hexagon, radius $R$ | $(Q^2/R)(-\tfrac{15}{2}+2\sqrt{3})$ | $\sqrt{\eta|U_0|/(3m)}$ |
 | Tetrahedron, radius $R$ | $-3Q^2/(\sqrt{6}\,R)$ | $\omega = \sqrt{3(E-U_0)/(4mR^2)}$ |
@@ -652,11 +652,13 @@ Given: masses $m_i$, charges $q_i$, speed of light $c$, coupling factors $\kappa
 2. **Place particles.** Assign positions satisfying the COM condition $\sum_i m_i \vec{r}_i(0) = \vec{0}$.
 
 3. **Compute $U_0$.** Evaluate the Coulomb sum (with $\kappa_{ij}$):
+
 $$U_0 = \sum_{i < j} \frac{\kappa_{ij} q_i q_j}{r_{ij}(0)}$$
 
 4. **Check feasibility.** Require $E > U_0$ so that $T_0 = E - U_0 > 0$. If $E \leq U_0$, increase $r_0$ (or $R$) or choose a less negative target energy.
 
 5. **Determine momenta.** For 2D configurations assign tangential momenta; for 3D use the rigid rotation construction with a chosen axis $\hat{\omega}$ and
+
 $$\omega = \sqrt{2(E - U_0)/I}, \qquad \vec{p}_i(0) = m_i \omega\hat{\omega} \times \vec{r}_i(0)$$
 
 6. **Verify.** Compute $H(0) = \sum_i |\vec{p}_i|^2/(2m_i) + U_0$ and confirm it equals $E$. Check $\sum_i \vec{p}_i = \vec{0}$.

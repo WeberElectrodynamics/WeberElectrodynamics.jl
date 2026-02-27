@@ -58,10 +58,10 @@ Hence
 
 $$
 F_{AB}(R)=-\frac{dU_{AB}}{dR}
-=\frac{2ae^2}{R^2},
+=-\frac{2ae^2}{R^2},
 $$
 
-an attractive inverse-square force. In units where $e^2=1$, this is the historical $2a$ at unit distance.
+a negative (attractive) inverse-square force with magnitude $2ae^2/R^2$. In units where $e^2=1$, this is the historical $2a$ at unit distance.
 
 ## Macroscopic Limit and Newton Form
 
@@ -69,7 +69,7 @@ Let body $1$ contain $N_1$ dyads and body $2$ contain $N_2$ dyads. With pairwise
 
 $$
 U_{12}(R)=-\frac{2ae^2N_1N_2}{R},\quad
-F_{12}(R)=\frac{2ae^2N_1N_2}{R^2}.
+F_{12}(R)=-\frac{2ae^2N_1N_2}{R^2}.
 $$
 
 If inertial mass scales with dyad count,
@@ -81,7 +81,7 @@ $$
 then
 
 $$
-F_{12}(R)=G_{12}\frac{M_1M_2}{R^2},\quad
+F_{12}(R)=-G_{12}\frac{M_1M_2}{R^2},\quad
 G_{12}=\frac{2ae^2}{\mu_1\mu_2}.
 $$
 
@@ -108,7 +108,7 @@ Using the same notation as `docs/theory/WeberElectrodynamics.md`, this is equiva
 $$
 \vec{F}^{(W)}_{ij}
 =\frac{q_iq_j}{r_{ij}^2}\hat{r}_{ij}
-\left(1+\frac{1}{c^2}\left(\vec v\cdot\vec v+\vec r\cdot\vec a-\frac{3}{2}(\hat r\cdot\vec v)^2\right)\right).
+\left(1+\frac{1}{c^2}\left(\vec v_{ij}\cdot\vec v_{ij}+\vec r_{ij}\cdot\vec a_{ij}-\frac{3}{2}(\hat r_{ij}\cdot\vec v_{ij})^2\right)\right).
 $$
 
 In Zöllner's gravitation argument, the Newton-like term is static and comes from the small mismatch $a$, not from Weber's velocity/acceleration corrections. In this sense:
