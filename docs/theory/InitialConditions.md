@@ -469,33 +469,185 @@ To compare Zöllner and standard Weber at the **same physical energy** $E$, use 
 
 $$v = \sqrt{\frac{2(E - U_0^{\mathrm{Z}})}{Nm}}$$
 
+## Method D — Sub-Critical Like-Charge Pairs
+
+Methods A–C construct initial conditions for attractive ($k = q_1 q_2 < 0$) or mixed-sign systems. For two like charges ($k = q_1 q_2 > 0$), Weber's velocity-dependent force creates a fundamentally different regime: below a critical separation $\rho$, the pair forms a bound oscillatory state with *positive* total energy. This section gives closed-form initial conditions for such systems. For the underlying physics see [CriticalRadiusAndLikeChargeAttraction.md](CriticalRadiusAndLikeChargeAttraction.md).
+
+### The Critical Radius
+
+For a like-charge pair with $k = q_1 q_2 > 0$, define
+
+$$\rho = \frac{k}{\mu c^2} = \frac{q_1 q_2}{\mu c^2}$$
+
+where $\mu = m_1 m_2 / M$ is the reduced mass and $c$ is the speed of light. For like charges $\rho > 0$; for unlike charges $\rho < 0$ and the sub-critical regime does not exist.
+
+The pair dynamics bifurcate at $r = \rho$:
+
+- **Molecular state** ($r_0 < \rho$): bound radial oscillation between $r_0$ and $r = 0$.
+- **Distant state** ($r_0 > \rho$): Coulomb-like repulsive scattering.
+
+No continuous trajectory crosses $r = \rho$; it is an absolute dynamical barrier.
+
+### Radial Oscillation from Turning Point
+
+The simplest sub-critical initial condition places two like charges at the outer turning point of their oscillation.
+
+**Positions** (COM frame, along $x$-axis):
+
+$$\vec{r}_1(0) = -\frac{m_2}{M} r_0 \,\hat{x}, \qquad \vec{r}_2(0) = +\frac{m_1}{M} r_0 \,\hat{x}$$
+
+with $r_0 < \rho$.
+
+**Momenta**: both zero.
+
+$$\vec{p}_1(0) = \vec{0}, \qquad \vec{p}_2(0) = \vec{0}$$
+
+At the turning point $\dot{r}_{12} = 0$, the Weber potential reduces to Coulomb:
+
+$$E = H(0) = \frac{k}{r_0} > 0$$
+
+The energy is positive, yet the system is permanently bound. The pair oscillates between $r_0$ and $r = 0$, never escaping past $\rho$.
+
+### Radial Oscillation from Arbitrary Phase
+
+To start at separation $r < r_0$ with nonzero radial velocity (mid-oscillation), use the integrated energy equation. From Hamiltonian conservation with $E = k/r_0$:
+
+$$\dot{r}^2 = \frac{2\rho c^2 (r_0 - r)}{r_0 (\rho - r)}$$
+
+Both $r_0 - r > 0$ and $\rho - r > 0$ (since $r < r_0 < \rho$), so $\dot{r}^2 > 0$. As $r \to 0$, $\dot{r}^2 \to 2c^2$.
+
+Choose the sign of $\dot{r}$: negative for approaching, positive for receding. The momenta are
+
+$$\vec{p}_1(0) = -\mu\dot{r}\,\hat{r}, \qquad \vec{p}_2(0) = +\mu\dot{r}\,\hat{r}$$
+
+where $\hat{r} = (\vec{r}_1 - \vec{r}_2)/r$. These satisfy $\vec{p}_1 + \vec{p}_2 = \vec{0}$.
+
+**Verification.** Since $\dot{r} \neq 0$, the full velocity-dependent potential enters:
+
+$$H(0) = \frac{\mu\dot{r}^2}{2} + \frac{k}{r}\left(1 - \frac{\dot{r}^2}{2c^2}\right) = \frac{k}{r_0}$$
+
+Substituting $\dot{r}^2$ from the integrated equation confirms this identity.
+
+### Oscillation with Transverse Velocity
+
+To add angular momentum, assign tangential momenta at the turning point. Positions as in the radial case with $r_0 < \rho$. Momenta:
+
+$$\vec{p}_1(0) = +p_\perp \,\hat{y}, \qquad \vec{p}_2(0) = -p_\perp \,\hat{y}$$
+
+where $p_\perp = \mu \alpha_0$ and $\alpha_0$ is the relative transverse speed. The initial energy is
+
+$$E = \frac{p_\perp^2}{2\mu} + \frac{k}{r_0} = \frac{\mu\alpha_0^2}{2} + \frac{k}{r_0}$$
+
+and the angular momentum magnitude is $L = p_\perp r_0 = \mu \alpha_0 r_0$.
+
+Unlike the attractive case, no stable circular orbit exists for like charges below $\rho$. The sub-critical attraction always exceeds the centripetal requirement, so the pair oscillates radially with an inward-spiralling tendency regardless of the transverse velocity.
+
+### Prescribed-Energy Construction
+
+**Inverse problem.** Given target energy $E > 0$, find the turning-point amplitude.
+
+For purely radial oscillation ($\alpha_0 = 0$):
+
+$$r_0 = \frac{k}{E}$$
+
+Sub-critical feasibility requires $r_0 < \rho$, i.e.\ $E > k/\rho = \mu c^2$. The minimum sub-critical energy (maximum amplitude $r_0 = \rho$) is
+
+$$E_{\min} = \frac{k}{\rho} = \mu c^2$$
+
+For $E < \mu c^2$, the turning point lies in the distant state ($r_0 > \rho$) and the pair scatters rather than oscillates.
+
+With transverse velocity:
+
+$$r_0 = \frac{k}{E - \mu\alpha_0^2/2}$$
+
+This requires $E > \mu\alpha_0^2/2$.
+
+| $E$ | $r_0$ vs $\rho$ | Regime |
+| --- | --- | --- |
+| $E > \mu c^2$ | $r_0 < \rho$ | molecular (bound oscillation) |
+| $E = \mu c^2$ | $r_0 = \rho$ | critical (barrier) |
+| $0 < E < \mu c^2$ | $r_0 > \rho$ | distant (scattering) |
+
+### Period and Timescale
+
+The oscillation period for small amplitude ($r_0 \ll \rho$) with $\alpha_0 = 0$ is
+
+$$T = \frac{2\sqrt{2}\, r_0}{c}$$
+
+Period is proportional to amplitude $r_0$. The coefficient decreases from $2\sqrt{2}/c$ at small amplitude to $\sqrt{2}/c$ at maximum amplitude $r_0 = \rho$.
+
+Simulation parameters should be chosen accordingly:
+
+- $\mathrm{tspan}$: several multiples of $T$ to capture multiple oscillation cycles.
+- $\mathrm{dt}$: small enough to resolve the oscillation; at least 20 steps per period.
+
+**Regularization.** As $r \to 0$ the radial velocity approaches $\sqrt{2}\,c$ and the Coulomb singularity $k/r$ diverges. Regularization (see [Regularization.md](Regularization.md)) is essential for accurate integration. Use `:adaptive_cartesian` for 3D or `:lifted_pair` for 2D.
+
+## Distant-State Like-Charge Scattering
+
+For completeness, this section treats the super-critical regime $r_0 > \rho$.
+
+Two like charges approaching from infinity with kinetic energy $E > 0$ reach closest approach $r_0 = k/E > \rho$ and recede. The initial conditions at the turning point have the same form as the molecular case — COM positions with zero momenta — but with $r_0 > \rho$. After the turning point, the pair separates to infinity rather than oscillating.
+
+The distant state requires $E < \mu c^2$ (equivalently $r_0 > \rho$). For $E = \mu c^2$ the turning point coincides with the barrier; for $E > \mu c^2$ the pair is in the molecular state.
+
+To start the scattering pair at separation $r > r_0$ with inward radial velocity:
+
+$$\dot{r}^2 = \frac{2\rho c^2 (r - r_0)}{r_0 (r - \rho)}$$
+
+Both $r - r_0 > 0$ and $r - \rho > 0$ (since $r > r_0 > \rho$), so $\dot{r}^2 > 0$. The maximum radial speed is bounded: $\dot{r}^2 < 2(\rho/r_0) c^2 < 2c^2$.
+
+## Mixed Systems — Sub-Critical Nucleus with Orbiter
+
+Weber's "planetary model of the atom" combines a sub-critical like-charge pair with orbiting unlike charges (see [CriticalRadiusAndLikeChargeAttraction.md](CriticalRadiusAndLikeChargeAttraction.md)). The simplest realisation is a three-body system.
+
+### Three-Body Configuration
+
+Consider two like charges $q_1 = q_2 = +q$ with mass $m$ forming a sub-critical nucleus at separation $r_{\text{nuc}} < \rho$, plus one unlike charge $q_3 = -q'$ with mass $m_3$ orbiting at distance $R \gg r_{\text{nuc}}$.
+
+**Nucleus.** Use the turning-point construction for particles 1 and 2. Place them symmetrically about the nucleus centre with $r_{\text{nuc}} < \rho$ and zero radial momenta.
+
+**Orbiter.** At distance $R \gg r_{\text{nuc}}$, the orbiter sees an effective charge $Q_{\text{eff}} \approx 2q$ at the nucleus centre. The orbital speed for an approximate circular orbit is
+
+$$v_{\text{orb}} \approx \sqrt{\frac{2q \cdot q'}{\mu_{\text{orb}}\, R}}$$
+
+where $\mu_{\text{orb}} = (2m) m_3 / (2m + m_3)$ is the reduced mass of the orbiter relative to the nucleus.
+
+**COM adjustment.** All three positions must satisfy $\sum_i m_i \vec{r}_i(0) = \vec{0}$. After placing the nucleus pair and the orbiter, shift all positions by $-\vec{R}_{\text{COM}}$ and adjust momenta to ensure $\sum_i \vec{p}_i(0) = \vec{0}$.
+
+This construction is approximate: the nucleus oscillation and orbital motion couple dynamically. The scale separation $R \gg r_{\text{nuc}}$ controls the quality of the approximation.
+
 ## Reference Tables
 
 ### Bound Orbit Criteria
 
 | Configuration | Bound iff | Critical energy |
 | --- | --- | --- |
-| Any configuration | $E < 0$ | $E = 0$ (escape) |
-| Two-body, fixed $r_0$ | $\eta_v < \sqrt{2}$ | $E = 0$, $\eta_v = \sqrt{2}$ |
-| Two-body, fixed $r_0$, fix $E$ | $r_0 < |k|/|E|$ | $r_0 = |k|/|E|$ (circular) |
+| Any attractive configuration ($k < 0$) | $E < 0$ | $E = 0$ (escape) |
+| Two-body attractive, fixed $r_0$ | $\eta_v < \sqrt{2}$ | $E = 0$, $\eta_v = \sqrt{2}$ |
+| Two-body attractive, fixed $r_0$, fix $E$ | $r_0 < |k|/|E|$ | $r_0 = |k|/|E|$ (circular) |
 | $N$-body polygon, $\eta$ | $\eta < 1$ | $\eta = 1$, $E = 0$ |
 | $N$-body polygon, fix $E < 0$ | $T_0 < |U_0|$ | $T_0 = |U_0|$, $E = 0$ |
+| Like-charge pair, sub-critical | $r_0 < \rho$ | $E = \mu c^2$ (barrier) |
+| Like-charge pair, distant | $r_0 > \rho$ | always unbound (scattering) |
 
 ### Common Configurations
 
 | System | $U_0$ | $v$ or $\omega$ |
 | --- | --- | --- |
-| 2-body, sep.\ $r_0$ | $k/r_0$ | $\eta_v\sqrt{|k|/(\mu r_0)}$ |
+| 2-body attractive, sep.\ $r_0$ | $k/r_0$ | $\eta_v\sqrt{|k|/(\mu r_0)}$ |
 | 4-body square, radius $R$ | $(Q^2/R)(1-2\sqrt{2})$ | $\sqrt{\eta|U_0|/(2m)}$ |
 | 6-body hexagon, radius $R$ | $(Q^2/R)(-\tfrac{15}{2}+2\sqrt{3})$ | $\sqrt{\eta|U_0|/(3m)}$ |
 | Tetrahedron, radius $R$ | $-3Q^2/(\sqrt{6}\,R)$ | $\omega = \sqrt{3(E-U_0)/(4mR^2)}$ |
 | Octahedron $C_4$, radius $R$ | $-3Q^2/(2R)$ | $\omega = \sqrt{(E-U_0)/(2mR^2)}$ |
+| Like-charge pair, turning pt $r_0 < \rho$ | $k/r_0$ | $\vec{p}_i = \vec{0}$ |
+| Like-charge pair, transverse $\alpha_0$ | $k/r_0$ | $p_\perp = \mu\alpha_0$ tangential |
 
 ## Step-by-Step Recipe
 
 Given: masses $m_i$, charges $q_i$, speed of light $c$, coupling factors $\kappa_{ij}$, and a target energy $E$.
 
-1. **Choose geometry.** Select a symmetry class (two-body, $N$-gon, polyhedron) and geometry parameters ($r_0$ or $R$).
+1. **Choose geometry.** Select a symmetry class (two-body, $N$-gon, polyhedron) and geometry parameters ($r_0$ or $R$). For like-charge pairs in the sub-critical regime ($k > 0$, $r_0 < \rho$), see Method D. Note that sub-critical pairs have $E > 0$ (bound with positive energy), unlike the attractive case where bound means $E < 0$.
 
 2. **Place particles.** Assign positions satisfying the COM condition $\sum_i m_i \vec{r}_i(0) = \vec{0}$.
 
