@@ -68,6 +68,7 @@ struct RegularizationOptions
     chain_enabled::Bool
     backend::Symbol
     warn_on_fallback::Bool
+    collision_bounce_radius::Float64
 
     function RegularizationOptions(
         ;
@@ -82,6 +83,7 @@ struct RegularizationOptions
         chain_enabled::Bool = true,
         backend::Symbol = REG_BACKEND_LIFTED,
         warn_on_fallback::Bool = true,
+        collision_bounce_radius::Real = 0.0,
     )
         if !isnothing(r_on)
             @assert r_on > 0 "regularization_r_on must be positive"
@@ -98,6 +100,7 @@ struct RegularizationOptions
             @assert r_off > r_on "regularization_r_off must be greater than regularization_r_on"
         end
         @assert backend in (REG_BACKEND_ADAPTIVE, REG_BACKEND_LIFTED) "regularization_backend must be :adaptive_cartesian or :lifted_pair"
+        @assert collision_bounce_radius >= 0 "collision_bounce_radius must be non-negative"
 
         new(
             enabled,
@@ -111,6 +114,7 @@ struct RegularizationOptions
             chain_enabled,
             backend,
             warn_on_fallback,
+            Float64(collision_bounce_radius),
         )
     end
 end
@@ -355,6 +359,7 @@ struct WeberProblem
         regularization_chain_enabled::Bool = true,
         regularization_backend::Symbol = REG_BACKEND_LIFTED,
         regularization_warn_on_fallback::Bool = true,
+        regularization_collision_bounce_radius::Real = 0.0,
         zollner_enabled::Bool = false,
         zollner_a::Real = 0.0,
     )
@@ -391,6 +396,7 @@ struct WeberProblem
             chain_enabled = regularization_chain_enabled,
             backend = regularization_backend,
             warn_on_fallback = regularization_warn_on_fallback,
+            collision_bounce_radius = regularization_collision_bounce_radius,
         )
 
         new(

@@ -334,6 +334,57 @@
         @test err_adaptive <= err_cart
     end
 
+    @testset "Sub-critical like-charge oscillation (collision bounce)" begin
+        # Two equal positive charges inside the critical radius ρ.
+        # With ℓ=0 (head-on), they attract and oscillate between r₀ and r≈0.
+        # The collision at r=0 is C⁰-continuable (Frauenfelder & Weber 2024).
+        # ρ = q₁q₂/(μc²) = 1/(0.5·16) = 0.125
+        m1 = m2 = 1.0
+        q1 = q2 = 1.0
+        c = 4.0
+        r0 = 0.05     # < ρ = 0.125
+        mu = m1 * m2 / (m1 + m2)
+        rho = q1 * q2 / (mu * c^2)
+        T_est = (2π / c) * rho
+
+        sys = WeberSystem(2, 2)
+        q_init = [r0 / 2, 0.0, -r0 / 2, 0.0]
+        p_init = [0.0, 0.0, 0.0, 0.0]
+
+        prob = WeberProblem(
+            sys,
+            (0.0, 10 * T_est),
+            q_init,
+            p_init;
+            masses = [m1, m2],
+            charges = [q1, q2],
+            c = c,
+            dt = T_est / 2000,
+            regularization_enabled = false,
+            regularization_collision_bounce_radius = 0.01,
+        )
+
+        sol = solve(prob)
+        @test sol.retcode == :Success
+
+        # All states finite.
+        @test all(isfinite, sol.q[end])
+        @test all(isfinite, sol.p[end])
+
+        # Particles stay bounded: r ≤ r₀ (they never exceed the starting separation).
+        rs = [sqrt((sol.q[k][1] - sol.q[k][3])^2 + (sol.q[k][2] - sol.q[k][4])^2)
+              for k in 1:length(sol.t)]
+        @test maximum(rs) <= r0 + 1e-6
+
+        # Energy conservation < 1%.
+        en = compute_energy_timeseries(sol)
+        @test en.statistics.global_error_percent_max < 1.0
+
+        # Multiple oscillation cycles occur (at least 10 half-periods in 10T).
+        n_minima = count(k -> rs[k] < rs[k-1] && rs[k] < rs[k+1], 2:length(rs)-1)
+        @test n_minima >= 10
+    end
+
     @testset "Chain mode correctness" begin
         sys = WeberSystem(3, 2)
         q0 = [-0.12, 0.0, 0.0, 0.0, 0.12, 0.0]

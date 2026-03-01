@@ -488,6 +488,98 @@ end
     return nothing
 end
 
+@inline function _current_pair_r_2d(q::Vector{Float64}, i::Int, j::Int)::Float64
+    i0 = (i - 1) * 2
+    j0 = (j - 1) * 2
+    @inbounds begin
+        dx = q[i0+1] - q[j0+1]
+        dy = q[i0+2] - q[j0+2]
+    end
+    return sqrt(dx * dx + dy * dy)
+end
+
+# Reflect the relative coordinate through the origin while leaving
+# momenta unchanged.  Physically this is the two particles passing
+# through each other at r = 0 (C⁰-continuation of the ℓ = 0 collision).
+# Energy is exactly preserved because H depends only on |q_rel| and p_rel.
+@inline function _reflect_pair_2d!(
+    q::Vector{Float64},
+    p::Vector{Float64},
+    masses::Vector{Float64},
+    i::Int,
+    j::Int,
+)
+    mi = masses[i]
+    mj = masses[j]
+    M = mi + mj
+
+    i0 = (i - 1) * 2
+    j0 = (j - 1) * 2
+
+    @inbounds begin
+        dx = q[i0+1] - q[j0+1]
+        dy = q[i0+2] - q[j0+2]
+
+        # q_rel_new = -q_rel, COM unchanged.
+        # q_i_new = R + (mj/M)*(-q_rel) = q_i - 2*(mj/M)*q_rel
+        # q_j_new = R - (mi/M)*(-q_rel) = q_j + 2*(mi/M)*q_rel
+        fi = 2.0 * mj / M
+        fj = 2.0 * mi / M
+
+        q[i0+1] -= fi * dx
+        q[i0+2] -= fi * dy
+        q[j0+1] += fj * dx
+        q[j0+2] += fj * dy
+    end
+
+    # Momenta unchanged — particles pass through each other.
+    return nothing
+end
+
+# General-dimension variants for the adaptive_cartesian backend.
+@inline function _current_pair_r(
+    q::Vector{Float64},
+    dims::Int,
+    i::Int,
+    j::Int,
+)::Float64
+    i0 = (i - 1) * dims
+    j0 = (j - 1) * dims
+    r2 = 0.0
+    @inbounds for d = 1:dims
+        dx = q[i0+d] - q[j0+d]
+        r2 += dx * dx
+    end
+    return sqrt(r2)
+end
+
+# Reflect relative coordinate through the origin (general-dimension).
+# Preserves COM, negates q_rel, leaves p unchanged.
+@inline function _reflect_pair!(
+    q::Vector{Float64},
+    masses::Vector{Float64},
+    dims::Int,
+    i::Int,
+    j::Int,
+)
+    mi = masses[i]
+    mj = masses[j]
+    M = mi + mj
+    fi = 2.0 * mj / M
+    fj = 2.0 * mi / M
+
+    i0 = (i - 1) * dims
+    j0 = (j - 1) * dims
+
+    @inbounds for d = 1:dims
+        dx = q[i0+d] - q[j0+d]
+        q[i0+d] -= fi * dx
+        q[j0+d] += fj * dx
+    end
+
+    return nothing
+end
+
 @inline function _compute_lc_tau_derivatives!(
     du_tau::Vector{Float64},
     dU_tau::Vector{Float64},
@@ -744,17 +836,41 @@ end
     _set_pair_params!(rb, prob, i, j)
 
     reg = prob.regularization
-    base_substeps = rb.r_on / max(min_distance, reg.g_floor)
-    substeps = Int(ceil(1.5 * base_substeps))
-    substeps = clamp(substeps, 1, reg.max_substeps)
+    g_floor = reg.g_floor
+    max_sub = reg.max_substeps
 
-    dt_sub = dt_step / substeps
-    dt_half = 0.5 * dt_sub
+    # Bounded fictitious timestep: calibrated so that at r = r_on
+    # the physical substep equals dt_step / 1.5 (matching old code).
+    dtau_target = dt_step / (1.5 * rb.r_on)
 
-    @inbounds for _ = 1:substeps
+    t_remaining = dt_step
+    substeps = 0
+
+    @inbounds while t_remaining > 1e-14 && substeps < max_sub
+        r_current = max(_current_pair_r_2d(integrator.q, i, j), g_floor)
+
+        # Physical substep proportional to current r (bounded fictitious step).
+        dt_sub = min(r_current * dtau_target, t_remaining)
+        # Safety floor: prevent zero-length substeps from stalling.
+        dt_sub = max(dt_sub, min(g_floor * dtau_target, t_remaining))
+
+        dt_half = 0.5 * dt_sub
+
         _external_half_step_midpoint!(integrator.q, integrator.p, dt_half, prob, rb)
         _lifted_pair_substep_2d!(integrator.q, integrator.p, dt_sub, prob, rb, i, j)
         _external_half_step_midpoint!(integrator.q, integrator.p, dt_half, prob, rb)
+
+        t_remaining -= dt_sub
+        substeps += 1
+    end
+
+    # Fallback: if max_substeps exhausted, complete remaining time in one step.
+    if t_remaining > 1e-14
+        dt_half = 0.5 * t_remaining
+        _external_half_step_midpoint!(integrator.q, integrator.p, dt_half, prob, rb)
+        _lifted_pair_substep_2d!(integrator.q, integrator.p, t_remaining, prob, rb, i, j)
+        _external_half_step_midpoint!(integrator.q, integrator.p, dt_half, prob, rb)
+        substeps += 1
     end
 
     _store_state!(integrator, dt_step)
@@ -948,6 +1064,27 @@ function CommonSolve.init(
     )
 end
 
+# Pre-step collision bounce: for each pair closer than bounce_r,
+# reflect the relative coordinate through the origin.
+# Used for like-charge sub-critical oscillation (ℓ=0, C⁰-continuable).
+@inline function _apply_collision_bounces!(
+    q::Vector{Float64},
+    masses::Vector{Float64},
+    dims::Int,
+    n_particles::Int,
+    bounce_r::Float64,
+)
+    @inbounds for i = 1:n_particles
+        for j = (i+1):n_particles
+            r = _current_pair_r(q, dims, i, j)
+            if r < bounce_r
+                _reflect_pair!(q, masses, dims, i, j)
+            end
+        end
+    end
+    return nothing
+end
+
 function CommonSolve.step!(integrator::WeberIntegrator)
     max_steps = length(integrator.t_history) - 1
 
@@ -963,6 +1100,21 @@ function CommonSolve.step!(integrator::WeberIntegrator)
     if dt_step <= 0
         integrator.t = integrator.t_end
         return false
+    end
+
+    # Pre-step collision bounce: reflect pairs that are closer than
+    # the bounce radius.  This prevents the integrator from entering
+    # the region where the implicit midpoint iteration diverges due
+    # to the 1/r² force singularity.
+    bounce_r = prob.regularization.collision_bounce_radius
+    if bounce_r > 0
+        _apply_collision_bounces!(
+            integrator.q,
+            prob.masses,
+            prob.system.dims,
+            prob.system.n_particles,
+            bounce_r,
+        )
     end
 
     if prob.regularization.enabled

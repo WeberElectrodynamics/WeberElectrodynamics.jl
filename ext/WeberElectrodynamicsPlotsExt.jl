@@ -764,11 +764,24 @@ function _plot_trajectories_1d(data::TrajectoryData)::Plots.Plot
 end
 
 function _plot_trajectories_2d(data::TrajectoryData)::Plots.Plot
+    # Compute tight axis limits from all trajectory data
+    all_x = vcat([data.trajectories[p][:, 1] for p in 1:data.n_particles]...)
+    all_y = vcat([data.trajectories[p][:, 2] for p in 1:data.n_particles]...)
+    xmin, xmax = extrema(all_x)
+    ymin, ymax = extrema(all_y)
+    dx = xmax - xmin
+    dy = ymax - ymin
+    margin = 0.1 * max(dx, dy, eps())
+    xlims = (xmin - margin, xmax + margin)
+    ylims = (ymin - margin, ymax + margin)
+
     plt = plot(;
         title = "2D Particle Trajectories",
         xlabel = "x",
         ylabel = "y",
         aspect_ratio = :equal,
+        xlims = xlims,
+        ylims = ylims,
         legend = :outertopright,
         size = _square_size(),
         palette = :tab10,
