@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.1.0] - 2026-03-01
+
+### Added
+- Collision bounce for sub-critical like-charge oscillation: pre-step reflection of
+  relative coordinates through the origin when pair separation drops below a configurable
+  radius, analytically continuing C⁰ head-on collisions (ℓ=0) without integrating
+  through the r=0 singularity.
+- `collision_bounce_radius` field on `RegularizationOptions`.
+- `regularization_collision_bounce_radius` keyword argument on `WeberProblem`
+  (default `0.0` = disabled).
+- General-dimension helpers `_current_pair_r`, `_reflect_pair!`, and
+  `_apply_collision_bounces!` in the solver.
+- Test for sub-critical like-charge oscillation with collision bounce.
+- Critical radius reference notebook (`examples/critical_radius_reference.ipynb`)
+  demonstrating molecular oscillation and super-critical scattering regimes.
+- Exploratory doc `docs/exploratory/CollisionBounceRegularization.md` with lessons
+  learned on regularization approaches for Weber's velocity-dependent force.
+
+### Fixed
+- 2D trajectory plot now computes tight axis limits from data instead of letting
+  `aspect_ratio=:equal` produce excessive whitespace for small-scale trajectories.
+
+### Removed
+- Stale exploratory docs (`ParallelizationResearchReport.md`,
+  `weber_dynamics_rust_design.md`).
+
 ## [4.0.0] - 2026-02-19
 
 ### Breaking Changes
