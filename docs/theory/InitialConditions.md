@@ -615,7 +615,17 @@ where $\mu_{\text{orb}} = (2m) m_3 / (2m + m_3)$ is the reduced mass of the orbi
 
 **COM adjustment.** All three positions must satisfy $\sum_i m_i \vec{r}_i(0) = \vec{0}$. After placing the nucleus pair and the orbiter, shift all positions by $-\vec{R}_{\text{COM}}$ and adjust momenta to ensure $\sum_i \vec{p}_i(0) = \vec{0}$.
 
-This construction is approximate: the nucleus oscillation and orbital motion couple dynamically. The scale separation $R \gg r_{\text{nuc}}$ controls the quality of the approximation.
+Scale the orbital speed by a fraction $\eta_{\text{orb}} \in (0, 1)$ to produce sub-circular (elliptical) orbits:
+
+$$v = \eta_{\text{orb}} \cdot v_{\text{orb}}$$
+
+Bound orbits require $\eta_{\text{orb}} \lesssim 0.9$; at $\eta_{\text{orb}} \geq 1$ the orbiter escapes. The exact bound/unbound threshold depends on the nucleus size and Zöllner coupling.
+
+**Collision bounce.** The nucleus pair oscillation passes through $r = 0$ (in the $\ell = 0$ regularisable case). Use a collision bounce radius $r_{\text{bounce}} > 0$ to reflect the relative coordinate at small separation (see [../exploratory/CollisionBounceRegularization.md](../exploratory/CollisionBounceRegularization.md)).
+
+**Zöllner enhancement.** With mismatch parameter $a > 0$, the unlike-pair coupling strengthens by factor $(1+a)$. This tightens the orbiter's orbit and can circularise an otherwise eccentric trajectory. For $\eta_{\text{orb}} = 0.8$ and $a = 0.5$, the orbit becomes nearly circular. The nucleus (like-charge pair) is unaffected by $a$ since $\kappa_{ij} = 1$ for like signs.
+
+This construction is approximate: the nucleus oscillation and orbital motion couple dynamically. The scale separation $R \gg r_{\text{nuc}}$ controls the quality of the approximation. Validated configurations and parameter sweeps are documented in [../exploratory/ThreeBodyBoundStates.md](../exploratory/ThreeBodyBoundStates.md).
 
 ## Reference Tables
 
@@ -642,6 +652,7 @@ This construction is approximate: the nucleus oscillation and orbital motion cou
 | Octahedron $C_4$, radius $R$ | $-3Q^2/(2R)$ | $\omega = \sqrt{(E-U_0)/(2mR^2)}$ |
 | Like-charge pair, turning pt $r_0 < \rho$ | $k/r_0$ | $\vec{p}_i = \vec{0}$ |
 | Like-charge pair, transverse $\alpha_0$ | $k/r_0$ | $p_\perp = \mu\alpha_0$ tangential |
+| Planetary atom $(+\!+\!-)$, $R \gg r_{\text{nuc}}$ | $\approx 2q^2/r_{\text{nuc}} - 2q^2/R$ | $\eta_{\text{orb}}\sqrt{2q^2/(\mu_{\text{orb}} R)}$ tangential |
 
 ## Step-by-Step Recipe
 
