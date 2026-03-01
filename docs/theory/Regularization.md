@@ -272,6 +272,7 @@ This reduces subtraction of large nearby numbers and improves robustness in few-
 - 1D, 2D, and 3D binary regularizations share the same pattern:
   singular radius $r$ becomes quadratic in regularized coordinates and is canceled by $dt=r\,d\tau$.
 - In $N$-body systems, regularization is exact for isolated binary collisions and remains effective for close-encounter subsystems with suitable global $g$ and coordinate organization.
+- **Weber like-charge collisions.** For two like charges inside the critical radius $\rho$, regularizability depends on angular momentum. Head-on collisions ($\ell = 0$) reach the origin at finite speed $\sqrt{2}\,c$ and are $C^0$-continuable — amenable to the techniques above. Spiraling collisions ($\ell \neq 0$) reach the origin at infinite speed in finite time and are *not* regularizable by any smooth coordinate-time transform (Frauenfelder & Weber 2024, Theorem 2.1). See [CriticalRadiusAndLikeChargeAttraction.md](CriticalRadiusAndLikeChargeAttraction.md) for the full classification.
 
 ## References
 
@@ -283,5 +284,6 @@ This reduces subtraction of large nearby numbers and improves robustness in few-
   [A New Class of Symplectic Integrators for the Gravitational N-body Problem](https://arxiv.org/abs/0803.4441)
 - Time-transformed Hamiltonian form for many-singularity few-body integration:
   [Algorithmic Regularization with Velocity-Dependent Forces](https://arxiv.org/abs/1306.0197)
+- Frauenfelder, U., Weber, J. "A mathematical description of the Weber nucleus as a classical and quantum mechanical system." *Anal. Math. Phys.* **14**:31 (2024). DOI: [10.1007/s13324-024-00891-5](https://doi.org/10.1007/s13324-024-00891-5).
 
-See also: [SemiExplicitIntegrator.md](SemiExplicitIntegrator.md), [RegularizedIntegrationDesign.md](RegularizedIntegrationDesign.md), [WeberElectrodynamics.md](WeberElectrodynamics.md).
+See also: [SemiExplicitIntegrator.md](SemiExplicitIntegrator.md), [RegularizedIntegrationDesign.md](RegularizedIntegrationDesign.md), [WeberElectrodynamics.md](WeberElectrodynamics.md), [CriticalRadiusAndLikeChargeAttraction.md](CriticalRadiusAndLikeChargeAttraction.md).

@@ -2,7 +2,7 @@
 
 ## Scope
 
-This document describes the sub-critical regime of Weber's force law in which two like-charged particles attract rather than repel. The velocity- and acceleration-dependent terms in Weber's force define a critical separation $\rho$ that partitions the dynamics into two permanently distinct states: ordinary Coulomb-like repulsion at large distance, and bound oscillatory attraction at molecular distance. Weber developed this theory in his Sixth Memoir (1871) and refined it in the Seventh (1878) and Eighth (posthumous, 1894).
+This document describes the sub-critical regime of Weber's force law in which two like-charged particles attract rather than repel. The velocity- and acceleration-dependent terms in Weber's force define a critical separation $\rho$ that partitions the dynamics into two permanently distinct states: ordinary Coulomb-like repulsion at large distance, and bound oscillatory attraction at molecular distance. Weber developed this theory in his Sixth Memoir (1871) and refined it in the Seventh (1878) and Eighth (posthumous, 1894). Frauenfelder & Weber (2024) have since provided a complete classification of all classical trajectories, a geometric reinterpretation of the critical radius as a metric signature change, and a quantum-mechanical Schrödinger equation for the Weber nucleus; these results are summarized in Sections 8–10 below.
 
 ## Notation
 
@@ -137,6 +137,82 @@ $$U = \frac{ee'}{r}\left(1 - \frac{\dot{r}^2}{2c^2}\right)$$
 
 creates, for $r < \rho$, a confining well in the combined position-velocity phase space. The kinetic coupling $\dot{r}^2/c^2$ grows as the particles approach, lowering the effective potential faster than the Coulomb barrier rises.
 
+## Geometric Interpretation: The Weber Metric
+
+Frauenfelder & Weber (2024) observe that the velocity-dependent Weber potential can be absorbed into the kinetic energy by rearranging the Lagrangian. In polar coordinates $(r, \phi)$ for the relative motion of two like charges, the standard Weber Lagrangian
+
+$$L = \frac{1}{2}(\dot{r}^2 + r^2\dot\phi^2) - \frac{ee'}{r}\left(1 + \frac{\dot{r}^2}{2c^2}\right)$$
+
+can be rewritten by collecting $\dot{r}^2$ terms:
+
+$$L = \frac{1}{2}\left(\frac{r - \rho}{r}\,\dot{r}^2 + r^2\dot\phi^2\right) - \frac{ee'}{r}.$$
+
+The potential is now the ordinary Coulomb $ee'/r$ with no velocity dependence. All dynamical richness is encoded in the metric tensor
+
+$$g_{rr} = \frac{r - \rho}{r}, \qquad g_{\phi\phi} = r^2, \qquad g_{r\phi} = 0,$$
+
+which defines the *Weber plane* $(\mathbb{R}^2_\times, g)$. The metric is Riemannian (positive definite) for $r > \rho$, degenerate at $r = \rho$, and Lorentzian (indefinite signature) for $r < \rho$, where the radial direction becomes timelike.
+
+The coefficient $g_{rr} = 1 - \rho/r$ is precisely the factor $\mu_{\text{eff}}/\mu$ from the effective inertial mass. The sign flip in $\mu_{\text{eff}}$ at $r = \rho$ is thus identical to the metric signature change: the negative effective mass regime *is* the Lorentzian regime.
+
+The conjugate momenta and Hamiltonian on the Weber plane are
+
+$$p_r = \frac{r - \rho}{r}\,\dot{r}, \qquad p_\phi = r^2\dot\phi,$$
+
+$$H = \frac{1}{2}\left(\frac{r\,p_r^2}{r - \rho} + \frac{p_\phi^2}{r^2}\right) + \frac{ee'}{r},$$
+
+where $\ell := p_\phi$ is the conserved angular momentum.
+
+## Complete Classification of Classical Motion
+
+Frauenfelder & Weber (2024, Theorem 2.1) classify all trajectories of the two-body like-charge Weber problem by the conserved energy $h$ and angular momentum $\ell$. The energy equation is
+
+$$\dot{r}^2 = \frac{\ell^2 + 2(ee'/\mu)\,r - 2h\,r^2}{r(\rho - r)}.$$
+
+The effective potential on the Weber plane is $V_{\text{eff}}(r) = \ell^2/(2r^2) + ee'/(\mu r)$. Its value at the critical radius defines the *critical energy*
+
+$$h_c = V_{\text{eff}}(\rho) = \frac{\ell^2}{2\rho^2} + \frac{ee'}{\mu\rho}.$$
+
+The qualitative behavior depends on how $h$ compares to $h_c$:
+
+| Energy | Inside $\rho$ | Outside $\rho$ |
+| --- | --- | --- |
+| $h \leq 0$ | oscillation between 0 and $\rho$ | no solutions |
+| $0 < h < h_c$ | oscillation in $(0, r_+)$, $r_+ < \rho$ | escape to $\infty$ |
+| $h = h_c$ | solutions cross $\rho$ | solutions cross $\rho$ |
+| $h > h_c$ | oscillation between 0 and $\rho$ | smooth reflection at $r_+ > \rho$, escape |
+
+Weber's two states of aggregation (Section 5 above) correspond to the sub-critical case $0 < h < h_c$: the molecular state is the interior oscillation, and the distant state is the exterior escape. The critical energy $h = h_c$ is the unique value at which a trajectory can cross the barrier — the sole exception to Weber's dictum that "no transition from one state of aggregation to the other takes place."
+
+The super-critical case $h > h_c$ reveals a new phenomenon not discussed in Weber's Memoirs: exterior trajectories encounter a smooth turning point at $r_+ > \rho$ and reflect back to infinity without penetrating the barrier.
+
+### Collision regularity
+
+For $\ell = 0$ (purely radial motion), collisions with the origin occur at finite speed $\sqrt{2}\,c$ and are $C^0$-continuable. These collisions are regularizable by the techniques described in [Regularization.md](Regularization.md).
+
+For $\ell \neq 0$, trajectories inside $\rho$ spiral into the origin at infinite speed in finite time. These collisions are *not* regularizable: no smooth coordinate-time transform can remove the singularity. In particular, no periodic orbits exist inside the critical radius — the spiralling is always terminal.
+
+## The Weber–Schrödinger Equation
+
+The Lorentzian metric of the Weber plane defines a Laplace–Beltrami operator $\Delta_g$. Replacing the classical kinetic energy with $-\frac{1}{2}\Delta_g$ yields the Weber–Schrödinger equation (Frauenfelder & Weber 2024, §3):
+
+$$-\frac{1}{2}\Delta_g\,\psi + \frac{ee'}{r}\,\psi = E\,\psi$$
+
+for wave functions $\psi : \mathbb{R}^2_\times \to \mathbb{C}$. Separation of variables $\psi(r,\phi) = R(r)\,e^{ik\phi}$ ($k \in \mathbb{N}_0$) reduces this to a radial ODE on the interval $(0, \rho)$ with singularities at both endpoints: one from the Coulomb potential at $r = 0$ and one from the degenerate metric at $r = \rho$.
+
+**Theorem A** (Frauenfelder & Weber 2024). *The radial part of the Weber–Schrödinger equation is a singular Sturm–Liouville problem that is limit circle at both boundary singularities $r = 0$ and $r = \rho$.*
+
+In Weyl's classification, *limit circle* means that all solutions are square-integrable near the singularity. Consequently the Schrödinger operator on $(0, \rho)$ is not essentially self-adjoint: boundary conditions must be chosen at both endpoints to select a physical spectrum. This contrasts with the standard hydrogen atom, where the origin is limit point and no boundary condition is needed there.
+
+The proof reveals a striking classical–quantum parallel:
+
+| Angular momentum | Classical | Quantum |
+| --- | --- | --- |
+| $\ell = 0$ | collisions (regularizable) | non-oscillating (natural BCs exist) |
+| $\ell \neq 0$ | spiraling (not regularizable) | oscillating (no natural BCs) |
+
+The regularity that permits classical regularization at $\ell = 0$ is mirrored by the existence of natural boundary conditions in the quantum theory. Conversely, the classical non-regularizability at $\ell \neq 0$ corresponds to wildly oscillating quantum solutions for which no canonical boundary condition exists.
+
 ## Connection to Zöllner Gravitation and the Planetary Atom
 
 Weber's sub-critical binding of like charges is the dynamical foundation for the program described in [ZollnerElectrogravitationalTheory.md](ZollnerElectrogravitationalTheory.md).
@@ -157,5 +233,7 @@ Without the sub-critical regime, there is no mechanism for like charges to coher
 - Weber, W. E. "Electrodynamic Measurements, Eighth Memoir" (1894, posthumous). In Assis (ed.), Vol. IV, Ch. 15, §§15.1--15.2.
 - Assis, A. K. T. (ed.) *Wilhelm Weber's Main Works on Electrodynamics Translated into English, Volume IV: Conservation of Energy, Weber's Planetary Model of the Atom and the Unification of Electromagnetism and Gravitation*. Apeiron, Montreal, 2021. ISBN 978-1-987980-29-5.
 - Assis, A. K. T., Tajmar, M. "Superluminal potentials, forces and accelerations in Weber electrodynamics." *Journal of Advanced Physics* 8 (2019).
+- Frauenfelder, U., Weber, J. "A mathematical description of the Weber nucleus as a classical and quantum mechanical system." *Anal. Math. Phys.* **14**:31 (2024). DOI: [10.1007/s13324-024-00891-5](https://doi.org/10.1007/s13324-024-00891-5).
+- Frauenfelder, U., Weber, J. "The fine structure of Weber's hydrogen atom: Bohr–Sommerfeld approach." *Z. Angew. Math. Phys.* **70**(4), 105–116 (2019).
 
 See also: [WeberElectrodynamics.md](WeberElectrodynamics.md), [ZollnerElectrogravitationalTheory.md](ZollnerElectrogravitationalTheory.md), [Regularization.md](Regularization.md).
