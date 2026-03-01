@@ -1,9 +1,8 @@
 module WeberElectrodynamicsPlotsExt
 
 using WeberElectrodynamics
+using WeberElectrodynamics: @sprintf, norm, dot
 using Plots
-using LinearAlgebra
-using Printf
 
 # Publication figure sizes (pixels at 300 DPI)
 const SINGLE_COLUMN_WIDTH = 1050   # 3.5 inches at 300 DPI

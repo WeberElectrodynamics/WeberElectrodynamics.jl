@@ -1,5 +1,10 @@
 module WeberElectrodynamics
 
+# Stdlib re-exports (needed by package extension)
+using Printf: @sprintf
+using LinearAlgebra: norm, dot
+export @sprintf, norm, dot
+
 # =============================================================================
 # Weber System (n-body Hamiltonian)
 # =============================================================================
