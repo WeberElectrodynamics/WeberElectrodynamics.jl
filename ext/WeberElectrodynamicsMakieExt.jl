@@ -16,6 +16,7 @@ abstract type AnimationDataSource end
 
 mutable struct StreamingSource <: AnimationDataSource
     integrator::WeberIntegrator
+    total_steps::Int
 end
 
 mutable struct ReplaySource <: AnimationDataSource
@@ -418,7 +419,7 @@ function _update_observables!(state::AnimationState, obs::PlotObservables)
     if state.source isa StreamingSource
         integ = state.source.integrator
         obs.time_text[] = @sprintf("t = %.4f", integ.t)
-        obs.step_text[] = @sprintf("step = %d", integ.step_count)
+        obs.step_text[] = @sprintf("step = %d", state.source.total_steps)
     elseif state.source isa ReplaySource
         src = state.source
         t_val = buf.count > 0 ? buf.t[buf.cursor == 1 ? buf.capacity : buf.cursor - 1] : 0.0
@@ -867,6 +868,7 @@ function _reset_animation!(state::AnimationState, obs::PlotObservables)
     if state.source isa StreamingSource
         prob_to_init = isnothing(state.extended_prob) ? state.prob : state.extended_prob
         state.source.integrator = init(prob_to_init, state.alg)
+        state.source.total_steps = 0
         push_step!(state.buffer, state.source.integrator.t,
                    state.source.integrator.q, state.source.integrator.p, state.prob)
     elseif state.source isa ReplaySource
@@ -880,6 +882,24 @@ function _reset_animation!(state::AnimationState, obs::PlotObservables)
 end
 
 # =============================================================================
+# Integrator Recycling (Streaming)
+# =============================================================================
+
+# Reset the integrator so it can keep stepping, reusing its pre-allocated
+# history arrays.  Only the bookkeeping fields are touched — the physical
+# state (t, q, p) and regularization hysteresis are preserved.
+function _recycle_integrator!(integ::WeberIntegrator)
+    span = integ.t_end - integ.t_history[1]
+    integ.step_count = 0
+    integ.t_end = integ.t + span
+    integ.t_history[1] = integ.t
+    integ.q_history[1] .= integ.q
+    integ.p_history[1] .= integ.p
+    fill!(integ.buffers.μ, 0.0)
+    return nothing
+end
+
+# =============================================================================
 # Compute Loop (Timer-Based)
 # =============================================================================
 
@@ -887,10 +907,14 @@ function _advance_source!(state::AnimationState)
     if state.source isa StreamingSource
         integ = state.source.integrator
         more = step!(integ)
-        if more
-            push_step!(state.buffer, integ.t, integ.q, integ.p, state.prob)
+        if !more
+            _recycle_integrator!(integ)
+            more = step!(integ)
+            !more && return false
         end
-        return more
+        state.source.total_steps += 1
+        push_step!(state.buffer, integ.t, integ.q, integ.p, state.prob)
+        return true
     elseif state.source isa ReplaySource
         src = state.source
         sol = src.sol
@@ -929,8 +953,8 @@ end
 # Extended Problem Construction (for Streaming)
 # =============================================================================
 
-function _make_extended_problem(prob::WeberProblem, buffer_size::Int)
-    max_time = prob.tspan[1] + buffer_size * prob.dt * 100
+function _make_extended_problem(prob::WeberProblem)
+    max_time = prob.tspan[1] + 1000 * prob.dt
     reg = prob.regularization
     zol = prob.zollner
 
@@ -985,7 +1009,7 @@ function WeberElectrodynamics.animate_weber(
     @assert tail_length <= buffer_size "tail_length must be <= buffer_size"
 
     # Create extended-time problem for streaming
-    extended_prob = _make_extended_problem(prob, buffer_size)
+    extended_prob = _make_extended_problem(prob)
     integrator = init(extended_prob, alg)
 
     # Compute initial reference values
@@ -1001,7 +1025,7 @@ function WeberElectrodynamics.animate_weber(
 
     # Create buffer and state
     buffer = RollingBuffer(buffer_size, prob)
-    source = StreamingSource(integrator)
+    source = StreamingSource(integrator, 0)
 
     state = AnimationState(
         source, prob, buffer,

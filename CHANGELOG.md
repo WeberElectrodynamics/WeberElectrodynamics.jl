@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.1.1] - 2026-03-02
+
+### Fixed
+- Streaming animation (`animate_weber(prob)`) now runs indefinitely instead of
+  stopping after a finite number of steps.  The integrator is recycled when its
+  pre-allocated history arrays are exhausted, preserving physical state and
+  regularization hysteresis across the boundary.
+- Reduced wasted memory in streaming mode from ~14 MB to ~73 KB by shrinking the
+  unused integrator history allocation from ~200k entries to 1k entries.
+
 ## [5.1.0] - 2026-03-02
 
 ### Added
