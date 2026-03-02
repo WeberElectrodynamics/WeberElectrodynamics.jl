@@ -178,3 +178,5 @@ All with r_nuc = 0.05, dt = 1e-4, bounce_r = 0.02.
 - Frauenfelder & Weber, *Anal. Math. Phys.* **14**:31 (2024)
 - See [CriticalRadiusAndLikeChargeAttraction.md](../theory/CriticalRadiusAndLikeChargeAttraction.md) §10
 - See [CollisionBounceRegularization.md](CollisionBounceRegularization.md) for 2-body bounce validation
+- See [ThreePositiveChargeInvestigation.md](ThreePositiveChargeInvestigation.md) for extended +++ investigation with mass/charge asymmetry and transverse stability analysis
+- See [FourPositiveChargeCrossInvestigation.md](FourPositiveChargeCrossInvestigation.md) for 4-body investigation: cross (fails) and collinear chain (**stable +++ bound state found**)
