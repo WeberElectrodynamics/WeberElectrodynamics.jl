@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.0.0] - 2026-03-02
+
+### Breaking Changes
+- **Animation extension renamed**: `WeberElectrodynamicsGLMakieExt` → `WeberElectrodynamicsMakieExt`.
+  The weak dependency is now `Makie` instead of `GLMakie`, so any Makie backend (GLMakie,
+  CairoMakie, WGLMakie) triggers the extension. Users who `import`ed the old extension module
+  by name must update.
+
+### Changed
+- Animation extension depends on abstract `Makie` API instead of `GLMakie` backend directly.
+  Users choose their backend in the notebook (`using GLMakie`, `using CairoMakie`, etc.)
+  and the extension activates automatically.
+- Compat bounds: `Makie = "0.21, 0.22, 0.23, 0.24"` (replaces `GLMakie = "0.9, 0.10"`).
+- Tested on Julia 1.12.5 with Symbolics v7.15.3, Makie v0.24.8, GLMakie v0.13.8.
+
+## [4.2.0] - 2026-03-01
+
+### Added
+- GLMakie animation extension with streaming and replay modes for interactive
+  real-time visualization of Weber electrodynamics simulations.
+- `animate_weber(prob)` for live streaming integration with rolling buffer display.
+- `animate_weber(sol)` for replaying pre-computed solutions.
+- Multi-panel dashboard: particle trajectories, energy & momentum, angular momentum,
+  and selectable phase space (pair or per-particle).
+- Play/pause/reset controls with live error tracking (energy, momentum, angular momentum).
+- Three-body bound state exploration notebooks (`examples/three_body_bound_states/`).
+
 ## [4.1.0] - 2026-03-01
 
 ### Added

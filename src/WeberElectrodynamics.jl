@@ -76,7 +76,7 @@ export plot_trajectories, plot_energy, plot_pair_energy, plot_energy_errors, plo
 export plot_zollner_energy, plot_zollner_force_residual, plot_weber_vs_zollner, plot_zollner_phase_space
 
 # =============================================================================
-# Animation (GLMakie Extension)
+# Animation (Makie Extension)
 # =============================================================================
 function animate_weber end
 export animate_weber
