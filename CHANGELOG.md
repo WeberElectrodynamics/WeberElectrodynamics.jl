@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.2.0] - 2026-03-02
+
+### Changed
+- Animation viewer: moved |P| momentum trace from the energy panel to the
+  angular momentum panel, which now has a dual y-axis (Lz left, |P| right).
+  Energy panel is now single-axis.  Momentum panel uses 10% y-padding with
+  expand-only scaling.
+- Removed pre-computed static notebooks (kept live animation notebooks only).
+
 ## [5.1.1] - 2026-03-02
 
 ### Fixed

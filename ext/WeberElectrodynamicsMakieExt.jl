@@ -665,18 +665,9 @@ function _build_figure(state::AnimationState, obs::PlotObservables;
     # Top-right: Energy (left axis) + |P| (right axis)
     # =========================================================================
     ax_energy = Axis(fig[1:2, 2];
-        title = "Energy & Momentum",
+        title = "Energy",
         xlabel = "t", ylabel = "Energy",
     )
-    ax_momentum = Axis(fig[1:2, 2];
-        ylabel = "|P|",
-        yaxisposition = :right,
-        yticklabelcolor = :purple,
-        ylabelcolor = :purple,
-    )
-    hidespines!(ax_momentum)
-    hidexdecorations!(ax_momentum)
-    linkxaxes!(ax_energy, ax_momentum)
 
     lines!(ax_energy, obs.energy_t, obs.total_energy;
         color = :black, linewidth = 2, label = "Total E")
@@ -685,22 +676,33 @@ function _build_figure(state::AnimationState, obs::PlotObservables;
     lines!(ax_energy, obs.energy_t, obs.potential_energy;
         color = :firebrick, linewidth = 1.5, label = "Potential U")
 
-    lines!(ax_momentum, obs.energy_t, obs.momentum_mag;
-        color = :purple, linewidth = 1.5, linestyle = :dash, label = "|P|")
-
     axislegend(ax_energy; position = :lt, framevisible = false, labelsize = 10)
 
     # =========================================================================
-    # Bottom-left: Angular Momentum
+    # Bottom-left: Angular Momentum & Linear Momentum
     # =========================================================================
     ax_angular = Axis(fig[3:4, 1];
-        title = "Angular Momentum",
+        title = "Momentum",
         xlabel = "t", ylabel = "Lz",
     )
+    ax_momentum = Axis(fig[3:4, 1];
+        ylabel = "|P|",
+        yaxisposition = :right,
+        yticklabelcolor = :purple,
+        ylabelcolor = :purple,
+    )
+    hidespines!(ax_momentum)
+    hidexdecorations!(ax_momentum)
+    linkxaxes!(ax_angular, ax_momentum)
 
     lines!(ax_angular, obs.angular_t, obs.angular_momentum;
-        color = :black, linewidth = 1.5)
+        color = :black, linewidth = 1.5, label = "Lz")
     hlines!(ax_angular, [state.L0]; color = :gray, linestyle = :dash, linewidth = 0.5)
+
+    lines!(ax_momentum, obs.angular_t, obs.momentum_mag;
+        color = :purple, linewidth = 1.5, linestyle = :dash, label = "|P|")
+
+    axislegend(ax_angular; position = :lt, framevisible = false, labelsize = 10)
 
     # =========================================================================
     # Bottom-right: Phase Space
@@ -799,9 +801,9 @@ function _build_figure(state::AnimationState, obs::PlotObservables;
     # Auto-scaling setup
     # =========================================================================
     _autoscale_trajectory!(ax_traj, obs.traj_x, obs.traj_y)
-    _autoscale_dual!(ax_energy, ax_momentum, obs.energy_t, obs.total_energy, obs.momentum_mag;
-                     track_x = true)
-    _autoscale!(ax_angular, obs.angular_t, obs.angular_momentum; track_x = true)
+    _autoscale!(ax_energy, obs.energy_t, obs.total_energy; track_x = true)
+    _autoscale_dual!(ax_angular, ax_momentum, obs.angular_t, obs.angular_momentum, obs.momentum_mag;
+                     padding = 0.10, track_x = true)
     _autoscale!(ax_phase, obs.phase_x, obs.phase_y)
 
     # Reset y-axis one-way expansion when display window changes
