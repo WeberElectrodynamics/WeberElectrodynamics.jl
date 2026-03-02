@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.1.0] - 2026-03-02
+
+### Added
+- Animation viewer interactive sliders: Trail length, Display window, and Speed
+  (log-linear 1--1000 steps/frame) — adjustable during playback.
+- Display windowing: energy, momentum, and angular momentum plots show only the
+  most recent N timesteps (controlled by Window slider), with `track_x` autoscaling
+  that follows the advancing time window instead of one-way expansion.
+- `_trim_to_window` helper for rolling display of time-series data.
+- `_log_linear_range` helper generating 1,2,...,9,10,20,...,90,100,...,1000 speed values.
+- Y-axis one-way limits reset automatically when the display window size changes.
+
+### Changed
+- `AnimationState.tail_length`, `display_window`, `compute_batch` are now
+  `Observable{Int}` for reactive slider binding (was plain `Int`).
+- `_start_animation!` reads `compute_batch` from state each frame instead of
+  capturing a fixed value at startup.
+- Default `compute_batch` changed from 10 to 1 for both streaming and replay modes
+  (user adjusts via Speed slider).
+- Bottom-row layout reorganized: controls and sliders on the left, phase-space
+  selector menu and error display (2x3 grid, larger font) on the right.
+- Error labels increased from fontsize 9 to 12 for readability.
+
 ## [5.0.1] - 2026-03-02
 
 ### Fixed

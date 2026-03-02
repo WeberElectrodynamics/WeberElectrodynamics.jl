@@ -245,6 +245,25 @@ function _linearize_col(mat::Matrix{Float64}, row::Int, buf::RollingBuffer)
     return vcat(@view(mat[row, oldest:buf.capacity]), @view(mat[row, 1:oldest-1]))
 end
 
+function _trim_to_window(data::Vector{Float64}, window::Int)
+    n = length(data)
+    n <= window ? data : data[end-window+1:end]
+end
+
+# Log-linear speed range: 1,2,...,9, 10,20,...,90, 100,200,...,900, 1000
+function _log_linear_range(max_val::Int)
+    values = Int[]
+    decade = 1
+    while decade <= max_val
+        for k in 1:9
+            v = k * decade
+            v <= max_val && push!(values, v)
+        end
+        decade *= 10
+    end
+    return values
+end
+
 # =============================================================================
 # Animation State
 # =============================================================================
@@ -255,7 +274,10 @@ mutable struct AnimationState
     buffer::RollingBuffer
     is_playing::Observable{Bool}
     timer::Union{Nothing,Timer}
-    tail_length::Int
+    tail_length::Observable{Int}
+    display_window::Observable{Int}
+    compute_batch::Observable{Int}
+    buffer_size::Int
 
     # Reference values for error computation
     E0::Float64
@@ -355,9 +377,10 @@ function _update_observables!(state::AnimationState, obs::PlotObservables)
 
     # Linearize time
     t_lin = _linearize(buf.t, buf)
+    dw = state.display_window[]
 
     # Trajectory tails (last tail_length entries)
-    tail_len = min(state.tail_length, buf.count)
+    tail_len = min(state.tail_length[], buf.count)
     for particle in 1:n
         x_full = _linearize_col(buf.positions[particle], 1, buf)
         y_full = _linearize_col(buf.positions[particle], 2, buf)
@@ -369,18 +392,18 @@ function _update_observables!(state::AnimationState, obs::PlotObservables)
         end
     end
 
-    # Energy
-    obs.energy_t[] = t_lin
-    obs.total_energy[] = _linearize(buf.total_energy, buf)
-    obs.kinetic_energy[] = _linearize(buf.kinetic_energy, buf)
-    obs.potential_energy[] = _linearize(buf.potential_energy, buf)
+    # Energy (trimmed to display window)
+    obs.energy_t[] = _trim_to_window(t_lin, dw)
+    obs.total_energy[] = _trim_to_window(_linearize(buf.total_energy, buf), dw)
+    obs.kinetic_energy[] = _trim_to_window(_linearize(buf.kinetic_energy, buf), dw)
+    obs.potential_energy[] = _trim_to_window(_linearize(buf.potential_energy, buf), dw)
 
-    # Momentum
-    obs.momentum_mag[] = _linearize(buf.linear_momentum_mag, buf)
+    # Momentum (trimmed to display window)
+    obs.momentum_mag[] = _trim_to_window(_linearize(buf.linear_momentum_mag, buf), dw)
 
-    # Angular momentum
-    obs.angular_t[] = t_lin
-    obs.angular_momentum[] = _linearize(buf.angular_momentum, buf)
+    # Angular momentum (trimmed to display window)
+    obs.angular_t[] = _trim_to_window(t_lin, dw)
+    obs.angular_momentum[] = _trim_to_window(_linearize(buf.angular_momentum, buf), dw)
 
     # Phase space
     _update_phase_space!(state, obs, buf)
@@ -457,7 +480,8 @@ function _get_ylims(ax::Axis)
     return (fl.origin[2], fl.origin[2] + fl.widths[2])
 end
 
-function _autoscale!(ax::Axis, x_obs::Observable, y_obs::Observable; padding::Float64 = 0.05)
+function _autoscale!(ax::Axis, x_obs::Observable, y_obs::Observable;
+                     padding::Float64 = 0.05, track_x::Bool = false)
     on(y_obs) do yd
         xd = x_obs[]
         if isempty(xd) || isempty(yd) || length(xd) < 2
@@ -478,11 +502,15 @@ function _autoscale!(ax::Axis, x_obs::Observable, y_obs::Observable; padding::Fl
         new_yb = ymin - padding * dy
         new_yt = ymax + padding * dy
 
-        # One-way scaling: only expand, never shrink
-        cur_xl, cur_xr = _get_xlims(ax)
+        if !track_x
+            # One-way scaling for x: only expand, never shrink
+            cur_xl, cur_xr = _get_xlims(ax)
+            new_xl = min(new_xl, cur_xl)
+            new_xr = max(new_xr, cur_xr)
+        end
+
+        # One-way scaling for y: only expand, never shrink
         cur_yb, cur_yt = _get_ylims(ax)
-        new_xl = min(new_xl, cur_xl)
-        new_xr = max(new_xr, cur_xr)
         new_yb = min(new_yb, cur_yb)
         new_yt = max(new_yt, cur_yt)
 
@@ -494,7 +522,7 @@ end
 
 function _autoscale_dual!(ax_left::Axis, ax_right::Axis, x_obs::Observable,
                           y_left_obs::Observable, y_right_obs::Observable;
-                          padding::Float64 = 0.05)
+                          padding::Float64 = 0.05, track_x::Bool = false)
     on(y_left_obs) do yd
         xd = x_obs[]
         if isempty(xd) || isempty(yd) || length(xd) < 2
@@ -508,13 +536,15 @@ function _autoscale_dual!(ax_left::Axis, ax_right::Axis, x_obs::Observable,
         new_xl = xmin - padding * dx
         new_xr = xmax + padding * dx
 
-        # One-way x scaling (shared)
-        cur_xl, cur_xr = _get_xlims(ax_left)
-        new_xl = min(new_xl, cur_xl)
-        new_xr = max(new_xr, cur_xr)
+        if !track_x
+            # One-way x scaling (shared)
+            cur_xl, cur_xr = _get_xlims(ax_left)
+            new_xl = min(new_xl, cur_xl)
+            new_xr = max(new_xr, cur_xr)
+        end
         xlims!(ax_left, new_xl, new_xr)
 
-        # Left y axis
+        # Left y axis — one-way
         ymin, ymax = extrema(yd)
         dy = ymax - ymin
         if dy < eps(Float64)
@@ -528,7 +558,7 @@ function _autoscale_dual!(ax_left::Axis, ax_right::Axis, x_obs::Observable,
         new_yt = max(new_yt, cur_yt)
         ylims!(ax_left, new_yb, new_yt)
 
-        # Right axis
+        # Right axis — one-way
         yr = y_right_obs[]
         if !isempty(yr)
             yrmin, yrmax = extrema(yr)
@@ -685,34 +715,23 @@ function _build_figure(state::AnimationState, obs::PlotObservables;
     scatter!(ax_phase, obs.phase_marker;
         color = :firebrick, markersize = 8)
 
-    # Phase space selector menu
+    # Phase space selector options (menu placed in bottom row below)
     pairs = [(i, j) for i in 1:n for j in (i+1):n]
     pair_labels = ["Pair ($i,$j)" for (i, j) in pairs]
     particle_labels = ["Particle $i" for i in 1:n]
     all_labels = vcat(pair_labels, particle_labels)
 
-    menu = Menu(fig[3:4, 3]; options = all_labels, default = state.phase_selection[],
-                width = 120, tellheight = false)
-
-    on(menu.selection) do sel
-        state.phase_selection[] = sel
-        ax_phase.title[] = _phase_title(state)
-        ax_phase.xlabel[] = _phase_xlabel(state)
-        ax_phase.ylabel[] = _phase_ylabel(state)
-        _update_phase_space!(state, obs, state.buffer)
-    end
-
     # =========================================================================
-    # Bottom row: Controls + Error display
+    # Bottom row: Controls + Sliders | Phase menu + Error display
     # =========================================================================
     controls_grid = fig[5, 1] = GridLayout()
-    errors_grid = fig[5, 2:3] = GridLayout()
-    rowsize!(fig.layout, 5, Fixed(60))
+    info_grid = fig[5, 2] = GridLayout()
+    rowsize!(fig.layout, 5, Fixed(120))
 
-    # Controls
+    # --- Left side: Playback controls (sub-row 1) + Sliders (sub-row 2) ---
     play_label = @lift($(state.is_playing) ? "|| Pause" : "> Play")
-    play_btn = Button(controls_grid[1, 1]; label = play_label, width = 100)
-    reset_btn = Button(controls_grid[1, 2]; label = "Reset", width = 100)
+    play_btn = Button(controls_grid[1, 1]; label = play_label, width = 90)
+    reset_btn = Button(controls_grid[1, 2]; label = "Reset", width = 90)
     Label(controls_grid[1, 3], obs.time_text; fontsize = 11)
     Label(controls_grid[1, 4], obs.step_text; fontsize = 11)
 
@@ -724,22 +743,72 @@ function _build_figure(state::AnimationState, obs::PlotObservables;
         _reset_animation!(state, obs)
     end
 
-    # Error display
+    # Sliders
+    Label(controls_grid[2, 1], "Trail:"; fontsize = 11, halign = :right)
+    trail_slider = Slider(controls_grid[2, 2]; range = 10:10:state.buffer_size,
+                          startvalue = state.tail_length[])
+    Label(controls_grid[2, 3], "Window:"; fontsize = 11, halign = :right)
+    window_slider = Slider(controls_grid[2, 4]; range = 50:10:state.buffer_size,
+                           startvalue = state.display_window[])
+    Label(controls_grid[2, 5], "Speed:"; fontsize = 11, halign = :right)
+    speed_range = _log_linear_range(1000)
+    speed_slider = Slider(controls_grid[2, 6]; range = speed_range,
+                          startvalue = state.compute_batch[])
+
+    on(trail_slider.value) do val
+        state.tail_length[] = val
+    end
+
+    on(window_slider.value) do val
+        state.display_window[] = val
+    end
+
+    on(speed_slider.value) do val
+        state.compute_batch[] = val
+    end
+
+    # --- Right side: Phase menu (sub-row 1) + Error display (2 rows) ---
+    # Phase space selector
+    phase_grid = info_grid[1, 1] = GridLayout()
+    Label(phase_grid[1, 1], "Phase:"; fontsize = 12, halign = :right)
+    menu = Menu(phase_grid[1, 2]; options = all_labels, default = state.phase_selection[],
+                width = 200)
+
+    on(menu.selection) do sel
+        state.phase_selection[] = sel
+        ax_phase.title[] = _phase_title(state)
+        ax_phase.xlabel[] = _phase_xlabel(state)
+        ax_phase.ylabel[] = _phase_ylabel(state)
+        _update_phase_space!(state, obs, state.buffer)
+    end
+
+    # Error display — 2 rows x 3 pairs, fontsize 12
+    error_grid = info_grid[1:2, 2] = GridLayout()
     error_labels = ["E local:", "E global:", "|P| local:", "|P| global:", "Lz local:", "Lz global:"]
-    for (i, lbl) in enumerate(error_labels)
-        col_base = (i - 1) * 2 + 1
-        Label(errors_grid[1, col_base], lbl; fontsize = 9, halign = :right)
-        Label(errors_grid[1, col_base + 1], obs.error_texts[i];
-              fontsize = 9, halign = :left, color = :firebrick)
+    for idx in 1:6
+        row = idx <= 3 ? 1 : 2
+        col_in_row = idx <= 3 ? idx : idx - 3
+        col_base = (col_in_row - 1) * 2 + 1
+        Label(error_grid[row, col_base], error_labels[idx]; fontsize = 12, halign = :right)
+        Label(error_grid[row, col_base + 1], obs.error_texts[idx];
+              fontsize = 12, halign = :left, color = :firebrick)
     end
 
     # =========================================================================
     # Auto-scaling setup
     # =========================================================================
     _autoscale_trajectory!(ax_traj, obs.traj_x, obs.traj_y)
-    _autoscale_dual!(ax_energy, ax_momentum, obs.energy_t, obs.total_energy, obs.momentum_mag)
-    _autoscale!(ax_angular, obs.angular_t, obs.angular_momentum)
+    _autoscale_dual!(ax_energy, ax_momentum, obs.energy_t, obs.total_energy, obs.momentum_mag;
+                     track_x = true)
+    _autoscale!(ax_angular, obs.angular_t, obs.angular_momentum; track_x = true)
     _autoscale!(ax_phase, obs.phase_x, obs.phase_y)
+
+    # Reset y-axis one-way expansion when display window changes
+    on(state.display_window) do _
+        for ax in [ax_energy, ax_momentum, ax_angular]
+            autolimits!(ax)
+        end
+    end
 
     # Store axes so _reset_animation! can clear one-way limits
     state.axes = [ax_traj, ax_energy, ax_momentum, ax_angular, ax_phase]
@@ -836,13 +905,14 @@ function _advance_source!(state::AnimationState)
     return false
 end
 
-function _start_animation!(state::AnimationState, obs::PlotObservables, compute_batch::Int)
+function _start_animation!(state::AnimationState, obs::PlotObservables)
     state.timer = Timer(0.0; interval = 1 / 60) do _
         if !state.is_playing[]
             return
         end
 
-        for _ in 1:compute_batch
+        batch = state.compute_batch[]
+        for _ in 1:batch
             more = _advance_source!(state)
             if !more
                 state.is_playing[] = false
@@ -900,7 +970,7 @@ function WeberElectrodynamics.animate_weber(
     prob::WeberProblem;
     buffer_size::Int = 2000,
     tail_length::Int = 200,
-    compute_batch::Int = 10,
+    compute_batch::Int = 1,
     initial_pair::Tuple{Int,Int} = (1, min(2, prob.system.n_particles)),
     phase_mode::Symbol = :pair,
     initial_particle::Int = 1,
@@ -935,7 +1005,9 @@ function WeberElectrodynamics.animate_weber(
 
     state = AnimationState(
         source, prob, buffer,
-        Observable(false), nothing, tail_length,
+        Observable(false), nothing,
+        Observable(tail_length), Observable(buffer_size), Observable(compute_batch),
+        buffer_size,
         E0, P0_mag, L0,
         Observable(phase_sel), Observable(initial_component),
         alg, extended_prob,
@@ -950,7 +1022,7 @@ function WeberElectrodynamics.animate_weber(
     _update_observables!(state, obs)
 
     fig = _build_figure(state, obs; figure_size = figure_size)
-    _start_animation!(state, obs, compute_batch)
+    _start_animation!(state, obs)
 
     # Force a native window — disable inline so the backend opens a real screen
     Makie.inline!(false)
@@ -967,7 +1039,7 @@ function WeberElectrodynamics.animate_weber(
     sol::WeberSolution;
     buffer_size::Int = 2000,
     tail_length::Int = 200,
-    compute_batch::Int = 10,
+    compute_batch::Int = 1,
     initial_pair::Tuple{Int,Int} = (1, min(2, sol.prob.system.n_particles)),
     phase_mode::Symbol = :pair,
     initial_particle::Int = 1,
@@ -1000,7 +1072,9 @@ function WeberElectrodynamics.animate_weber(
 
     state = AnimationState(
         source, prob, buffer,
-        Observable(false), nothing, tail_length,
+        Observable(false), nothing,
+        Observable(tail_length), Observable(buffer_size), Observable(compute_batch),
+        buffer_size,
         E0, P0_mag, L0,
         Observable(phase_sel), Observable(initial_component),
         SymmetricProjectionIntegrator(), nothing,
@@ -1015,7 +1089,7 @@ function WeberElectrodynamics.animate_weber(
     _update_observables!(state, obs)
 
     fig = _build_figure(state, obs; figure_size = figure_size)
-    _start_animation!(state, obs, compute_batch)
+    _start_animation!(state, obs)
 
     # Force a native window — disable inline so the backend opens a real screen
     Makie.inline!(false)
