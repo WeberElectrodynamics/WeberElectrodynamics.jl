@@ -4,42 +4,71 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-Julia package for n-body Weber electrodynamics simulation with Zöllner electrogravitational extension. Implements a symplectic Strang-splitting symmetric-projection integrator with Levi-Civita/KS regularization for close encounters.
+Julia package (v5.0.0) for n-body Weber electrodynamics simulation with Zöllner electrogravitational extension. Implements a symplectic Strang-splitting symmetric-projection integrator with Levi-Civita/KS regularization for close encounters and collision bounce for head-on singularities.
 
 ## Commands
 
 ```bash
-# Run full test suite
-julia -e 'using Pkg; Pkg.test()'
+# Run full test suite (from project root)
+julia --project=. -e 'using Pkg; Pkg.test()'
 
 # Run a single test file (e.g., test_physics.jl)
-julia -e 'using Test; using WeberElectrodynamics; using WeberElectrodynamics: SymmetricProjectionIntegrator; using LinearAlgebra; using Symbolics; @testset "single" begin include("test/test_utils.jl"); include("test/test_physics.jl") end'
+julia --project=. -e 'using Test; using WeberElectrodynamics; using WeberElectrodynamics: SymmetricProjectionIntegrator; using LinearAlgebra; using Symbolics; @testset "single" begin include("test/test_utils.jl"); include("test/test_physics.jl") end'
 
 # Format all Julia files
 make format   # requires JuliaFormatter
 ```
 
+## Repository Structure
+
+```
+WeberElectrodynamics/
+├── src/                    # Package source
+├── ext/                    # Weak-dependency extensions (Plots, Makie)
+├── test/                   # Test suite (20,297 tests)
+├── examples/               # Jupyter notebooks (run from default Julia env)
+├── docs/
+│   ├── theory/             # Mathematical derivations and theory documents
+│   └── exploratory/        # Research notes and lessons learned
+├── papers/
+│   └── Computational-Weber-Electrodynamics/   # LaTeX paper with own Project.toml
+├── Makefile                # `make format`, `make cwe-paper`, etc.
+├── CHANGELOG.md            # Versioned changelog (semver)
+└── Project.toml            # Package metadata and compat bounds
+```
+
 ## Architecture
 
-**Pipeline**: Symbolic Hamiltonian → compiled equations of motion → symplectic integration → statistics/plotting
+**Pipeline**: Symbolic Hamiltonian → compiled equations of motion → symplectic integration → statistics/plotting/animation
 
 ### Source files (`src/`)
 
-- `WeberElectrodynamics.jl` — Module definition, exports, plot extension stubs
+- `WeberElectrodynamics.jl` — Module definition, exports, extension stubs (`plot_*`, `animate_weber`)
 - `weber_system.jl` — `WeberSystem`: uses Symbolics.jl to build the Weber Hamiltonian symbolically, then compiles `dq_dt`, `dp_dt`, and `hamiltonian` functions via `build_function`
 - `types.jl` — All core structs: `WeberProblem`, `WeberSolution`, `WeberIntegrator`, `SymmetricProjectionIntegrator`, `RegularizationOptions`, `ZollnerOptions`, buffer/diagnostics types
 - `regularization.jl` — Internal helpers: pair distance detection, adjacency graph (BFS), Levi-Civita 2D projection, KS quaternion helpers
 - `solve.jl` — Main integrator: Strang splitting flow, symmetric projection via fixed-point iteration on Lagrange multipliers, regularization dispatch, collision bounce, CommonSolve interface (`init`/`step!`/`solve!`/`solve`)
 - `statistics/` — `energy.jl`, `forces.jl`, `momentum.jl`, `trajectories.jl` — post-solution analysis producing typed data structs
 
-### Extension (`ext/`)
+### Extensions (`ext/`)
 
-- `WeberElectrodynamicsPlotsExt.jl` — Plots.jl weak dependency; provides `plot_trajectories`, `plot_energy`, `plot_pair_forces`, `plot_phase_space`, `plot_momentum`, and Zöllner-specific plot functions. Stubs declared in main module.
+- `WeberElectrodynamicsPlotsExt.jl` — Plots.jl weak dependency; provides `plot_trajectories`, `plot_energy`, `plot_pair_energy`, `plot_energy_errors`, `plot_pair_forces`, `plot_phase_space`, `plot_momentum`, and Zöllner-specific plot functions.
+- `WeberElectrodynamicsMakieExt.jl` — Makie weak dependency (any backend: GLMakie, CairoMakie, WGLMakie); provides `animate_weber` for real-time streaming or solution replay with rolling trajectory/energy/momentum/phase-space dashboard.
 
 ### Tests (`test/`)
 
 - `test_utils.jl` — Problem builders (`make_weber_problem()`, `make_coulomb_like_problem()`) and reference energy functions; **must be included before other test files**
-- Test files cover: types, system generation, solve interface, statistics, integration, physics validation, regularization, Zöllner
+- `runtests.jl` — Entry point, includes all test files in order
+- Test files: `test_types.jl`, `test_weber_system.jl`, `test_solve.jl`, `test_statistics.jl`, `test_integration.jl`, `test_physics.jl`, `test_regularization.jl`, `test_zollner.jl`
+
+### Examples (`examples/`)
+
+Jupyter notebooks run via IJulia from the default Julia environment (where this package is `dev`'d). They use `Plots` for static figures and optionally `GLMakie` for animation.
+
+### Docs (`docs/`)
+
+- `theory/` — Weber electrodynamics, semi-explicit integrator, regularization, critical radius, initial conditions, Zöllner theory
+- `exploratory/` — Collision bounce lessons learned, three-body bound states
 
 ## Critical Conventions
 
@@ -74,6 +103,12 @@ Neither backend regularizes Weber's velocity-dependent force — only the Coulom
 - κ_ij = 1+a for unlike-sign charge pairs, 1.0 for like-sign
 - Stored in `WeberProblem.kappas` and appended to the params vector automatically
 
+### Makie animation extension
+
+- Weak dependency is `Makie` (not `GLMakie`) — any backend triggers the extension
+- `animate_weber(prob)` for live streaming, `animate_weber(sol)` for replay
+- Compat: `Makie = "0.21, 0.22, 0.23, 0.24"`
+
 ### Immutable options pattern
 
 `RegularizationOptions`, `ZollnerOptions` are immutable structs created once per problem. Pass configuration through `WeberProblem` keyword arguments rather than mutating options.
@@ -81,3 +116,10 @@ Neither backend regularizes Weber's velocity-dependent force — only the Coulom
 ## EnergyStatistics fields
 
 `en.statistics` has: `local_error_max`, `local_error_min`, `local_error_avg`, `global_error_ratio_max/min/avg`, `global_error_percent_max/min/avg`. There is **no** `local_error_percent_max`.
+
+## Environment
+
+- Julia version managed via `juliaup` (default: `release` channel)
+- Package is `dev`'d in default Julia environment (`~/.julia/environments/v1.12/`)
+- Notebooks run via IJulia `julia-1.12` kernel from the same default environment
+- Tests run via `julia --project=. -e 'using Pkg; Pkg.test()'`
