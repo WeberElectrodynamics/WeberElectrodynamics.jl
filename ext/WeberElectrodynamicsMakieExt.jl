@@ -269,6 +269,9 @@ mutable struct AnimationState
     # For streaming reset
     alg::SymmetricProjectionIntegrator
     extended_prob::Union{Nothing,WeberProblem}
+
+    # Axes for limit reset
+    axes::Vector{Axis}
 end
 
 # =============================================================================
@@ -444,6 +447,16 @@ end
 # Auto-Scaling
 # =============================================================================
 
+function _get_xlims(ax::Axis)
+    fl = ax.finallimits[]
+    return (fl.origin[1], fl.origin[1] + fl.widths[1])
+end
+
+function _get_ylims(ax::Axis)
+    fl = ax.finallimits[]
+    return (fl.origin[2], fl.origin[2] + fl.widths[2])
+end
+
 function _autoscale!(ax::Axis, x_obs::Observable, y_obs::Observable; padding::Float64 = 0.05)
     on(y_obs) do yd
         xd = x_obs[]
@@ -460,8 +473,21 @@ function _autoscale!(ax::Axis, x_obs::Observable, y_obs::Observable; padding::Fl
         if dy < eps(Float64)
             dy = max(abs(ymin) * 0.1, eps(Float64))
         end
-        xlims!(ax, xmin - padding * dx, xmax + padding * dx)
-        ylims!(ax, ymin - padding * dy, ymax + padding * dy)
+        new_xl = xmin - padding * dx
+        new_xr = xmax + padding * dx
+        new_yb = ymin - padding * dy
+        new_yt = ymax + padding * dy
+
+        # One-way scaling: only expand, never shrink
+        cur_xl, cur_xr = _get_xlims(ax)
+        cur_yb, cur_yt = _get_ylims(ax)
+        new_xl = min(new_xl, cur_xl)
+        new_xr = max(new_xr, cur_xr)
+        new_yb = min(new_yb, cur_yb)
+        new_yt = max(new_yt, cur_yt)
+
+        xlims!(ax, new_xl, new_xr)
+        ylims!(ax, new_yb, new_yt)
     end
     return nothing
 end
@@ -479,14 +505,28 @@ function _autoscale_dual!(ax_left::Axis, ax_right::Axis, x_obs::Observable,
         if dx < eps(Float64)
             dx = 1.0
         end
-        xlims!(ax_left, xmin - padding * dx, xmax + padding * dx)
+        new_xl = xmin - padding * dx
+        new_xr = xmax + padding * dx
 
+        # One-way x scaling (shared)
+        cur_xl, cur_xr = _get_xlims(ax_left)
+        new_xl = min(new_xl, cur_xl)
+        new_xr = max(new_xr, cur_xr)
+        xlims!(ax_left, new_xl, new_xr)
+
+        # Left y axis
         ymin, ymax = extrema(yd)
         dy = ymax - ymin
         if dy < eps(Float64)
             dy = max(abs(ymin) * 0.1, eps(Float64))
         end
-        ylims!(ax_left, ymin - padding * dy, ymax + padding * dy)
+        new_yb = ymin - padding * dy
+        new_yt = ymax + padding * dy
+
+        cur_yb, cur_yt = _get_ylims(ax_left)
+        new_yb = min(new_yb, cur_yb)
+        new_yt = max(new_yt, cur_yt)
+        ylims!(ax_left, new_yb, new_yt)
 
         # Right axis
         yr = y_right_obs[]
@@ -496,7 +536,13 @@ function _autoscale_dual!(ax_left::Axis, ax_right::Axis, x_obs::Observable,
             if dyr < eps(Float64)
                 dyr = max(abs(yrmin) * 0.1, eps(Float64))
             end
-            ylims!(ax_right, yrmin - padding * dyr, yrmax + padding * dyr)
+            new_rb = yrmin - padding * dyr
+            new_rt = yrmax + padding * dyr
+
+            cur_rb, cur_rt = _get_ylims(ax_right)
+            new_rb = min(new_rb, cur_rb)
+            new_rt = max(new_rt, cur_rt)
+            ylims!(ax_right, new_rb, new_rt)
         end
     end
     return nothing
@@ -526,8 +572,22 @@ function _autoscale_trajectory!(ax::Axis, traj_xs::Vector{Observable{Vector{Floa
         cx = (xmin + xmax) / 2
         cy = (ymin + ymax) / 2
         half = span / 2 * (1 + padding)
-        xlims!(ax, cx - half, cx + half)
-        ylims!(ax, cy - half, cy + half)
+
+        new_xl = cx - half
+        new_xr = cx + half
+        new_yb = cy - half
+        new_yt = cy + half
+
+        # One-way scaling: only expand, never shrink
+        cur_xl, cur_xr = _get_xlims(ax)
+        cur_yb, cur_yt = _get_ylims(ax)
+        new_xl = min(new_xl, cur_xl)
+        new_xr = max(new_xr, cur_xr)
+        new_yb = min(new_yb, cur_yb)
+        new_yt = max(new_yt, cur_yt)
+
+        xlims!(ax, new_xl, new_xr)
+        ylims!(ax, new_yb, new_yt)
     end
     return nothing
 end
@@ -559,7 +619,6 @@ function _build_figure(state::AnimationState, obs::PlotObservables;
     ax_traj = Axis(fig[1:2, 1];
         title = "Particle Trajectories",
         xlabel = "x", ylabel = "y",
-        aspect = DataAspect(),
     )
 
     for particle in 1:n
@@ -651,9 +710,9 @@ function _build_figure(state::AnimationState, obs::PlotObservables;
     rowsize!(fig.layout, 5, Fixed(60))
 
     # Controls
-    play_label = @lift($(state.is_playing) ? "⏸ Pause" : "▶ Play")
+    play_label = @lift($(state.is_playing) ? "|| Pause" : "> Play")
     play_btn = Button(controls_grid[1, 1]; label = play_label, width = 100)
-    reset_btn = Button(controls_grid[1, 2]; label = "↺ Reset", width = 100)
+    reset_btn = Button(controls_grid[1, 2]; label = "Reset", width = 100)
     Label(controls_grid[1, 3], obs.time_text; fontsize = 11)
     Label(controls_grid[1, 4], obs.step_text; fontsize = 11)
 
@@ -681,6 +740,9 @@ function _build_figure(state::AnimationState, obs::PlotObservables;
     _autoscale_dual!(ax_energy, ax_momentum, obs.energy_t, obs.total_energy, obs.momentum_mag)
     _autoscale!(ax_angular, obs.angular_t, obs.angular_momentum)
     _autoscale!(ax_phase, obs.phase_x, obs.phase_y)
+
+    # Store axes so _reset_animation! can clear one-way limits
+    state.axes = [ax_traj, ax_energy, ax_momentum, ax_angular, ax_phase]
 
     return fig
 end
@@ -727,6 +789,11 @@ end
 function _reset_animation!(state::AnimationState, obs::PlotObservables)
     state.is_playing[] = false
     reset!(state.buffer)
+
+    # Clear one-way axis limits so they re-expand from initial state
+    for ax in state.axes
+        autolimits!(ax)
+    end
 
     if state.source isa StreamingSource
         prob_to_init = isnothing(state.extended_prob) ? state.prob : state.extended_prob
@@ -872,6 +939,7 @@ function WeberElectrodynamics.animate_weber(
         E0, P0_mag, L0,
         Observable(phase_sel), Observable(initial_component),
         alg, extended_prob,
+        Axis[],
     )
 
     # Push initial state
@@ -884,7 +952,11 @@ function WeberElectrodynamics.animate_weber(
     fig = _build_figure(state, obs; figure_size = figure_size)
     _start_animation!(state, obs, compute_batch)
 
-    return fig
+    # Force a native window — disable inline so the backend opens a real screen
+    Makie.inline!(false)
+    screen = display(fig)
+
+    return screen
 end
 
 # =============================================================================
@@ -932,6 +1004,7 @@ function WeberElectrodynamics.animate_weber(
         E0, P0_mag, L0,
         Observable(phase_sel), Observable(initial_component),
         SymmetricProjectionIntegrator(), nothing,
+        Axis[],
     )
 
     # Push initial state
@@ -944,7 +1017,11 @@ function WeberElectrodynamics.animate_weber(
     fig = _build_figure(state, obs; figure_size = figure_size)
     _start_animation!(state, obs, compute_batch)
 
-    return fig
+    # Force a native window — disable inline so the backend opens a real screen
+    Makie.inline!(false)
+    screen = display(fig)
+
+    return screen
 end
 
 # =============================================================================

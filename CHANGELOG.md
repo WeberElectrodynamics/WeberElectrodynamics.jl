@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.0.1] - 2026-03-02
+
+### Fixed
+- Animation viewer now opens a native GLMakie window from Jupyter notebooks
+  instead of rendering a static inline PNG (`Makie.inline!(false)` + explicit
+  `display`).
+- `xlims`/`ylims` getter calls replaced with `_get_xlims`/`_get_ylims` helpers
+  reading `ax.finallimits[]`; the getters are not exported in Makie 0.24.
+- Unicode emoji in play/pause/reset button labels (`⏸`, `▶`, `↺`) replaced
+  with ASCII text; TeX Gyre Heros Makie font cannot render these glyphs.
+- One-way auto-scaling: axis limits only expand, never shrink, preventing
+  jitter during animation playback.
+- Reset button now calls `autolimits!` on all axes to clear one-way limits.
+
 ## [5.0.0] - 2026-03-02
 
 ### Breaking Changes

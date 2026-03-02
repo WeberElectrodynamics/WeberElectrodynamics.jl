@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-Julia package (v5.0.0) for n-body Weber electrodynamics simulation with Zöllner electrogravitational extension. Implements a symplectic Strang-splitting symmetric-projection integrator with Levi-Civita/KS regularization for close encounters and collision bounce for head-on singularities.
+Julia package (v5.0.1) for n-body Weber electrodynamics simulation with Zöllner electrogravitational extension. Implements a symplectic Strang-splitting symmetric-projection integrator with Levi-Civita/KS regularization for close encounters and collision bounce for head-on singularities.
 
 ## Commands
 
@@ -123,3 +123,12 @@ Neither backend regularizes Weber's velocity-dependent force — only the Coulom
 - Package is `dev`'d in default Julia environment (`~/.julia/environments/v1.12/`)
 - Notebooks run via IJulia `julia-1.12` kernel from the same default environment
 - Tests run via `julia --project=. -e 'using Pkg; Pkg.test()'`
+
+## Releasing a New Version
+
+1. Bump `version` in `Project.toml`
+2. Add entry to `CHANGELOG.md` under the new version heading
+3. Update the version number in `CLAUDE.md` Project description
+4. Commit all changed files (Project.toml, CHANGELOG.md, CLAUDE.md, and any source files)
+5. Tag: `git tag v<VERSION>`
+6. Push: `git push && git push --tags`
