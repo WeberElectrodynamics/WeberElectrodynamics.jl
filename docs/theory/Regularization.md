@@ -14,7 +14,7 @@ This document is self-contained and independent of any specific implementation.
 Consider a Hamiltonian of the form
 
 $$
-H(q,p,t)=\sum_{i=1}^N \frac{\|p_i\|^2}{2m_i}+\sum_{1\le i\lt j\le N}\frac{\kappa_{ij}}{r_{ij}}+R(q,p,t),
+H(q,p,t)=\sum_{i=1}^N \frac{\|p_i\|^2}{2m_i}+\sum_{1\le i< j\le N}\frac{\kappa_{ij}}{r_{ij}}+R(q,p,t),
 $$
 
 where
@@ -32,8 +32,11 @@ R_{ij}=\frac{m_i q_i+m_j q_j}{m_i+m_j},\quad \vec{r}_{ij}=q_i-q_j,
 $$
 
 $$
-P_{ij}=p_i+p_j,\quad p_{ij}=\mu_{ij}\left(\frac{p_i}{m_i}-\frac{p_j}{m_j}\right),\quad
-\mu_{ij}=\frac{m_i m_j}{m_i+m_j}.
+\begin{aligned}
+P_{ij}&=p_i+p_j, \\
+p_{ij}&=\mu_{ij}\left(\frac{p_i}{m_i}-\frac{p_j}{m_j}\right), \\
+\mu_{ij}&=\frac{m_i m_j}{m_i+m_j}.
+\end{aligned}
 $$
 
 The singular part is always in the relative coordinate $\vec{r}_{ij}$ (with scalar distance $r_{ij} = \|\vec{r}_{ij}\|$), so regularization is applied there.
@@ -49,18 +52,22 @@ $$
 Hamilton's equations in fictitious time $\tau$ are
 
 $$
-\frac{dq}{d\tau}=\frac{\partial \mathcal{K}}{\partial p},\quad
-\frac{dp}{d\tau}=-\frac{\partial \mathcal{K}}{\partial q},\quad
-\frac{dt}{d\tau}=\frac{\partial \mathcal{K}}{\partial p_t}=g,\quad
-\frac{dp_t}{d\tau}=-\frac{\partial \mathcal{K}}{\partial t}.
+\begin{aligned}
+\frac{dq}{d\tau}&=\frac{\partial \mathcal{K}}{\partial p}, &
+\frac{dp}{d\tau}&=-\frac{\partial \mathcal{K}}{\partial q}, \\
+\frac{dt}{d\tau}&=\frac{\partial \mathcal{K}}{\partial p_t}=g, &
+\frac{dp_t}{d\tau}&=-\frac{\partial \mathcal{K}}{\partial t}.
+\end{aligned}
 $$
 
 On the physical manifold $H+p_t=0$:
 
 $$
-\frac{dq}{d\tau}=g\,\frac{\partial H}{\partial p},\quad
-\frac{dp}{d\tau}=-g\,\frac{\partial H}{\partial q},\quad
-\frac{dt}{d\tau}=g.
+\begin{aligned}
+\frac{dq}{d\tau}&=g\,\frac{\partial H}{\partial p}, \\
+\frac{dp}{d\tau}&=-g\,\frac{\partial H}{\partial q}, \\
+\frac{dt}{d\tau}&=g.
+\end{aligned}
 $$
 
 Hence
@@ -135,9 +142,11 @@ $$
 Canonical momenta from $p\cdot d\mathbf{r}=U\cdot du$:
 
 $$
-U=J^T p,\quad
-U_1=2(u_1p_x+u_2p_y),\quad
-U_2=2(-u_2p_x+u_1p_y).
+\begin{aligned}
+U&=J^T p, \\
+U_1&=2(u_1p_x+u_2p_y), \\
+U_2&=2(-u_2p_x+u_1p_y).
+\end{aligned}
 $$
 
 Therefore
@@ -224,21 +233,23 @@ g=r_{ab}\ \text{(single active pair)},
 $$
 
 $$
-g=\left(\sum_{i\lt j}\frac{w_{ij}}{r_{ij}}\right)^{-1}\ \text{(global close-encounter monitor)},
+g=\left(\sum_{i< j}\frac{w_{ij}}{r_{ij}}\right)^{-1}\ \text{(global close-encounter monitor)},
 $$
 
 $$
 g=\frac{1}{\alpha T+\beta\Omega+\gamma},\quad
-\Omega=\sum_{i\lt j}\frac{w_{ij}}{r_{ij}},\quad
+\Omega=\sum_{i< j}\frac{w_{ij}}{r_{ij}},\quad
 \alpha,\beta,\gamma\ge 0.
 $$
 
 In transformed canonical variables $(Q,P)$:
 
 $$
-\frac{dQ}{d\tau}=g\,\frac{\partial H}{\partial P},\quad
-\frac{dP}{d\tau}=-g\,\frac{\partial H}{\partial Q},\quad
-\frac{dt}{d\tau}=g.
+\begin{aligned}
+\frac{dQ}{d\tau}&=g\,\frac{\partial H}{\partial P}, \\
+\frac{dP}{d\tau}&=-g\,\frac{\partial H}{\partial Q}, \\
+\frac{dt}{d\tau}&=g.
+\end{aligned}
 $$
 
 When multiple KS pairs are active, constraints $\Psi_a(Q,P)=0$ are enforced for each pair.
