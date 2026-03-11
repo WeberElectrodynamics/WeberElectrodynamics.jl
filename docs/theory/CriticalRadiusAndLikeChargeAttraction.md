@@ -190,7 +190,7 @@ The super-critical case $h > h_c$ reveals a new phenomenon not discussed in Webe
 
 For $\ell = 0$ (purely radial motion), collisions with the origin occur at finite speed $\sqrt{2}\,c$ and are $C^0$-continuable. These collisions are regularizable by the techniques described in [Regularization.md](Regularization.md).
 
-For $\ell \neq 0$, trajectories inside $\rho$ spiral into the origin at infinite speed in finite time. These collisions are *not* regularizable: no smooth coordinate-time transform can remove the singularity. In particular, no periodic orbits exist inside the critical radius — the spiralling is always terminal.
+For $\ell \neq 0$, trajectories inside $\rho$ spiral into the origin at infinite speed in finite time. These collisions are *not* regularizable: no smooth coordinate-time transform can remove the singularity. The obstruction is topological — the particle makes infinitely many revolutions ($\phi \to \infty$), and this infinite winding number is preserved by all smooth coordinate changes. Seven regularization approaches (Sundman, Levi-Civita, McGehee, conformal maps, and others) were tested and all fail; see [AngularMomentumRegularization.md](AngularMomentumRegularization.md) for the detailed investigation. In particular, no periodic orbits exist inside the critical radius — the spiralling is always terminal.
 
 ## The Weber–Schrödinger Equation
 
@@ -236,4 +236,4 @@ Without the sub-critical regime, there is no mechanism for like charges to coher
 - Frauenfelder, U., Weber, J. "A mathematical description of the Weber nucleus as a classical and quantum mechanical system." *Anal. Math. Phys.* **14**:31 (2024). DOI: [10.1007/s13324-024-00891-5](https://doi.org/10.1007/s13324-024-00891-5).
 - Frauenfelder, U., Weber, J. "The fine structure of Weber's hydrogen atom: Bohr–Sommerfeld approach." *Z. Angew. Math. Phys.* **70**(4), 105–116 (2019).
 
-See also: [WeberElectrodynamics.md](WeberElectrodynamics.md), [ZollnerElectrogravitationalTheory.md](ZollnerElectrogravitationalTheory.md), [Regularization.md](Regularization.md).
+See also: [WeberElectrodynamics.md](WeberElectrodynamics.md), [ZollnerElectrogravitationalTheory.md](ZollnerElectrogravitationalTheory.md), [Regularization.md](Regularization.md), [AngularMomentumRegularization.md](AngularMomentumRegularization.md).
