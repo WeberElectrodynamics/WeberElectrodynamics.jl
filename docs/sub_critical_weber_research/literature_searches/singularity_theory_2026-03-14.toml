@@ -1,0 +1,690 @@
+[[papers]]
+source = "arxiv"
+year = 2022
+notes = ""
+title = "Multi-order asymptotic expansion of blow-up solutions for autonomous ODEs. I -- Method and Justification"
+abstract = "In this paper, we provide a systematic methodology for calculating multi-order asymptotic expansion of blow-up solutions near blow-up for autonomous ordinary differential equations (ODEs). Under the specific form of the principal term of blow-up solutions for a class of vector fields, we extract algebraic objects determining all possible orders in the asymptotic expansions. Examples for calculating concrete multi-order asymptotic expansions of blow-up solutions are finally collected."
+authors = "Taisei Asai; Hisatoshi Kodani; Kaname Matsue; Hiroyuki Ochiai; Takiko Sasaki"
+url = "http://arxiv.org/abs/2211.06865v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2022
+notes = ""
+title = "Multi-order asymptotic expansion of blow-up solutions for autonomous ODEs. II -- Dynamical Correspondence"
+abstract = "In this paper, we provide a natural correspondence of eigenstructures of Jacobian matrices associated with equilibria for appropriately transformed two systems describing finite-time blow-ups for ODEs with quasi-homogeneity in an asymptotic sense. As a corollary, we see that asymptotic expansions of blow-ups proposed in Part I themselves provide a criterion of the existence of blow-ups with an intrinsic gap structure of stability information among two systems. Examples provided in Part I are rev..."
+authors = "Hisatoshi Kodani; Kaname Matsue; Hiroyuki Ochiai; Akitoshi Takayasu"
+url = "http://arxiv.org/abs/2211.06868v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2009
+notes = ""
+title = "Perverse coherent sheaves on blow-up. III. Blow-up formula from wall-crossing"
+abstract = "In earlier papers arXiv:0802.3120, arXiv:0806.0463 of this series we constructed a sequence of intermediate moduli spaces $\\bM^m(c)$ connecting a moduli space $M(c)$ of stable torsion free sheaves on a nonsingular complex projective surface and $\\bM(c)$ on its one point blow-up. They are moduli spaces of perverse coherent sheaves on the blow-up. In this paper we study how Donaldson-type invariants (integrals of cohomology classes given by universal sheaves) change from $\\bM^m(c)$ to $\\bM^{m+1}(c..."
+authors = "Hiraku Nakajima; Kota Yoshioka"
+url = "http://arxiv.org/abs/0911.1773v3"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2022
+notes = ""
+title = "Blow-up of strong solutions of the Thermal Quasi-Geostrophic equation"
+abstract = "The Thermal Quasi-Geostrophic (TQG) equation is a coupled system of equations that governs the evolution of the buoyancy and the potential vorticity of a fluid. It has a local in time solution as proved in [4]. In this paper, we give a criterion for the blow-up of solutions to the Thermal Quasi-Geostrophic equation, in the spirit of the classical Beale-Kato-Majda blow-up criterion (cf. [3]) for the solution of the Euler equation."
+authors = "Dan Crisan; Prince Romeo Mensah"
+url = "http://arxiv.org/abs/2201.06476v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2024
+notes = ""
+title = "On the blow-up formula of weighted stability for polarized toric manifolds"
+abstract = "Let $X$ be a smooth projective toric variety, and let $\\widetilde{X}$ denote the blow-up of $X$ at finitely many distinct tours-invariant points. This paper provides an explicit combinatorial formula for the Chow weight of $\\widetilde{X}$ in terms of the base toric manifold $X$ and the symplectic cuts of its associated Delzant polytope. We apply this blow-up formula to the projective plane and compare Chow stability of toric blow-ups with that of blow-ups at general points. Furthermore, we deriv..."
+authors = "King Leung Lee; Naoto Yotsutani"
+url = "http://arxiv.org/abs/2407.10082v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 1996
+notes = ""
+title = "Desingularization of singular hyperkaehler varieties II"
+abstract = "This is a second part of alg-geom/9611015. We construct a natural hyperkaehler desingularization for all singular hyperkaehler varieties. The desingularization theorem was proven in alg-geom/9611015 under additional assumption of local homogeneity. Here we show that local homogeneity is redundant: every singular hyperkaehler variety has locally homogeneous singularities."
+authors = "Misha Verbitsky"
+url = "http://arxiv.org/abs/alg-geom/9612013v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2018
+notes = ""
+title = "Blow-up for the pointwise NLS in dimension two: absence of critical power"
+abstract = "We consider the Schrödinger equation in dimension two with a fixed, pointwise, focusing nonlinearity and show the occurrence of a blow-up phenomenon with two peculiar features: first, the energy threshold under which all solutions blow up is strictly negative and coincides with the infimum of the energy of the standing waves. Second, there is no critical power nonlinearity, i.e. for every power there exist blow-up solutions. This last property is uncommon among the conservative Schrödinger equat..."
+authors = "Riccardo Adami; Raffaele Carlone; Michele Correggi; Lorenzo Tentarelli"
+url = "http://arxiv.org/abs/1808.10343v4"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2022
+notes = ""
+title = "Global existence and Blow-up for the 1D damped compressible Euler equations with time and space dependent perturbation"
+abstract = "In this paper, we consider the 1D Euler equation with time and space dependent damping term $-a(t,x)v$. It has long been known that when $a(t,x)$ is a positive constant or $0$, the solution exists globally in time or blows up in finite time, respectively. We prove that those results are invariant with respect to time and space dependent perturbations. We suppose that the coefficient $a$ satisfies the following condition $$ |a(t,x)- μ_0| \\leq a_1(t) + a_2 (x), $$ where $μ_0 \\geq 0$ and $a_1$ and ..."
+authors = "Yuusuke Sugiyama"
+url = "http://arxiv.org/abs/2212.11072v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2011
+notes = ""
+title = "Recent progress of the ATLAS Planar Pixel Sensor R&amp;D Project"
+abstract = "The foreseen luminosity upgrade for the LHC (a factor of 5-10 more in peak luminosity by 2021) poses serious constraints on the technology for the ATLAS tracker in this High Luminosity era (HL-LHC). In fact, such luminosity increase leads to increased occupancy and radiation damage of the tracking detectors. To investigate the suitability of pixel sensors using the proven planar technology for the upgraded tracker, the ATLAS Planar Pixel Sensor R&amp;D Project was established comprising 17 insti..."
+authors = "The ATLAS Planar Pixel Sensor R&amp;D Project; :; M. Bomben"
+url = "http://arxiv.org/abs/1109.5944v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2021
+notes = ""
+title = "Blow-up of waves on singular spacetimes with generic spatial metrics"
+abstract = "We study the asymptotic behaviour of solutions to the linear wave equation on cosmological spacetimes with Big Bang singularities and show that appropriately rescaled waves converge against a blow-up profile. Our class of spacetimes includes Friedman-Lemaître-Robertson-Walker (FLRW) spacetimes with negative sectional curvature that solve the Einstein equations in presence of a perfect irrotational fluid with $p=(γ-1)ρ$. As such, these results are closely related to the still open problem of past..."
+authors = "David Fajman; Liam Urban"
+url = "http://arxiv.org/abs/2110.14999v4"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2006
+notes = ""
+title = "Desingularization of Coassociative 4-folds with Conical Singularities"
+abstract = "Given a coassociative 4-fold N with a conical singularity in a varphi-closed 7-manifold M (a manifold endowed with a distinguished closed 3-form varphi), we construct a smooth family, {N'(t): t\\in(0,tau)} for some tau&gt;0, of (smooth, nonsingular,) compact coassociative 4-folds in M which converge to N in the sense of currents, in geometric measure theory, as t tends to 0. This realisation of desingularizations of N is achieved by gluing in an asymptotically conical coassociative 4-fold in R^7,..."
+authors = "Jason Lotay"
+url = "http://arxiv.org/abs/math/0611183v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2000
+notes = ""
+title = "Singular Asymptotics Lemma and Push-Forward Theorem"
+abstract = "The Singular Asymptotics Lemma by Brüning and Seeley and the Push-Forward Theorem by Melrose lie at the very heart of their respective approaches to singular analysis. We review both and show that they deal with the same basic problem, giving solutions that emphasize different aspects of it. This also points to a possible common extension."
+authors = "Daniel Grieser; Michael J Gruber"
+url = "http://arxiv.org/abs/math/0009161v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2012
+notes = ""
+title = "The singularities of the maps associated with Milnor fibrations"
+abstract = "Milnor fibrations have been studied since 1960's. In this paper, we study singular points of differentiable maps, called Milnor fibration product maps, obtained by several Milnor fibrations. We give a characterization of singular points of such product maps, and for the case of certain weighted homogeneous polynomials, a criterion for a fold point together with its index."
+authors = "Daiki Sumida"
+url = "http://arxiv.org/abs/1211.5670v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2009
+notes = ""
+title = "Desingularization of singular Riemannian foliation"
+abstract = "Consider a singular Riemannian foliation (s.r.f for short) on a compact manifold. By successive blow-ups along the strata, we construct a regular Riemannian foliation on another compact Riemannian manifold and a desingularization map that projects leaves of the regular Riemannian foliation into leaves of the s.r.f. This result generalizes a previous result due to Molino for the particular case of a singular Riemannian foliation whose leaves were the closure of leaves of a regular Riemannian foli..."
+authors = "Marcos M. Alexandrino"
+url = "http://arxiv.org/abs/0907.0903v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2022
+notes = ""
+title = "Finite quotients of singular Artin monoids and categorification of the desingularization map"
+abstract = "We study various aspects of the structure and representation theory of singular Artin monoids. This includes a number of generalizations of the desingularization map and explicit presentations for certain finite quotient monoids of diagrammatic nature. The main result is a categorification of the classical desingularization map for singular Artin monoids associated to finite Weyl groups using BGG category $\\mathcal{O}$."
+authors = "Helena Jonsson; Volodymyr Mazorchuk; Elin Persson Westin; Shraddha Srivastava; Mateusz Stroinski; Xiaoyu Zhu"
+url = "http://arxiv.org/abs/2205.12039v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2015
+notes = ""
+title = "Desingularization of Lie groupoids and pseudodifferential operators on singular spaces"
+abstract = "We introduce and study a \"desingularization\" of a Lie groupoid $G$ along an \"$A(G)$-tame\" submanifold $L$ of the space of units $M$. An $A(G)$-tame submanifold $L \\subset M$ is one that has, by definition, a tubular neighborhood on which $A(G)$ becomes a thick pull-back Lie algebroid. The construction of the desingularization $[[G:L]]$ of $G$ along $L$ is based on a canonical fibered pull-back groupoid structure result for $G$ in a neighborhood of the tame $A(G)$-submanifold $L \\subset M$. This ..."
+authors = "Victor Nistor"
+url = "http://arxiv.org/abs/1512.08613v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2012
+notes = ""
+title = "Desingularization of Coassociative 4-folds with Conical Singularities: Obstructions and Applications"
+abstract = "We study the problem of desingularizing coassociative conical singularities via gluing, allowing for topological and analytic obstructions, and discuss applications. This extends the author's earlier work on the unobstructed case. We interpret the analytic obstructions geometrically via the obstruction theory for deformations of conically singular coassociative 4-folds, and thus relate them to the stability of the singularities. We use our results to describe the relationship between moduli spac..."
+authors = "Jason D. Lotay"
+url = "http://arxiv.org/abs/1209.5116v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2006
+notes = ""
+title = "Simultaneous desingularizations of Calabi-Yau and special Lagrangian 3-folds with conical singularities"
+abstract = "This paper is a follow-up to an earlier paper math.DG/0410260 on desingularizations of Calabi-Yau 3-folds with a conical singularity. In math.DG/0410260 we study Calabi-Yau 3-folds M_0 with a conical singularity at x modelled on some Calabi-Yau cone V, and construct a desingularization of M_0 by gluing in an Asymptotically Conical (AC) Calabi-Yau 3-fold Y to M_0 at x. In this paper, we shall investigate a similar desingularization problem on special Lagrangian (SL) 3-folds in the corresponding C..."
+authors = "Yat-Ming Chan"
+url = "http://arxiv.org/abs/math/0606399v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2026
+notes = ""
+title = "Group-circulant singularities and partial desingularization preserving normal crossings"
+abstract = "The subject is partial desingularization preserving the normal crossings singularities of an algebraic or analytic variety X (over the complex field or over an uncountable algebraically closed field of characteristic zero, in the algebraic case). Our approach has three parts involving distinct techniques: (1) a formal splitting theorem for regular or analytic functions which satisfy a generic splitting hypothesis; (2) a study of singularities in the closure of the normal crossings locus, based o..."
+authors = "André Belotto da Silva; Edward Bierstone"
+url = "http://arxiv.org/abs/2602.09114v1"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2010
+notes = ""
+title = "Singular perturbations and vanishing passage through a turning point"
+abstract = "Abstract The paper deals with planar slow–fast cycles containing a unique generic turning point. We address the question on how to study canard cycles when the slow dynamics can be singular at the turning point. We more precisely accept a generic saddle-node bifurcation to pass through the turning point. It reveals that in this case the slow divergence integral is no longer the good tool to use, but its derivative with respect to the layer variable still is. We provide general results as well as..."
+authors = "P. Maesschalck; F. Dumortier"
+url = "https://www.semanticscholar.org/paper/636949ed71f408ad89b80807d5096ba51a3c1aad"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2010
+notes = ""
+title = "Detectable canard cycles with singular slow dynamics of any order at the turning point"
+abstract = """This paper deals with the study of limit cycles that appear in a class of planar slow-fast systems, near a \"canard'' limit periodic set of FSTS-type. \n Limit periodic sets of FSTS-type are closed orbits, composed of a Fast branch, an attracting Slow branch, a Turning point, and \n a repelling Slow branch. Techniques to bound the number of limit cycles near a FSTS-l.p.s. are based on the study of the so-called \n slow divergence integral, calculated along the slow branches. In this paper, we extend..."""
+authors = "P. Maesschalck; F. Dumortier"
+url = "https://www.semanticscholar.org/paper/d6f570ffae11e127dbf239898fb8cadfd1617237"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2024
+notes = ""
+title = "Desingularization of finitely smooth vector fields on the plane"
+abstract = """The paper is devoted to desingularization of finitely smooth vector fields on the plane. Let the difference of germs of a finitely smooth vector field and an analytic vector field be sufficiently flat at a common singular point. Then these vector fields share similar behavior under desingularization. In particular, the nice desingularizations of both vector fields are achieved in the same number of steps. Moreover, for any analytic vector field with a singular point of multiplicity \n\n \n \n μ\n 0\n ..."""
+authors = "A. Dukov"
+url = "https://www.semanticscholar.org/paper/251329519b1ac4e943f4ec0da4171b5880fd6176"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2023
+notes = ""
+title = "proof of a Dumortier-Roussarie’s conjecture. (English)"
+abstract = ""
+authors = ""
+url = "https://www.semanticscholar.org/paper/c0a98d95a834b3c979ebfc77171bf0616ca64c87"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2025
+notes = ""
+title = "ECH capacities of concave singular toric domains"
+abstract = "By definition, a toric domain has a boundary contact manifold diffeomorphic to a three dimensional sphere. In the present work we extend the definition of the toric domains in dimension four so that it admits a contact manifold diffeomorphic to a lens space L(n, 1). We call them'singular toric domains'since they naturally have an orbifold point. We calculate the ECH capacities for a specific subfamily of these singular toric domains that generalize the concave toric domains. Interestingly, even ..."
+authors = "Jonathan Trejos"
+url = "https://www.semanticscholar.org/paper/9e2b0bff65890331a06b156cf38821804a5eeca2"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2010
+notes = ""
+title = "Multilayer minimum projection method with singular point assignment for nonsmooth control Lyapunov function design"
+abstract = ""
+authors = "Hisakazu Nakamura; Yoshiro Fukui; Nami Nakamura; H. Nishitani"
+url = "https://www.semanticscholar.org/paper/21e745934ac4e63658302ccd9a717540679fdd43"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2006
+notes = ""
+title = "Compactification and desingularization of spaces of polynomial Lienard equations"
+abstract = ""
+authors = "F. Dumortier"
+url = "https://www.semanticscholar.org/paper/100992a85edf2aa045cc838e71f4779356a0491d"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2020
+notes = ""
+title = "The desingularization of the theta divisor of a cubic threefold as a moduli space"
+abstract = """We show that the moduli space $\\overline{M}_X(v)$ of Gieseker stable sheaves on a smooth cubic threefold $X$ with Chern character $v = (3,-H,-H^2/2,H^3/6)$ is smooth and of dimension four. Moreover, the Abel-Jacobi map to the intermediate Jacobian of $X$ maps it birationally onto the theta divisor $\\Theta$, contracting only a copy of $X \\subset \\overline{M}_X(v)$ to the singular point $0 \\in \\Theta$. \nWe use this result to give a new proof of a categorical version of the Torelli theorem for cubi..."""
+authors = "Arend Bayer; S. Beentjes; S. Feyzbakhsh; G. Hein; Diletta Martinelli; F. Rezaee; B. Schmidt"
+url = "https://www.semanticscholar.org/paper/760fa398828816f8ce57777e4ee0a54a7051a1be"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2023
+notes = ""
+title = "Desingularization and Global Continuation for Hollow Vortices"
+abstract = "A hollow vortex is a region of constant pressure suspended inside a perfect fluid and around which there is a nonzero circulation; it can therefore be interpreted as a spinning bubble of air in water. This paper gives a general method for desingularizing non-degenerate steady point vortex configurations into collections of steady hollow vortices. Our machinery simultaneously treats the translating, rotating, and stationary regimes. Through global bifurcation theory, we further obtain maximal cur..."
+authors = "R. Chen; Samuel Walsh; M. Wheeler"
+url = "https://www.semanticscholar.org/paper/981d7a899345d7c6f4a7393a3e99f670c18f4bb8"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2025
+notes = ""
+title = "On entry-exit formulas for degenerate turning point problems in planar slow-fast systems"
+abstract = "In this paper, we study degenerate entry-exit problems associated with planar slow-fast systems having an invariant line $\\{(x,y)\\,:\\,y=0\\}$ with a turning point at $x=0$. The degeneracy stems from the fact that the slow flow has a saddle-node of even order $2n$, $n\\in \\mathbb N$, at the turning point, i.e. $x'= -x^{2n}(1+o(1))$ for $\\epsilon=0$. We are motivated by the appearance of such turning point problems (for $n=1$) in the graphics $(I_2^1)$ and $(I_4^1)$, through a nilpotent saddle-node ..."
+authors = "Renato Huzak; K. U. Kristiansen"
+url = "https://www.semanticscholar.org/paper/e9d545a7f010d4b6d0e19e3e77748ba747d8b354"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2013
+notes = ""
+title = "Singularities of affine equidistants: projections and contacts"
+abstract = "Using standard methods for studying singularities of projections and of contacts, we classify the stable singularities of affine $λ$-equidistants of $n$-dimensional closed submanifolds of $\\mathbb R^q$, for $q\\leq 2n$, whenever $(2n,q)$ is a pair of nice dimensions."
+authors = "W. Domitrz; P. de M. Rios; M. A. S. Ruas"
+url = "http://arxiv.org/abs/1302.0662v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2016
+notes = ""
+title = "Fractal trajectories of the dynamical system"
+abstract = "The scope of the paper is a theoretical analysis of the dynamical system, the model of which was reduced to Weierstrasse function. A fractal structure of the trajectory was proved and the entropy of the system information designated."
+authors = "Marek Berezowski"
+url = "http://arxiv.org/abs/1604.03152v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2014
+notes = ""
+title = "On the use of blow up to study regularizations of singularities of piecewise smooth dynamical systems in $\\mathbb{R}^3$"
+abstract = "In this paper we use the blow up method of Dumortier and Roussarie \\cite{dumortier_1991,dumortier_1993,dumortier_1996}, in the formulation due to Krupa and Szmolyan \\cite{krupa_extending_2001}, to study the regularization of singularities of piecewise smooth dynamical systems \\cite{filippov1988differential} in $\\mathbb R^3$. Using the regularization method of Sotomayor and Teixeira \\cite{Sotomayor96}, first we demonstrate the power of our approach by considering the case of a fold line. We quick..."
+authors = "K. Uldall Kristiansen; S. J. Hogan"
+url = "http://arxiv.org/abs/1408.0675v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2021
+notes = ""
+title = "Segre classes and invariants of singular varieties"
+abstract = "Segre classes encode essential intersection-theoretic information concerning vector bundles and embeddings of schemes. In this paper we survey a range of applications of Segre classes to the definition and study of invariants of singular spaces. We will focus on several numerical invariants, on different notions of characteristic classes for singular varieties, and on classes of Le cycles. We precede the main discussion with a review of relevant background notions in algebraic geometry and inter..."
+authors = "Paolo Aluffi"
+url = "http://arxiv.org/abs/2109.05061v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2002
+notes = ""
+title = "Measurement of the Flux of Ultrahigh Energy Cosmic Rays from Monocular Observations by the High Resolution Fly's Eye Experiment"
+abstract = "We have measured the cosmic ray spectrum above 10^17.2 eV using the two air fluorescence detectors of the High Resolution Fly's Eye observatory operating in monocular mode. We describe the detector, photo-tube and atmospheric calibrations, as well as the analysis techniques for the two detectors. We fit the spectrum to a model consisting of galactic and extra-galactic sources."
+authors = "The High Resolution Fly's Eye Collaboration"
+url = "http://arxiv.org/abs/astro-ph/0208243v7"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2015
+notes = ""
+title = "On the smoothings of non-normal isolated surface singularities"
+abstract = "We show that isolated surface singularities which are non-normal may have Milnor fibers which are non-diffeomorphic to those of their normalizations. Therefore, non-normal isolated singularities enrich the collection of Stein fillings of links of normal isolated singularities. We conclude with a list of open questions related to this theme."
+authors = "Patrick Popescu-Pampu"
+url = "http://arxiv.org/abs/1501.04221v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2004
+notes = ""
+title = "A Study of the Composition of Ultra High Energy Cosmic Rays Using the High Resolution Fly's Eye"
+abstract = "The composition of Ultra High Energy Cosmic Rays (UHECR) is measured with the High Resolution Fly's Eye cosmic ray observatory (HiRes) data using the Xmax technique. Data were collected in stereo between 1999 November and 2001 September. The data are reconstructed with well-determined geometry. Measurements of the atmospheric transmission are incorporated in the reconstruction. The detector resolution is found to be 30 g cm^-2 in Xmax and 13% in Energy. The Xmax elongation rate between 10^18.0 e..."
+authors = "The High Resolution Fly's Eye Collaboration"
+url = "http://arxiv.org/abs/astro-ph/0407622v3"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2005
+notes = ""
+title = "Superisolated Surface Singularities"
+abstract = "In this survey, we review part of the theory of superisolated surface singularities (SIS) and its applications including some new and recent developments. The class of SIS singularities is, in some sense, the simplest class of germs of normal surface singularities. Namely, their tangent cones are reduced curves and the geometry and topology of the SIS singularities can be deduced from them. Thus this class \\emph{contains}, in a canonical way, all the complex projective plane curve theory, which ..."
+authors = "E. Artal Bartolo; I. Luengo; A. Melle-Hernandez"
+url = "http://arxiv.org/abs/math/0509283v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2006
+notes = ""
+title = "Genericity in Topological Dynamics"
+abstract = "We study genericity of dynamical properties in the space of homeomorphisms of the Cantor set and in the space of subshifts of a suitably large shift space. These rather different settings are related by a Glasner-King type correspondence: genericity in one is equivalent to genericity in the other. By applying symbolic techniques in the shift-space model we derive new results about genericity of dynamical properties for transitive and totally transitive homeomorphisms of the Cantor set. We show t..."
+authors = "Michael Hochman"
+url = "http://arxiv.org/abs/math/0605386v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2014
+notes = ""
+title = "Blowups and Resolution"
+abstract = "This article shall serve as a quick reference for somebody who needs precise information on concepts and results related to resolution of singularities. As such, it is more a technical manual than a bedtime story. Topics which are covered: Singular and regular points of varieties and schemes; various definitions of blowups and their mutual relations; properties of blowups; transforms of varieties, schemes and ideals; exceptional divisors; Cartier and normal crossings divisors; transversality; hy..."
+authors = "Herwig Hauser"
+url = "http://arxiv.org/abs/1404.1041v1"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2025
+notes = ""
+title = "Cosmological study of finite-time singularities under dynamical systems survey in covariant modified teleparallel gravity"
+abstract = ""
+authors = "M. Ganiou; M. Toure; C. Aïnamon; S. I. V. Hontinfinde; M. Houndjo"
+url = "https://www.semanticscholar.org/paper/026f89298b282cbdc32b331c6c7447e6c55d2143"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2007
+notes = ""
+title = "Quantum resolution of cosmological singularities using AdS/CFT correspondence"
+abstract = "The AdS/CFT correspondence allows us to map a dynamical cosmology to a dual quantum field theory living on the boundary of spacetime. Specifically, we study a five-dimensional model cosmology in type IIB supergravity, where the dual theory is an unstable deformation of $\\N=4$ supersymmetric SU(N) gauge theory on $\\Rbar\\times S^3$. A one-loop computation shows that the coupling governing the instability is asymptotically free, so quantum corrections cannot turn the potential around. The big crunc..."
+authors = "B. Craps; T. Hertog; N. Turok"
+url = "https://www.semanticscholar.org/paper/e3defe823ba6fba2261d175bc344f68c42dd7a0c"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2018
+notes = ""
+title = "Resolution of the Piecewise Smooth Visible–Invisible Two-Fold Singularity in Using Regularization and Blowup"
+abstract = ""
+authors = "K. U. Kristiansen; S. Hogan"
+url = "https://www.semanticscholar.org/paper/b48634f7b9f5cbd94efb99291fd0bd6948ac7ece"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2016
+notes = ""
+title = "Resolution of the Piecewise Smooth Visible–Invisible Two-Fold Singularity in $$\\mathbb {R}^3$$R3 Using Regularization and Blowup"
+abstract = "Two-fold singularities in a piecewise smooth (PWS) dynamical system in $$\\mathbb {R}^3$$R3 have long been the subject of intensive investigation. The interest stems from the fact that trajectories which enter the two-fold are associated with forward non-uniqueness. The key questions are: how do we continue orbits forward in time? Are there orbits that are distinguished among all the candidates? We address these questions by regularizing the PWS dynamical system for the case of the visible–invisi..."
+authors = "K. U. Kristiansen; S. Hogan"
+url = "https://www.semanticscholar.org/paper/cb9121b642c5ccbc2220b039d719ac3b1f98cc1d"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2005
+notes = ""
+title = "Dynamical dark energy models – dynamical system approach"
+abstract = "We study the Friedmann-Robertson-Walker model with dynamical dark energy modelled in terms of the equation of state pX = wX(a(z)) ρX in which the coefficient wX is parameterized by the scale factor a or redshift z. We use methods of qualitative analysis of differential equations to investigate the space of all admissible solutions for all initial conditions on the two-dimensional phase plane. We show advantages of representing this dynamics as a motion of a particle in the one-dimensional potent..."
+authors = "M. Szydłowski; O. Hrycyna"
+url = "https://www.semanticscholar.org/paper/2f567f500622b07c8068bf3cfb7e0172510c011c"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2009
+notes = ""
+title = "Dynamical singularity resolution in spherically symmetric black hole formation"
+abstract = "We study numerically the effects of loop quantum gravity motivated corrections on massless scalar field collapse in Painleve-Gullstrand coordinates. Near criticality the system exhibits Choptuik scaling with a mass gap and a new scaling relationship dependant upon the quantum length scale. Classical singularities are resolved by a radiationlike phase in the quantum collapse: the black hole consists of a compact region of spacetime bounded by a single, smooth trapping horizon. The 'evaporation' i..."
+authors = "J. Ziprick; G. Kunstatter"
+url = "https://www.semanticscholar.org/paper/2d00d0b953b0b9105ff6a6b58933858af03f771f"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2025
+notes = ""
+title = "On the geometry of a 4-dimensional extension of a q-Painlevé I equation with symmetry type A1(1)"
+abstract = "We present a geometric study of a four-dimensional integrable discrete dynamical system which extends the autonomous form of a q-Painlevé I equation with symmetry of type A1(1). By resolution of singularities it is lifted to a pseudo-automorphism of a rational variety obtained from (P1)×4 by blowing up along 28 subvarieties and we use this to establish its integrability in terms of conserved quantities and degree growth. We embed this rational variety into a family which admits an action of the ..."
+authors = "Alexander Stokes; T. Takenawa; Adrian Stefan Carstea"
+url = "https://www.semanticscholar.org/paper/3cd44252d1e60b63ddbdd66c1380cc1c9d756571"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2025
+notes = ""
+title = "Center and Degenerate Hopf Bifurcation Cyclicity of high-order Singularity in a Class of Three-Dimensional Systems"
+abstract = ""
+authors = "Jingping Lu; Jie Yao; Qinlong Wang"
+url = "https://www.semanticscholar.org/paper/da4fad903e2bf2fbefce21d908218776e2eb3b0a"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2015
+notes = ""
+title = "Finite-time singularities and flow regularization in a hydromagnetic shell model at extreme magnetic Prandtl numbers"
+abstract = "Conventional surveys on the existence of singularities in fluid systems for vanishing dissipation have hitherto tried to infer some insight by searching for spatial features developing in asymptotic regimes. This approach has not yet produced a conclusive answer. One of the difficulties preventing us from getting a definitive answer is the limitations of direct numerical simulations which do not yet have a high enough resolution so far as to properly describe spatial fine structures in asymptoti..."
+authors = "G. Nigro; V. Carbone"
+url = "https://www.semanticscholar.org/paper/f64bf1e86fe1b4f30261bc2c3f387d0c179acd93"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2024
+notes = ""
+title = "Uniform bounds for fields of definition in projective spaces"
+abstract = "We give a positive answer to a question of J. Doyle and J. Silverman about fields of definition of dynamical systems on $\\mathbb{P}^{n}$. We prove that, for fixed $n$, there exists a constant $C_{n}$ such that every dynamical system $\\mathbb{P}^{n}\\to\\mathbb{P}^{n}$ is defined over an extension of degree $\\le C_{n}$ of the field of moduli. More generally, the same bound works for any kind of\"algebraic structure\"defined over $\\mathbb{P}^{n}$, such as embedded curves, hypersurfaces, algebraic cycl..."
+authors = "Giulio Bresciani"
+url = "https://www.semanticscholar.org/paper/6bdd14a2cc7c02be774fc1d296202fb7a9254e26"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2012
+notes = ""
+title = "The sixth Painleve transcendent and uniformizable orbifolds"
+abstract = "We consider connection between the Painleve-6 equation and explicitly uniformizable orbifolds"
+authors = "Yu. V. Brezhnev"
+url = "http://arxiv.org/abs/1210.3959v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2025
+notes = ""
+title = "On 2-Movable Total Domination in the Join and Corona of Graphs"
+abstract = "Let $G$ be a connected graph. A non-empty $T\\subseteq V(G)$ is a $2$-\\textit{movable total dominating set} of $G$ if $T$ is a total dominating set and for every pair $x,y \\in T$, $T \\backslash \\{x, y\\}$ is a total dominating set in $G$, or there exist $u, v \\in V(G) \\backslash T$ such that $u$ and $v$ are adjacent to $x$ and $y$, respectively, and $(T \\backslash \\{x,y\\}) \\cup \\{u,v\\}$ is a total dominating set in $G$. The $2$-\\textit{movable total domination number} of $G$, denoted by $γ_{mt}^{2..."
+authors = "Ariel C. Pedrano; Rolando N. Paluga"
+url = "http://arxiv.org/abs/2508.10952v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 1996
+notes = ""
+title = "Painleve equations in terms of entire functions"
+abstract = "In these lectures we discuss how the Painleve equations can be written in terms of entire functions, and then in the Hirota bilinear (or multilinear) form. Hirota's method, which has been so useful in soliton theory, is reviewed and connections from soliton equations to Painleve equations through similarity reductions are discussed from this point of view. In the main part we discuss how singularity structure of the solutions and formal integration of the Painleve equations can be used to find a..."
+authors = "Jarmo Hietarinta"
+url = "http://arxiv.org/abs/solv-int/9701002v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 1993
+notes = ""
+title = "The Great Inequality In A Hamiltonian Planetary Theory"
+abstract = "The Jupiter-Saturn 2:5 near-commensurability is analyzed in a fully analytic Hamiltonian planetary theory. Computations for the Sun-Jupiter-Saturn system, extending to the third order of the masses and to the 8th degree in the eccentricities and inclinations, reveal an unexpectedly sensitive dependence of the solution on initial data and its likely nonconvergence. The source of the sensitivity and apparent lack of convergence is this near-commensurability, the so-called great inequality. This in..."
+authors = "F. Varadi; M. Ghil; W. M. Kaula; Keywords; :; Hamiltonian systems; planetary motion; perturbation theory; resonances"
+url = "http://arxiv.org/abs/chao-dyn/9311011v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2013
+notes = ""
+title = "Polynomial Hamiltonian Systems with Movable Algebraic Singularities"
+abstract = "The singularity structure of solutions of a class of Hamiltonian systems of ordinary differential equations in two dependent variables is studied. It is shown that for any solution, all movable singularities, obtained by analytic continuation along a rectifiable curve, are at most algebraic branch points."
+authors = "Thomas Kecker"
+url = "http://arxiv.org/abs/1312.4030v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2025
+notes = ""
+title = "ROMA: ROtary and Movable Antenna"
+abstract = "The rotary and movable antenna (ROMA) architecture represents a next-generation multi-antenna technology that enables flexible adjustment of antenna position and array rotation angles of the transceiver. In this letter, we propose a ROMA-aided multi-user MIMO communication system to fully enhance the efficiency and reliability of system transmissions. By deploying ROMA panels at both the transmitter and receiver sides, and jointly optimizing the three-dimensional (3D) rotation angles of each ROM..."
+authors = "Jiayi Zhang; Wenhui Yi; Bokai Xu; Zhe Wang; Huahua Xiao; Bo Ai"
+url = "http://arxiv.org/abs/2501.13403v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 1999
+notes = ""
+title = "On two aspects of the Painleve analysis"
+abstract = "We use the Calogero equation to illustrate the following two aspects of the Painleve analysis of nonlinear PDEs. First, if a nonlinear equation passes the Painleve test for integrability, the singular expansions of its solutions around characteristic hypersurfaces can be neither single-valued functions of independent variables nor single-valued functionals of data. Second, if the truncation of singular expansions of solutions is consistent, the truncation not necessarily leads to the simplest, o..."
+authors = "Sergei Sakovich"
+url = "http://arxiv.org/abs/solv-int/9909027v3"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2005
+notes = ""
+title = "Six results on Painleve VI"
+abstract = "After recalling some of the geometry of the sixth Painleve equation, we will describe how the Okamoto symmetries arise naturally from symmetries of Schlesinger's equations and summarise the classification of the Platonic Painleve six solutions. A key observation is that Painleve VI governs the isomonodromic deformations of certain Fuchsian systems on rank \\emph{three} bundles."
+authors = "Philip Boalch"
+url = "http://arxiv.org/abs/math/0503043v3"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2006
+notes = ""
+title = "The eight-vertex model and Painleve VI"
+abstract = "In this letter we establish a connection of Picard-type elliptic solutions of Painleve VI equation with the special solutions of the non-stationary Lame equation. The latter appeared in the study of the ground state properties of Baxter's solvable eight-vertex lattice model at a particular point, $η=π/3$, of the disordered regime."
+authors = "Vladimir V Bazhanov; Vladimir V Mangazeev"
+url = "http://arxiv.org/abs/hep-th/0602122v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2006
+notes = ""
+title = "Painleve versus Fuchs"
+abstract = "The sigma form of the Painlev{é} VI equation contains four arbitrary parameters and generically the solutions can be said to be genuinely ``nonlinear'' because they do not satisfy linear differential equations of finite order. However, when there are certain restrictions on the four parameters there exist one parameter families of solutions which do satisfy (Fuchsian) differential equations of finite order. We here study this phenomena of Fuchsian solutions to the Painlev{é} equation with a focu..."
+authors = "S. Boukraa; S. Hassani; J. -M. Maillard; B. M. McCoy; J. -A. Weil; N. Zenine"
+url = "http://arxiv.org/abs/math-ph/0602010v3"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2012
+notes = ""
+title = "Explicit Construction of First Integrals by Singularity Analysis in Nonlinear Dynamical Systems"
+abstract = "The Painleve and weak Painleve conjectures have been used widely to identify new integrable nonlinear dynamical systems. The calculation of the integrals relies though on methods quite independent from Painlev\\'e analysis. This paper proposes a new explicit algorithm to build the first integrals of a given set of nonlinear ordinary differential equations by exploiting the information provided by the Painleve - Laurent series representing the solution in the neighbourhood of a movable singularity..."
+authors = "C. Efthymiopoulos; T. Bountis; T. Manos"
+url = "https://www.semanticscholar.org/paper/5eefebbfc08ce86b599a494ecaf461529b66c626"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 1984
+notes = ""
+title = "On the complete and partial integrability of non-Hamiltonian systems"
+abstract = ""
+authors = "T. Bountis; A. Ramani; B. Grammaticos; B. Dorizzi"
+url = "https://www.semanticscholar.org/paper/2e65713765f972fda56c0e6dc5d592d376d3c0a9"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2024
+notes = ""
+title = "Spaces of initial conditions for quartic Hamiltonian systems of Painlevé and quasi-Painlevé type"
+abstract = "The geometric approach for Painlevé and quasi-Painlevé differential equations in the complex plane is applied to non-autonomous Hamiltonian systems, quartic in the dependent variables. By computing their defining manifolds (analogue of the Okamoto’s space of initial conditions in the quasi-Painlevé case), we provide a classification of such systems. We distinguish the various cases by the local behaviour at the movable singularities of the solutions, which are algebraic poles or ordinary poles. ..."
+authors = "Marta Dell’Atti; T. Kecker"
+url = "https://www.semanticscholar.org/paper/4407ff5a6df1c07731776671caf74ea9c7423700"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2014
+notes = ""
+title = "Singularity Analysis and the Painlevé Property of Dynamical Systems"
+abstract = ""
+authors = "B. Shivamoggi"
+url = "https://www.semanticscholar.org/paper/4ad821bd765de00ed56e47bcfb46a58f44130c64"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 0
+notes = ""
+title = "The Painlevé Analysis and Solutions with Critical Points"
+abstract = ""
+authors = "M. Ablowitz; A. Ramani; H. Segur"
+url = "https://www.semanticscholar.org/paper/f0dd90baa0d7388f4080b7acba19b4fff3c4851f"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 1999
+notes = ""
+title = "Painlevé Analysis for Nonlinear Partial Differential Equations"
+abstract = ""
+authors = "M. Musette"
+url = "https://www.semanticscholar.org/paper/f5f72654b930f9f0c49335da3ec42c826b7a8ab8"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 1993
+notes = ""
+title = "Painlevé analysis, Lie symmetries, and integrability of coupled nonlinear oscillators of polynomial type"
+abstract = ""
+authors = "M. Lakshmanan; R. Sahadevan"
+url = "https://www.semanticscholar.org/paper/5e255115a27d98bfb35141140550ec88b6af822a"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 1994
+notes = ""
+title = "Painleve analysis of new soliton equations by Hu"
+abstract = ""
+authors = "S. Sakovich"
+url = "https://www.semanticscholar.org/paper/9db72065429d18c41a5fa4189fd2625207ca9e9f"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 1997
+notes = ""
+title = "The Higher Dimensional Bateman Equation and Painleve Analysis of Nonintegrable Wave Equations"
+abstract = ""
+authors = "N. Euler; O. Lindblom; M. Euler; L. Persson"
+url = "https://www.semanticscholar.org/paper/59c9bc2c83ae28a82e3ed9723a1899f2b905753d"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2000
+notes = ""
+title = "n-dimensional Bateman equation and Painlevé analysis of wave equations"
+abstract = "In the Painleve analysis of nonintegrable partial differential equations one obtains differential constraints describing the movable singularity manifold. We show that, for a class of $n$-dimension ..."
+authors = "N. Euler; O. Lindblom"
+url = "https://www.semanticscholar.org/paper/cc9cb779dbc2633da79fcdeac44373fc0ba839d0"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2018
+notes = ""
+title = "Analysis Acoustic Features for Acoustic Scene Classification and Score fusion of multi-classification systems applied to DCASE 2016 challenge"
+abstract = "This paper describes an acoustic scene classification method which achieved the 4th ranking result in the IEEE AASP challenge of Detection and Classification of Acoustic Scenes and Events 2016. In order to accomplish the ensuing task, several methods are explored in three aspects: feature extraction, feature transformation, and score fusion for final decision. In the part of feature extraction, several features are investigated for effective acoustic scene classification. For resolving the issue..."
+authors = "Sangwook Park; Seongkyu Mun; Younglo Lee; David K. Han; Hanseok Ko"
+url = "http://arxiv.org/abs/1807.04970v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2019
+notes = ""
+title = "Delay-Compensated Control of Sandwiched ODE-PDE-ODE Hyperbolic Systems for Oil Drilling and Disaster Relief"
+abstract = "Motivated by engineering applications of subsea installation by deepwater construction vessels in oil drilling, and of aid delivery by unmanned aerial vehicles in disaster relief, we develop output-feedback boundary control of heterodirectional coupled hyperbolic PDEs sandwiched between two ODEs, where the measurement is the output state of one ODE and suffers a time delay. After rewriting the time-delay dynamics as a transport PDE of which the left boundary connects with the sandwiched system, ..."
+authors = "Ji Wang; Miroslav Krstic"
+url = "http://arxiv.org/abs/1910.05948v3"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2026
+notes = ""
+title = "Secure Multiuser Beamforming With Movable Antenna Arrays"
+abstract = "A movable antennas (MAs)-enabled secure multiuser transmission framework is developed to enhance physical-layer security. Novel expressions are derived to characterize the achievable sum secrecy rate based on the secure channel coding theorem. On this basis, a joint optimization algorithm for digital beamforming and MA placement is proposed to maximize the sum secrecy rate via fractional programming and block coordinate descent. In each iteration, every variable admits either a closed-form updat..."
+authors = "Zhenqiao Cheng; Chongjun Ouyang; Boqun Zhao; Xingqi Zhang"
+url = "http://arxiv.org/abs/2601.05686v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2022
+notes = ""
+title = "ODEs whose symmetry groups are not fiber-preserving"
+abstract = "We observe that, up to conjugation, a majority of symmetric higher order ODEs (ordinary differential equations) and ODE systems have only fiber-preserving point symmetries. By exploiting Lie's classification of Lie algebras of vector fields, we describe all the exceptions to this in the case of scalar ODEs and systems of ODEs on a pair of functions. The scalar ODEs whose symmetry algebra is not fiber preserving can be expressed via absolute and relative scalar differential invariants, while a si..."
+authors = "Boris Kruglikov; Eivind Schneider"
+url = "http://arxiv.org/abs/2202.10331v5"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2010
+notes = ""
+title = "Non-integrable supersymmetries and their classification for $\\mathfrak{gl}(1,1)$ and $\\mathfrak{sl}(1,1)$"
+abstract = "Infinitesimal supersymmetries over classical Lie groups that do not necessarily integrate to Lie supergroups are described. They yield a notion of supersymmetry that is less rigid than the assumption of a Lie supergroup action but still implies an underlying action of a Lie group. In contrast to Lie supergroups, the arising representation-theoretical Lie supergroups (RTLSG) occur as families associated to Harish-Chandra superpairs. However morphisms of RTLSGs directly correspond to morphisms of ..."
+authors = "Matthias Kalus"
+url = "http://arxiv.org/abs/1012.4456v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2007
+notes = ""
+title = "Strong Singularity for Subfactors"
+abstract = "We examine the notion of $α$-strong singularity for subfactors of a \\IIi factor, which is a metric quantity that relates the distance between a unitary in the factor and a subalgebra with the distance between that subalgebra and its unitary conjugate. Through planar algebra techniques, we demonstrate the existence of a finite index singular subfactor of the hyperfinite \\IIi factor that cannot be strongly singular with $α=1$, in contrast to the case for masas. Using work of Popa, Sinclair, and Sm..."
+authors = "Pinhas Grossman; Alan Wiggins"
+url = "http://arxiv.org/abs/math/0703673v3"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2009
+notes = ""
+title = "On movable singularities of Garnier systems"
+abstract = "We study movable singularities of Garnier systems using the connection of the latter with Schlesinger isomonodromic deformations of Fuchsian systems"
+authors = "R. R. Gontsov"
+url = "http://arxiv.org/abs/0907.1834v1"
+relevance_score = 0
+
+[metadata]
+queries = ["blow-up desingularization planar ODE Bendixson", "Dumortier desingularization singular point", "resolution of singularities dynamical system", "Painleve analysis movable singularity Hamiltonian", "movable singularity classification ODE"]
+n_results = 76
+date = "2026-03-14"
+category = "singularity_theory"

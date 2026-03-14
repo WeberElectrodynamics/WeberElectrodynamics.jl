@@ -1,0 +1,528 @@
+[[papers]]
+source = "arxiv"
+year = 2022
+notes = ""
+title = "Polynomials with Lorentzian Signature, and Computing Permanents via Hyperbolic Programming"
+abstract = "We study the class of polynomials whose Hessians evaluated at any point of a closed convex cone have Lorentzian signature. This class is a generalization to the remarkable class of Lorentzian polynomials. We prove that hyperbolic polynomials and conic stable polynomials belong to this class, and the set of polynomials with Lorentzian signature is closed. Finally, we develop a method for computing permanents of nonsingular matrices which belong to a class that includes nonsingular $k$-locally sin..."
+authors = "Papri Dey"
+url = "http://arxiv.org/abs/2206.02759v4"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 1996
+notes = ""
+title = "Reply Comment: Comparison of Approaches to Classical Signature Change"
+abstract = "We contrast the two approaches to ``classical\" signature change used by Hayward with the one used by us (Hellaby and Dray). There is (as yet) no rigorous derivation of appropriate distributional field equations. Hayward's distributional approach is based on a postulated modified form of the field equations. We make an alternative postulate. We point out an important difference between two possible philosophies of signature change --- ours is strictly classical, while Hayward's Lagrangian approac..."
+authors = "Charles Hellaby; Tevian dray"
+url = "http://arxiv.org/abs/gr-qc/9601040v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 1994
+notes = ""
+title = "Signature change induces compactification"
+abstract = "It is shown -- using a FRW model with ${\\bf S}^3 \\times {\\bf S}^6$ as spatial sections and a positive cosmological constant -- that classical signature change implies a new compactification mechanism. The internal scale factor is of the order $Λ^{-1/2}$, and the solutions are stable against small perturbatons. In the case of compactified ${\\bf S}^6$, it is shown that the effective four-dimensional space-time metric has Lorentzian signature, undergoes exponential inflation in ${\\bf S}^3$ and is u..."
+authors = "Franz Embacher"
+url = "http://arxiv.org/abs/gr-qc/9410012v3"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2012
+notes = ""
+title = "Temporal Lorentzian Spectral Triples"
+abstract = "We present the notion of temporal Lorentzian spectral triple which is an extension of the notion of pseudo-Riemannian spectral triple with a way to ensure that the signature of the metric is Lorentzian. A temporal Lorentzian spectral triple corresponds to a specific 3+1 decomposition of a possibly noncommutative Lorentzian space. This structure introduces a notion of global time in noncommutative geometry. As an example, we construct a temporal Lorentzian spectral triple over a Moyal--Minkowski ..."
+authors = "Nicolas Franco"
+url = "http://arxiv.org/abs/1210.6575v3"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 1995
+notes = ""
+title = "Initial Value Problems and Signature Change"
+abstract = "We make a rigorous study of classical field equations on a 2-dimensional signature changing spacetime using the techniques of operator theory. Boundary conditions at the surface of signature change are determined by forming self-adjoint extensions of the Schrödinger Hamiltonian. We show that the initial value problem for the Klein--Gordon equation on this spacetime is ill-posed in the sense that its solutions are unstable. Furthermore, if the initial data is smooth and compactly supported away f..."
+authors = "L. J. Alty; C. J. Fewster"
+url = "http://arxiv.org/abs/gr-qc/9501026v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 1999
+notes = ""
+title = "Classical Signature Change in the Black Hole Topology"
+abstract = "Investigations of classical signature change have generally envisaged applications to cosmological models, usually a Friedmann-Lemaitre-Robertson-Walker model. The purpose has been to avoid the inevitable singularity of models with purely Lorentzian signature, replacing the neighbourhood of the big bang with an initial, singularity free region of Euclidean signture, and a signature change. We here show that signature change can also avoid the singularity of gravitational collapse. We investigate..."
+authors = "Charles Hellaby; Ariel Sumeruk; G. F. R. Ellis"
+url = "http://arxiv.org/abs/gr-qc/9907042v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2025
+notes = ""
+title = "Spontaneous Emergence of Lorentzian Signature from Curvature-Minimizing Geometry"
+abstract = "A simple covariant model is presented where the signature of the metric is a dynamical field. Degenerate minima of a curvature-minimizing potential correspond to Euclidean, Lorentzian or mixed phases of geometry. The Lorentzian phase emerges as the only stable configuration supporting causal propagation."
+authors = "Miguel Bermudez"
+url = "http://arxiv.org/abs/2510.07891v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2016
+notes = ""
+title = "Holonomy groups of Lorentzian manifolds"
+abstract = "In this paper, a survey of the recent results about the classification of the connected holonomy groups of the Lorentzian manifolds is given. A simplification of the construction of the Lorentzian metrics with all possible connected holonomy groups is obtained. As the applications, the Einstein equation, Lorentzian manifolds with parallel and recurrent spinor fields, conformally flat Walker metrics and the classification of 2-symmetric Lorentzian manifolds are considered."
+authors = "Anton S. Galaev"
+url = "http://arxiv.org/abs/1611.01551v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2023
+notes = ""
+title = "Dually Lorentzian Polynomials"
+abstract = "We introduce and study a notion of dually Lorentzian polynomials, and show that if $s$ is non-zero and dually Lorentzian then the operator \\[s(\\partial_{x_1},\\ldots,\\partial_{x_n}):\\mathbb R[x_1,\\ldots,x_n] \\to \\mathbb R[x_1,\\ldots,x_n]\\] preserves (strictly) Lorentzian polynomials. From this we conclude that any theory that admits a mixed Alexandrov-Fenchel inequality also admits a generalized Alexandrov-Fenchel inequality involving dually Lorentzian polynomials. As such we deduce generalized A..."
+authors = "Julius Ross; Hendrik Süß; Thomas Wannerer"
+url = "http://arxiv.org/abs/2304.08399v3"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2007
+notes = ""
+title = "Bell's theorem as a signature of nonlocality: a classical counterexample"
+abstract = "For a system composed of two particles Bell's theorem asserts that averages of physical quantities determined from local variables must conform to a family of inequalities. In this work we show that a classical model containing a local probabilistic interaction in the measurement process can lead to a violation of the Bell inequalities. We first introduce two-particle phase-space distributions in classical mechanics constructed to be the analogs of quantum mechanical angular momentum eigenstates..."
+authors = "A. Matzkin"
+url = "http://arxiv.org/abs/0709.2114v3"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2026
+notes = ""
+title = "Signature Change in $f(R, T_\\phi)$ Theory"
+abstract = "We investigate a simple $f(R, T_\\phi)$ gravity model coupled to a scalar field and demonstrate that the theory admits classical degenerate metric solutions, analogous to those known in general relativity. In particular, we identify a class of solutions that exhibits a smooth transition from a Euclidean to a Lorentzian domain, thus yielding a classical dynamical realization of signature change."
+authors = "Serkan Doruk Hazinedar; Y. Heydarzade"
+url = "https://www.semanticscholar.org/paper/515f458af8647021e5918151203681b534c6e22b"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2025
+notes = ""
+title = "Lorentzian-Euclidean black holes and Lorentzian to Riemannian metric transitions"
+abstract = "In recent papers on spacetimes with a signature-changing metric, the concept of a Lorentzian-Euclidean black hole and new elements for Lorentzian-Riemannian signature change have been introduced. A Lorentzian-Euclidean black hole is a signature-changing modification of the Schwarzschild spacetime satisfying the vacuum Einstein equations in a weak sense. Here the event horizon serves as a boundary beyond which time becomes imaginary. We demonstrate that the proper time needed to reach the horizon..."
+authors = "Rossella Bartolo; E. Caponio; A. Germinario; Miguel Sánchez"
+url = "https://www.semanticscholar.org/paper/11fdb21fdbe78321fd0ea3efb9cbeb556faba869"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2018
+notes = ""
+title = "Signature change in matrix model solutions"
+abstract = "Various classical solutions to lower dimensional IKKT-like Lorentzian matrix models are examined in their commutative limit. Poisson manifolds emerge in this limit, and their associated induced and effective metrics are computed. Signature change is found to be a common feature of these manifolds when quadratic and cubic terms are included in the bosonic action. In fact, a single manifold may exhibit multiple signature changes. Regions with Lorentzian signature may serve as toy models for cosmol..."
+authors = "A. Stern; Chuang Xu"
+url = "https://www.semanticscholar.org/paper/442e6ca8c831224a62fa6d5b251f6ea84d670109"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2023
+notes = ""
+title = "New type of large-scale signature change in emergent modified gravity"
+abstract = "Emergent modified gravity presents a new class of gravitational theories in which the structure of space-time with Riemannian geometry of a certain signature is not presupposed. Relying on crucial features of a canonical formulation, the geometry of space-time is instead derived from the underlying dynamical equations for phase-space degrees of freedom together with a crucial covariance condition. Here, a large class of spherically symmetric models is solved analytically for Schwarzschild-type b..."
+authors = "M. Bojowald; Erick I. Duque; Dennis Hartmann"
+url = "https://www.semanticscholar.org/paper/641127c76340efeea180975bcaeaa7fd5b4bcc05"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2022
+notes = ""
+title = "The Birth of the Universe as a Result of the Change of the Metric Signature"
+abstract = "In this paper, I discuss the idea that the birth of our Universe may be a result of a quantum transition from a physical continuum with the Euclidean signature to a Lorentzian spacetime. A similar idea was expressed by Andrei D. Sakharov At the classical level, the idea was studied by George F. R. Ellis and his collaborators, who explored if solutions to the classical Einstein equation exist which admit a change of metric signature. The present paper aims at examining possible realizations of th..."
+authors = "T. P. Shestakova"
+url = "https://www.semanticscholar.org/paper/85520d457ea51063cf120a66adefcca07846bc54"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2008
+notes = ""
+title = "Signature change from Schutz's canonical quantum cosmology and its classical analogue"
+abstract = "We study the signature change in a perfect fluid Friedmann-Robertson-Walker quantum cosmological model. In this work the Schutz's variational formalism is applied to recover the notion of time. This gives rise to a Schrodinger-Wheeler-DeWitt equation with arbitrary ordering for the scale factor. We use the eigenfunctions in order to construct wave packets and evaluate the time-dependent expectation value of the scale factor which coincides with the ontological interpretation. We show that these ..."
+authors = "P. Pedram; Shahram Jalalzadeh"
+url = "https://www.semanticscholar.org/paper/b44b4accf7a542b023018ba8ba9fed9c214fc8f3"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2005
+notes = ""
+title = "Classical and quantum spinor cosmology with signature change"
+abstract = "We study the classical and quantum cosmology of a universe in which the matter source is a massive Dirac spinor field and consider cases where such fields are either free or self-interacting. We focus attention on the spatially flat Robertson–Walker cosmology and classify the solutions of the Einstein–Dirac system in the case of zero, negative and positive cosmological constant Λ. For Λ<0, these solutions exhibit signature transitions from a Euclidean to a Lorentzian domain. In the case of massl..."
+authors = "B. Vakili; S. Jalalzadeh; H. R. Sepangi"
+url = "https://www.semanticscholar.org/paper/a3b4570309da983c929a16473d9958eefc47ec02"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2025
+notes = ""
+title = "A Blockchain-Assisted Fair Exchange Signature Protocol Using Quantum Key Distribution for Metaverse Environment"
+abstract = "The metaverse has profoundly altered the conventional online landscape and has attracted significant interest from researchers and industry professionals. As the metaverse changes quickly, it needs strong and safe cryptographic solutions to make sure that transactions are fair and safe in its highly connected world. This paper presents a novel blockchain-assisted fair exchange signature protocol leveraging quantum key distribution (QKD) to ensure security against both classical and quantum adver..."
+authors = "Sunil Prajapat; Pankaj Kumar; Goutham Reddy Alavalapati"
+url = "https://www.semanticscholar.org/paper/d8a449b010f69d063543a5fce156a0a9602ad352"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2012
+notes = ""
+title = "SIGNATURE CHANGE BY GUP"
+abstract = "We revisit the issue of continuous signature transition from Euclidean to Lorentzian metrics in a cosmological model described by FRW metric minimally coupled with a self interacting massive scalar field. Then, using a noncommutative phase space of dynamical variables deformed by Generalized Uncertainty Principle (GUP) we show that the signature transition occurs even for a model described by FRW metric minimally coupled with a free massless scalar field accompanied by a cosmological constant. T..."
+authors = "T. Ghaneh; Farhad Darabi; H. Motavalli"
+url = "https://www.semanticscholar.org/paper/d7ab16deaee17a781187f197045e012d0cb7d3b8"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2006
+notes = ""
+title = "The classification problem for pseudo-Riemannian symmetric spaces"
+abstract = "Riemannian and pseudo-Riemannian symmetric spaces with semisimple transvection group are known and classified for a long time. Contrary to that the description of pseudo-Riemannian symmetric spaces with non-semisimple transvection group is an open problem. In the last years some progress on this problem was achieved. In this survey article we want to explain these results and some of their applications. Among other things, the material developed in our previous papers math.DG/0312243, math.DG/04..."
+authors = "Ines Kath; Martin Olbrich"
+url = "http://arxiv.org/abs/math/0612101v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2006
+notes = ""
+title = "Pseudo-Riemannian geodesics and billiards"
+abstract = "Many classical facts in Riemannian geometry have their pseudo-Riemannian analogs. For instance, the spaces of space-like and time-like geodesics on a pseudo-Riemannian manifold have natural symplectic structures (just like in the Riemannian case), while the space of light-like geodesics has a natural contact structure. We discuss the geometry of these structures in detail, as well as introduce and study pseudo-Euclidean billiards. In particular, we prove pseudo-Euclidean analogs of the Jacobi-Ch..."
+authors = "B. Khesin; S. Tabachnikov"
+url = "http://arxiv.org/abs/math/0608620v3"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2011
+notes = ""
+title = "Pseudo-Riemannian geodesic foliations by circles"
+abstract = "We investigate under which assumptions an orientable pseudo-Riemannian geodesic foliations by circles is generated by an $S^1$-action. We construct examples showing that, contrary to the Riemannian case, it is not always true. However, we prove that such an action always exists when the foliation does not contain lightlike leaves, i.e. a pseudo-Riemannian Wadsley's Theorem. As an application, we show that every Lorentzian surface all of whose spacelike/timelike geodesics are closed, is finitely ..."
+authors = "Pierre Mounoud; Stefan Suhr"
+url = "http://arxiv.org/abs/1112.5652v3"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2021
+notes = ""
+title = "A Parametric and Feasibility Study for Data Sampling of the Dynamic Mode Decomposition--Range, Resolution, and Universal Convergence States"
+abstract = "Scientific research and engineering practice often require the modeling and decomposition of nonlinear systems. The Dynamic Mode Decomposition (DMD) is a novel Koopman-based technique that effectively dissects high-dimensional nonlinear systems into periodically distinct constituents on reduced-order subspaces. As a novel mathematical hatchling, the DMD bears vast potentials yet an equal degree of unknown. This serial effort investigates the nuances of DMD sampling with an engineering-oriented e..."
+authors = "Cruz Y. Li; Zengshun Chen; Tim K. T. Tse; Asiri Umenga Weerasuriya; Xuelin Zhang; Yunfei Fu; Xisheng Lin"
+url = "http://arxiv.org/abs/2110.06573v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2010
+notes = ""
+title = "Classification of Pseudo-Riemannian submersions with totally geodesic fibres from pseudo-hyperbolic spaces"
+abstract = "We classify pseudo-Riemannian submersions with connected totally geodesic fibres from a real pseudo-hyperbolic space onto a pseudo-Riemannian manifold. Also, we obtain the classification of the pseudo-Riemannian submersions with (para-)complex connected totally geodesic fibres from a (para-)complex pseudo-hyperbolic space onto a pseudo-Riemannian manifold."
+authors = "Gabriel Baditoiu"
+url = "http://arxiv.org/abs/1001.4490v3"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2015
+notes = ""
+title = "Pseudo-Riemannian Submanifolds with 3-Planar Geodesics"
+abstract = "In the present paper we study pseudo-Riemannian submanifolds which have 3-planar geodesic normal sections.We consider W-curves (helices) on pseudo-Riemannian submanifolds. Finally, we give neccessary and sufficient condition for a normal section to be a W-curve on pseudo-Riemannian submanifolds."
+authors = "Kadri Arslan; Betül Bulca; Günay Öztürk"
+url = "http://arxiv.org/abs/1505.04176v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2025
+notes = ""
+title = "Geodesics of charged particle in electromagnetic field"
+abstract = "We report calculations about the motion of a charged particle in an external electric and magnetic field. The metric for the particle moving on a slope with non-zero traction and coefficient of friction is also evaluated for weak fields. We have geometric solutions in terms of Finsler geometry. We show that our solution metrics belong to the (α, \\b{eta})-metric class for cases with and without motion on a slope. Further, the external magnetic field is manifested in an additional parameter in the..."
+authors = "Nitish Yadav; Seema Jangir"
+url = "http://arxiv.org/abs/2501.14814v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2009
+notes = ""
+title = "Nearly pseudo-Kähler and nearly para-Kähler six-manifolds"
+abstract = "The subject of this paper is six-dimensional nearly (para-)Kähler geometry with pseudo-Riemannian metrics. Firstly, we derive the analogue of the well-known exterior differential system characterising a nearly Kähler manifold and prove applications to the automorphism group of a nearly (para-)Kähler structure. Secondly, we prove existence and uniqueness results for left-invariant nearly (para-)Kähler structures on Lie groups $G \\times G$ where $G$ is three-dimensional and simple."
+authors = "Lars Schäfer; Fabian Schulte-Hengesbach"
+url = "http://arxiv.org/abs/0912.3271v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2014
+notes = ""
+title = "On the local and global properties of geodesics in pseudo-Riemannian metrics"
+abstract = "The paper is a study of geodesic in two-dimensional pseudo-Riemannian metrics. Firstly, the local properties of geodesics in a neighborhood of generic parabolic points are investigated. The equation of the geodesic flow has singularities at such points that leads to a curious phenomenon: geodesics cannot pass through such a point in arbitrary tangential directions, but only in certain directions said to be admissible (the number of admissible directions is generically 1 or 3). Secondly, we study..."
+authors = "Alexey Remizov"
+url = "http://arxiv.org/abs/1406.5139v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2023
+notes = ""
+title = "Pseudo-Riemannian and Hessian Geometry Related to Monge-Ampère Structures"
+abstract = "We study properties of pseudo-Riemannian metrics corresponding to Monge-Ampère structures on four-dimensional $T^*M$. We describe a family of Ricci flat solutions, which are parametrized by six coefficients satisfying the Plücker embedding equation. We also focus on pullbacks of the pseudo-metrics on two-dimensional $M$ and describe the corresponding Hessian structures."
+authors = "Radek Suchánek; Stanislav Hronek"
+url = "http://arxiv.org/abs/2305.03579v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2025
+notes = ""
+title = "Horizon-scale variability of M87* from 2017--2021 EHT observations"
+abstract = "We report three epochs of polarized images of M87* at 230\\,GHz using data from the Event Horizon Telescope (EHT) taken in 2017, 2018, and 2021. The baseline coverage of the 2021 observations is significantly improved through the addition of two new EHT stations: the 12\\,m Kitt Peak Telescope and the Northern Extended Millimetre Array (NOEMA). All observations result in images dominated by a bright, asymmetric ring with a persistent diameter of $43.9\\pm 0.6\\,\\muas$, consistent with expectations f..."
+authors = "The Event Horizon Telescope Collaboration"
+url = "http://arxiv.org/abs/2509.24593v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2023
+notes = ""
+title = "First Sagittarius A* Event Horizon Telescope Results. VI: Testing the Black Hole Metric"
+abstract = "Astrophysical black holes are expected to be described by the Kerr metric. This is the only stationary, vacuum, axisymmetric metric, without electromagnetic charge, that satisfies Einstein's equations and does not have pathologies outside of the event horizon. We present new constraints on potential deviations from the Kerr prediction based on 2017 EHT observations of Sagittarius A* (Sgr A*). We calibrate the relationship between the geometrically defined black hole shadow and the observed size ..."
+authors = "The Event Horizon Telescope Collaboration"
+url = "http://arxiv.org/abs/2311.09484v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 1994
+notes = ""
+title = "The Geometry of classical change of signature"
+abstract = "The proposal of the possibility of change of signature in quantum cosmology has led to the study of this phenomenon in classical general relativity theory, where there has been some controversy about what is and is not possible. We here present a new analysis of such a change of signature, based on previous studies of the initial value problem in general relativity. We emphasize that there are various continuity suppositions one can make at a classical change of signature, and consider more gene..."
+authors = "M. Carfora; G. F. R. Ellis"
+url = "http://arxiv.org/abs/gr-qc/9406043v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2022
+notes = ""
+title = "Time kink: modeling change of metric signature"
+abstract = "The model of a signature change of a metric from the Lorenztian to Euclidean one with the use of a time dependent kink as $g_{00}$ component of the metric is considered. The metric which describes the continuous change of the signature of this type on a hypersurface is constructed and corresponding Einstein equations are solved in both regions of the space-time. The discontinuities of the Einstein tensor components on the hypersurface are discussed as well as junction conditions for the paramete..."
+authors = "S. Bondarenko; V. De La Hoz-Coronell"
+url = "http://arxiv.org/abs/2204.07828v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2015
+notes = ""
+title = "Precipitation extremes under climate change"
+abstract = "The response of precipitation extremes to climate change is considered using results from theory, modeling, and observations, with a focus on the physical factors that control the response. Observations and simulations with climate models show that precipitation extremes intensify in response to a warming climate. However, the sensitivity of precipitation extremes to warming remains uncertain when convection is important, and it may be higher in the tropics than the extratropics. Several physica..."
+authors = "Paul A. O'Gorman"
+url = "http://arxiv.org/abs/1503.07557v1"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2007
+notes = ""
+title = "Smeared BTZ black hole from space noncommutativity"
+abstract = "We study a novel phenomena of smearing of black hole horizons from the effect of space noncommutativity. We present an explicit example in AdS3 space, using the Chern-Simons formulation of gravity. This produces a smeared BTZ black hole which goes beyond the classical spacetime unexpectedly and there is no reality problem in our approach with the gauge group U(1, 1) × U(1, 1). The horizons are smeared, due to a splitting of the Killing horizon and the apparent horizon, and there is a metric sign..."
+authors = "Hyeong-Chan Kim; Mu-In Park; C. Rim; J. Yee"
+url = "https://www.semanticscholar.org/paper/b186454e935b0a956c8161fde0adb3842bcb01b7"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2025
+notes = ""
+title = "A Conceptual Introduction To Signature Change Through a Natural Extension of Kaluza-Klein Theory"
+abstract = "We propose an extension of basic Kaluza-Klein theory in which the higher-dimensional Lorentzian manifold develops a Cauchy horizon rather than remaining globally hyperbolic as in the conventional framework. In this setting, the $U(1)$-generating Killing field, assumed to exist in Kaluza-Klein theory, undergoes a transition in its causal character, from spacelike in the globally hyperbolic region to timelike in an acausal extension through a horizon. This yields a (lower-dimensional) quotient man..."
+authors = "Vincent Moncrief; N. E. Rieger"
+url = "https://www.semanticscholar.org/paper/653682362a2940bd410eff61f063401ceb79311f"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 1995
+notes = ""
+title = "HYPER-CHARGED VORTICES AND STRINGS WITH SIGNATURE CHANGE HORIZON"
+abstract = "We show that self-dual Nielsen-Olesen (NO) vortices in three dimensions give rise to a class of exact solutions when coupled to Einstein-Maxwell-Dilaton gravity obeying the Majumdar-Papapetrou (MP) relation between gravitational and Maxwell couplings, provided certain types of Chern-Simons interactions are present. The metric may be solved explicitly in terms of the NO vortex function and becomes degenerate at scales $r_H \\sim l_{S\\,} \\exp \\left( {\\frac{{l_S }}{{l_P }}} \\right)$ where lS is the ..."
+authors = "C. Aulakh"
+url = "https://www.semanticscholar.org/paper/748ca3e063b55df418fe6e445be8b734695c9c79"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2023
+notes = ""
+title = "Overall signature of the metric and the cosmological constant"
+abstract = "We consider a little known aspect of signature change, where the overall sign of the metric is allowed to change, with physical implications. We show how, in different formulations of general relativity, this type of classical signature change across boundaries with a degenerate metric can be made consistent with a change in sign (and value) of the cosmological constant Λ. In particular, the separate “mostly plus” and “mostly minus” signature sectors of Lorentzian gravity are most naturally asso..."
+authors = "B. Alexandre; Steffen Gielen; J. Magueijo"
+url = "https://www.semanticscholar.org/paper/32f83dc4542c28a3772e8d25fb334f85d344ffd3"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2004
+notes = ""
+title = "A Simple Model of Space-Time Metric Signature Change"
+abstract = ""
+authors = "M. Konstantinov"
+url = "https://www.semanticscholar.org/paper/f7de999ccfa0eae42c7bf6f32bd94103e25f6453"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2024
+notes = ""
+title = "Penrose's eight-conic theorem"
+abstract = "This article proves the following theorem, first enunciated by Roger Penrose about 70 years ago but never published: In $\\mathbb{R}P^{2}$, if conics are assigned to seven of the vertices of a combinatorial cube such that (i) conics connected by an edge are in double contact, and (ii) the chords of contact associated to a cube face meet in a common point, then there exists an eighth conic such that the completed cube satisfies (i) and (ii). The theorem turns out to be a remarkable generalization ..."
+authors = "Russell Arnold; Albert Chern; Morten Eide; Charles Gunn; Thomas Neukirchner; Roger Penrose"
+url = "http://arxiv.org/abs/2409.17150v8"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2023
+notes = ""
+title = "A guide to Penrose tilings"
+abstract = "The aim of this book is to provide an elementary introduction, complete with detailed proofs, to the celebrated tilings of the plane discovered by Sir Roger Penrose in the `70s. The book covers many aspects of Penrose tilings, including the study of the space parameterizing Penrose tilings from the point of view of Connes' Noncommutative Geometry."
+authors = "Francesco D'Andrea"
+url = "http://arxiv.org/abs/2310.18950v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2005
+notes = ""
+title = "Intrinsic vulnerabilities to mechanical failure in nanoscale films"
+abstract = "We use molecular simulations to explore how sample dimensions and interfacial properties impact some generic aspects of the mechanical and structural behavior of nanoconfined materials. Specifically, we calculate the strain-dependent properties of minimum-energy thin-film particle configurations (i.e., inherent structures) confined between attractive, parallel substrates. We examine how the relationship between the transverse strain and the stress tensor (the equation of state of the energy land..."
+authors = "Pooja Shah; Thomas M. Truskett"
+url = "http://arxiv.org/abs/cond-mat/0502303v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2002
+notes = ""
+title = "Penrose Limits, the Colliding Plane Wave Problem and the Classical String Backgrounds"
+abstract = "We show how the Szekeres form of the line element is naturally adapted to study Penrose limits in classical string backgrounds. Relating the \"old\" colliding wave problem to the Penrose limiting procedure as employed in string theory we discuss how two orthogonal Penrose limits uniquely determine the underlying target space when certain symmetry is imposed. We construct a conformally deformed background with two distinct, yet exactly solvable in terms of the string theory on R-R backgrounds, Penr..."
+authors = "Alexander Feinstein"
+url = "http://arxiv.org/abs/hep-th/0206052v3"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2009
+notes = ""
+title = "C*-algebras of Penrose's hyperbolic tilings"
+abstract = "Penrose hyperbolic tilings are tilings of the hyperbolic plane which admit, up to affine transformations a finite number of prototiles. In this paper, we give a complete description of the C*-algebras and of the K-theory for such tilings. Since the continuous hull of these tilings have no transversally invariant measure, these C*-algebras are traceless. Nevertheless, harmonic currents give rise to 3-cyclic cocycles and we discuss in this setting a higher-order version of the gap-labelling."
+authors = "Hervé Oyono-Oyono; Samuel Petite"
+url = "http://arxiv.org/abs/0905.1932v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2024
+notes = ""
+title = "An FFT based chemo-mechanical framework with fracture: application to mesoscopic electrode degradation"
+abstract = "An FFT based method is proposed to simulate chemo-mechanical problems at the microscale including fracture, specially suited to predict crack formation during the intercalation process in batteries. The method involves three fields fully coupled, concentration, deformation gradient and damage. The mechanical problem is set in a finite strain framework and solved using Fourier Galerkin for non-linear problems in finite strains. The damage is modeled with Phase Field Fracture using a stress drivin..."
+authors = "Gabriel Zarzoso; Eduardo Roque; Francisco Montero-Chacón; Javier Segurado"
+url = "http://arxiv.org/abs/2411.16583v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2025
+notes = ""
+title = "The Construction and Application of Penrose Diagrams, with a Focus on the Maximally Analytically Extended Schwarzschild Spacetime"
+abstract = "We present a detailed, mathematically rigorous description of the construction procedure of Penrose diagrams for the example of the maximal analytic extension of the exterior Schwarzschild spacetime. To this end, we first outline the central idea underlying Penrose diagrams, state the general requirements on the spacetimes to be visualized, and give a definition of Penrose diagrams. We then construct the Penrose diagram of the maximally analytically extended Schwarzschild spacetime and discuss i..."
+authors = "Christian Röken"
+url = "http://arxiv.org/abs/2507.23514v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2002
+notes = ""
+title = "Binary operations in classical and quantum mechanics"
+abstract = "Binary operations on algebras of observables are studied in the quantum as well as in the classical case. It is shown that certain natural compatibility conditions with the associative product imply the properties which usually are additionally required. In particular, it is proved that locality of a Loday bracket on sections of a one-dimensional vector bundle forces skew-symmetry, i.e. a local Lie algebra structure in the sense of A.A.Kirillov."
+authors = "Janusz Grabowski; Giuseppe Marmo"
+url = "http://arxiv.org/abs/math/0201089v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2022
+notes = ""
+title = "Fields and Equations of Classical Mechanics for Quantum Mechanics"
+abstract = "A generalized Euler equation of fluid dynamics is derived for describing many-body states of quantum mechanics. The Eulerian Eq. can be viewed as representing the interaction of two substates, where each substate has its own velocity and pressure fields. These field quantities are given by maps of the wavefunction. For one-body systems, the Eulerian Eq. can model either a fluid or particle description of quantum states. The generalized Euler Eq. is shown to be the gradient of an equation represe..."
+authors = "James P. Finley"
+url = "http://arxiv.org/abs/2207.04349v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2012
+notes = ""
+title = "Fractional Calculus: Some Basic Problems in Continuum and Statistical Mechanics"
+abstract = "We review some applications of fractional calculus developed by the author (partly in collaboration with others) to treat some basic problems in continuum and statistical mechanics. The problems in continuum mechanics concern mathematical modelling of viscoelastic bodies (Sect. 1), and unsteady motion of a particle in a viscous fluid, i.e. the Basset problem (Sect. 2). In the former analysis fractional calculus leads us to introduce intermediate models of viscoelasticity which generalize the cla..."
+authors = "Francesco Mainardi"
+url = "http://arxiv.org/abs/1201.0863v1"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2008
+notes = ""
+title = "Quantum behaviors on an excreting black hole"
+abstract = "Often, geometries with horizons offer insights into the intricate relationships between general relativity and quantum physics. However, some subtle aspects of gravitating quantum systems might be difficult to ascertain using static backgrounds, since quantum mechanics incorporates dynamic measurability constraints (such as the uncertainty principle, etc). For this reason, the behaviors of quantum systems on a dynamic black hole background are explored in this paper. The velocities and trajector..."
+authors = "J. Lindesay"
+url = "https://www.semanticscholar.org/paper/64579e3c02c8ab9fb7270229ad8b974729be4c61"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2021
+notes = ""
+title = "Penrose-Stable Interactions in Classical Statistical Mechanics"
+abstract = ""
+authors = "S. Poghosyan; H. Zessin"
+url = "https://www.semanticscholar.org/paper/de43613b07cdb3b94f5eb821c8b2e01a6dfa993c"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2023
+notes = ""
+title = "Intuitive distinction between classical mechanics and quantum mechanics separated from the perspective of SI base units"
+abstract = ""
+authors = "C. Jin"
+url = "https://www.semanticscholar.org/paper/b9235c697e4719425369fc9db706fef3e60843fc"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2025
+notes = ""
+title = "A New Space-Time Theory Unravels the Origins of Classical Mechanics for the Dirac Equation"
+abstract = "The Feynman path integral plays a central role in quantum mechanics, linking classical action to propagators and relating quantum electrodynamics (QED) to Feynman diagrams. However, the path-integral formulations used in non-relativistic quantum mechanics and in QED are neither unified nor directly connected. This suggests the existence of a missing path integral that bridges relativistic action and the Dirac equation at the single-particle level. In this work, we analyze the consistency and com..."
+authors = "Wei Wen"
+url = "https://www.semanticscholar.org/paper/bda5b44afaa3f501ba775666b0194ea52b3d5d6f"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2023
+notes = ""
+title = "On Roger Penrose's Even-Handed Marriage of General Relativity and Quantum Mechanics"
+abstract = "The simplest, most self-consistent path to unifying general relativity and quantum mechanics is rein-terpreting classical mechanics' single-frame xyzt operators as emergent behaviors that lose resolution at the lower end, giving quantum mechanics, and transition smoothly into curved space at the high end."
+authors = "T. Bollinger"
+url = "https://www.semanticscholar.org/paper/064bc91f716c89927f260d97df5ec8e27336ca34"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2022
+notes = ""
+title = "The Role of Visual Representation for High School Physics in Teaching of Classical Mechanics"
+abstract = "This study aims to highlight the importance of visual representation skills in classroom practice, especially in classical mechanics physics, by discussing (1) free-body diagram representation, (2) resultant force system, (3) types and directions of quantities, (4) representation of results and units. This research was conducted on 30 students in second grade at Beringin Kupang High School. The research method was carried out experimentally using a special image representation test tool for clas..."
+authors = "G. H. Lamanepa; C. M. Maing; Maria Ursula Jawa Mukin; Alfons Bunga Naen"
+url = "https://www.semanticscholar.org/paper/d0f52d1d1d547a5f3663799ee712e130f67ccf47"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2022
+notes = ""
+title = "Implementation of Some Non-Classical Mathematical Models of the Mechanics of a Deformable Body in the MathCad and MatLab System"
+abstract = "On the basis of a non-classical approach to the solution of boundary value problems of statics, a mathematical model of deformation of elastic structures and their elements has been developed. This model is implemented in the MatLab system. It is shown that deformations can be determined by linear tensors of displacement gradients at any values of the latter.A mathematical model based on an equation expressing a quantitative relationship between the limiting values of the smallest and largest pr..."
+authors = "T. Duishenaliev; D.S. Dikarev"
+url = "https://www.semanticscholar.org/paper/025df6e2bce86f6d3a0bc3efc2981a1bbb8dd58b"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2021
+notes = ""
+title = "Objective Tensors and Their Mappings in Classical Continuum Mechanics"
+abstract = ""
+authors = "G. L. Brovko"
+url = "https://www.semanticscholar.org/paper/b31d2ad83f4407b88ee5874f3295c9975d7810ad"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2018
+notes = ""
+title = "Numerical methods in classical mechanics: differential equations"
+abstract = ""
+authors = "M. Marconi; F. Germán"
+url = "https://www.semanticscholar.org/paper/afe2071580571a2626c8b6d0b6f7e84c68690c18"
+relevance_score = 0
+
+[metadata]
+queries = ["Lorentzian signature change classical mechanics", "pseudo-Riemannian particle dynamics geodesic", "metric signature change horizon classical", "Penrose diagram classical mechanics"]
+n_results = 58
+date = "2026-03-14"
+category = "lorentzian"

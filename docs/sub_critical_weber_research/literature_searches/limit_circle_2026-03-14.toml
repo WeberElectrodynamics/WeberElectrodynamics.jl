@@ -1,0 +1,483 @@
+[[papers]]
+source = "arxiv"
+year = 2024
+notes = ""
+title = "Finer limit circle/limit point classification for Sturm-Liouville operators"
+abstract = "In this paper we introduce an index $\\ell_c \\in \\mathbb{N}_0 \\cup \\lbrace \\infty \\rbrace$ which we call the `regularization index' associated to the endpoints, $c\\in\\{a,b\\}$, of nonoscillatory Sturm-Liouville differential expressions with trace class resolvents. This notion extends the limit circle/limit point dichotomy in the sense that $\\ell_c~=~0$ at some endpoint if and only if the expression is in the limit circle case. In the limit point case $\\ell_c&gt;0$, a natural interpretation in term..."
+authors = "Mateusz Piorkowski; Jonathan Stanfill"
+url = "http://arxiv.org/abs/2407.04847v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2023
+notes = ""
+title = "Limit point and limit circle trichotomy for Sturm-Liouville problems with complex potentials"
+abstract = "The limit point and limit circle classification of real Sturm-Liouville problems by H. Weyl more than 100 years ago was extended by A.R. Sims around 60 years ago to the case when the coefficients are complex. Here, the main result is a collection of various criteria which allow us to decide to which class of Sims' scheme a given Sturm-Liouville problem with complex coefficients belongs. This is subsequently applied to a second order differential equation defined on a ray in $\\mathbb C$ which is ..."
+authors = "Florian Leben; Edison Leguizamón; Carsten Trunk; Monika Winklmeier"
+url = "http://arxiv.org/abs/2310.16128v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2025
+notes = ""
+title = "On Sesquilinear Forms for Lower Semibounded (Singular) Sturm-Liouville Operators"
+abstract = "Any self-adjoint extension of a (singular) Sturm-Liouville operator bounded from below uniquely leads to an associated sesquilinear form. This form is characterized in terms of principal and nonprincipal solutions of the Sturm-Liouville operator by using generalized boundary values. We provide these forms in detail in all possible cases (explicitly, when both endpoints are limit circle, when one endpoint is limit circle, and when both endpoints are limit point)."
+authors = "Jussi Behrndt; Fritz Gesztesy; Seppo Hassi; Roger Nichols; Henk de Snoo"
+url = "http://arxiv.org/abs/2509.07205v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2018
+notes = ""
+title = "A corrected spectral method for Sturm-Liouville problems with unbounded potential at one endpoint"
+abstract = "In this paper, we shall derive a spectral matrix method for the approximation of the eigenvalues of (weakly) regular and singular Sturm-Liouville problems in normal form with an unbounded potential at the left endpoint. The method is obtained by using a Galerkin approach with an approximation of the eigenfunctions given by suitable combinations of Legendre polynomials. We will study the errors in the eigenvalue estimates for problems with unsmooth eigenfunctions in proximity of the left endpoint..."
+authors = "Cecilia Magherini"
+url = "http://arxiv.org/abs/1812.02090v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2021
+notes = ""
+title = "Endpoint Relations for Baryons"
+abstract = "Following our earlier work we establish kinematic endpoint relations for baryon decays using the Wigner-Eckart theorem and apply them to $\\frac{1}{2} \\to \\frac{1}{2}$ and $\\frac{1}{2} \\to \\frac{3}{2}$ baryon transitions. We provide angular distributions at the kinematic endpoint which hold for the generic $d=6$ model-independent effective Hamiltonian. Moreover, we explicitly verify the endpoint relations using an explicit form factor parametrisation and clarify constraints on helicity based form..."
+authors = "Gudrun Hiller; Roman Zwicky"
+url = "http://arxiv.org/abs/2107.12993v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2015
+notes = ""
+title = "The Endpoint Perturbed Brascamp-Lieb Inequality with Examples"
+abstract = "We prove the folklore endpoint multilinear $k_j$-plane conjecture originated from the paper \\cite{bennett2006multilinear} of Bennett, Carbery and Tao. Along the way we prove a more general result, namely the endpoint multilinear $k_j$-variety theorem. Finally, we generalize our results to the endpoint perturbed Beascamp-Lieb inequality using techniques in this paper."
+authors = "Ruixiang Zhang"
+url = "http://arxiv.org/abs/1510.09132v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2022
+notes = ""
+title = "Endpoint sparse domination for classes of multiplier transformations"
+abstract = "We prove endpoint results for sparse domination of translation invariant multiscale operators. The results are formulated in terms of dilation invariant classes of Fourier multipliers based on natural localized $M^{p\\to q}$ norms which express appropriate endpoint regularity hypotheses. The applications include new and optimal sparse bounds for classical oscillatory multipliers and multi-scale versions of radial bump multipliers."
+authors = "David Beltran; Joris Roos; Andreas Seeger"
+url = "http://arxiv.org/abs/2212.12437v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2014
+notes = ""
+title = "The Sturm-Liouville Hierarchy of Evolution Equations and Limits of Algebro-Geometric Initial Data"
+abstract = "The Sturm-Liouville hierarchy of evolution equations was introduced in [Adv. Nonlinear Stud. 11 (2011), 555-591] and includes the Korteweg-de Vries and the Camassa-Holm hierarchies. We discuss some solutions of this hierarchy which are obtained as limits of algebro-geometric solutions. The initial data of our solutions are (generalized) reflectionless Sturm-Liouville potentials [Stoch. Dyn. 8 (2008), 413-449]."
+authors = "Russell Johnson; Luca Zampogni"
+url = "http://arxiv.org/abs/1403.1012v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2011
+notes = ""
+title = "Sturm-Liouville operators on time scales"
+abstract = "We establish the connection between Sturm-Liouville equations on time scales and Sturm--Liouville equations with measure-valued coefficients. Based on this connection we generalize several results for Sturm-Liouville equations on time scales which have been obtained by various authors in the past."
+authors = "Jonathan Eckhardt; Gerald Teschl"
+url = "http://arxiv.org/abs/1105.5959v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2013
+notes = ""
+title = "Estimating Spectral Density Functions for Sturm-Liouville problems with two singular endpoints"
+abstract = "In this paper we consider the Sturm-Liouville equation -y\"+qy = lambda*y on the half line (0,infinity) under the assumptions that x=0 is a regular singular point and nonoscillatory for all real lambda, and that either (i) q is L_1 near x=infinity, or (ii) q' is L_1 near infinity with q(x) --&gt; 0 as x --&gt; infinity, so that there is absolutely continuous spectrum in (0,infinity). Characterizations of the spectral density function for this doubly singular problem, similar to those obtained in ..."
+authors = "Charles Fulton; David Pearson; Steven Pruess"
+url = "http://arxiv.org/abs/1303.2989v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2025
+notes = ""
+title = "Self-adjoint extensions of singular Sturm-Liouville operators on graphs and Weyl's law"
+abstract = "We study self-adjoint extensions of a second order differential operator of Sturm-Liouville type on a graph. We relate self-adjointness of the operator to the existence of non-complete trajectories of the Hamiltonian vector field defined by its principal symbol outside the vertices. We define Kirchhoff conditions at the vertices which guarantee a self-adjoint extension analogous to the case of quantum graphs. The singular vertices may be interpreted as introducing a singular potential at those p..."
+authors = "Elisha Falbel"
+url = "http://arxiv.org/abs/2510.18922v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2020
+notes = ""
+title = "Direct and inverse problems for the matrix Sturm-Liouville operator with the general self-adjoint boundary conditions"
+abstract = "The matrix Sturm-Liouville operator on a finite interval with the boundary conditions in the general self-adjoint form and with the singular potential from the class $W_2^{-1}$ is studied. This operator generalizes Sturm-Liouville operators on geometrical graphs. We investigate structural and asymptotical properties of the spectral data (eigenvalues and weight matrices) of this operator. Furthermore, we prove the uniqueness of recovering the operator from its spectral data, by using the method o..."
+authors = "Natalia P. Bondarenko"
+url = "http://arxiv.org/abs/2006.06533v3"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2015
+notes = ""
+title = "Geometric aspects of self-adjoint Sturm-Liouville problems"
+abstract = "In the paper, we use $\\mathrm{U}(2)$, the group of $2\\times 2$ unitary matices, to parameterize the space of all self-adjoint boundary conditions for a fixed Sturm-Liouville equation on the interval $[0,1]$. The adjoint action of $\\mathrm{U}(2)$ on itself naturally leads to a refined classification of self-adjoint boundary conditions--each adjoint orbit is a subclass of these boundary conditions. We give explicit parameterizations of those adjoint orbits of principal type, i.e. orbits diffeomorp..."
+authors = "Yicao Wang"
+url = "http://arxiv.org/abs/1509.00707v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2015
+notes = ""
+title = "Inequalities among eigenvalues of different self-adjoint discrete Sturm-Liouville problems"
+abstract = "In this paper, inequalities among eigenvalues of different self-adjoint discrete Sturm-Liouville problems are established. For a fixed discrete Sturm-Liouville equation, inequalities among eigenvalues for different boundary conditions are given. For a fixed boundary condition, inequalities among eigenvalues for different equations are given. These results are obtained by applying continuity and discontinuity of the n-th eigenvalue function, monotonicity in some direction of the n-th eigenvalue f..."
+authors = "Hao Zhu; Yuming Shi"
+url = "http://arxiv.org/abs/1510.08264v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2022
+notes = ""
+title = "Lower bounds for self-adjoint Sturm-Liouville operators"
+abstract = "In this note we provide estimates for the lower bound of the self-adjoint operator associated with the three-coefficient Sturm-Liouville differential expression $$ \\frac{1}{r} \\left(-\\frac{\\mathrm d}{\\mathrm dx} p \\frac{\\mathrm d}{\\mathrm dx} + q\\right) $$ in the weighted $L^2$-Hilbert space $L^2(\\mathbb R; rdx)$."
+authors = "Jussi Behrndt; Fritz Gesztesy; Philipp Schmitz; Carsten Trunk"
+url = "http://arxiv.org/abs/2212.09837v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2006
+notes = ""
+title = "Computing the spectrum of non self-adjoint Sturm-Liouville problems with parameter dependent boundary conditions"
+abstract = "This paper deals with the computation of the eigenvalues of non self-adjoint Sturm-Liouville problems with parameter dependent boundary conditions using the \\textit{regularized sampling method}. A few numerical examples among which singular ones will be presented to illustrate the merit of the method and comparison made with the exact eigenvalues when they are available."
+authors = "Bilal Chanane"
+url = "http://arxiv.org/abs/math/0612259v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2014
+notes = ""
+title = "An inverse problem for the non-self-adjoint matrix Sturm-Liouville operator"
+abstract = "The inverse problem of spectral analysis for the non-self-adjoint matrix Sturm-Liouville operator on a finite interval is investigated. We study properties of the spectral characteristics for the considered operator, and provide necessary and sufficient conditions for the solvability of the inverse problem. Our approach is based on the constructive solution of the inverse problem by the method of spectral mappings. The characterization of the spectral data in the self-adjoint case is derived as ..."
+authors = "Natalia Bondarenko"
+url = "http://arxiv.org/abs/1407.3581v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2006
+notes = ""
+title = "Indefinite Sturm-Liouville operators with the singular critical point zero"
+abstract = "We present a new necessary condition for similarity of indefinite Sturm-Liouville operators to self-adjoint operators. This condition is formulated in terms of Weyl-Titchmarsh $m$-functions. Also we obtain necessary conditions for regularity of the critical points 0 and $\\infty$ of $J$-nonnegative Sturm-Liouville operators. Using this result, we construct several examples of operators with the singular critical point zero. In particular, it is shown that 0 is a singular critical point of the ope..."
+authors = "Illya M. Karabash; Aleksey S. Kostenko"
+url = "http://arxiv.org/abs/math/0612173v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2004
+notes = ""
+title = "Perturbations of non self-adjoint Sturm-Liouville problems, with applications to harmonic oscillators"
+abstract = "We study the behavior of the limit of the spectrum of a non self-adjoint Sturm-Liouville operator with analytic potential as the semi-classical parameter $h\\to 0$. We get a good description of the spectrum and limit spectrum near $\\infty$. We also study the action of one special perturbation of the operator (adding a Heaviside function), and prove that the limit spectrum is very unstable. As an illustration we describe the limit spectrum as $h\\to 0$ for $P^h=-h^2Δ+i x^2$ and the effect of this p..."
+authors = "Nedelec Laurence"
+url = "http://arxiv.org/abs/math/0406491v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2018
+notes = ""
+title = "Revisited version of Weyl's limit point-limit circle criterion for essential self-adjointness"
+abstract = "A new proof of the Weyl limit point-limit circle criterion is obtained, with systematic emphasis on Sobolev-space methods."
+authors = "Vito Flavio Bellino; Giampiero Esposito"
+url = "http://arxiv.org/abs/1810.03641v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 1999
+notes = ""
+title = "Collapsing and the Differential Form Laplacian : The Case of a Smooth Limit Space"
+abstract = "We analyze the limit of the p-form Laplacian under a collapse, with bounded sectional curvature and bounded diameter, to a smooth limit space. As an application, we characterize when the p-form Laplacian has small positive eigenvalues in a collapsing sequence."
+authors = "John Lott"
+url = "http://arxiv.org/abs/math/9902111v5"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2019
+notes = ""
+title = "A mathematical theory of computational resolution limit in one dimension"
+abstract = "Given an image generated by the convolution of point sources with a band-limited function, the deconvolution problem is to reconstruct the source number, positions, and amplitudes. This problem arises from many important applications in imaging and signal processing. It is well-known that it is impossible to resolve the sources when they are close enough in practice. Rayleigh investigated this problem and formulated a resolution limit, the so-called Rayleigh limit, for the case of two sources wi..."
+authors = "Ping Liu; Hai Zhang"
+url = "http://arxiv.org/abs/1912.05430v3"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2023
+notes = ""
+title = "The limit-point/limit-circle classification for ordinary differential equations with distributional coefficients"
+abstract = "We investigate the limit-point/limit-circle classification for the differential equation $Ju'+qu=λwu$ where $J=\\big(\\begin{smallmatrix}0&amp;-1\\\\ 1&amp;0\\end{smallmatrix}\\big)$ and $q$ and $w$ are matrices whose entries are distributions of order zero with $q$ Hermitian and $w$ non-negative. We identify the situations when the classical alternative of Weyl works and when it fails."
+authors = "Varun Bhardwaj; Rudi Weikard"
+url = "http://arxiv.org/abs/2309.05068v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2023
+notes = ""
+title = "A Fixed-Point Approach to Non-Commutative Central Limit Theorems"
+abstract = "We show how the renormalization group approach can be used to prove quantitative central limit theorems (CLTs) in the setting of free, Boolean, bi--free and bi--Boolean independence under finite third moment assumptions. The proofs rely on the construction of a contractive metric over the space of probability measures over $\\mathbb{R}$ or $\\mathbb{R}^2$, which has the appropriate analogue of a Gaussian distribution as a fixed point (for instance, the semi--circle law in the case of free independ..."
+authors = "Jad Hamdan"
+url = "http://arxiv.org/abs/2305.06960v6"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2012
+notes = ""
+title = "Ultimate limits to quantum metrology and the meaning of the Heisenberg limit"
+abstract = "For the last 20 years, the question of what are the fundamental capabilities of quantum precision measurements has sparked a lively debate throughout the scientific community. Typically, the ultimate limits in quantum metrology are associated with the notion of the Heisenberg limit expressed in terms of the physical resources used in the measurement procedure. Over the years, a variety of different physical resources were introduced, leading to a confusion about the meaning of the Heisenberg lim..."
+authors = "Marcin Zwierz; Carlos A. Pérez-Delgado; Pieter Kok"
+url = "http://arxiv.org/abs/1201.2225v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2009
+notes = ""
+title = "The Regge Limit for Green Functions in Conformal Field Theory"
+abstract = "We define a Regge limit for off-shell Green functions in quantum field theory, and study it in the particular case of conformal field theories (CFT). Our limit differs from that defined in arXiv:0801.3002, the latter being only a particular corner of the Regge regime. By studying the limit for free CFTs, we are able to reproduce the Low-Nussinov, BFKL approach to the pomeron at weak coupling. The dominance of Feynman graphs where only two high momentum lines are exchanged in the t-channel, follo..."
+authors = "Tom Banks; Guido Festuccia"
+url = "http://arxiv.org/abs/0910.2746v3"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2011
+notes = ""
+title = "Stochastic Price Dynamics Implied By the Limit Order Book"
+abstract = "In this paper we present a novel approach to the determination of fat tails in financial data by studying the information contained in the limit order book. In an order-driven market buyers and sellers may submit limit orders, which are executed when the price touches a pre-specified lower, respectively higher, limit-price. We show that, in equilibrium, the collection of all such orders - the limit order book - implies a volatility smile, similar to observations from option pricing in the Black-..."
+authors = "Alex Langnau; Yanko Punchev"
+url = "http://arxiv.org/abs/1105.4789v1"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2018
+notes = ""
+title = "Limit‐point/limit‐circle classification for Hain–Lüst type equations"
+abstract = ""
+authors = "S. Hassi; M. Möller; H. D. de Snoo"
+url = "https://www.semanticscholar.org/paper/d6444d997a0f0aa62c0211f793922246b1b82690"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2014
+notes = ""
+title = "Limit point and limit circle classification for symplectic systems on time scales"
+abstract = ""
+authors = "R. Hilscher; P. Zemánek"
+url = "https://www.semanticscholar.org/paper/f8bfaeb8dd03ea66b1189e00b6549a9ed69e967c"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2010
+notes = ""
+title = "The Limit Circle Criteria for a Class of Dynamic Equations on Time Scales"
+abstract = ""
+authors = "Z. Zheng; J. Shao; B. Zhang"
+url = "https://www.semanticscholar.org/paper/dfde02de46946241e59838e66ecea68d32b249dd"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2023
+notes = ""
+title = "Titchmarsh–Weyl Theory for Impulsive Dynamic Dirac System"
+abstract = ""
+authors = "B. Allahverdiev; H. Tuna"
+url = "https://www.semanticscholar.org/paper/390431248819bc5fb0bac1ed0279168da3644af9"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 1974
+notes = ""
+title = "Second-and Fourth-Order Differential Equations with Oscillatory Coefficients and Not of Limit-Point Type"
+abstract = ""
+authors = "M. Eastham"
+url = "https://www.semanticscholar.org/paper/a8de8b46acfeac85c5b52e8ba6ed5f3c08cdc53f"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2025
+notes = ""
+title = "ON THE SQUARE-INTEGRABLE SOLUTIONS OF SINGULAR IMPULSIVE DYNAMIC STURM-LIOUVILLE EQUATIONS"
+abstract = "In this work, singular impulsive dynamic Sturm{Liouville equations are studied. Weyl’s famous classification was obtained for equations of this type. In this context, firstly, it is defined as the maximal operator that corresponding to the problem. Then, under impulsive conditions, we studied the square integrability of the solutions to the dynamic Sturm{Liouville problem. Weyl’s well-known limit-circle/limit-point situations were examined last."
+authors = "B. Allahverdiev; H. Tuna; Hamlet A. Isayev"
+url = "https://www.semanticscholar.org/paper/6d7f240b2e0e2838d9436253b16d43d1a551e644"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2006
+notes = ""
+title = "Weyl–Titchmarsh theory for a class of discrete linear Hamiltonian systems"
+abstract = "Abstract This paper is concerned with establishing the Weyl–Titchmarsh theory for a class of discrete linear Hamiltonian systems over a half-line. Fundamental properties of solutions, regular spectral problems, and the corresponding maximal and minimal operators are first studied. Matrix disks are constructed and proved to be nested and converge to a limiting set. Some precise relationships among the rank of the matrix radius of the limiting set, the number of linearly independent square summabl..."
+authors = "Yuming Shi"
+url = "https://www.semanticscholar.org/paper/95acc0ce86f857182df756f87acbcf7c63d8b482"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2010
+notes = ""
+title = "Unifying discrete and continuous Weyl-Titchmarsh theory via a class of linear Hamiltonian systems on Sturmian time scales"
+abstract = "In this study, we are concerned with introducing Weyl-Titchmarsh theory for a class of dynamic linear Hamiltonian nabla systems over a half-line on Sturmian time scales. After developing fundamental properties of solutions and regular spectral problems, we introduce the corresponding maximal and minimal operators for the system. Matrix disks are constructed and proved to be nested and converge to a limiting set. Some precise relationships among the rank of the matrix radius of the limiting set, ..."
+authors = "D. Anderson"
+url = "https://www.semanticscholar.org/paper/6d1b88b3107219dd8e0763e8d4703ade4cbbe27f"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2016
+notes = ""
+title = "Variational methods for the solution of fractional discrete/continuous Sturm-Liouville problems"
+abstract = "The fractional Sturm-Liouville eigenvalue problem appears in many situations, e.g., while solving anomalous diffusion equations coming from physical and engineering applications. Therefore to obtain solutions or approximation of solutions to this problem is of great importance. Here, we describe how the fractional Sturm-Liouville eigenvalue problem can be formulated as a constrained fractional variational principle and show how such formulation can be used in order to approximate the solutions. ..."
+authors = "Ricardo Almeida; Agnieszka B. Malinowska; M. Luísa Morgado; Tatiana Odzijewicz"
+url = "http://arxiv.org/abs/1604.04272v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2007
+notes = ""
+title = "Relative Oscillation Theory for Sturm-Liouville Operators Extended"
+abstract = "We extend relative oscillation theory to the case of Sturm--Liouville operators $H u = r^{-1}(-(pu')'+q u)$ with different $p$'s. We show that the weighted number of zeros of Wronskians of certain solutions equals the value of Krein's spectral shift function inside essential spectral gaps."
+authors = "Helge Krueger; Gerald Teschl"
+url = "http://arxiv.org/abs/0707.3451v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2023
+notes = ""
+title = "Numerical computation of spectral solutions for Sturm-Liouville eigenvalue problems"
+abstract = "This paper focuses on the study of Sturm-Liouville eigenvalue problems. In the classical Chebyshev collocation method, the Sturm-Liouville problem is discretized to a generalized eigenvalue problem where the functions represent interpolants in suitably rescaled Chebyshev points. We are concerned with the computation of high-order eigenvalues of Sturm-Liouville problems using an effective method of discretization based on the Chebfun software algorithms with domain truncation. We solve some numer..."
+authors = "Sameh Gana"
+url = "http://arxiv.org/abs/2305.04176v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2017
+notes = ""
+title = "Spectrum, trace and oscillation of a Sturm-Liouville type retarded differential operator with interface conditions"
+abstract = "In this study, a formula for regularized sums of eigenvalues of a Sturm-Liouville problem with retarded argument at the point of discontinuity is obtained. Moreover, oscillation properties of the related problem is investigated."
+authors = "Erdoğan Şen"
+url = "http://arxiv.org/abs/1710.07189v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2024
+notes = ""
+title = "On the non-existence of oscillation numbers in Sturm-Liouville theory"
+abstract = "We prove an old conjecture that relates the existence of non-real eigenvalues of Sturm-Liouville Dirichlet problems on a finite interval to the non-existence of oscillation numbers of its real eigenfunctions, [[6], p.104, Problems 3 and 5]. This extends to the general case, a previous result in [1], [2] where it was shown that the presence of even one pair of non-real eigenvalues implies the non-existence of a positive eigenfunction (or ground state). We also provide estimates on the Haupt and R..."
+authors = "Angelo B. Mingarelli"
+url = "http://arxiv.org/abs/2404.19575v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2016
+notes = ""
+title = "A Neumann series of Bessel functions representation for solutions of Sturm-Liouville equations"
+abstract = "A Neumann series of Bessel functions (NSBF) representation for solutions of Sturm-Liouville equations and for their derivatives is obtained. The representation possesses an attractive feature for applications: for all real values of the spectral parameter $ω$ the difference between the exact solution and the approximate one (the truncated NSBF) depends on $N$ (the truncation parameter) and the coefficients of the equation and does not depend on $ω$. A similar result is valid when $ω\\in\\mathbb{C}..."
+authors = "Vladislav V. Kravchenko; Sergii M. Torba"
+url = "http://arxiv.org/abs/1612.08803v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2022
+notes = ""
+title = "Spectrum completion and inverse Sturm-Liouville problems"
+abstract = "Given a finite set of eigenvalues of a regular Sturm-Liouville problem for the equation -y{\\prime}{\\prime}+q(x)y=λy, the potential q(x) of which is unknown. We show the possibility to compute more eigenvalues without any additional information on the potential q(x). Moreover, considering the Sturm-Liouville problem with the boundary conditions y{\\prime}(0)-hy(0)=0 and y{\\prime}(π)+Hy(π)=0, where h, H are some constants, we complete its spectrum without additional information neither on the poten..."
+authors = "Vladislav V. Kravchenko"
+url = "http://arxiv.org/abs/2210.13460v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2020
+notes = ""
+title = "Constructive solution of the inverse spectral problem for the matrix Sturm-Liouville operator"
+abstract = "An inverse spectral problem is studied for the matrix Sturm-Liouville operator on a finite interval with the general self-adjoint boundary condition. We obtain a constructive solution based on the method of spectral mappings for the considered inverse problem. The nonlinear inverse problem is reduced to a linear equation in a special Banach space of infinite matrix sequences. In addition, we apply our results to the Sturm-Liouville operator on a star-shaped graph."
+authors = "Natalia Bondarenko"
+url = "http://arxiv.org/abs/2003.01796v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2008
+notes = ""
+title = "Spectral parameter power series for Sturm-Liouville problems"
+abstract = "We consider a recently discovered representation for the general solution of the Sturm-Liouville equation as a spectral parameter power series (SPPS). The coefficients of the power series are given in terms of a particular solution of the Sturm-Liouville equation with the zero spectral parameter. We show that, among other possible applications, this provides a new and efficient numerical method for solving initial value and boundary value problems. Moreover, due to its convenient form the repres..."
+authors = "Vladislav V. Kravchenko; R. Michael Porter"
+url = "http://arxiv.org/abs/0811.4488v1"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2023
+notes = ""
+title = "Maximal regularity and two‐sided estimates of the approximation numbers of the nonlinear Sturm–Liouville equation solutions with rapidly oscillating coefficients in L2(ℝ)"
+abstract = "A theorem on the maximum regularity of solutions of the nonlinear Sturm–Liouville equation with greatly growing and rapidly oscillating potential in the space L2(ℝ)(ℝ=(−∞,∞))$$ {L}_2\\left(\\mathrm{\\mathbb{R}}\\right)\\kern0.1em \\left(\\mathrm{\\mathbb{R}}=\\left(-\\infty, \\infty \\right)\\right) $$ is proved in this paper. Two‐sided estimates of the Kolmogorov widths of the sets associated with solutions of the nonlinear Sturm–Liouville equation are also obtained. As is known, the obtained estimates give..."
+authors = "M. Muratbekov; M. Muratbekov; S. Altynbek"
+url = "https://www.semanticscholar.org/paper/d02292dbdbc6bc0cf000ed0864d354ac8ae512ad"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2023
+notes = ""
+title = "Constructing the Asymptotics of Solutions to Differential Sturm–Liouville Equations in Classes of Oscillating Coefficients"
+abstract = ""
+authors = "N. Valeev; E. A. Nazirova; Ya. T. Sultanaev"
+url = "https://www.semanticscholar.org/paper/f29fd253e2536f49c5c4f66179c01f8c7207c783"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2022
+notes = ""
+title = "On a Method for Studying the Asymptotics of Solutions of Sturm–Liouville Differential Equations with Rapidly Oscillating Coefficients"
+abstract = ""
+authors = "L. N. Valeeva; E. A. Nazirova; Ya. T. Sultanaev"
+url = "https://www.semanticscholar.org/paper/6d12a57db5ede46467b5359a8808c35680ac89f4"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2022
+notes = ""
+title = "On the asymptotic behavior of solutions of the Sturm-Liouville equation with an oscillating potential"
+abstract = "In the article we consider the Sturm-Liouville equation −y ′′+(q(x)+h(x))y = 0, 0 ≤ x < +∞, where q(x) satisfies the conditions of regularity of growth at infinity and h(x) is a fast-oscillating function. Sufficient conditions are found under which the asymptotics of solutions of the equation is determined only by the function q(x). A new method for obtaining asymptotic formulas for solutions is proposed, consisting in the standard replacement of the equation by a system of first-order equations..."
+authors = "Aigul R. Sagitova; Anfisa V. Shakirova; Yaudat T. Sultanaev"
+url = "https://www.semanticscholar.org/paper/e461fbcbe93145fa6744ab4684eef2e57dba643e"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2022
+notes = ""
+title = "A new method for constructing the asymptotics of solutions of the Sturm-Liouville equation with an oscillating potential"
+abstract = ""
+authors = ""
+url = "https://www.semanticscholar.org/paper/a38bd361c2ed6ae763897a8706f76af91a65764b"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2023
+notes = ""
+title = """THE NEW ASYMPTOTICS FOR SOLUTIONS OF THE\nSTURM–LIOUVILLE EQUATION"""
+abstract = ". In this paper, we show the development of a method that allows one to construct asymptotics for solutions to ordinary differential equations of arbitrary order with oscillating coefficients on the semiaxis. The idea of the method is presented on the example of studying the asymptotics of the Sturm-Liouville equation solutions."
+authors = "E. A. Nazirova; And YAUDAT T. SULTANAEV; N. Valeev"
+url = "https://www.semanticscholar.org/paper/f5ee68af89b119a0536f01801a38908a9c6f06f7"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2020
+notes = ""
+title = "Smoothness and approximative properties of solutions of the singular nonlinear Sturm-Liouville equation"
+abstract = "It is known that the eigenvalues λn(n = 1, 2, ...) numbered in decreasing order and taking the multiplicity of the self-adjoint Sturm-Liouville operator with a completely continuous inverse operator L^{−1} have the following property (*) λn → 0, when n → ∞, moreover, than the faster convergence to zero so the operator L^{−1} is best approximated by finite rank operators. The following question: - Is it possible for a given nonlinear operator to indicate a decreasing numerical sequence characteri..."
+authors = "M. Muratbekov; M. Muratbekov"
+url = "https://www.semanticscholar.org/paper/4ae6fb53b12c22ea6c2195cf7485a5b8571134b6"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2024
+notes = ""
+title = "Wintner-type nonoscillation theorems for conformable linear Sturm-Liouville differential equations"
+abstract = "In this study, we addressed the nonoscillation of th Sturm-Liouville differential equation with a differential operator, which corresponds to a proportional-derivative controller. The equation is a conformable linear differential equation. A Wintner-type nonoscillation theorem was established to be applied to such equations. Using this theorem, we provided a sharp nonoscillation condition that guarantees that all nontrivial solutions to Euler-type conformable linear equations do not oscillate. T..."
+authors = "Kazuki Ishibashi"
+url = "https://www.semanticscholar.org/paper/ab41e98ab3c50b8ef01c70eb69f3f184c1ab07ef"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2021
+notes = ""
+title = "Multilayer heat equations and their solutions via oscillating integral transforms"
+abstract = "By expanding the Dirac delta function in terms of the eigenfunctions of the corresponding Sturm-Liouville problem, we construct some new (oscillating) integral transforms. These transforms are then used to solve various finance, physics, and mathematics problems, which could be characterized by the existence of a multilayer spatial structure and moving (time-dependent) boundaries (internal interfaces) between the layers. Thus, constructed solutions are semi-analytical and extend the authors' pre..."
+authors = "A. Itkin; A. Lipton; D. Muravey"
+url = "https://www.semanticscholar.org/paper/3b8a5b750672e9b6cb734c74ba0bb0ac0a61b0d1"
+relevance_score = 0
+
+[metadata]
+queries = ["limit circle Sturm-Liouville oscillatory endpoint", "singular Sturm-Liouville self-adjoint extension", "Weyl limit circle limit point classification", "wildly oscillating solutions Sturm-Liouville"]
+n_results = 53
+date = "2026-03-14"
+category = "limit_circle"

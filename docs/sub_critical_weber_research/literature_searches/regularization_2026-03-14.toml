@@ -1,0 +1,762 @@
+[[papers]]
+source = "arxiv"
+year = 2019
+notes = ""
+title = "Delay-Compensated Control of Sandwiched ODE-PDE-ODE Hyperbolic Systems for Oil Drilling and Disaster Relief"
+abstract = "Motivated by engineering applications of subsea installation by deepwater construction vessels in oil drilling, and of aid delivery by unmanned aerial vehicles in disaster relief, we develop output-feedback boundary control of heterodirectional coupled hyperbolic PDEs sandwiched between two ODEs, where the measurement is the output state of one ODE and suffers a time delay. After rewriting the time-delay dynamics as a transport PDE of which the left boundary connects with the sandwiched system, ..."
+authors = "Ji Wang; Miroslav Krstic"
+url = "http://arxiv.org/abs/1910.05948v3"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2022
+notes = ""
+title = "ODEs whose symmetry groups are not fiber-preserving"
+abstract = "We observe that, up to conjugation, a majority of symmetric higher order ODEs (ordinary differential equations) and ODE systems have only fiber-preserving point symmetries. By exploiting Lie's classification of Lie algebras of vector fields, we describe all the exceptions to this in the case of scalar ODEs and systems of ODEs on a pair of functions. The scalar ODEs whose symmetry algebra is not fiber preserving can be expressed via absolute and relative scalar differential invariants, while a si..."
+authors = "Boris Kruglikov; Eivind Schneider"
+url = "http://arxiv.org/abs/2202.10331v5"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2007
+notes = ""
+title = "Strong Singularity for Subfactors"
+abstract = "We examine the notion of $α$-strong singularity for subfactors of a \\IIi factor, which is a metric quantity that relates the distance between a unitary in the factor and a subalgebra with the distance between that subalgebra and its unitary conjugate. Through planar algebra techniques, we demonstrate the existence of a finite index singular subfactor of the hyperfinite \\IIi factor that cannot be strongly singular with $α=1$, in contrast to the case for masas. Using work of Popa, Sinclair, and Sm..."
+authors = "Pinhas Grossman; Alan Wiggins"
+url = "http://arxiv.org/abs/math/0703673v3"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2024
+notes = ""
+title = "Zero noise limit for singular ODE regularized by fractional noise"
+abstract = "We consider scalar ODE with a power singularity at the origin, regularized by an additive fractional noise. We show that, as the intensity in front of the noise goes to $0$, the solution converges to the extremal solutions to the ODE (which exit the origin instantly), and we quantify this convergence with subexponential probability estimates. This extends classical results of Bafico and Baldi in the Brownian case. The main difficulty lies in the absence of the Markov property for the system. Our..."
+authors = "Łukasz Mądry; Paul Gassiat"
+url = "http://arxiv.org/abs/2401.09970v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2025
+notes = ""
+title = "SPIRAL: Self-Play on Zero-Sum Games Incentivizes Reasoning via Multi-Agent Multi-Turn Reinforcement Learning"
+abstract = "Recent advances in reinforcement learning have shown that language models can develop sophisticated reasoning through training on tasks with verifiable rewards, but these approaches depend on human-curated problem-answer pairs and domain-specific reward engineering. We introduce SPIRAL, a self-play framework where models learn by playing multi-turn, zero-sum games against continuously improving versions of themselves, generating an automatic curriculum of stronger opponents, and eliminating the ..."
+authors = "Bo Liu; Leon Guertler; Simon Yu; Zichen Liu; Penghui Qi; Daniel Balcells; Mickel Liu; Cheston Tan; Weiyan Shi; Min Lin; Wee Sun Lee; Natasha Jaques"
+url = "http://arxiv.org/abs/2506.24119v3"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 1995
+notes = ""
+title = "CONSTRAINTS ON THE OPACITY OF SPIRAL DISKS FROM NEAR-INFRARED OBSERVATIONS"
+abstract = "In this paper I review how near-infrared (NIR) observations can constrain the opacity of spiral disks. Basic considerations show that NIR photometry provides a powerful probe of the optical depths in spiral galaxy disks in the regime of interest, where the optical depth in the V-band is near unity. I review the existing opacity constraints from the analysis of dust lanes in edge-on and face-on galaxies. The ``internal extinction correction\" in the NIR-Tully-Fisher relation deserves particular at..."
+authors = "Hans-Walter Rix; Max-Planck- Inst. fuer Astrophysik"
+url = "http://arxiv.org/abs/astro-ph/9501067v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2005
+notes = ""
+title = "Paraconformal geometry of $n$th order ODEs, and exotic holonomy in dimension four"
+abstract = "We characterise $n$th order ODEs for which the space of solutions $M$ is equipped with a particular paraconformal structure in the sense of \\cite{BE}, that is a splitting of the tangent bundle as a symmetric tensor product of rank-two vector bundles. This leads to the vanishing of $(n-2)$ quantities constructed from of the ODE. If $n=4$ the paraconformal structure is shown to be equivalent to the exotic ${\\cal G}_3$ holonomy of Bryant. If $n=4$, or $n\\geq 6$ and $M$ admits a torsion--free connec..."
+authors = "Maciej Dunajski; Paul Tod"
+url = "http://arxiv.org/abs/math/0502524v4"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2020
+notes = ""
+title = "STEER: Simple Temporal Regularization For Neural ODEs"
+abstract = "Training Neural Ordinary Differential Equations (ODEs) is often computationally expensive. Indeed, computing the forward pass of such models involves solving an ODE which can become arbitrarily complex during training. Recent works have shown that regularizing the dynamics of the ODE can partially alleviate this. In this paper we propose a new regularization technique: randomly sampling the end time of the ODE during training. The proposed regularization is simple to implement, has negligible ov..."
+authors = "Arnab Ghosh; Harkirat Singh Behl; Emilien Dupont; Philip H. S. Torr; Vinay Namboodiri"
+url = "http://arxiv.org/abs/2006.10711v3"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2008
+notes = ""
+title = "The Role of Gas In Maintaining Quasi-Steady Spiral Structure In Stellar Disks"
+abstract = "We study the dynamical evolution of spiral structure in the stellar disks of isolated galaxies using high resolution Smoothed Particle Hydrodynamics (SPH) simulations that treat the evolution of gas, stars, and dark matter self-consistently. We focus this study on the question of self-excited spiral structure in the stellar disk and investigate the dynamical coupling between the cold, dissipative gaseous component and the stellar component. We find that angular momentum transport from the gas to..."
+authors = "Sukanya Chakrabarti"
+url = "http://arxiv.org/abs/0812.0821v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2011
+notes = ""
+title = "Exact solution of Schroedinger equation in the case of reduction to Riccati type of ODE"
+abstract = "A new type of solution for the full 3+1 dimensional space-time Schroedinger equation is presented here. We consider elegant presentation of the exact solution in a spherical coordinate system, along with the assuming of separation of the two angular co-ordinates from the radial and time variables. The separation of variables follows from an assumed product form of the full potential function, which should allow us to reduce the Schroedinger Eq. to Riccati ODE in stationary case. If the angular d..."
+authors = "Sergey V. Ershkov"
+url = "http://arxiv.org/abs/1101.3075v4"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2011
+notes = ""
+title = "Search for Stopped Gluinos in pp collisions at sqrt(s)=7 TeV at CMS"
+abstract = "The results of the first search for long-lived gluinos produced in 7 TeV pp collisions at the CERN Large Hadron Collider are presented. The search looks for evidence of long-lived particles that stop in the CMS detector and decay in the quiescent periods between beam crossings. In a dataset with a peak instantaneous luminosity of 10^-32 /cm^2/s, an integrated luminosity of 10/pb, and a search interval corresponding to 62 hours of LHC operation, no significant excess above background was observed..."
+authors = "Fedor Ratnikov"
+url = "http://arxiv.org/abs/1111.1635v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2005
+notes = ""
+title = "Infinite Dimensional Ito Algebras of Quantum White Noise"
+abstract = "A simple axiomatic characterization of the general (infinite dimensional, noncommutative) Ito algebra is given and a pseudo-Euclidean fundamental representation for such algebra is described. The notion of Ito B*-algebra, generalizing the C*-algebra is defined to include the Banach infinite dimensional Ito algebras of quantum Brownian and quantum Levy motion, and the B*-algebras of vacuum and thermal quantum noise are characterized. It is proved that every Ito algebra is canonically decomposed i..."
+authors = "V. P. Belavkin"
+url = "http://arxiv.org/abs/math/0512288v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2016
+notes = ""
+title = "Yet Another Condition for Absence of Collisions for Competing Brownian Particles"
+abstract = "Consider a finite system of rank-based competing Brownian particles, where the drift and diffusion of each particle depend only on its current rank relative to other particles. We present a simple sufficient condition for absence of multiple collisions of a given order, continuing the earlier work by Bruggeman and Sarantsev (2015). Unlike in that paper, this new condition works even for infinite systems."
+authors = "Tomoyuki Ichiba; Andrey Sarantsev"
+url = "http://arxiv.org/abs/1608.07220v3"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2002
+notes = ""
+title = "Winding number and non-BPS bound states of walls in nonlinear sigma models"
+abstract = "Non-supersymmetric multi-wall configurations are generically unstable. It is proposed that the stabilization in compact space can be achieved by introducing a winding number into the model. A BPS-like bound is studied for the energy of configuration with nonvanishing winding number. Winding number is implemented in an ${\\cal N}=1$ supersymmetric nonlinear sigma model with two chiral scalar fields and a bound states of BPS and anti-BPS walls is found to exist in noncompact spaces. Even in compact..."
+authors = "Norisuke Sakai; Ryo Sugisaka"
+url = "http://arxiv.org/abs/hep-th/0203142v3"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2007
+notes = ""
+title = "Cyclic Universe and Infinite Past"
+abstract = "We address two questions about the past for infinitely cyclic cosmology. The first is whether it can contain an infinite length null geodesic into the past in view of the Borde-Guth-Vilenkin (BGV) \"no-go\" theorem, The second is whether, given that a small fraction of spawned universes fail to cycle, there is an adequate probability for a successful universe after an infinite time. We give positive answers to both questions then show that in infinite cyclicity the total number of universes has be..."
+authors = "Paul H. Frampton"
+url = "http://arxiv.org/abs/0705.2730v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2019
+notes = ""
+title = "Generalized Stochastic areas and windings arising from Anti-de Sitter and Hopf fibrations"
+abstract = "In the first part of this paper, we derive explicit expressions of the semi-group densities of generalized stochastic areas arising from the Anti-de Sitter and the Hopf fibrations. Motivated by the number-theoretical connection between the Heisenberg group and Dirichlet series, we express the Mellin transform of the generalized stochastic area corresponding to the one-dimensional Anti de Sitter fibration as a series of Riemann Zeta function evaluated at integers. In the second part of the paper,..."
+authors = "Nizar Demni"
+url = "http://arxiv.org/abs/1904.06510v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2024
+notes = ""
+title = "One-Shot Method for Computing Generalized Winding Numbers"
+abstract = "The generalized winding number is an essential part of the geometry processing toolkit, allowing to quantify how much a given point is inside a surface, even when the surface has boundaries and noise. We propose a new universal method to compute a generalized winding number, based only on the surface boundary and the intersections of a single ray with the surface, supporting any oriented surface representations that support a ray intersection query. Due to the focus on the boundary, our algorith..."
+authors = "Cedric Martens; Mikhail Bessmeltsev"
+url = "http://arxiv.org/abs/2408.04466v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2002
+notes = ""
+title = "Remarks on actions on compacta by some infinite-dimensional groups"
+abstract = "We discuss some techniques related to equivariant compactifications of uniform spaces and amenability of topological groups. In particular, we give a new proof of a recent result by Glasner and Weiss describing the universal minimal flow of the infinite symmetric group ${\\mathfrak S}_\\infty$ with the standard Polish topology, and extend Bekka's concept of an amenable representation, enabling one to deduce non-amenability of the Banach--Lie groups $\\GL(L_p)$ and $\\GL(\\ell_p)$, $1\\leq p &lt;\\infty..."
+authors = "Vladimir Pestov"
+url = "http://arxiv.org/abs/math/0204202v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2019
+notes = ""
+title = "Connection between the winding number and the Chern number"
+abstract = "Bulk-edge correspondence is one of the most distinct properties of topological insulators. In particular, the 1D winding number $\\n$ has a one-to-one correspondence to the number of edge states in a chain of topological insulators with boundaries. By properly choosing the unit cells, we carry out numerical calculation to show explicitly in the extended SSH model that the winding numbers corresponding to the left and right unit cells may be used to predict the numbers of edge states on the two bo..."
+authors = "Han-Ting Chen; Chia-Hsun Chang; Hsien-chung Kao"
+url = "http://arxiv.org/abs/1908.06700v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2017
+notes = ""
+title = "Wasserstein Distributionally Robust Optimization and Variation Regularization"
+abstract = "Wasserstein distributionally robust optimization (DRO) has recently achieved empirical success for various applications in operations research and machine learning, owing partly to its regularization effect. Although connection between Wasserstein DRO and regularization has been established in several settings, existing results often require restrictive assumptions, such as smoothness or convexity, that are not satisfied for many problems. In this paper, we develop a general theory on the variat..."
+authors = "Rui Gao; Xi Chen; Anton J. Kleywegt"
+url = "http://arxiv.org/abs/1712.06050v3"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2011
+notes = ""
+title = "Minimum Energy Configurations in the $N$-Body Problem and the Celestial Mechanics of Granular Systems"
+abstract = "Minimum energy configurations in celestial mechanics are investigated. It is shown that this is not a well defined problem for point-mass celestial mechanics but well-posed for finite density distributions. This naturally leads to a granular mechanics extension of usual celestial mechanics questions such as relative equilibria and stability. This paper specifically studies and finds all relative equilibria and minimum energy configurations for $N=1,2,3$ and develops hypotheses on the relative eq..."
+authors = "D. J. Scheeres"
+url = "http://arxiv.org/abs/1111.4245v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2019
+notes = ""
+title = "Numerical integration in celestial mechanics: a case for contact geometry"
+abstract = "Several dynamical systems of interest in celestial mechanics can be written in the form of a Newton equation with time-dependent damping, linear in the velocities. For instance, the modified Kepler problem, the spin-orbit model and the Lane-Emden equation all belong to such class. In this work we start an investigation of these models from the point of view of contact geometry. In particular we focus on the (contact) Hamiltonisation of these models and on the construction of the corresponding ge..."
+authors = "Alessandro Bravetti; Marcello Seri; Mats Vermeeren; Federico Zadra"
+url = "http://arxiv.org/abs/1909.02613v3"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2014
+notes = ""
+title = "Interaction between celestial and terrestrial reference frames and some considerations for the next VLBI-based ICRF"
+abstract = "In this paper we outline several problems related to the realization of the international celestial and terrestrial reference frames ICRF and ITRF at the millimeter level of accuracy, with emphasis on ICRF issues. The main topics considered are: analysis of the current status of the ICRF, mutual impact of ICRF and ITRF, and some considerations for future ICRF realizations."
+authors = "Zinovy Malkin; Harald Schuh; Chopo Ma; Sebastien Lambert"
+url = "http://arxiv.org/abs/1406.2406v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2023
+notes = ""
+title = "Flat holography and celestial shockwaves"
+abstract = "In this paper we systematically develop the flat/CFT holographic dictionary, building on AdS/CFT holography. After analysing the behaviour of scalar field modes on hyperbolic slices of Minkowski and performing the holographic renormalisation for the associated onshell action, we obtain a holography dictionary between the bulk theory and the corresponding dual theory on the celestial sphere. We propose that a single scalar field in the bulk is dual to two series of operators on the celestial sphe..."
+authors = "Zezhuang Hao; Marika Taylor"
+url = "http://arxiv.org/abs/2309.04307v3"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2005
+notes = ""
+title = "Intrinsic vulnerabilities to mechanical failure in nanoscale films"
+abstract = "We use molecular simulations to explore how sample dimensions and interfacial properties impact some generic aspects of the mechanical and structural behavior of nanoconfined materials. Specifically, we calculate the strain-dependent properties of minimum-energy thin-film particle configurations (i.e., inherent structures) confined between attractive, parallel substrates. We examine how the relationship between the transverse strain and the stress tensor (the equation of state of the energy land..."
+authors = "Pooja Shah; Thomas M. Truskett"
+url = "http://arxiv.org/abs/cond-mat/0502303v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2025
+notes = ""
+title = "Regular celestial amplitudes"
+abstract = "Conventional massless celestial amplitudes are distributional and fail to realize the celestial OPE -- most sharply in the non-MHV paradox, where OPEs predict nonzero celestial amplitudes with helicities $-{+}{+}+$ that are known to vanish at tree level. To resolve this, we introduce regular celestial amplitudes. We demonstrate that at tree-level, these amplitudes are non-distributional and, crucially, consistent with the celestial OPE. This suggests a revised dictionary: CCFT correlators are th..."
+authors = "Reiko Liu; Wen-Jie Ma"
+url = "http://arxiv.org/abs/2512.05882v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2024
+notes = ""
+title = "An FFT based chemo-mechanical framework with fracture: application to mesoscopic electrode degradation"
+abstract = "An FFT based method is proposed to simulate chemo-mechanical problems at the microscale including fracture, specially suited to predict crack formation during the intercalation process in batteries. The method involves three fields fully coupled, concentration, deformation gradient and damage. The mechanical problem is set in a finite strain framework and solved using Fourier Galerkin for non-linear problems in finite strains. The damage is modeled with Phase Field Fracture using a stress drivin..."
+authors = "Gabriel Zarzoso; Eduardo Roque; Francisco Montero-Chacón; Javier Segurado"
+url = "http://arxiv.org/abs/2411.16583v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2014
+notes = ""
+title = "Avoiding collisions under topological constraints in variational problems coming from celestial mechanics"
+abstract = "In a singular potential setting, we generalize a method which allows to show that minimizers under topological constraints of the action functional (or of the Maupertuis') are collision-free. This methods applies to $3$-dimensional problems of celestial mechanics exhibiting a particular cylindrical symmetry, as well as to planar problems of $N$-centre type, where it gives optimal results."
+authors = "Nicola Soave; Susanna Terracini"
+url = "http://arxiv.org/abs/1404.2490v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2016
+notes = ""
+title = "Degenerate billiards in celestial mechanics"
+abstract = "In an ordinary billiard trajectories of a Hamiltonian system are elastically reflected after a collision with a hypersurface (scatterer). If the scatterer is a submanifold of codimension more than one, we say that the billiard is degenerate. Degenerate billiards appear as limits of systems with singularities in celestial mechanics. We prove the existence of trajectories of such systems shadowing trajectories of the corresponding degenerate billiards. This research is motivated by the problem of ..."
+authors = "Sergey Bolotin"
+url = "http://arxiv.org/abs/1612.08907v1"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2010
+notes = ""
+title = "Fundamentals of regularization in celestial mechanics and linear perturbation theories"
+abstract = ""
+authors = "J. Waldvogel"
+url = "https://www.semanticscholar.org/paper/aa615651080cdf856ef37dc069d9e2b6916d0891"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 0
+notes = ""
+title = "Mechanics Edward Belbruno : Capture Dynamics and Chaotic Motions in Celestial"
+abstract = ""
+authors = ""
+url = "https://www.semanticscholar.org/paper/2fb9db15c3fb12513b1f6e250f179be65cb78785"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2014
+notes = ""
+title = "Triple-Collision Orbits : Analytical Regularization of Singularities in the Three-Body Problem"
+abstract = ""
+authors = "Isabella Nogues"
+url = "https://www.semanticscholar.org/paper/5d82963e8f9daaa050a50c07577095c9fe3a964c"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2022
+notes = ""
+title = "Regularization of the Hill four-body problem with oblate bodies"
+abstract = "We consider the Hill four-body problem where three oblate, massive bodies form a relative equilibrium triangular configuration, and the 4th, infinitesimal body orbits in a neighborhood of the smallest of the three massive bodies. We regularize collisions between the infinitesimal body and the smallest massive body, via McGehee coordinate transformation. We describe the corresponding collision manifold and show that it undergoes a bifurcation when the oblateness coefficient of the smallest massiv..."
+authors = "E. Belbruno; M. Gidea; Wai-Ting Lam"
+url = "https://www.semanticscholar.org/paper/ae6da7390094cadea718ed5f6be886dabb783c7e"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2004
+notes = ""
+title = "Capture Dynamics and Chaotic Motions in Celestial Mechanics"
+abstract = "List of Figures vii Foreword xi Preface xiii Chapter 1. Introduction to the N -Body Problem 1 1.1 The N -Body Problem 1 1.2 Planar Three-Body Problem 9 1.3 Two-Body Problem 11 1.4 Regularization of Collision 16 1.5 The Restricted Three-Body Problem: Formulations 24 1.6 The Kepler Problem and Equivalent Geodesic Flows 35 Chapter 2. Bounded Motion, Cantor Sets, and Twist Maps 49 2.1 Quasi-Periodicity and the KAM Theorem 50 2.2 The Moser Twist Theorem, Cantor Sets 59 2.3 Area-Preserving Maps, Fixed..."
+authors = "E. Belbruno"
+url = "https://www.semanticscholar.org/paper/cb3eea03f4780e84a6fd48d600ceafff6bf1dbda"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2022
+notes = ""
+title = "A new collision-based periodic orbit in the three-dimensional eight-body problem"
+abstract = ""
+authors = "Skyler Simmons"
+url = "https://www.semanticscholar.org/paper/3d5c3846f90ddc11530187b4b8117a2d24d1b27d"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2004
+notes = ""
+title = "New advances in celestial mechanics and Hamiltonian systems, HAMSYS-2001"
+abstract = ""
+authors = "J. Delgado; E. Lacomba; J. Llibre; E. Pérez-Chavela"
+url = "https://www.semanticscholar.org/paper/af7a181a4167824857f6e4d92d4fbb7051c40764"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2025
+notes = ""
+title = "Global Regularity for Navier-Stokes on T3 via Bounded Vorticity-Response Functionals"
+abstract = "The incompressible Navier-Stokes equations on the three-torus T3 admit global weak solutions (Leray), but whether these solutions remain smooth for all time is open. We resolve this by constructing a bounded vorticity-response functional that defines a temporal lifting of the equations. The construction generalizes Sundman regularization of collision singularities in celestial mechanics, with vorticity magnitude serving as the regularizing variable. Uniform bounds on Galerkin approximations, ind..."
+authors = "Jeffrey Camlin"
+url = "https://www.semanticscholar.org/paper/531368e58e7b665b0b5447d510e696b4dcd46053"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 1968
+notes = ""
+title = "The binary collision in the n-body problem."
+abstract = ""
+authors = "H. Sperling"
+url = "https://www.semanticscholar.org/paper/283b4c95efa65ede727b862bba1114625bcff4b9"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2015
+notes = ""
+title = "The Rhomboidal 4-Body Problem Revisited"
+abstract = ""
+authors = "M. Alvarez-Ramírez; M. Medina"
+url = "https://www.semanticscholar.org/paper/5eb61a3c7dc5644e9cebd4bece6f290e476566f1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2014
+notes = ""
+title = "Triple and Simultaneous Collisions of Competing Brownian Particles"
+abstract = "Consider a finite system of competing Brownian particles on the real line. Each particle moves as a Brownian motion, with drift and diffusion coefficients depending only on its current rank relative to the other particles. A triple collision occurs if three particles are at the same position at the same moment. A simultaneous collision occurs if at a certain moment, there are two distinct pairs of particles such that in each pair, both particles occupy the same position. These two pairs of parti..."
+authors = "Andrey Sarantsev"
+url = "http://arxiv.org/abs/1401.6255v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2024
+notes = ""
+title = "Non-linear Triple Changes Estimator for Targeted Policies"
+abstract = "The renowned difference-in-differences (DiD) estimator relies on the assumption of 'parallel trends,' which does not hold in many practical applications. To address this issue, the econometrics literature has turned to the triple difference estimator. Both DiD and triple difference are limited to assessing average effects exclusively. An alternative avenue is offered by the changes-in-changes (CiC) estimator, which provides an estimate of the entire counterfactual distribution at the cost of rel..."
+authors = "Sina Akbari; Negar Kiyavash"
+url = "http://arxiv.org/abs/2402.12583v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 1996
+notes = ""
+title = "Stability of motion of N-body systems"
+abstract = "Complications arising from the non-compact nature of the phase space of N-body systems prevent any asymptotic characterization of chaotic behaviour (since no equilibrium final states can exist). This leads us to revisit some of the old results concerning geodesic stability on Lagrangian manifolds. These cannot be applied directly but may be useful when properly reinterpreted. A method for doing that is described along with some tests of its validity and possible future applications."
+authors = "A. A. El-Zant"
+url = "http://arxiv.org/abs/astro-ph/9601022v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2007
+notes = ""
+title = "Triple-Point Defective Regular Surfaces"
+abstract = "In this paper we study the linear series |L-3p| of hyperplane sections with a triple point p of a surface S embedded via a very ample line bundle L for a general point p. If this linear series does not have the expected dimension we call (S,L) triple-point defective. We show that on a triple-point defective regular surface through a general point every hyperplane section has either a triple component or the surface is rationally ruled and the hyperplane section contains twice a fibre of the ruli..."
+authors = "Luca Chiantini; Thomas Markwig"
+url = "http://arxiv.org/abs/0705.3912v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2017
+notes = ""
+title = "Triple Scoring Using a Hybrid Fact Validation Approach - The Catsear Triple Scorer at WSDM Cup 2017"
+abstract = "With the continuous increase of data daily published in knowledge bases across the Web, one of the main issues is regarding information relevance. In most knowledge bases, a triple (i.e., a statement composed by subject, predicate, and object) can be only true or false. However, triples can be assigned a score to have information sorted by relevance. In this work, we describe the participation of the Catsear team in the Triple Scoring Challenge at the WSDM Cup 2017. The Catsear approach scores t..."
+authors = "Edgard Marx; Tommaso Soru; André Valdestilhas"
+url = "http://arxiv.org/abs/1712.08352v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2009
+notes = ""
+title = "Symplectic Regularization of Binary Collisions in the Circular N+2 Sitnikov Problem"
+abstract = "We present a brief overview of the regularizing transformations of the Kepler problem and we relate the Euler transformation with the symplectic structure of the phase space of the N-body problem. We show that any particular solution of the N-body problem where two bodies have rectilinear dynamics can be regularized by a linear symplectic transformation and the inclusion of the Euler transformation into the group of symplectic local diffeomorphisms over the phase space. As an application we regu..."
+authors = "H. Jiménez-Pérez; E. Lacomba"
+url = "http://arxiv.org/abs/0903.2136v4"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2012
+notes = ""
+title = "Understanding the Dynamics of Collision and Near-Collision Motions in the N-Body Problem"
+abstract = "Although rare, collisions of two or more bodies in the N-body problem are apparent obstacles at which Newton's Law of Gravity ceases to make sense. Without understanding the nature of collisions, a complete understanding of the N-body problem can not be achieved. Historically, several methods have been developed to probe the nature of collisions in the N-body problem. One of these methods removes, or regularizes, certain types of collisions entirely, thereby relating not only analytically, but a..."
+authors = "Lenanrd F. Bakker"
+url = "http://arxiv.org/abs/1208.6313v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2017
+notes = ""
+title = "Integrating Knowledge from Latent and Explicit Features for Triple Scoring - Team Radicchio's Triple Scorer at WSDM Cup 2017"
+abstract = "The objective of the triple scoring task in WSDM Cup 2017 is to compute relevance scores for knowledge-base triples of type-like relations. For example, consider Julius Caesar who has had various professions, including Politician and Author. For two given triples (Julius Caesar, profession, Politician) and (Julius Caesar, profession, Author), the former triple is likely to have a higher relevance score (also called \"triple score\") because Julius Caesar was well-known as a politician and not as a..."
+authors = "Liang-Wei Chen; Bhargav Mangipudi; Jayachandu Bandlamudi; Richa Sehgal; Yun Hao; Meng Jiang; Huan Gui"
+url = "http://arxiv.org/abs/1712.08357v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2017
+notes = ""
+title = "Supervised Ranking of Triples for Type-Like Relations - The Cress Triple Scorer at the WSDM Cup 2017"
+abstract = "This paper describes our participation in the Triple Scoring task of WSDM Cup 2017, which aims at ranking triples from a knowledge base for two type-like relations: profession and nationality. We introduce a supervised ranking method along with the features we designed for this task. Our system has been top ranked with respect to average score difference and 2nd best in terms of Kendall's tau."
+authors = "Faegheh Hasibi; Darío Garigliotti; Shuo Zhang; Krisztian Balog"
+url = "http://arxiv.org/abs/1712.08354v1"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2019
+notes = ""
+title = "Regularization of the triple collision in the collinear three body problem"
+abstract = ""
+authors = "J. Bisbal"
+url = "https://www.semanticscholar.org/paper/470ff3333d8d2678fa4fa212dec53b21dcbe9f27"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2002
+notes = ""
+title = "Singularities in gravitational systems : applications to chaotic transport in the solar system"
+abstract = ""
+authors = "D. Benest; C. Froeschlé"
+url = "https://www.semanticscholar.org/paper/f57ea2a89f5893c9c36d24038b015b15a90df773"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 1976
+notes = ""
+title = "Long-time predictions in dynamics : proceedings of the NATO Advanced Study Institute held in Cortina d'Ampezzo, Italy, August 3-16, 1975"
+abstract = ""
+authors = "V. Szebehely; B. Tapley"
+url = "https://www.semanticscholar.org/paper/53898b1c09207629987cd39c932154d26adc402a"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 1989
+notes = ""
+title = "Regularization Of The Spatial Three-Body Problem. Triple Collision"
+abstract = ""
+authors = ""
+url = "https://www.semanticscholar.org/paper/d6ceb611742548696e32f1a02b37d4d1a872559a"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 1985
+notes = ""
+title = "Regularization of the Triple Collision Manifold in the Planar Three-Body Problem"
+abstract = ""
+authors = "M. Irigoyen"
+url = "https://www.semanticscholar.org/paper/14db140aa78f83d95d9b4a77e018ae8043efd1a5"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2026
+notes = ""
+title = "A Freefall-based Switching Criterion for P3T Hybrid N-body Methods in Collisional Stellar Systems"
+abstract = "The P3T scheme is a hybrid method for simulating gravitational N-body systems. It combines a fast particle-tree (PT) algorithm for long-range forces with a high-accuracy particle–particle (PP; direct N-body) solver for short-range interactions. Preserving both PT efficiency and PP accuracy requires a robust PT–PP switching criterion. We introduce a simple freefall-based switching criterion for general stellar systems alongside the commonly used velocity-dispersion-based (σ-based) criterion. Usin..."
+authors = "Long 龙 Wang 王; David M. Hernandez; Zepeng 泽鹏 Zheng 郑; Wanhao 万豪 Huang 黄"
+url = "https://www.semanticscholar.org/paper/9085b08f4ae056696d22250a3c07c9ca0b22d871"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2004
+notes = ""
+title = "Classical dynamics near the triple collision in a three-body Coulomb problem."
+abstract = "We investigate the classical motion of three charged particles with both attractive and repulsive interactions. The triple collision is a main source of chaos in such three-body Coulomb problems. By employing the McGehee scaling technique, we analyze here for the first time in detail the three-body dynamics near the triple collision in 3 degrees of freedom. We reveal surprisingly simple dynamical patterns in large parts of the chaotic phase space. The underlying degree of order in the form of ap..."
+authors = "N. Choi; Min-Ho Lee; G. Tanner"
+url = "https://www.semanticscholar.org/paper/0e8f898555f6a6281d4c261ebe50b4e508fa76be"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2022
+notes = ""
+title = "Minlos–Faddeev Regularization of Zero-Range Interactions in the Three-Body Problem"
+abstract = "To regularize the three-body problem, Minlos and Faddeev suggested a modification of zero-range model, which diminishes interaction at the triple-collision point. The analysis reveals that this regularization results in four alternatives depending on the regularization parameter σ. Explicitly, Efimov or Thomas effects remain for \\documentclass[12pt]{minimal} \\usepackage{amsmath} \\usepackage{wasysym} \\usepackage{amsfonts} \\usepackage{amssymb} \\usepackage{amsbsy} \\usepackage{mathrsfs} \\usepackage{..."
+authors = "O. Kartavtsev; A. V. Malykh"
+url = "https://www.semanticscholar.org/paper/f29b64b2ac4d754c498891f5b151efffd6f10fa7"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2024
+notes = ""
+title = "Direct N-body Simulations of Satellite Formation around Small Asteroids: Insights from DART’s Encounter with the Didymos System"
+abstract = "We explore binary asteroid formation by spin-up and rotational disruption considering the NASA DART mission's encounter with the Didymos–Dimorphos binary, which was the first small binary visited by a spacecraft. Using a suite of N-body simulations, we follow the gravitational accumulation of a satellite from meter-sized particles following a mass-shedding event from a rapidly rotating primary. The satellite’s formation is chaotic, as it undergoes a series of collisions, mergers, and close gravi..."
+authors = "H. Agrusa; Yun Zhang; D. C. Richardson; P. Pravec; M. Ćuk; P. Michel; R. Ballouz; S. Jacobson; D. Scheeres; Kevin J. Walsh; O. Barnouin; R. Daly; E. Palmer; M. Pajola; A. Lucchetti; F. Tusberti; J. DeMartini; F. Ferrari; A. J. Meyer; S. Raducan; P. Sánchez"
+url = "https://www.semanticscholar.org/paper/80de01fe148401772b4d86064373f064ecddf37e"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2021
+notes = ""
+title = "Analysis of the size of Solar system close to the state with zero total angular momentum via Sundman inequality"
+abstract = "In this paper, we present a new mathematical approach or solving procedure for analysis of the Sundman inequality (for estimating the moment of inertia of the Solar system configuration) with the help of Lagrange-Jacobi relation, under additional assumption of decreasing of the total angular momentum close to the zero absolute magnitude in the final state of Solar system in a future. By assuming such the final state for Solar system, we have estimated the mean-size of Solar system R via analysis..."
+authors = "Sergey Ershkov; Dmytro Leshchenko"
+url = "http://arxiv.org/abs/2202.01056v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2000
+notes = ""
+title = "Singular Asymptotics Lemma and Push-Forward Theorem"
+abstract = "The Singular Asymptotics Lemma by Brüning and Seeley and the Push-Forward Theorem by Melrose lie at the very heart of their respective approaches to singular analysis. We review both and show that they deal with the same basic problem, giving solutions that emphasize different aspects of it. This also points to a possible common extension."
+authors = "Daniel Grieser; Michael J Gruber"
+url = "http://arxiv.org/abs/math/0009161v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2012
+notes = ""
+title = "Sundman Stability of Natural Planet Satellites"
+abstract = "The stability of the motion of the planet satellites is considered in the model of the general three-body problem (Sun-planet-satellite). \"Sundman surfaces\" are constructed, by means of which the concept \"Sundman stability\" is formulated. The comparison of the Sundman stability with the results of Golubev's c2h method and with the Hill's classical stability in the restricted three-body problem is performed. The constructed Sundman stability regions in the plane of the parameters \"energy - moment..."
+authors = "L. G. Lukyanov; V. S. Uralskaya"
+url = "http://arxiv.org/abs/1202.3566v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2010
+notes = ""
+title = "Linearization of Second-Order Ordinary Differential Equations by Generalized Sundman Transformations"
+abstract = "The linearization problem of a second-order ordinary differential equation by the generalized Sundman transformation was considered earlier by Duarte, Moreira and Santos using the Laguerre form. The results obtained in the present paper demonstrate that their solution of the linearization problem for a second-order ordinary differential equation via the generalized Sundman transformation is not complete. We also give examples which show that the Laguerre form is not sufficient for the linearizat..."
+authors = "Warisa Nakpim; Sergey V. Meleshko"
+url = "http://arxiv.org/abs/1006.2891v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2013
+notes = ""
+title = "On the Linearization of Second-Order Ordinary Differential Equations to the Laguerre Form via Generalized Sundman Transformations"
+abstract = "The linearization problem for nonlinear second-order ODEs to the Laguerre form by means of generalized Sundman transformations (S-transformations) is considered, which has been investigated by Duarte et al. earlier. A characterization of these S-linearizable equations in terms of first integral and procedure for construction of linearizing S-transformations has been given recently by Muriel and Romero. Here we give a new characterization of S-linearizable equations in terms of the coefficients o..."
+authors = "M. Tahir Mustafa; Ahmad Y. Al-Dweik; Raed A. Mara'beh"
+url = "http://arxiv.org/abs/1302.3242v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2023
+notes = ""
+title = "Sundman transformation and alternative tangent structuresSundman transformation and alternative tangent structures"
+abstract = "A geometric approach to Sundman transformation defined by basic functions for systems of second-order differential equations is developed and the necessity of a change of the tangent structure by means of the function defining the Sundman transformation is shown. Among other applications of such theory we study the linearisability of a system of second-order differential equations and in particular the simplest case of a second-order differential equation. The theory is illustrated with several ..."
+authors = "José F. Cariñena; Eduardo Martínez; Miguel C. Muñoz-Lecanda"
+url = "http://arxiv.org/abs/2304.00284v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2021
+notes = ""
+title = "Singular and regular vortices on top of a background pulled to the center"
+abstract = "A recent analysis has revealed singular but physically relevant 2D localized vortex states with density ~ 1/r^{4/3} at r --&gt; 0 and a convergent total norm, which are maintained by the interplay of the potential of the attraction to the center, ~ -1/r^2, and a self-repulsive quartic nonlinearity, produced by the Lee-Huang-Yang correction to the mean-field dynamics of Bose-Einstein condensates. In optics, a similar setting, with the density singularity ~ 1/r, is realized with the help of quinti..."
+authors = "Zhaopin Chen; Boris A. Malomed"
+url = "http://arxiv.org/abs/2105.04506v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 1994
+notes = ""
+title = "Transformations Generalizing the Levi-Civita, Kustaanheimo-Stiefel, and Fock Transformations"
+abstract = "Preliminary results concerning non-quadratic (and non-bijective) transformations that exibit a degree of parentage with the well known Levi-Civita, Kustaanheimo-Stiefel, and Fock transformations are reported in this article. Some of the new transformations are applied to non-relativistic quantum dynamical systems in two dimensions."
+authors = "M. Kibler; P. Labastie"
+url = "http://arxiv.org/abs/hep-th/9409196v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2013
+notes = ""
+title = "Kustaanheimo-Stiefel Regularization and the Quadrupolar Conjugacy"
+abstract = "In this note, we present the Kustaanheimo-Stiefel regularization in a symplectic and quaternionic fashion. The bilinear relation is associated with the moment map of the $S^{1}$- action of the Kustaanheimo-Stiefel transformation, which yields a concise proof of the symplecticity of the Kustaanheimo-Stiefel transformation symplectically reduced by this circle action. The relation between the Kustaanheimo-Stiefel regularization and the Levi-Civita regularization is established via the investigatio..."
+authors = "Lei Zhao"
+url = "http://arxiv.org/abs/1308.2314v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2016
+notes = ""
+title = "A new look at Levi-Civita connection in noncommutative geometry"
+abstract = "We prove the existence and uniqueness of Levi-Civita connections for strongly sigma-compatible pseudo-Riemannian metrics on tame differential calculi. Such pseudo-Riemannian metrics properly contain the classes of bilinear metrics as well as their conformal deformations. This extends the previous results in references 9 and 10. Star-compatibility of Levi-Civita connections for bilinear pseudo-Riemannian metrics are also discussed."
+authors = "Jyotishman Bhowmick; Debashish Goswami; Soumalya Joardar"
+url = "http://arxiv.org/abs/1606.08142v6"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2022
+notes = ""
+title = "Metric compatibility and Levi-Civita Connections on Quantum Groups"
+abstract = "Arbitrary connections on a generic Hopf algebra $H$ are studied and shown to extend to connections on tensor fields. On this ground a general definition of metric compatible connection is proposed. This leads to a sufficient criterion for the existence and uniqueness of the Levi-Civita connection, that of invertibility of an $H$-valued matrix. Provided invertibility for one metric, existence and uniqueness of the Levi-Civita connection for all metrics conformal to the initial one is proven. This..."
+authors = "Paolo Aschieri; Thomas Weber"
+url = "http://arxiv.org/abs/2209.05453v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 1995
+notes = ""
+title = "Perfect-fluid cylinders and walls - sources for the Levi-Civita space-time"
+abstract = "The diagonal metric tensor whose components are functions of one spatial coordinate is considered. Einstein's field equations for a perfect-fluid source are reduced to quadratures once a generating function, equal to the product of two of the metric components, is chosen. The solutions are either static fluid cylinders or walls depending on whether or not one of the spatial coordinates is periodic. Cylinder and wall sources are generated and matched to the vacuum (Levi--Civita) space--time. A ma..."
+authors = "Thomas G. Philbin"
+url = "http://arxiv.org/abs/gr-qc/9512029v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2021
+notes = ""
+title = "Levi-Civita connections for conformally deformed metrics on tame differential calculi"
+abstract = "Given a tame differential calculus over a noncommutative algebra $\\mathcal{A}$ and an $\\mathcal{A}$-bilinear pseudo-Riemannian metric $g_0,$ consider the conformal deformation $ g = k. g_0, $ $k$ being an invertible element of $\\mathcal{A}.$We prove that there exists a unique connection $\\nabla$ on the bimodule of one-forms of the differential calculus which is torsionless and compatible with $g.$ We derive a concrete formula connecting $\\nabla$ and the Levi-Civita connection for the pseudo-Riem..."
+authors = "Jyotishman Bhowmick; Debashish Goswami; Soumalya Joardar"
+url = "http://arxiv.org/abs/2101.07221v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2022
+notes = ""
+title = "The geometry of the Kustaanheimo-Stiefel mapping"
+abstract = "This paper details the geometry of the Kustaanheimo-Stiefel mapping, which regularizes the Hamiltonian of the Kepler problem. It leans heavily on the work of J.-C. van der Meer."
+authors = "Richard Cushman"
+url = "http://arxiv.org/abs/2205.08485v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2020
+notes = ""
+title = "Cartan structure equations and Levi-Civita connection in noncommutative geometry"
+abstract = "We study the differential and Riemannian geometry of algebras $A$ endowed with an action of a triangular Hopf algebra $H$ and noncommutativity compatible with the associated braiding. The modules of one forms and of braided derivations are modules in a compact closed category of $H$-equivariant $A$-bimodules, whose internal morphisms correspond to tensor fields. Vector fields and forms approaches to curvature and torsion are proven to be equivalent by extending the Cartan calculus to left (right..."
+authors = "Paolo Aschieri"
+url = "http://arxiv.org/abs/2006.02761v3"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2022
+notes = ""
+title = "Notion of Parallelism on a Generic Manifold and Consequent Geometrical Specification of the Riemannian Curvature"
+abstract = "With regard to classical differential geometry, this paper written in 1916 by T. Levi-Civita introduces the notion of parallelism for a Riemannian manifold of arbitrary dimensions. It also provides a geometrical explanation for the Riemannian curvature and at the same time significantly reduces the mathematical formalism compared with the scientific literature of the time."
+authors = "Tullio Levi-Civita"
+url = "http://arxiv.org/abs/2210.13239v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2013
+notes = ""
+title = "Generalization of Levi-Civita regularization in the restricted three-body problem"
+abstract = "A family of polynomial coupled function of $n$ degree is proposed, in order to generalize the Levi-Civita regularization method, in the restricted three-body problem. Analytical relationship between polar radii in the physical plane and in the regularized plane are established; similar for polar angles. As a numerical application, trajectories of the test particle using polynomial functions of $2, 3,..., 8$ degree are obtained. For the polynomial of second degree, the Levi-Civita regularization ..."
+authors = "R. Roman; I. Szucs-Csillik"
+url = "http://arxiv.org/abs/1309.2099v1"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 1965
+notes = ""
+title = "Perturbation theory of Kepler motion based on spinor regularization."
+abstract = ""
+authors = "P. Kustaanheimo; A. Schinzel; H. Davenport; E. Stiefel"
+url = "https://www.semanticscholar.org/paper/2883650d915ea80464616661259dd902ef41f3fd"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2023
+notes = ""
+title = "Quaternion Regularization of Singularities of Astrodynamics Models Generated by Gravitational Forces (Review)"
+abstract = ""
+authors = "Y. Chelnokov"
+url = "https://www.semanticscholar.org/paper/ec2572369d56aa95d03a290af07beca376c1e415"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2021
+notes = ""
+title = "Application of regularization maps to quantum mechanical systems in two and three dimensions"
+abstract = "In this paper, we generalize the application of the Levi-Civita (L-C) and Kustaanheimo–Stiefel (K-S) regularization methods to quantum mechanical systems in two and three dimensions. Schrödinger equations in two and three dimensions, describing a particle moving under the combined influence of [Formula: see text] and [Formula: see text] potentials are mapped to that of a harmonic oscillator with inverted sextic potential, and interactions, in two and four dimensions, respectively. Using the pert..."
+authors = "E. Harikumar; S. Panja; P. Guha"
+url = "https://www.semanticscholar.org/paper/fc7c2a56f319c8a60a2e91d7a6d28512545c25d4"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2021
+notes = ""
+title = "Regularization , dynamics and spectra of central forces in presence of damping"
+abstract = ""
+authors = "E. Harikumar; S. Panja; P. Guha"
+url = "https://www.semanticscholar.org/paper/c852c02c08645ba547a521bc5b93653a7e1622d5"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2024
+notes = ""
+title = "Regularizing fuel-optimal multi-impulse trajectories"
+abstract = ""
+authors = "Kenta Oshima"
+url = "https://www.semanticscholar.org/paper/17e4223bcef27c8a6eb92d177aaad1b13d268ea6"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2007
+notes = ""
+title = "Kepler's Problem in Rotating Reference Frames Part I: Prime Integrals, Vectorial Regularization"
+abstract = ""
+authors = "D. Condurache; V. Martinusi"
+url = "https://www.semanticscholar.org/paper/622eba70d5bb8b045e8173e54d073bf21ac2cf31"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2006
+notes = ""
+title = "Basics of regularization theory"
+abstract = ""
+authors = "A. Celletti"
+url = "https://www.semanticscholar.org/paper/4eb052f39aad2d4e973211374b8c642be24c50c7"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2020
+notes = ""
+title = "Regularized variational principles for the perturbed Kepler problem"
+abstract = """The goal of the paper is to develop a method that will combine the use of variational techniques with regularization methods in order to study existence and multiplicity results for the periodic and the Dirichlet problem associated to the perturbed Kepler system \\[ \\ddot x = -\\frac{x}{|x|^3} + p(t), \\quad x \\in \\mathbb{R}^d, \\] where $d\\geq 1$, and $p:\\mathbb{R}\\to\\mathbb{R}^d$ is smooth and $T$-periodic, $T>0$. \nThe existence of critical points for the action functional associated to the proble..."""
+authors = "V. Barutello; R. Ortega; G. Verzini"
+url = "https://www.semanticscholar.org/paper/1f68ab084515b6e57dbbfac22d93b50b2bf2fb59"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2021
+notes = ""
+title = "Integrability of close encounters in the spatial restricted three-body problem"
+abstract = "We extend to the spatial case a technique of integration of the close encounters formulated by Tullio Levi-Civita for the planar restricted three-body problem. We consider the Hamiltonian introduced in the Kustaanheimo–Stiefel regularization and construct a complete integral of the related Hamilton–Jacobi equation by means of a series convergent in a neighborhood of the collisions with the primary or secondary body."
+authors = "F. Cardin; M. Guzzo"
+url = "https://www.semanticscholar.org/paper/c57abb194c00d8053e46991dab09da1ebfcecaad"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2002
+notes = ""
+title = "Local Regularization of the Restricted Elliptic Three-Body Problem in Rotating Coordinates"
+abstract = ""
+authors = "J. Kéchichian"
+url = "https://www.semanticscholar.org/paper/aab9a0e98543b882af9535e5757c8e13e899bcbb"
+relevance_score = 0
+
+[metadata]
+queries = ["spiral singularity regularization ODE", "infinite winding collision regularization", "collision regularization celestial mechanics", "triple collision regularization n-body", "Sundman regularization singular ODE", "Levi-Civita Kustaanheimo-Stiefel regularization"]
+n_results = 84
+date = "2026-03-14"
+category = "regularization"

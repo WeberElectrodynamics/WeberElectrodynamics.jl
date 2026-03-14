@@ -1,0 +1,627 @@
+[[papers]]
+source = "arxiv"
+year = 2021
+notes = ""
+title = "Efficient Algorithms for Rotation Averaging Problems"
+abstract = "The rotation averaging problem is a fundamental task in computer vision applications. It is generally very difficult to solve due to the nonconvex rotation constraints. While a sufficient optimality condition is available in the literature, there is a lack of \\yhedit{a} fast convergent algorithm to achieve stationary points. In this paper, by exploring the problem structure, we first propose a block coordinate descent (BCD)-based rotation averaging algorithm with guaranteed convergence to statio..."
+authors = "Yihong Dong; Lunchen Xie; Qingjiang Shi"
+url = "http://arxiv.org/abs/2103.10024v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2007
+notes = ""
+title = "Averages of b-hadron properties at the end of 2006"
+abstract = "This article reports the world averages for measurements on b-hadron properties obtained by the Heavy Flavor Averaging Group (HFAG) using the available results at the end of 2006. In the averaging, the input parameters used in the various analyses are adjusted (rescaled) to common values, and all known correlations are taken into account. The averages include lifetimes, neutral meson mixing parameters, parameters of semileptonic decays, branching fractions of B decays to final states with open c..."
+authors = "Heavy Flavor Averaging Group"
+url = "http://arxiv.org/abs/0704.3575v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2005
+notes = ""
+title = "Averages of b-hadron Properties as of Winter 2005"
+abstract = "This article reports world averages for measurements on b-hadron properties obtained by the Heavy Flavor Averaging Group (HFAG) using the available results as of winter 2005 conferences. In the averaging, the input parameters used in the various analyses are adjusted (rescaled) to common values, and all known correlations are taken into account. The averages include lifetimes, neutral meson mixing parameters, semileptonic decay parameters, rare decay branching fractions, and CP violation measure..."
+authors = "Heavy Flavor Averaging Group"
+url = "http://arxiv.org/abs/hep-ex/0505100v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2004
+notes = ""
+title = "Averages of b-hadron Properties as of Summer 2004"
+abstract = "This article reports world averages for measurements on b-hadron properties obtained by the Heavy Flavor Averaging Group (HFAG) using the available results as of summer 2004 conferences. In the averaging, the input parameters used in the various analyses are adjusted (rescaled) to common values, and all known correlations are taken into account. The averages include b-hadron lifetimes, B-oscillation (mixing) parameters, semileptonic decay parameters, rare decay branching fractions, and CP violat..."
+authors = "Heavy Flavor Averaging Group"
+url = "http://arxiv.org/abs/hep-ex/0412073v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2019
+notes = ""
+title = "Study of Three Rotating Radio Transients with FAST"
+abstract = "Rotating radio transients (RRATs) are peculiar astronomical objects whose emission mechanism remains under investigation. In this paper, we present observations of three RRATs, J1538+2345, J1854+0306 and J1913+1330, observed with the Five-hundred-meter Aperture Spherical radio Telescope (FAST). Specifically, we analyze the mean pulse profiles and temporal flux density evolutions of the RRATs. Owing to the high sensitivity of FAST, the derived burst rates of the three RRATs are higher than those ..."
+authors = "Jiguang Lu; Bo Peng; Kuo Liu; Peng Jiang; Youling Yue; Meng Yu; Ye-Zhao Yu; Feifei Kou; Lin Wang; FAST Collaboration"
+url = "http://arxiv.org/abs/1903.06364v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2020
+notes = ""
+title = "The Averaging Principle for Non-autonomous Slow-fast Stochastic Differential Equations and an Application to a Local Stochastic Volatility Model"
+abstract = "In this work we study the averaging principle for non-autonomous slow-fast systems of stochastic differential equations. In particular in the first part we prove the averaging principle assuming the sublinearity, the Lipschitzianity and the Holder's continuity in time of the coefficients, an ergodic hypothesis and an $\\mathcal{L}^2$-bound of the fast component. In this setting we prove the weak convergence of the slow component to the solution of the averaged equation. Moreover we provide a suit..."
+authors = "Filippo de Feo"
+url = "http://arxiv.org/abs/2012.09082v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2015
+notes = ""
+title = "Averaging and rates of averaging for uniform families of deterministic fast-slow skew product systems"
+abstract = "We consider families of fast-slow skew product maps of the form \\begin{align*} x_{n+1} = x_n+εa(x_n,y_n,ε), \\quad y_{n+1} = T_εy_n, \\end{align*} where $T_ε$ is a family of nonuniformly expanding maps, and prove averaging and rates of averaging for the slow variables $x$ as $ε\\to0$. Similar results are obtained also for continuous time systems \\begin{align*} \\dot x = εa(x,y,ε), \\quad \\dot y = g_ε(y). \\end{align*} Our results include cases where the family of fast dynamical systems consists of int..."
+authors = "A. Korepanov; Z. Kosloff; I. Melbourne"
+url = "http://arxiv.org/abs/1509.06772v3"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2021
+notes = ""
+title = "A Pilot Study of Interplanetary Scintillation with FAST"
+abstract = "Observations of Interplanetary Scintillation (IPS) are an efficient remote-sensing method to study the solar wind and inner heliosphere. From 2016 to 2018, some distinctive observations of IPS sources like 3C 286 and 3C 279 were accomplished with the Five-hundred-meter Aperture Spherical radio Telescope (FAST), the largest single-dish telescope in the world. Due to the 270-1620 MHz wide frequency coverage of the Ultra-Wideband (UWB) receiver, one can use both single-frequency and dual-frequency ..."
+authors = "Li-Jia Liu; Bo Peng; Lei Yu; Ye-Zhao Yu; Ji-Guang Lu; Bin Liu; O. Chang; M. M. Bisi; FAST Collaboration"
+url = "http://arxiv.org/abs/2105.02783v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2023
+notes = ""
+title = "Performance of FAST with an Ultra-Wide Bandwidth Receiver at 500-3300 MHz"
+abstract = "The Five-hundred-meter Aperture Spherical radio Telescope (FAST) has been running for several years. A new Ultra-Wide Bandwidth (UWB) receiver, simultaneously covering 500-3300 MHz, has been mounted in the FAST feed cabin and passed a series of observational tests. The whole UWB band is separated into four independent bands. Each band has 1048576 channels in total, resulted in a spectral resolution of 1 kHz. At 500-3300 MHz, the antenna gain is around 14.3-7.7 K/Jy, the aperture efficiency is ar..."
+authors = "Chuan-Peng Zhang; Peng Jiang; Ming Zhu; Jun Pan; Cheng Cheng; Hong-Fei Liu; Yan Zhu; Chun Sun; FAST Collaboration"
+url = "http://arxiv.org/abs/2304.11895v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2021
+notes = ""
+title = "Hybrid Rotation Averaging: A Fast and Robust Rotation Averaging Approach"
+abstract = "We address rotation averaging (RA) and its application to real-world 3D reconstruction. Local optimisation based approaches are the de facto choice, though they only guarantee a local optimum. Global optimisers ensure global optimality in low noise conditions, but they are inefficient and may easily deviate under the influence of outliers or elevated noise levels. We push the envelope of rotation averaging by leveraging the advantages of a global RA method and a local RA method. Combined with a ..."
+authors = "Yu Chen; Ji Zhao; Laurent Kneip"
+url = "http://arxiv.org/abs/2101.09116v3"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2023
+notes = ""
+title = "Faster and lower dose imaging: evaluating adaptive, constant gantry velocity and angular separation in fast low-dose 4D cone beam CT imaging"
+abstract = "Background: The adoption of four-dimensional cone beam computed tomography (4DCBCT) for image-guided lung cancer radiotherapy is increasing, especially for hypofractionated treatments. However, the drawbacks of 4DCBCT include long scan times (∼240 s), inconsistent image quality, higher imaging dose than necessary, and streaking artifacts. With the emergence of linear accelerators that can acquire 4DCBCT scans in a short period of time (9.2 s) there is a need to examine the impact that these very..."
+authors = "B. Lau; Owen Dillon; S. Vinod; R. O’Brien; Tess Reynolds"
+url = "https://www.semanticscholar.org/paper/1eb0f9b06c7f14726b3a35bebbbf3ac656911c73"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2024
+notes = ""
+title = "Inversion for Inferring Solar Meridional Circulation: The Case with Constraints on Angular Momentum Transport inside the Sun"
+abstract = "We have carried out inversions of travel times as measured by Gizon et al. to infer the internal profile of the solar meridional circulation (MC). A linear inverse problem has been solved by the regularized least-squares method with a constraint that the angular momentum (AM) transport by MC should be equatorward (HK21-type constraint). Our motivation for using this constraint is based on the result by Hotta & Kusano (hereafter HK21), where the solar equator-fast rotation was reproduced successf..."
+authors = "Y. Hatta; Hideyuki Hotta; T. Sekii"
+url = "https://www.semanticscholar.org/paper/49798bd1a74b9ba14ff41aded1c0122feab86bd9"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2008
+notes = ""
+title = "Evolution of the satellite fast rotation due to the gravitational torque in a dragging medium"
+abstract = ""
+authors = "L. Akulenko; D. Leshchenko; A. Rachinskaya"
+url = "https://www.semanticscholar.org/paper/3cf2f61dc4b21e423ff1f9b5db8851e355751d56"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2025
+notes = ""
+title = "exoALMA. VI. Rotating under Pressure: Rotation Curves, Azimuthal Velocity Substructures, and Gas Pressure Variations"
+abstract = "The bulk motion of the gas in protoplanetary disks around newborn stars is nearly Keplerian. By leveraging the high angular and spectral resolution of the Atacama Large Millimeter/submillimeter Array (ALMA), we can detect small-scale velocity perturbations in molecular line observations caused by local gas pressure variations in the disk, possibly induced by embedded protoplanets. This Letter presents the azimuthally averaged rotational velocity and its deviations from Keplerian rotation (δυϕ) f..."
+authors = "J. Stadler; M. Benisty; A. Winter; A. Izquierdo; C. Longarini; Maria Galloway-Sprietsma; P. Curone; S. Andrews; J. Bae; S. Facchini; G. Rosotti; R. Teague; M. Barraza-Alfaro; G. Cataldi; Nicolás Cuello; I. Czekala; D. Fasano; M. Flock; Misato Fukagawa; H. Garg; Cassandra Hall; I. Hammond; T. Hilder; Jane Huang; J. Ilee; Kazuhiro D. Kanagawa; G. Lesur; G. Lodato; R. Loomis; François Ménard; R. Orihara; C. Pinte; Daniel J. Price; Hsi-Wei Yen; G. Wafflard-Fernandez; D. Wilner; L. Wölfer; T. Yoshida; B. Zawadzki"
+url = "https://www.semanticscholar.org/paper/a5241742086d739eb11b467f79b0c604c415bf46"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2016
+notes = ""
+title = "Fault detection in a multistage gearbox by time synchronous averaging of the instantaneous angular speed"
+abstract = ""
+authors = "S. Roy; A. Mohanty; C. S. Kumar"
+url = "https://www.semanticscholar.org/paper/1976c8e5b709c651d3058460d342adcbe2dd2652"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2026
+notes = ""
+title = "Chern Theorem and Topological Matter in Fast-Rotating Atomic Nuclei."
+abstract = "The Chern theorem is applied to intrinsically deformed atomic nuclei, leading to states exhibiting topological quantization of the rotation-aligned component of angular momentum averaged over Hilbert space. These topologically quantized alignment (TQA) states can emerge when collective rotation breaks intrinsic-frame time reversal symmetry, and differ fundamentally from traditional nuclear states. They exhibit formal analogies with the integer quantum Hall effect, and are a first suggestion that..."
+authors = "M. Guidry; Yang Sun"
+url = "https://www.semanticscholar.org/paper/9b38508034c8f6d80b37303b4dde9257fa22ff01"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2020
+notes = ""
+title = "Seismic evidence for near solid-body rotation in two Kepler subgiants and implications for angular momentum transport"
+abstract = """Context. Asteroseismic measurements of the internal rotation of subgiants and red giants all show the need for invoking a more efficient transport of angular momentum than theoretically predicted. Constraints on the core rotation rate are available starting from the base of the red giant branch (RGB) and we are still lacking information on the internal rotation of less evolved subgiants.\nAims. We identify two young Kepler subgiants, KIC 8524425 and KIC 5955122, whose mixed modes are clearly spli..."""
+authors = "S. Deheuvels; J. Ballot; P. Eggenberger; F. Spada; A. Noll; J. Hartogh"
+url = "https://www.semanticscholar.org/paper/357198abceea3c7bef9c8bfe0afeca4fc542eff8"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2017
+notes = ""
+title = "Fast shape matching and retrieval with dynamic angular partition descriptor"
+abstract = ""
+authors = "P. Shi; Yongkun Wang; Ying Hu; Yaohui Jin"
+url = "https://www.semanticscholar.org/paper/87593c06432546dbe792b795483f2f65fb8dfe9a"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2025
+notes = ""
+title = "The tidal interaction of an orbiting giant planet with a star near the Kraft break: the excitation of r-modes and the retention of orbital and spin angular momenta misalignment"
+abstract = """\n In this paper we extend the previous work of Papaloizou & Savonije on tidal interactions between a solar mass star and a closely orbiting giant planet which is such that the orbital and stellar spin angular momentum directions are misaligned. Here we consider the situation when the central star has a mass of 1.3M⊙ and is in the vicinity of the Kraft break. We find and determine the properties of the lowest order r modes and the tidal response arising from the secular non axisymmetric forcing a..."""
+authors = "J. Papaloizou; G. Savonije"
+url = "https://www.semanticscholar.org/paper/01b2c999319830a4512f2167e58ade5d5767484a"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2013
+notes = ""
+title = "The fast rotation of companions of compact objects in close binary systems"
+abstract = ""
+authors = "I. Ablimit; G. Lü"
+url = "https://www.semanticscholar.org/paper/c7a3195c37b4ed8505f64ca5989304155476f4f5"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2020
+notes = ""
+title = "Averaging Principles for Mixed Fast-Slow Systems Driven by Fractional Brownian Motion"
+abstract = "We focus on fast-slow systems involving both fractional Brownian motion (fBm) and standard Brownian motion (Bm). The integral with respect to Bm is the standard Ito integral, and the integral with respect to fBm is the generalised Riemann-Stieltjes integral using the tools of fractional calculus. An averaging principle in which the fast-varying diffusion process of the fast-slow systems acts as a noise to be averaged out in the limit is established. It is shown that the slow process has a limit ..."
+authors = "Bin Pei; Yuzuru Inahama; Yong Xu"
+url = "http://arxiv.org/abs/2001.06945v4"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2020
+notes = ""
+title = "Averaging principle for fast-slow system driven by mixed fractional Brownian rough path"
+abstract = "This paper is devoted to studying the averaging principle for fast-slow system of rough differential equations driven by mixed fractional Brownian rough path. The fast component is driven by Brownian motion, while the slow component is driven by fractional Brownian motion with Hurst index $H ~(1/3 &lt; H\\leq 1/2)$. Combining the fractional calculus approach to rough path theory and Khasminskii's classical time discretization method, we prove that the slow component strongly converges to the solu..."
+authors = "Bin Pei; Yuzuru Inahama; Yong Xu"
+url = "http://arxiv.org/abs/2010.06788v3"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2022
+notes = ""
+title = "The hyperbolic umbilic singularity in fast-slow systems"
+abstract = "Fast-slow systems with three slow variables and gradient structure in the fast variables have, generically, hyperbolic umbilic, elliptic umbilic or swallowtail singularities. In this article we provide a detailed local analysis of a fast-slow system near a hyperbolic umbilic singularity. In particular, we show that under some appropriate non-degeneracy conditions on the slow flow, the attracting slow manifolds jump onto the fast regime and fan out as they cross the hyperbolic umbilic singularity..."
+authors = "Hildeberto Jardón-Kojakhmetov; Christian Kuehn; Maximilian Steinert"
+url = "http://arxiv.org/abs/2202.01662v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2000
+notes = ""
+title = "Singular Asymptotics Lemma and Push-Forward Theorem"
+abstract = "The Singular Asymptotics Lemma by Brüning and Seeley and the Push-Forward Theorem by Melrose lie at the very heart of their respective approaches to singular analysis. We review both and show that they deal with the same basic problem, giving solutions that emphasize different aspects of it. This also points to a possible common extension."
+authors = "Daniel Grieser; Michael J Gruber"
+url = "http://arxiv.org/abs/math/0009161v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2017
+notes = ""
+title = "Generalized Play Hysteresis Operators in Limits of Fast-Slow Systems"
+abstract = "Hysteresis operators appear in many applications such as elasto-plasticity and micromagnetics, and can be used for a wider class of systems, where rate-independent memory plays a role. A natural approximation for systems of evolution equations with hysteresis operators are fast-slow dynamical systems, which - in their used approximation form - do not involve any memory effects. Hence, viewing differential equations with hysteresis operators in the non-linearity as a limit of approximating fast-s..."
+authors = "Christian Kuehn; Christian Münch"
+url = "http://arxiv.org/abs/1701.00229v2"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2022
+notes = ""
+title = "Fast-slow stochastic dynamical system with singular coefficients"
+abstract = ""
+authors = "Longjie Xie"
+url = "https://www.semanticscholar.org/paper/db387af5241a262d139d9157b258b23eec28261e"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2023
+notes = ""
+title = "Averaging principle for stochastic quasi‐geostrophic flow equation with a fast oscillation"
+abstract = "This work is focused on the quasi‐geostrophic flow equation with a fast oscillation governed by a stochastic reaction–diffusion equation. It derives the well‐posedness of the slow–fast system, in which the fast component is ergodic and the slow component is tight. Applying the averaging principle, it is further proved that there exists a limit process, with respect to the singular perturbing parameter ε, where the fast component is averaged out. Moreover, the slow component of the slow–fast syst..."
+authors = "Guanggan Chen; Pin Wang"
+url = "https://www.semanticscholar.org/paper/e2a37ea7a5ce0a8d1b7f6fdca683ab5fc9d6b775"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2021
+notes = ""
+title = "Fast-Wave Averaging with Phase Changes: Asymptotics and Application to Moist Atmospheric Dynamics"
+abstract = ""
+authors = "Yeyu Zhang; L. Smith; S. Stechmann"
+url = "https://www.semanticscholar.org/paper/a6d2cebebe17c296533f0a674d819adfcd9b621c"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2010
+notes = ""
+title = "Computing Slowly Advancing Features in Fast-Slow Systems without Scale Separation- A Young Measure Approach"
+abstract = ""
+authors = "E. Titi"
+url = "https://www.semanticscholar.org/paper/fec6a19cfa2b01fb8d63fe4c79810c7c58153d2e"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 1997
+notes = ""
+title = "Linear-quadratic tracking of coupled slow and fast targets"
+abstract = ""
+authors = "Z. Artstein; V. Gaitsgory"
+url = "https://www.semanticscholar.org/paper/42d609e5b2bf8d72ce27362a5da412a022c873b3"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2017
+notes = ""
+title = "A framework for a class of hybrid extremum seeking controllers with dynamic inclusions"
+abstract = ""
+authors = "J. Poveda; A. Teel"
+url = "https://www.semanticscholar.org/paper/adfb9dccc4f0290229a4c9e75f1a5f307d46fe74"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2020
+notes = ""
+title = "0 Warm-up 0 . 1 Processes with Fast Markov Modulations 0"
+abstract = ""
+authors = ""
+url = "https://www.semanticscholar.org/paper/d0dea6bc4e23b0985937fc8d812409cd8fee3681"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2020
+notes = ""
+title = "Asymptotic behavior of multiscale stochastic partial differential equations with Hölder coefficients"
+abstract = "In this paper, we study the asymptotic behavior of a semi-linear slow-fast stochastic partial differential equation with singular coefficients. Using the Poisson equation in Hilbert space, we first establish the strong convergence in the averaging principe, which can be viewed as a functional law of large numbers. Then we study the stochastic fluctuations between the original system and its averaged equation. We show that the normalized difference converges weakly to an Ornstein-Uhlenbeck type p..."
+authors = "M. Rockner; Longjie Xie; Li Yang"
+url = "https://www.semanticscholar.org/paper/ed0fb47a6ffa4d8bc3ce8a49830f0bec5ac6fb60"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2011
+notes = ""
+title = "Balanced model reduction of partially observed Langevin equations: an averaging principle"
+abstract = ""
+authors = "C. Hartmann"
+url = "https://www.semanticscholar.org/paper/7a152256545a123388e56a449f64ecd58b581d5a"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2008
+notes = ""
+title = "Young Measure Approach to Computing Slowly Advancing Fast Oscillations"
+abstract = ""
+authors = "Z. Artstein; Jasmine Linshiz; E. Titi"
+url = "https://www.semanticscholar.org/paper/4cd90cc46ad8d999f07d25f7a5f101b5856d3ca9"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2014
+notes = ""
+title = "Periodic Homogenization of Schrödinger type equations with rapidly oscillating potential"
+abstract = "This paper is devoted to the homogenization of Shrödinger type equations with periodically oscillating coefficients of the diffusion term, and a rapidly oscillating periodic time-dependent potential. One convergence theorem is proved and we derive the macroscopic homogenized model. Our approach is the well known two-scale convergence method."
+authors = "Lazarus Signing"
+url = "http://arxiv.org/abs/1410.6645v3"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2020
+notes = ""
+title = "Homogenization of Steklov eigenvalues with rapidly oscillating weights"
+abstract = "In this article we study the homogenization rates of eigenvalues of a Steklov problem with rapidly oscillating periodic weight functions. The results are obtained via a careful study of oscillating functions on the boundary and a precise estimate of the $L^\\infty$ bound of eigenfunctions. As an application we provide some estimates on the first nontrivial curve of the Dancer-{F}u{č}{í}k spectrum."
+authors = "Ariel M. Salort"
+url = "http://arxiv.org/abs/2009.12460v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2019
+notes = ""
+title = "Delay-Compensated Control of Sandwiched ODE-PDE-ODE Hyperbolic Systems for Oil Drilling and Disaster Relief"
+abstract = "Motivated by engineering applications of subsea installation by deepwater construction vessels in oil drilling, and of aid delivery by unmanned aerial vehicles in disaster relief, we develop output-feedback boundary control of heterodirectional coupled hyperbolic PDEs sandwiched between two ODEs, where the measurement is the output state of one ODE and suffers a time delay. After rewriting the time-delay dynamics as a transport PDE of which the left boundary connects with the sandwiched system, ..."
+authors = "Ji Wang; Miroslav Krstic"
+url = "http://arxiv.org/abs/1910.05948v3"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2020
+notes = ""
+title = "Approximate Two-Sphere One-Cylinder Inequality in Parabolic Periodic Homogenization"
+abstract = "In this paper, for a family of second-order parabolic equation with rapidly oscillating and time-dependent periodic coefficients, we are interested in an approximate two-sphere one-cylinder inequality for these solutions in parabolic periodic homogenization, which implies an approximate quantitative propagation of smallness. The proof relies on the asymptotic behavior of fundamental solutions and the Lagrange interpolation technique."
+authors = "Yiping Zhang"
+url = "http://arxiv.org/abs/2005.00989v3"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2022
+notes = ""
+title = "ODEs whose symmetry groups are not fiber-preserving"
+abstract = "We observe that, up to conjugation, a majority of symmetric higher order ODEs (ordinary differential equations) and ODE systems have only fiber-preserving point symmetries. By exploiting Lie's classification of Lie algebras of vector fields, we describe all the exceptions to this in the case of scalar ODEs and systems of ODEs on a pair of functions. The scalar ODEs whose symmetry algebra is not fiber preserving can be expressed via absolute and relative scalar differential invariants, while a si..."
+authors = "Boris Kruglikov; Eivind Schneider"
+url = "http://arxiv.org/abs/2202.10331v5"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2014
+notes = ""
+title = "Rapidly Convergent Series of the Divisors Functions"
+abstract = "This note gives a few rapidly convergent series representations of the sums of divisors functions. These series have various applications such as exact evaluations of some power series, computing estimates and proving the existence results of some special values of the sums of divisors functions."
+authors = "N. A. Carella"
+url = "http://arxiv.org/abs/1407.7439v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2020
+notes = ""
+title = "Estimates of eigenvalues and eigenfunctions in elliptic homogenization with rapidly oscillating potentials"
+abstract = "In this paper, for a family of second-order elliptic equations with rapidly oscillating periodic coefficients and rapidly oscillating periodic potentials, we are interested in the $H^1$ convergence rates and the Dirichlet eigenvalues and bounds of the normal derivatives of Dirichlet eigenfunctions. The $H^1$ convergence rates rely on the Dirichlet correctors and the first-order corrector for the oscillating potentials. And the bound results rely on an $O(\\varepsilon)$ estimate in $H^1$ for solut..."
+authors = "Yiping Zhang"
+url = "http://arxiv.org/abs/2010.04593v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2017
+notes = ""
+title = "An introduction to the qualitative and quantitative theory of homogenization"
+abstract = "We present an introduction to periodic and stochastic homogenization of ellip- tic partial differential equations. The first part is concerned with the qualitative theory, which we present for equations with periodic and random coefficients in a unified approach based on Tartar's method of oscillating test functions. In partic- ular, we present a self-contained and elementary argument for the construction of the sublinear corrector of stochastic homogenization. (The argument also applies to elli..."
+authors = "Stefan Neukamm"
+url = "http://arxiv.org/abs/1707.08992v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2024
+notes = ""
+title = "Renormalization group and elliptic homogenization in high contrast"
+abstract = "We prove a quantitative estimate for the homogenization length scale in terms of the ellipticity ratio $Λ/λ$ of the coefficient field. This upper bound applies to high-contrast elliptic equations exhibiting near-critical behavior. Specifically, we show, assuming a suitable decay of correlations, the length scale at which homogenization occurs is at most $\\exp(C \\log^2(1+Λ/λ))$. The proof introduces the new concept of coarse-grained ellipticity, which measures the effective ellipticity ratio of t..."
+authors = "Scott Armstrong; Tuomo Kuusi"
+url = "http://arxiv.org/abs/2405.10732v3"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2022
+notes = ""
+title = "Elliptic homogenization from qualitative to quantitative"
+abstract = "We give a self-contained introduction to the theory of elliptic homogenization for random coefficient fields, starting from classical qualitative homogenization. The presentation also contains new results, such as optimal estimates (both in terms of stochastic moments and scaling of the error) for coefficient fields which are local functions of Gaussian random fields."
+authors = "Scott Armstrong; Tuomo Kuusi"
+url = "http://arxiv.org/abs/2210.06488v2"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 1984
+notes = ""
+title = "Homogenization of the nonlinear quasistationary maxwell equations with degenerated coefficients"
+abstract = ""
+authors = "M. Codegone; A. Negro"
+url = "https://www.semanticscholar.org/paper/71001ce3ed57328656c6d86b3f828458a81f423e"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2009
+notes = ""
+title = "Homogenization of periodic semilinear parabolic degenerate PDEs"
+abstract = "In this paper a second order semilinear parabolic PDE with rapidly oscillating coefficients is homogenized. The novelty of our result lies in the fact that we allow the second order part of the differential operator to be degenerate in some part of the space. Our fully probabilistic method is based on the deep connection between PDEs and BSDEs and the weak convergence of a class of diffusion processes."
+authors = "A. B. Sow; Rémi Rhodes; É. Pardoux"
+url = "https://www.semanticscholar.org/paper/2ba05ed300691eb8d5e2494786d75ea96faad1ea"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2024
+notes = ""
+title = "Asymptotic analysis of a coupled ODE‐PDE system arising from heterogeneous diffusion‐reaction kinetics"
+abstract = "This contribution is concerned with the well‐posedness and homogenization of an ordinary differential equation (ODE) of Arrhenius‐type coupled with a doubly nonlinear parabolic partial differential equation (PDE) with rapidly oscillating coefficients and taking into account disparate diffusion‐reaction time scales, including regularly as well as singularly perturbed problems. The ODE‐PDE system is spatially dependent and is subjected to Robin‐type boundary conditions. Such problems are used to m..."
+authors = "Michal Beneš; Michael Eden; Adrian Muntean"
+url = "https://www.semanticscholar.org/paper/499b3926d586d2a89c9f6aedc06c130ea658cbef"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2025
+notes = ""
+title = "Homogenization of attractors to reaction - diffusion equations in domains with rapidly oscillating boundary: supercritical case"
+abstract = "This paper is devoted to studying the reaction - diffusion systems with rapidly oscillating coefficients in the equations and in boundary conditions in domains with locally periodic oscillating boundary; on this boundary a Robin boundary condition is imposed. We consider the supercritical case, when the homogenization changes the Robin boundary condition on the oscillating boundary is to the homogeneous Dirichlet boundary condition in the limit as the small parameter, which characterizes oscilla..."
+authors = "Gaziz Faizullaevich Azhmoldayev; K. Bekmaganbetov; G. Chechkin; V. Chepyzhov"
+url = "https://www.semanticscholar.org/paper/99a3bed1b256082ad038bd7dfb0dcbea9b369a10"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2025
+notes = ""
+title = "Homogenization of Attractors to Reaction–Diffusion Equations in Domains with Rapidly Oscillating Boundary: Subcritical Case"
+abstract = "We consider the reaction–diffusion system of equations with rapidly oscillating terms in the equation and in boundary conditions in a domain with locally periodic oscillating boundary. In the subcritical case (the Fourier boundary condition is changed to the Neumann boundary condition in the limit) we proved that the trajectory attractors of this system converge in a weak sense to the trajectory attractors of the limit (homogenized) reaction–diffusion systems in domain independent of the small p..."
+authors = "G. Azhmoldaev; K. Bekmaganbetov; G. Chechkin; V. Chepyzhov"
+url = "https://www.semanticscholar.org/paper/287235e0661a0981f3d1d507083b2d8fb53e8d09"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2024
+notes = ""
+title = "Homogenization of attractors to reaction–diffusion equations in domains with rapidly oscillating boundary: Critical case"
+abstract = "In the present paper, reaction–diffusion systems (RD-systems) with rapidly oscillating coefficients and righthand sides in equations and in boundary conditions were considered in domains with locally periodic oscillating (wavering) boundary. We proved a weak convergence of the trajectory attractors of the given systems to the trajectory attractors of the limit (homogenized) RD-systems in domain independent of the small parameter, characterizing the oscillation rate. We consider the critical case..."
+authors = "G. Azhmoldaev; K. Bekmaganbetov; G. Chechkin; V. Chepyzhov"
+url = "https://www.semanticscholar.org/paper/598e89200e4e72e07b1175a7c186e450813c3b6b"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2023
+notes = ""
+title = "Application of Fatou’s Lemma for Strong Homogenization of Attractors to Reaction–Diffusion Systems with Rapidly Oscillating Coefficients in Orthotropic Media with Periodic Obstacles"
+abstract = "We study reaction–diffusion systems with rapidly oscillating terms in the coefficients of equations and in the boundary conditions, in media with periodic obstacles. The non-linear terms of the equations only satisfy general dissipation conditions. We construct trajectory attractors for such systems in the strong topology of the corresponding trajectory dynamical systems. By means of generalized Fatou’s lemma we prove the strong convergence of the trajectory attractors of considered systems to t..."
+authors = "K. Bekmaganbetov; G. Chechkin; V. Chepyzhov"
+url = "https://www.semanticscholar.org/paper/bb444fc5d93b2e6757c65437644ad54aa3d2cfdb"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2022
+notes = ""
+title = "Homogenization of Trajectory Statistical Solutions for the 3D Incompressible Micropolar Fluids with Rapidly Oscillating Terms"
+abstract = "This article studies the 3D incompressible micropolar fluids with rapidly oscillating terms. The authors prove that the trajectory statistical solutions of the oscillating fluids converge to that of the homogenized fluids provided that the oscillating external force and angular momentum possess some weak homogenization. The results obtained indicate that the trajectory statistical information of the 3D incompressible micropolar fluids has a certain homogenization effect with respect to spatial v..."
+authors = "Hujun Yang; Xiaolin Han; Caidi Zhao"
+url = "https://www.semanticscholar.org/paper/fd00d708e495f016b11141750053421ab7ce32b0"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2021
+notes = ""
+title = "Homogenization of Attractors of Reaction–Diffusion System with Rapidly Oscillating Terms in an Orthotropic Porous Medium"
+abstract = ""
+authors = "K. Bekmaganbetov; V. Chepyzhov; G. Chechkin"
+url = "https://www.semanticscholar.org/paper/981fd29b51c62babfa30855e1c050682aafec506"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2018
+notes = ""
+title = "Flexible Variable Star Extractor: new software for detection of variable stars"
+abstract = "We developed software for detection of variable stars using CCD photometry. It works with \"varfind data\" that could be exported after processing CCD frames using C-Munipack. Our goals were maximum automation and support of large fields of view with thousands of stars. The program chooses the comparison stars automatically, processes all time series using multiple comparison stars to get final light curves. Different filtering algorithms are used to reduce the impact of outlying points, imaging a..."
+authors = "Vitalii Breus"
+url = "http://arxiv.org/abs/1812.06955v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2009
+notes = ""
+title = "IRSF/SIRIUS JHKs near-infrared variable star survey in the Magellanic Clouds"
+abstract = "We carried out a NIR variable star survey toward the Large and Small Magellanic Clouds using the InfraRed Survey Facility (IRSF) at Sutherland, South African Astronomical Observatory. This survey project was initiated in Dember 2000, and since then, we kept monitoring a total area of 3 square degrees along the LMC bar and also an area of 1 square degree around the center of the SMC, sufficiently large to do statistical analysis and to make complete catalog of variable red giants in the Magellani..."
+authors = "Yoshifusa Ita; the IRSF/SIRIUS variable star survey team"
+url = "http://arxiv.org/abs/0907.5244v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2015
+notes = ""
+title = "Adiabatic invariants of the extended KdV equation"
+abstract = "When the Euler equations for shallow water are taken to the next order, beyond KdV, momentum and energy are no longer exact invariants. (The only one is mass.) However, adiabatic invariants (AI) can be found. When the KdV expansion parameters are zero, exact invariants are recovered. Existence of adiabatic invariants results from general theory of near-identity transformations (NIT) which allow us to transform higher order nonintegrable equations to asymptotically equivalent (when small paramete..."
+authors = "Anna Karczewska; Piotr Rozmej; Eryk Infeld; George Rowlands"
+url = "http://arxiv.org/abs/1512.01194v3"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2011
+notes = ""
+title = "On the accuracy of conservation of adiabatic invariants in slow-fast systems"
+abstract = "Let the adiabatic invariant of action variable in slow-fast Hamiltonian system with two degrees of freedom have two limiting values along the trajectories as time tends to infinity. The difference of two limits is exponentially small in analytic systems. An iso-energetic reduction and canonical transformations are applied to transform the slow-fast systems to form of systems depending on slowly varying parameters in a complexified phase space. On the basis of this method an estimate for the accu..."
+authors = "Tan Su"
+url = "http://arxiv.org/abs/1103.1595v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2020
+notes = ""
+title = "Predictions for the FAST telescope's CRAFTS Extra-Galactic HI Survey"
+abstract = "The Five-hundred-meter Aperture Spherical radio Telescope (FAST) has started the Commensal Radio Astronomy FasT Survey (CRAFTS). In this paper, we use the technical parameters of FAST derived from commissioning observations to simulate the completeness function for extragalactic HI survey of CRAFTS, HI galaxies from two kinds of mock catalogues are selected. One is generated by Monte-Carlo simulation based on the interpolated mass-velocity width function of the ALFALFA $100\\%$ (a.k.a. $α$ .100) ..."
+authors = "Kai Zhang; Jingwen Wu; Di Li; Chao-Wei Tsai; Lister Staveley-Smith; Jing Wang; Jian Fu; Travis McIntyre; Mao Yuan; FAST collaboration"
+url = "http://arxiv.org/abs/2012.01683v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2016
+notes = ""
+title = "Fast forward to the classical adiabatic invariant"
+abstract = "We show how the classical action, an adiabatic invariant, can be preserved under non-adiabatic conditions. Specifically, for a time-dependent Hamiltonian $H = p^2/2m + U(q,t)$ in one degree of freedom, and for an arbitrary choice of action $I_0$, we construct a \"fast-forward\" potential energy function $V_{\\rm FF}(q,t)$ that, when added to $H$, guides all trajectories with initial action $I_0$ to end with the same value of action. We use this result to construct a local dynamical invariant $J(q,p..."
+authors = "Christopher Jarzynski; Sebastian Deffner; Ayoti Patra; Yiğit Subaşı"
+url = "http://arxiv.org/abs/1611.06437v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2002
+notes = ""
+title = "Design of Adiabatic Logic for a Quantum CNOT Gate"
+abstract = "We examine the realization of a quantum CNOT gate by adiabatic operations.The principles of such systems and their analysis are briefly discussed and a model consisting of two weakly coupled double- potential well qubits is studied numerically. Regions of the parameter space with suitable well-defined sets of wavefunctions are found, in which then an adiabatic sweep of an external bias produces the switching behavior of CNOT. Results are presented on the adiabatic condition and the identificatio..."
+authors = "V. Corato; P. Silvestrini; L. Stodolsky; J. Wosiek"
+url = "http://arxiv.org/abs/cond-mat/0205514v3"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2025
+notes = ""
+title = "Post-adiabatic dynamics and waveform generation in self-force theory: an invariant pseudo-Hamiltonian framework"
+abstract = "Gravitational waveform modeling in self-force theory has reached a mature stage in recent years, with fast and accurate models emerging at both adiabatic (0PA) and first post-adiabatic (1PA) orders in a multiscale expansion. Here, we provide a gauge-invariant 1PA waveform-generation framework that involves no direct calculation of the (gauge-dependent) self-force. To achieve this, we recast the multiscale framework in a pseudo-Hamiltonian form, working on the six-dimensional phase space intrinsi..."
+authors = "Jack Lewis; Takafumi Kakehi; Adam Pound; Takahiro Tanaka"
+url = "https://www.semanticscholar.org/paper/00608d267affa9290ba2e425d7391a3a004871eb"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2024
+notes = ""
+title = "Electron Scattering Due To Asymmetric Drift‐Orbit Bifurcation: Geometric Jumps of Adiabatic Invariant"
+abstract = "Radial transport of energetic electrons is one of the key processes responsible for the variability of the outer radiation belt. This transport amounts to a violation of the drift motion. One of the mechanisms that can lead to such violation and associated radial transport is drift‐orbit bifurcation. This arises naturally from solar wind compression of the dayside magnetosphere, which results in a local maximum of the field strength at the equator and two off‐equatorial minima at the north and s..."
+authors = "S. Kamaletdinov; A. Artemyev; V. Angelopoulos; A. I. Neishtadt; AL Kamaletdinov"
+url = "https://www.semanticscholar.org/paper/1644fb9ca711c2a661127eae77f2cd4f3f55df89"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2025
+notes = ""
+title = "Angular resampling-sparse representation classification (AR-SRC): A new method for bearing fault diagnosis in non-stationary conditions"
+abstract = """\n This paper presents a novel methodology for bearing fault diagnosis under non-stationary operating conditions using angular resampling combined with sparse representation classification. The proposed approach addresses variable speed challenges by transforming time-domain vibration signals into the angular domain through encoder-based resampling, enabling extraction of speed-invariant envelope order spectrum features. For classification, a structured dictionary is constructed from training sam..."""
+authors = "Mohamed Sekini; Bilal El Yousfi; T. Benkedjouh; Kamal Medjaher; A. Lourari"
+url = "https://www.semanticscholar.org/paper/3d3695c40183db36e123f9ab76daa9b726f5dbcf"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2020
+notes = ""
+title = "Local Adiabatic Invariants Near a Homoclinic Set of a Slow–Fast Hamiltonian System"
+abstract = ""
+authors = "S. Bolotin"
+url = "https://www.semanticscholar.org/paper/e093192c2a92454839ddcd4c0b35c7a2ccb1f94e"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2011
+notes = ""
+title = "Jumps of adiabatic invariant at the separatrix of a degenerate saddle point."
+abstract = ""
+authors = "A. Artemyev; A. Neishtadt; L. Zelenyi"
+url = "https://www.semanticscholar.org/paper/9d5975e592865fba48d7dc2c99416f6a340530a3"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 1981
+notes = ""
+title = "On the conservation of the first adiabatic invariant in perpendicular shocks. [in space plasmas]"
+abstract = ""
+authors = "M. Pesses"
+url = "https://www.semanticscholar.org/paper/f67b62883c80a2e63986485ca27a062f584788b3"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2012
+notes = ""
+title = "Jump of the adiabatic invariant at a separatrix crossing: Degenerate cases"
+abstract = ""
+authors = "A. Vasiliev; A. Neishtadt; A. Artemyev; L. Zelenyi"
+url = "https://www.semanticscholar.org/paper/0519593f0e98c11ed9b7077675b235f13a088f7b"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2012
+notes = ""
+title = "On the accuracy of conservation of adiabatic invariants in slow-fast Hamiltonian systems"
+abstract = ""
+authors = "Tan Su"
+url = "https://www.semanticscholar.org/paper/68b5d7c77eef8365d01087272e82581da61391a0"
+relevance_score = 0
+
+[metadata]
+queries = ["angular averaging homogenization fast rotation", "fast-slow system averaging singular limit", "homogenization rapidly oscillating ODE", "adiabatic invariant fast angular variable"]
+n_results = 69
+date = "2026-03-14"
+category = "averaging"

@@ -1,0 +1,274 @@
+# Research Direction Taxonomy for Sub-Critical Weber Dynamics
+#
+# Each direction is scored 1-5 on five criteria:
+#   theoretical_promise  — Does the math suggest this could work?
+#   feasibility          — Can it be tested (symbolically/numerically) in reasonable time?
+#   novelty              — Is this genuinely new vs. rehash of known failures?
+#   connection           — Does it build on existing 7 experiments / 16 transforms / quantum theory?
+#   scope                — If successful, does it solve the full problem or only a special case?
+#
+# Composite score = mean of all five.
+
+[metadata]
+version = "0.1.0"
+last_updated = "2026-03-14"
+description = "Systematic classification of research directions for the ℓ≠0 regularization barrier"
+
+# =============================================================================
+# Category A: Beyond Smooth Diffeomorphisms
+# The topological barrier (infinite winding) applies ONLY to smooth maps.
+# =============================================================================
+
+[directions.A1_piecewise_smooth]
+name = "Piecewise-smooth regularization"
+category = "A_beyond_smooth"
+description = """
+Use different coordinate charts on angular sectors of the spiral, stitched along \
+radial cuts. Each sector has finite winding. Analogous to Riemann surface construction \
+for multi-valued functions."""
+theoretical_promise = 3
+feasibility = 4
+novelty = 4
+connection = 3
+scope = 3
+status = "untested"
+key_question = "Can the stitching maps be chosen so that the dynamics is continuous across cuts?"
+related_literature = ["Riemann surfaces", "sector decomposition in singular perturbation theory"]
+
+[directions.A2_covering_space]
+name = "Covering space / Riemann surface unwinding"
+category = "A_beyond_smooth"
+description = """
+Lift dynamics to the universal cover of the punctured plane (the strip ℝ×ℝ via w=log z). \
+Winding is eliminated but speed divergence remains. Question: can a non-smooth \
+compactification of the strip absorb the speed divergence?"""
+theoretical_promise = 3
+feasibility = 3
+novelty = 3
+connection = 4
+scope = 3
+status = "partially_tested"
+key_question = "The log map was tested (Experiment 7) and failed. Can a COMPACTIFICATION of the log-image work?"
+notes = "Experiment 7 showed |dw/dt| ~ r^(-3/2) → ∞. Need to handle this divergence."
+
+[directions.A3_distributional]
+name = "Distributional / measure-valued continuation"
+category = "A_beyond_smooth"
+description = """
+Replace pointwise trajectory by probability measure that spreads over angles near collision. \
+Connect to quantum limit-circle analysis: the Schrödinger solution exists in L² even when \
+the classical trajectory fails."""
+theoretical_promise = 4
+feasibility = 3
+novelty = 5
+connection = 5
+scope = 4
+status = "untested"
+key_question = "What is the correct measure-valued continuation that matches the quantum L² solution?"
+related_literature = ["Frauenfelder-Weber 2024", "limit circle Sturm-Liouville", "measure-valued solutions ODE"]
+
+[directions.A4_blowup_desingularization]
+name = "Blow-up and desingularization (Bendixson-Dumortier)"
+category = "A_beyond_smooth"
+description = """
+Apply iterated blow-ups at the singular point, as in algebraic geometry resolution of \
+singularities. Each blow-up replaces a point by a projective line. For ODEs, the \
+Bendixson-Dumortier procedure desingularizes non-elementary singular points. The Weber \
+spiral singularity IS a non-elementary singular point."""
+theoretical_promise = 5
+feasibility = 4
+novelty = 5
+connection = 4
+scope = 4
+status = "untested"
+key_question = "Does the iterated blow-up terminate? What is the desingularized phase portrait?"
+related_literature = ["Bendixson-Dumortier", "Dumortier-Llibre-Artes", "resolution of singularities"]
+notes = "TOP RANKED. This is a constructive algorithm specifically designed for this class of singularity."
+
+# =============================================================================
+# Category B: Exploiting Lorentzian Structure
+# The sub-critical Weber plane has Lorentzian metric signature.
+# =============================================================================
+
+[directions.B1_penrose_diagram]
+name = "Penrose diagram / conformal compactification"
+category = "B_lorentzian"
+description = """
+Construct the Penrose diagram of the sub-critical Weber plane. The spiraling collision \
+may correspond to a null infinity in the Penrose picture, handled by standard GR techniques."""
+theoretical_promise = 3
+feasibility = 4
+novelty = 3
+connection = 4
+scope = 2
+status = "untested"
+key_question = "What does the Penrose diagram of the sub-critical Weber plane look like?"
+related_literature = ["Penrose 1963", "conformal compactification", "Kruskal-Szekeres"]
+
+[directions.B2_characteristic_coordinates]
+name = "Characteristic (null) coordinates"
+category = "B_lorentzian"
+description = """
+In the Lorentzian regime, use null coordinates u=t-r*, v=t+r*. Equations become \
+first-order along characteristics. Singularity structure may simplify."""
+theoretical_promise = 3
+feasibility = 4
+novelty = 3
+connection = 3
+scope = 2
+status = "untested"
+key_question = "Do the null coordinates simplify the angular dynamics?"
+
+[directions.B3_newman_penrose]
+name = "Newman-Penrose / spin-weighted formalism"
+category = "B_lorentzian"
+description = """
+Apply GR techniques (NP formalism) for handling angular behavior in Lorentzian spacetimes \
+to the Weber plane. Spin-weighted harmonics may capture the angular singularity."""
+theoretical_promise = 2
+feasibility = 2
+novelty = 4
+connection = 2
+scope = 2
+status = "untested"
+key_question = "Is the Weber plane sufficiently rich to benefit from NP formalism?"
+
+# =============================================================================
+# Category C: Changing the Question
+# Instead of regularizing the singularity, redefine what continuation means.
+# =============================================================================
+
+[directions.C1_angular_averaging]
+name = "Angular averaging / homogenization"
+category = "C_redefine"
+description = """
+Near collision, φ cycles infinitely faster than r changes (scale separation). Average \
+over the angle to obtain effective radial dynamics. The averaged radial dynamics is known \
+to be regular (Experiment 5). Question: is this a physically meaningful continuation?"""
+theoretical_promise = 4
+feasibility = 5
+novelty = 4
+connection = 5
+scope = 3
+status = "partially_tested"
+key_question = "Does the angular-averaged dynamics preserve energy? Is it unique?"
+notes = "TOP RANKED. Experiment 5 showed radial regularization works; this formalizes it."
+related_literature = ["homogenization theory", "averaging for fast-slow systems", "Arnol'd averaging"]
+
+[directions.C2_stochastic]
+name = "Stochastic regularization"
+category = "C_redefine"
+description = """
+Replace the deterministic spiral by a stochastic process: angle becomes a white-noise \
+variable near collision while radius follows a regularized SDE. Connects to quantum \
+limit-circle problem."""
+theoretical_promise = 3
+feasibility = 3
+novelty = 5
+connection = 3
+scope = 3
+status = "untested"
+key_question = "What is the correct noise strength that matches the quantum distribution?"
+
+[directions.C3_renormalization_group]
+name = "Renormalization group approach"
+category = "C_redefine"
+description = """
+Treat approach to r=0 as a scaling limit. The self-similar asymptotics r~t^(2/3) \
+suggest an RG fixed point. Classify all continuations by their behavior near this \
+fixed point."""
+theoretical_promise = 4
+feasibility = 3
+novelty = 4
+connection = 3
+scope = 4
+status = "untested"
+key_question = "What are the relevant and irrelevant directions at the RG fixed point?"
+related_literature = ["self-similar solutions ODE", "renormalization group dynamical systems"]
+
+# =============================================================================
+# Category D: Algebraic and Analytic
+# Classical analysis tools applied to the Weber ODE.
+# =============================================================================
+
+[directions.D1_picard_fuchs]
+name = "Picard-Fuchs monodromy"
+category = "D_algebraic"
+description = """
+The Hamilton-Jacobi separation produces elliptic integrals with a pole at r=ρ. \
+Study the monodromy group of the Picard-Fuchs equation. If monodromy is finite, \
+the singularity may be algebraically resolvable."""
+theoretical_promise = 3
+feasibility = 3
+novelty = 4
+connection = 4
+scope = 3
+status = "untested"
+key_question = "Is the monodromy group at r=0 finite or infinite?"
+
+[directions.D2_painleve]
+name = "Painlevé analysis"
+category = "D_algebraic"
+description = """
+Apply the Painlevé test (Laurent series near movable singularity). Classify the \
+singularity type: algebraic, logarithmic, or essential. This is a standard algorithmic \
+test that provides definitive information about the singularity."""
+theoretical_promise = 4
+feasibility = 5
+novelty = 3
+connection = 3
+scope = 3
+status = "untested"
+key_question = "Does the Weber ODE pass the Painlevé test? If not, what type of movable singularity?"
+notes = "TOP RANKED for feasibility. Painlevé analysis is algorithmic and can be done symbolically."
+related_literature = ["ARS algorithm", "Painlevé analysis Hamiltonian systems", "movable singularities"]
+
+[directions.D3_galois]
+name = "Galois theory of variational equations"
+category = "D_algebraic"
+description = """
+Apply differential Galois theory to the variational equations along the collision orbit. \
+The Galois group determines integrability and can reveal hidden conservation laws."""
+theoretical_promise = 3
+feasibility = 2
+novelty = 4
+connection = 2
+scope = 3
+status = "untested"
+key_question = "Is the identity component of the Galois group abelian (→ integrable) or not?"
+related_literature = ["Morales-Ramis theorem", "differential Galois theory", "Ziglin theory"]
+
+# =============================================================================
+# Category E: Computational / Numerical
+# Practical integration strategies that don't require analytical regularization.
+# =============================================================================
+
+[directions.E1_adaptive_angular_mesh]
+name = "Adaptive angular mesh integration"
+category = "E_computational"
+description = """
+Instead of regularizing analytically, use numerical methods that adaptively refine \
+in angle as the spiral tightens. Mesh the (r,φ) plane with cells that narrow in φ near r=0."""
+theoretical_promise = 2
+feasibility = 4
+novelty = 2
+connection = 2
+scope = 2
+status = "untested"
+key_question = "Can adaptive refinement track the spiral accurately enough to be useful?"
+
+[directions.E2_partial_radial_with_bookkeeping]
+name = "Partial radial regularization with angular bookkeeping"
+category = "E_computational"
+description = """
+Regularize radial dynamics (which works — Experiment 5) and track angle by quadrature, \
+accepting infinite winding. Define 'regularized continuation' where radial trajectory \
+passes through r=0 and angle is defined modulo infinite winding."""
+theoretical_promise = 3
+feasibility = 5
+novelty = 2
+connection = 5
+scope = 2
+status = "partially_tested"
+key_question = "Is 'modulo infinite winding' a physically meaningful definition?"
+notes = "Most practical approach. Already partially validated by Experiment 5."

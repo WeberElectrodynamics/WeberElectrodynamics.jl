@@ -1,0 +1,573 @@
+[[papers]]
+source = "arxiv"
+year = 2019
+notes = ""
+title = "The fine structure of Weber's hydrogen atom -- Bohr-Sommerfeld approach"
+abstract = "In this paper we determine in second order in the fine structure constant the energy levels of Weber's Hamiltonian admitting a quantized torus. Our formula coincides with the formula obtained by Wesley using the Schrödinger equation for Weber's Hamiltonian."
+authors = "Urs Frauenfelder; Joa Weber"
+url = "http://arxiv.org/abs/1902.09612v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2009
+notes = ""
+title = "The Anderson-Weber strategy is not optimal for symmetric rendezvous search on K4"
+abstract = "We consider the symmetric rendezvous search game on a complete graph of n locations. In 1990, Anderson and Weber proposed a strategy in which, over successive blocks of n-1 steps, the players independently choose either to stay at their initial location or to tour the other n-1 locations, with probabilities p and 1-p, respectively. Their strategy has been proved optimal for n=2 with p=1/2, and for n=3 with p=1/3. The proof for n=3 is very complicated and it has been difficult to guess what might..."
+authors = "Richard Weber"
+url = "http://arxiv.org/abs/0912.0670v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2016
+notes = ""
+title = "Spin- and velocity-dependent non-relativistic potentials in modified electrodynamics"
+abstract = "We investigate the interparticle potential between spin-0, -1/2 and -1 sources interacting in modified electrodynamics in the non-relativistic regime. By keeping terms of $\\mathcal{O}( |{\\bf p}|^2/m^2 )$ in the amplitudes, we obtain spin- and velocity-dependent interaction energies. We find well-known effects such as spin-orbit couplings, as well as spin-spin (dipole-dipole) interactions. For concreteness, we consider the cases of electrodynamics with higher derivatives (Podolsky-Lee-Wick) and h..."
+authors = "G. P. de Brito; P. C. Malta; L. P. R. Ospedal"
+url = "http://arxiv.org/abs/1612.01181v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2022
+notes = ""
+title = "Nonradial stability of expanding Goldreich-Weber stars"
+abstract = "Goldreich-Weber solutions constitute a finite-parameter of expanding and collapsing solutions to the mass-critical Euler-Poisson system. Two subclasses of this family correspond to compactly supported density profiles suitably modulated by the dynamic radius of the star that expands at the self-similar rate $λ(t)_{t\\to\\infty}\\sim t^{\\frac23}$ and linear rate $λ(t)_{t\\to\\infty}\\sim t$ respectively. We prove two results: any linearly expanding Goldreich-Weber star is nonlinearly stable, while any ..."
+authors = "Mahir Hadžić; Juhi Jang; King Ming Lam"
+url = "http://arxiv.org/abs/2212.11420v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2020
+notes = ""
+title = "The Cornell potential in Lee-Wick inspired electrodynamics"
+abstract = "In the seventies, Lee and Wick proposed an interesting modification of classical electrodynamics that renders it finite at the quantum level. At the classical level, this modified theory leads to a regular linear potential at short distances while also reproducing the Coulomb potential at large distances. It is shown that a suitable modification of the Lee-Wick idea can also lead to a linear potential at large distances. For this purpose, we study an Abelian model that ``simulates\" the QCD confi..."
+authors = "Anais Smailagic; Euro Spallucci"
+url = "http://arxiv.org/abs/2001.07530v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2016
+notes = ""
+title = "Glauber dynamics of 2D Kac-Blume-Capel model and their stochastic PDE limits"
+abstract = "We study the Glauber dynamics of a two dimensional Blume-Capel model (or dilute Ising model) with Kac potential parametrized by $(β,θ)$ - the \"inverse temperature\" and the \"chemical potential\". We prove that the locally averaged spin field rescales to the solution of the dynamical $Φ^4$ equation near a curve in the $(β,θ)$ plane and to the solution of the dynamical $Φ^6$ equation near one point on this curve. Our proof relies on a discrete implementation of Da Prato-Debussche method as in a resu..."
+authors = "Hao Shen; Hendrik Weber"
+url = "http://arxiv.org/abs/1608.06556v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2003
+notes = ""
+title = "Geometric Aspects of Frame Representations of Abelian Groups"
+abstract = "We consider frames arising from the action of a unitary representation of a discrete countable abelian group. We show that the range of the analysis operator can be determined by computing which characters appear in the representation. This allows one to compare the ranges of two such frames, which is useful for determining similarity and also for multiplexing schemes. Our results then partially extend to Bessel sequences arising from the action of the group. We apply the results to sampling on ..."
+authors = "Akram Aldroubi; David Larson; Wai-Shing Tang; Eric Weber"
+url = "http://arxiv.org/abs/math/0308250v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2008
+notes = ""
+title = "Relative-Velocity-Dependent Weber-type Models in Electromagnetism"
+abstract = "This article reconsiders the relative-velocity-dependent approach to modeling electromagnetism that was proposed initially by Weber before data from cathode-ray-tube (CRT) experiments was available. It is shown that identifying the nonlinear, relative-velocity terms using CRT data results in a model, which not only captures standard relativistic effects in optics, high-energy particles, and gravitation, but also explains apparent discrepancies between predicted and measured energy (i) in high-en..."
+authors = "Santosh Devasia"
+url = "http://arxiv.org/abs/0808.3798v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2023
+notes = ""
+title = "A Concrete Model for the Quantum Permutation Group on 4 Points"
+abstract = "In 2019, Jung-Weber gave an example of a concrete magic unitary $M$, which defines a $C^*$-algebraic model of the quantum permutation group $S_4^+$. We show with the help of a computer that there exist no polynomials up to degree $50$ separating the entries of $M$ from the generators of $C(S_4^+)$. This indicates that the magic unitary $M$ might already define a faithful model of $S_4^+$."
+authors = "Nicolas Faroß; Moritz Weber"
+url = "http://arxiv.org/abs/2304.09124v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2024
+notes = ""
+title = "Unfairly Splitting Separable Necklaces"
+abstract = "The Necklace Splitting problem is a classical problem in combinatorics that has been intensively studied both from a combinatorial and a computational point of view. It is well-known that the Necklace Splitting problem reduces to the discrete Ham Sandwich problem. This reduction was crucial in the proof of PPA-completeness of the Ham Sandwich problem. Recently, Borzechowski, Schnider and Weber [ISAAC'23] introduced a variant of Necklace Splitting that similarly reduces to the $α$-Ham Sandwich pr..."
+authors = "Patrick Schnider; Linus Stalder; Simon Weber"
+url = "http://arxiv.org/abs/2408.17126v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2009
+notes = ""
+title = "Quantum mechanics as a solution to the classical self-force problem"
+abstract = "It is argued that, contrary to conventional wisdom, no trustworthy universal self-force/radiative corrections to the Lorentz force equation, can be derived from the basic tenets of classical electrodynamics. This concords with the apparent randomness observed in quantum mechanical scattering experiments and with the absence of any experimental support for such universality. In a recent paper [11], the statistical effect of radiative corrections to the motion of charged bodies has been derived fr..."
+authors = "Yehonatan Knoll"
+url = "http://arxiv.org/abs/0902.4606v10"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2017
+notes = ""
+title = "Force, Torque, Linear Momentum, and Angular Momentum in Classical Electrodynamics"
+abstract = "The classical theory of electrodynamics is built upon Maxwell's equations and the concepts of electromagnetic (EM) field, force, energy, and momentum, which are intimately tied together by Poynting's theorem and by the Lorentz force law. Whereas Maxwell's equations relate the fields to their material sources, Poynting's theorem governs the flow of EM energy and its exchange between fields and material media, while the Lorentz law regulates the back-and-forth transfer of momentum between the medi..."
+authors = "Masud Mansuripur"
+url = "http://arxiv.org/abs/1709.07444v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2017
+notes = ""
+title = "Plankton: the paradox and the power law"
+abstract = "Two basic features of assemblages of unicellular plankton: (1) their high biodiversity and (2) the power-law structure of their abundance, can be explained by an allometric scaling of cell growth and mortality with respect to cell size. To show this, we describe a numerical study of a size-structured, multispecies, population-dynamic model; the model has a single resource, supporting an arbitrary number of phytoplankton and zooplankton species. If the number of plankton species is large enough, ..."
+authors = "Richard Law; José A. Cuesta; Gustav W. Delius"
+url = "http://arxiv.org/abs/1705.05327v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2023
+notes = ""
+title = "Testing the first law of black hole mechanics with GW150914"
+abstract = "Whether the first law of black hole mechanics is correct is an important question in black holes physics. Subjected to current limited gravitational wave events, we propose its weaker version that permits a relatively large perturbation to a black hole system and implement a simple test with the first event GW150914. Confronting the strain data with the theory, we obtain the constraint on the deviation parameter $α=0.07\\pm0.11$, which indicates that this weaker version is valid at the 68\\% confi..."
+authors = "Deng Wang"
+url = "http://arxiv.org/abs/2307.16305v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2022
+notes = ""
+title = "Unavoidable order-size pairs in hypergraphs -- positive forcing density"
+abstract = "Erdős, Füredi, Rothschild and Sós initiated a study of classes of graphs that forbid every induced subgraph on a given number $m$ of vertices and number $f$ of edges. Extending their notation to $r$-graphs, we write $(n,e) \\to_r (m,f)$ if every $r$-graph $G$ on $n$ vertices with $e$ edges has an induced subgraph on $m$ vertices and $f$ edges. The \\emph{forcing density} of a pair $(m,f)$ is $$ σ_r(m,f) =\\left. \\limsup\\limits_{n \\to \\infty} \\frac{|\\{e : (n,e) \\to_r (m,f)\\}|}{\\binom{n}{r}} \\right. ..."
+authors = "Maria Axenovich; József Balogh; Felix Christian Clemen; Lea Weber"
+url = "http://arxiv.org/abs/2208.06626v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2005
+notes = ""
+title = "Intrinsic vulnerabilities to mechanical failure in nanoscale films"
+abstract = "We use molecular simulations to explore how sample dimensions and interfacial properties impact some generic aspects of the mechanical and structural behavior of nanoconfined materials. Specifically, we calculate the strain-dependent properties of minimum-energy thin-film particle configurations (i.e., inherent structures) confined between attractive, parallel substrates. We examine how the relationship between the transverse strain and the stress tensor (the equation of state of the energy land..."
+authors = "Pooja Shah; Thomas M. Truskett"
+url = "http://arxiv.org/abs/cond-mat/0502303v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2010
+notes = ""
+title = "A stability analysis of the power-law steady state of marine size spectra"
+abstract = "This paper investigates the stability of the power-law steady state often observed in marine ecosystems. Three dynamical systems are considered, describing the abundance of organisms as a function of body mass and time: a \"jump-growth\" equation, a first order approximation which is the widely used McKendrick-von Foerster equation, and a second order approximation which is the McKendrick-von Foerster equation with a diffusion term. All of these yield a power-law steady state. We derive, for the f..."
+authors = "Samik Datta; Gustav W. Delius; Richard Law; Michael J. Plank"
+url = "http://arxiv.org/abs/1001.3826v3"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2024
+notes = ""
+title = "An FFT based chemo-mechanical framework with fracture: application to mesoscopic electrode degradation"
+abstract = "An FFT based method is proposed to simulate chemo-mechanical problems at the microscale including fracture, specially suited to predict crack formation during the intercalation process in batteries. The method involves three fields fully coupled, concentration, deformation gradient and damage. The mechanical problem is set in a finite strain framework and solved using Fourier Galerkin for non-linear problems in finite strains. The damage is modeled with Phase Field Fracture using a stress drivin..."
+authors = "Gabriel Zarzoso; Eduardo Roque; Francisco Montero-Chacón; Javier Segurado"
+url = "http://arxiv.org/abs/2411.16583v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2013
+notes = ""
+title = "Accelerated Thermalisation of 39K atoms in a Magnetic Trap with Superimposed Optical Potential"
+abstract = "We report the rapid accelerated thermalisation of Potassium 39 K atoms loaded in a magnetic trap, in the presence of a single dipole trap beam. More than an order of magnitude reduction in the thermalisation time, to less than a second, is observed with the focused off- resonant beam occupying only 0.01% of the volume of the magnetic trap. The cold atoms are loaded from a Magneto-Optical Trap(MOT) of 39 K that has gone through a compressed MOT and sub-Doppler cooling stage. The atoms are prepare..."
+authors = "Dipankar Nath; R Kollengode Easwaran; G. Rajalakshmi; C. S. Unnikrishnan"
+url = "http://arxiv.org/abs/1305.2313v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 1999
+notes = ""
+title = "Optical dipole traps for neutral atoms"
+abstract = "The subject of this review are atom traps based on optical dipole forces in laser fields, along with their unique features as storage devices at ultralow energies. The basic physics of the dipole interaction is discussed, and the experimental background of dipole trapping experiments is explained. Specific trapping schemes and experiments are presented, where the wide range of applications of dipole traps is explored considering particular examples."
+authors = "Rudolf Grimm; Matthias Weidemüller; Yurii B. Ovchinnikov"
+url = "http://arxiv.org/abs/physics/9902072v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2019
+notes = ""
+title = "$J^+$-invariants for planar two-center Stark-Zeeman systems"
+abstract = "In this paper, we introduce the notion of planar two-center Stark- Zeeman systems and define four J+-like invariants for their periodic orbits. The construction is based on a previous construction for planar one-center Stark-Zeeman system in [Cieliebak-Frauenfelder-van Koert 2017] as well as Levi-Civita and Birkhoff regularizations. We analyze the relationship among these invariants and show that they are largely independent, based on a new construction called interior connected sum."
+authors = "Kai Cieliebak; Urs Frauenfelder; Lei Zhao"
+url = "http://arxiv.org/abs/1910.04570v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2022
+notes = ""
+title = "Exploring coherent elastic neutrino-nucleus scattering of reactor neutrinos with the NUCLEUS experiment"
+abstract = "The NUCLEUS experiment aims to perform a high-precision measurement of Coherent Elastic Neutrino-Nucleus Scattering (CEvNS) at the EdF Chooz B nuclear power plant in France. CEvNS is a unique process to study neutrino properties and to search for physics beyond the Standard Model. The study of CEvNS is also important for light Dark-Matter searches. It could be a possible irreducible background for high-sensitivity Dark-Matter searches. NUCLEUS is an experiment under construction based on ultra-l..."
+authors = "The NUCLEUS collaboration; C. Goupy; H. Abele; G. Angloher; A. Bento; L. Canonica; F. Cappella; L. Cardani; N. Casali; R. Cerulli; I. Colantoni; A. Cruciani; G. Del Castello; M. del Gallo Roccagiovine; A. Doblhammer; S. Dorer; A. Erhart; M. Friendl; A. Garai; V. M. Ghete; D. Hauff; F. Jeanneau; E. Jericha; M. Kaznacheeva; A. Kinast; H. Kluck; A. Langenkämper; T. Lasserre; D. Lhuillier; M. Mancuso; B. Mauri; A. Mazzolari; E. Mazzucato; H. Neyrial; C. Nones; L. Oberauer; T. Ortmann; L. Pattavina; L. Peters; F. Petricca; W. Potzel; F. Pröbst; F. Pucci; F. Riendl; R. Rogly; M. Romagnoni; J. Rothe; N. Schermer; J. Schieck; S. Schönert; C. Schwertner; L. Scola; G. Soum Sidikov; L. Stodolsky; R. Strauss; M. Tamisari; C. Tomei; M. Vignati; M. Vivier; V. Wagner; A. Wex; ."
+url = "http://arxiv.org/abs/2211.04189v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2000
+notes = ""
+title = "Theoretical Calculations of Atomic Data for Spectroscopy"
+abstract = "Several different approximations and techniques have been developed for the calculation of atomic structure, ionization, and excitation of atoms and ions. These techniques have been used to compute large amounts of spectroscopic data of various levels of accuracy. This paper presents a review of these theoretical methods to help non-experts in atomic physics to better understand the qualities and limitations of various data sources and assess how reliable are spectral models based on those data."
+authors = "Manuel A. Bautista"
+url = "http://arxiv.org/abs/astro-ph/0006286v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2005
+notes = ""
+title = "Electronic excitations in atomic clusters: beyond dipole plasmon"
+abstract = "Multipole electron modes beyond the Mie plasmon in atomic clusters are investigated within the time-dependent local density approximation theory (TDLDA). We consider the origin of the modes, their connection with basic cluster properties and possible routes of experimental observation. Particular attention is paid to infrared magnetic orbital modes, scissors and twist, and electric quadrupole mode. The scissors and twist modes determine orbital magnetism of clusters while the electric quadrupole..."
+authors = "V. O. Nesterenko; P. -G. Reinhard; W. Kleinig"
+url = "http://arxiv.org/abs/physics/0512061v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2008
+notes = ""
+title = "Atom as a \"Dressed\" Nucleus"
+abstract = "It is shown that the electrostatic potential of atomic nucleus \"seen\" by a fast charged projectile at short distances is smeared quantum mechanically due to nucleus motion around the atomic center of inertia. For example, the \"positive charge cloud\" size in the Hydrogen ground state is much larger than the proper proton size. It is even bigger for the target atoms in excited initial states. The elastic scattering at large angles is generally weaker than the Rutherford one since the effective pot..."
+authors = "Vladimir Kalitvianski"
+url = "http://arxiv.org/abs/0806.2635v9"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2024
+notes = ""
+title = "A mathematical description of the Weber nucleus as a classical and quantum mechanical system"
+abstract = "Wilhelm Weber’s electrodynamics is an action-at-a-distance theory which has the property that equal charges inside a critical radius become attractive. Weber’s electrodynamics inside the critical radius can be interpreted as a classical Hamiltonian system whose kinetic energy is, however, expressed with respect to a Lorentzian metric. In this article we study the Schrödinger equation associated with this Hamiltonian system, and relate it to Weyl’s theory of singular Sturm–Liouville problems."
+authors = "Urs Frauenfelder; Joa Weber"
+url = "https://www.semanticscholar.org/paper/ce5f0301cf507e17d4cd86f7cf369a67e961a2b2"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2025
+notes = ""
+title = "Atomic-resolution imaging reveals nucleus-free crystallization in two-dimensional amorphous ice on graphite"
+abstract = "Two-dimensional (2D) crystallization at interfaces or in thin films plays a critical role in many natural phenomena and technological applications, yet its microscopic mechanism remains elusive due to the challenges of directly observing atomic-scale transient states during crystallization. Here, we present atomic-resolution imaging of 2D ice crystallization on graphite surface using qPlus-based cryogenic atomic force microscopy (AFM) combined with molecular dynamics (MD) simulations. The crysta..."
+authors = "Zifeng Yuan; Ye Tian; Binze Tang; Tiancheng Liang; Chon-Hei Lo; Zixiang Yan; Dong Guan; Jiadong Guo; Enyi Wang; Ying Jiang; Limei Xu"
+url = "https://www.semanticscholar.org/paper/13c2675fa40799e6f800e9a49a356b13b6596510"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2025
+notes = ""
+title = "Interactive 3D Visualization of Bohr's Atomic Model: Enhancing Educational Tools with WebGL and Force-Directed Algorithms"
+abstract = "The study presents an interactive 3D web-based application designed to visualize atomic structures according to Bohr’s Model using Three.js and WebGL. The primary aim of the project is to enhance educational tools in atomic physics by providing an interactive, real-time representation of atomic structures. This tool allows users to explore atomic models dynamically, offering a detailed view of electron orbits, nuclear structure, and electron movement. The visualization system is built around Thr..."
+authors = "Zaid Kraitem; Hamza Alhaj; Mohamad Taky"
+url = "https://www.semanticscholar.org/paper/55f9aec973d9e2c82862f74fbf488973edb78998"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2003
+notes = ""
+title = "Analysis of Aromatic Delocalization: Individual Molecular Orbital Contributions to Nucleus-Independent Chemical Shifts"
+abstract = ""
+authors = "T. Heine; P. Schleyer; C. Corminboeuf; G. Seifert; Roman Reviakine; J. Weber"
+url = "https://www.semanticscholar.org/paper/85163a997f78851cd9e680c61ef74ed0aacac5f5"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2002
+notes = ""
+title = "Atomic Nucleus and Nuclear Reaction Physics Scientific Data Digital Collection of MSU SINP CDFE"
+abstract = ""
+authors = "I. N. Boboshin; V. Varlamov; S. Y. Komarov; N. Peskov; S. Semin; M. Stepanov; V. V. Chesnokov"
+url = "https://www.semanticscholar.org/paper/c49a3797d8c6a8bc671051b9a7fc6b7daa400380"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2024
+notes = ""
+title = "Isomorphic Fluorescent Nucleosides"
+abstract = "Conspectus In 1960, Weber prophesied that “There are many ways in which the properties of the excited state can be utilized to study points of ignorance of the structure and function of proteins”. This has been realized, illustrating that an intrinsic and highly responsive fluorophore such as tryptophan can alter the course of an entire scientific discipline. But what about RNA and DNA? Adapting Weber’s protein photophysics prophecy to nucleic acids requires the development of intrinsically emis..."
+authors = "Y. Tor"
+url = "https://www.semanticscholar.org/paper/c8439d655e29f5f42a3a15ee1aab136361aecc6b"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 1994
+notes = ""
+title = "Investigation of heteroepitaxial diamond films by atomic force and scanning tunneling microscopy"
+abstract = ""
+authors = "K. Schiffmann; X. Jiang"
+url = "https://www.semanticscholar.org/paper/3860a839b429f68c271cf5cb3685aded1aad5721"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2022
+notes = ""
+title = "GWitchHunters – A citizen science project for the improvement of gravitational wave detectors"
+abstract = "Gravitational wave detectors are complex instruments devoted to the formidable task of measuring spacetime deformations as small as a thousandth of the size of the atomic nucleus, like those produced by the signals originating from the coalescence of compact stars. GWitchHunters is a citizen science project aimed at promoting the study of the Universe carried out with these detectors and the ongoing activities to improve their sensitivity to newer and further sources of gravitational waves. In o..."
+authors = "F. Di Renzo; F. Fidecaro; Gary Hemming; S. Katsanevas; M. Razzano"
+url = "https://www.semanticscholar.org/paper/cc4369b3ed3021d59950bec4712acff24fab5ebf"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2016
+notes = ""
+title = "ALMA finds dew drops in the dusty spider's web"
+abstract = "We present 0 ''.5 resolution ALMA detections of the observed 246 GHz continuum, [CI] P-3(2) -> P-3(1) fine structure line ([CI] 2-1), CO(7-6), and H2O lines in the z = 2:161 radio galaxy MRC1138-262, the so-called Spiderweb galaxy. We detect strong [CI] 2-1 emission both at the position of the radio core, and in a second component similar to 4 kpc away from it. The 1100 km s(-1) broad [CI]2-1 line in this latter component, combined with its H-2 mass of 1 : 6 x 10(10) M-circle dot, implies that t..."
+authors = "B. Gullberg; M. Lehnert; C. Breuck; Steve Branchu; Steve Branchu; H. Dannerbauer; G. Drouart; B. Emonts; P. Guillard; N. A. Hatch; N. Nesvadba; A. Omont; N. Seymour; J. Vernet"
+url = "https://www.semanticscholar.org/paper/b303b8007c2b6dd83fcfb175c8c65a33addb1612"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2004
+notes = ""
+title = "B(GT) strength from beta-decay measurements and inferred shape mixing in Kr-74"
+abstract = ""
+authors = "E. Poirier; F. Marechal; P. Dessagne; A. Algora; M. Borge; D. Cano-Ott; J. C. Caspar; S. Courtin; J. Devin; L. Fraile; W. Gelletly; G. Heitz; A. Jungclaus; G. Scornet; C. Miehé; E. Nácher; B. Rubio; P. Sarriguren; J. Tain; O. Tengblad; C. Weber"
+url = "https://www.semanticscholar.org/paper/024ffef56b5a6106b86b082340518e3e9568232f"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2022
+notes = ""
+title = "CAGI, the Critical Assessment of Genome Interpretation, establishes progress and prospects for computational genetic variant interpretation methods"
+abstract = "The Critical Assessment of Genome Interpretation (CAGI) aims to advance the state of the art for computational prediction of genetic variant impact, particularly those relevant to disease. The five complete editions of the CAGI community experiment comprised 50 challenges, in which participants made blind predictions of phenotypes from genetic data, and these were evaluated by independent assessors. Overall, results show that while current methods are imperfect, they have major utility for resea..."
+authors = "The Critical Assessment of Genome Interpretation Consortium"
+url = "http://arxiv.org/abs/2205.05897v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2017
+notes = ""
+title = "Local Estimate on Convexity Radius and decay of injectivity radius in a Riemannian manifold"
+abstract = "In this paper we prove the following pointwise and curvature-free estimates on convexity radius, injectivity radius and local behavior of geodesics in a complete Riemannian manifold $M$: 1) the convexity radius of $p$, $\\operatorname{conv}(p)\\ge \\min\\{\\frac{1}{2}\\operatorname{inj}(p),\\operatorname{foc}(B_{\\operatorname{inj}(p)}(p))\\}$, where $\\operatorname{inj}(p)$ is the injectivity radius of $p$ and $\\operatorname{foc}(B_r(p))$ is the focal radius of open ball centered at $p$ with radius $r$; ..."
+authors = "Shicheng Xu"
+url = "http://arxiv.org/abs/1704.03269v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2006
+notes = ""
+title = "Three approaches towards Floer homology of cotangent bundles"
+abstract = "Consider the cotangent bundle of a closed Riemannian manifold and an almost complex structure close to the one induced by the Riemannian metric. For Hamiltonians which grow for instance quadratically in the fibers outside of a compact set, one can define Floer homology and show that it is naturally isomorphic to singular homology of the free loop space. We review the three isomorphisms constructed by Viterbo (1996), Salamon-Weber (2003) and Abbondandolo-Schwarz (2004). The theory is illustrated ..."
+authors = "Joa Weber"
+url = "http://arxiv.org/abs/math/0602230v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2007
+notes = ""
+title = "Nonlinear Electrodynamics and black holes"
+abstract = "It is addressed the issue of black holes with nonlinear electromagnetic field, focussing mainly in the Born-Infeld case. The main features of these systems are described, for instance, geodesics, energy conditions, thermodynamics and isolated horizon aspects. Also are revised some black hole solutions of alternative nonlinear electrodynamics and its inconveniences."
+authors = "Nora Breton; Ricardo Garcia-Salcedo"
+url = "http://arxiv.org/abs/hep-th/0702008v1"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2025
+notes = ""
+title = "Bound Deuteron-Antideuteron System (Deuteronium): Leading Radiative and Internal-Structure Corrections to Bound-State Energies"
+abstract = "We evaluate the energy levels of the deuteronium bound system, which consists of a deuteron and an antideuteron, with a special emphasis on states with nonvanishing orbital angular momenta. The excited atomic bound states of deuteronium constitute probes for the understanding of higher-order quantum electrodynamic corrections for spin-1 particles in a bound system where the typical field strength of the binding Coulomb field (at a distance of the generalized Bohr radius) exceeds Schwinger's crit..."
+authors = "G. S. Adkins; U. Jentschura"
+url = "https://www.semanticscholar.org/paper/66ca8bdc2bd63f51713e59a2cf26117ad0d713e7"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2023
+notes = ""
+title = "Characterising ATP binding activity of PilB ATPase of Shewanella oneidensis MR-1 using a molecular modeling and simulations approach"
+abstract = ""
+authors = "Vaishnav Varma Alluri; Mayur Mukhi; A. S. Vishwanathan"
+url = "https://www.semanticscholar.org/paper/35cf6ea83202eec0885cb994a8a5bddb38ae498e"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2025
+notes = ""
+title = "Application of Hard X-Ray and Gamma-Ray TES Microcalorimeter at Accelerator Facility"
+abstract = "The X-ray spectroscopy of the muonic atom has attracted atomic, nuclear, and particle physicists since its discovery. The properties of a muonic atom, such as its binding energy or atomic radius, are different from an ordinary atom because of the difference in the mass between the muon and electron. Our collaboration has employed superconductor transition-edge sensor (TES) microcalorimeters for the x-ray spectroscopy of the muonic atom. Thanks to the recent detector development, the 44-keV lines..."
+authors = "T. Saito; Shinji Okada; Y. Toyama; T. Azuma; Baptista Goncalo; D. Becker; D. Bennett; W. Doriese; Joseph Fowler; J. Gard; Tadashi Hashimoto; Ryota Hayakawa; T. Hayashi; Y. Ichinohe; Jozsef Imrek; Paul Indelicato; T. Isobe; S. Kanda; Naritoshi Kawamura; John Mates; Yasuhiro Miyake; Kelsey M. Morgan; H. Noda; G. O'Neil; T. Okumura; Nancy Paul; D. Schmidt; Kouichiro Shimomura; P. Strasser; D. Swetz; Tadayuki Takahashi; M. Tampo; J. Ullom; I. Umegaki; Joel Weber; S. Yamada; D. Yan"
+url = "https://www.semanticscholar.org/paper/98435cba6465e040fab67cf63c3f4165f7ac4b62"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2023
+notes = ""
+title = "Investigation of molecular details of a bacterial cationic amino acid transporter (GkApcT) during arginine transportation using molecular dynamics simulation and umbrella sampling techniques"
+abstract = "Cationic amino acid transporters (CATs) facilitate arginine transport across membranes and maintain its levels in various tissues and organs, but their overexpression has been associated with severe cancers. A recent study identified the alternating access mechanism and critical residues involved in arginine transportation in a cationic amino acid transporter from Geobacillus kaustophilus (GkApcT). Here, we used molecular dynamics (MD) simulation methods to investigate the transportation mechani..."
+authors = "M. Afshinpour; Parinaz Parsi; H. Mahdiuni"
+url = "https://www.semanticscholar.org/paper/cb30f5e720eb552891c1124f185be78439193b1e"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 1998
+notes = ""
+title = "Pro Region C-Terminus : Protease Active Site Interactions Are Critical in Catalyzing the Folding of R-Lytic Protease †"
+abstract = ""
+authors = "R. Peters; Andrew K. Shiau; J. Sohl; D. Anderson; Gale L. Tang; J. L. Silen; D. A. Agard"
+url = "https://www.semanticscholar.org/paper/a12b42d4552adb627ce39265831ddc372d7aad30"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2008
+notes = ""
+title = "ON THE ELECTRODYNAMICAL PROPERTIES OF NUCLEAR MATTER IN BULK"
+abstract = ""
+authors = "M. Rotondo; R. Ruffini; S. Xue"
+url = "https://www.semanticscholar.org/paper/0c6ce102be57a974355e323e932908243d2fc5af"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2015
+notes = ""
+title = "Microsoft Word-final manuscript.docx"
+abstract = ""
+authors = "B. Pilecki; A. T. Holm; A. Schlosser; J. B. Moeller; Alexander P Wohl; Alexandra V. Zuk; S. Heumüller; R. Wallis; S. Moestrup; Gerhard; Sengle; U. Holmskov; G. Sørensen"
+url = "https://www.semanticscholar.org/paper/270785662571a9b4e4ad8c8ff645ccacaea508bb"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2002
+notes = ""
+title = "Mathematical results in quantum mechanics : a conference on QMATH-8, Mathematical Results in Quantum Mechanics Universidad Nacional Autónoma de México, Taxco, México, December 10-14, 2001"
+abstract = ""
+authors = "R. Weder; P. Exner; B. Grébert"
+url = "https://www.semanticscholar.org/paper/4ff2ef73c7d4ece270a8bde7ffd162703ebf1808"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2010
+notes = ""
+title = "Software Development for High-throughput Biological Small Angle X-ray Scattering"
+abstract = ""
+authors = "A. Kikhney"
+url = "https://www.semanticscholar.org/paper/8af89b824998bc48eac1e08f31483857109d6eea"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2020
+notes = ""
+title = "Wilhelm Weber: On the Energy of Interaction (translated and edited by A. K. T. Assis)"
+abstract = "Editor's Note: An English translation of Wilhelm Weber's 1878 paper \"Ueber die Energie der Wechselwirkung\", [Web78b]. This work is an excerpt from Weber's seventh major Memoir on Electrodynamic Measurements, \"Elektrodynamische Maassbestimmungen\", [Web78a] with English translation in [Web21]."
+authors = "A. K. T. Assis"
+url = "http://arxiv.org/abs/2009.09296v3"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2019
+notes = ""
+title = "J. C. Poggendorff: Comment on the Paper by Prof. Kirchhoff (translated and edited by A. K. T. Assis)"
+abstract = "Editor's Note: An English translation of J. C. Poggendorff's 1857 paper \"Bemerkung zu dem Aufsatz des Herrn Prof. Kirchhoff\", [Pog57]. This paper is related to Kirchhoff's 1857 paper \"On the motion of electricity in wires\", [Kir57b] with English translation in [Kir57a], and to Weber's 1864 paper \"Electrodynamic measurements, especially on electric oscillations\", [Web64] with English translation in [Web21a]. Kirchhoff and Weber were the first to deduce the telegraphy equation by taking into accou..."
+authors = "A. K. T. Assis"
+url = "http://arxiv.org/abs/1912.05930v4"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2018
+notes = ""
+title = "Feed-Forward Neural Networks Need Inductive Bias to Learn Equality Relations"
+abstract = "Basic binary relations such as equality and inequality are fundamental to relational data structures. Neural networks should learn such relations and generalise to new unseen data. We show in this study, however, that this generalisation fails with standard feed-forward networks on binary vectors. Even when trained with maximal training data, standard networks do not reliably detect equality.We introduce differential rectifier (DR) units that we add to the network in different configurations. Th..."
+authors = "Tillman Weyde; Radha Manisha Kopparti"
+url = "http://arxiv.org/abs/1812.01662v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2025
+notes = ""
+title = "Deep Biomechanically-Guided Interpolation for Keypoint-Based Brain Shift Registration"
+abstract = "Accurate compensation of brain shift is critical for maintaining the reliability of neuronavigation during neurosurgery. While keypoint-based registration methods offer robustness to large deformations and topological changes, they typically rely on simple geometric interpolators that ignore tissue biomechanics to create dense displacement fields. In this work, we propose a novel deep learning framework that estimates dense, physically plausible brain deformations from sparse matched keypoints. ..."
+authors = "Tiago Assis; Ines P. Machado; Benjamin Zwick; Nuno C. Garcia; Reuben Dorent"
+url = "http://arxiv.org/abs/2508.13762v1"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2007
+notes = ""
+title = "Standstill Electric Charge Generates Magnetostatic Field Under Born-Infeld Electrodynamics"
+abstract = "The Abelian Born-Infeld classical non-linear electrodynamic has been used to investigate the electric and magnetostatic fields generated by a point-like electrical charge at rest in an inertial frame. The results show a rich internal structure for the charge. Analytical solutions have also been found. Such findings have been interpreted in terms of vacuum polarization and magnetic-like charges produced by the very high strengths of the electric field considered. Apparently non-linearity is to be..."
+authors = "S. O. Vellozo; Jose A. Helayel-Neto; A. W. Smith; L. P. G. De Assis"
+url = "http://arxiv.org/abs/0712.0322v2"
+relevance_score = 0
+[[papers]]
+source = "arxiv"
+year = 2010
+notes = ""
+title = "A Logical Temporal Relational Data Model"
+abstract = "Time is one of the most difficult aspects to handle in real world applications such as database systems. Relational database management systems proposed by Codd offer very little built-in query language support for temporal data management. The model itself incorporates neither the concept of time nor any theory of temporal semantics. Many temporal extensions of the relational model have been proposed and some of them are also implemented. This paper offers a brief introduction to temporal datab..."
+authors = "Nadeem Mahmood; Aqil Burney; Kamran Ahsan"
+url = "http://arxiv.org/abs/1002.1143v2"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2014
+notes = ""
+title = "Relational Mechanics and Implementation of Mach's Principle with Weber’s Gravitational Force"
+abstract = ""
+authors = "A. Assis"
+url = "https://www.semanticscholar.org/paper/dce4f1a89048a65c7ea4de78fdb5ef74ab40ec80"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2016
+notes = ""
+title = "Relational Mechanics and Implementation of Mach’s Principle with Weber’s Gravitational Force"
+abstract = ""
+authors = "M. Pinheiro"
+url = "https://www.semanticscholar.org/paper/49074537e92ec8509ca3db7a50f85f3eb103bc25"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2011
+notes = ""
+title = "Consequences of Relational Time 1"
+abstract = ""
+authors = "A. Assis; G. Wataghin"
+url = "https://www.semanticscholar.org/paper/69af8a7322e7ab2e3a81a430538484e6a22c0013"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2000
+notes = ""
+title = "Axioma for Mach's Mechanics"
+abstract = "We present an axiomatic framework for what we call Mach's mechanics, inspired on the ideas by A. K. T. Assis and P. Graneau about relational mechanics. We show that, in contrast to a suggestion of these authors, Mach's principle does not need to be committed with any Weber's like gravitational force. Actually it is possible to settle an axiomatic framework for non-relativistic classical particle mechanics which incorporates Mach's principle and is still consistent with any force that obeys the N..."
+authors = "A. Sant’Anna; Clóvis A. S. Maia"
+url = "https://www.semanticscholar.org/paper/714107c57d23fd901894ee0bbe50b558f95b4a59"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2000
+notes = ""
+title = "cl as sph ] 1 5 M ay 2 00 0 Axioms for Mach ’ s mechanics"
+abstract = ""
+authors = "A. Sant’Anna; Clóvis A. S. Maia"
+url = "https://www.semanticscholar.org/paper/07c1c1445fe9bd1cab5287b576149a5d609b6391"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2003
+notes = ""
+title = "Frequency in relational mechanics"
+abstract = ""
+authors = "A. Assis; J. Guala-Valverde"
+url = "https://www.semanticscholar.org/paper/d677ea1c5a378bc82f96f419c757a69b9c6af77f"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2000
+notes = ""
+title = "Mass in Relational Mechanics"
+abstract = ""
+authors = "A. Assis; J. Guala-Valverde"
+url = "https://www.semanticscholar.org/paper/5af246ae13128830bf04e1698bbe4a91f7ccf2d5"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2000
+notes = ""
+title = "Book Review: Relational Mechanics. By Andre_K. T. Assis. Apeiron, Montreal, Canada, 1999, 285 pp., 825.00 (softcover). (Available from C. Roy Keys, Inc., Montreal, Canada.) ISBN 0-9683689-2-1."
+abstract = ""
+authors = "T. Phipps"
+url = "https://www.semanticscholar.org/paper/c3d97160b1a06f03e953d4a28f1d9d6269f36f37"
+relevance_score = 0
+[[papers]]
+source = "semantic_scholar"
+year = 2024
+notes = ""
+title = "Relational Quantum Dynamics (RQD): An Informational Ontology"
+abstract = "Quantum mechanics has transformed our understanding of reality, yet deep philosophical puzzles remain unresolved. Is there a consistent way to describe quantum measurement, the emergence of space and time, and the role of observers within one coherent ontology? This paper introduces Relational Quantum Dynamics (RQD), an interpretation that places relationships and information, not isolated objects, at the foundation of physics. Unlike traditional views, such as the Copenhagen interpretation, Eve..."
+authors = "A. Zaghi"
+url = "https://www.semanticscholar.org/paper/0111c7d7c03d8400a25b41d28f84a47375340e15"
+relevance_score = 0
+
+[metadata]
+queries = ["Weber electrodynamics velocity-dependent potential", "Weber force law classical mechanics", "Frauenfelder Weber nucleus atomic", "Weber electrodynamics critical radius binding", "Assis relational mechanics Weber"]
+n_results = 63
+date = "2026-03-14"
+category = "weber"
