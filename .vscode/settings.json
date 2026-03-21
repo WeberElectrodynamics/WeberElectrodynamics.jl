@@ -5,8 +5,11 @@
     "latex-workshop.latex.outDir": "%DIR%/build",
     "latex-workshop.latex.recipes": [
         {
-            "name": "pdflatex → copy",
+            "name": "pdflatex → bibtex → pdflatex × 2 → copy",
             "tools": [
+                "pdflatex",
+                "bibtex",
+                "pdflatex",
                 "pdflatex",
                 "copy-pdf"
             ]
@@ -26,6 +29,16 @@
             "env": {}
         },
         {
+            "name": "bibtex",
+            "command": "bibtex",
+            "args": [
+                "%OUTDIR%/%DOCFILE%"
+            ],
+            "env": {
+                "BIBINPUTS": "%DIR%:"
+            }
+        },
+        {
             "name": "copy-pdf",
             "command": "cp",
             "args": [
@@ -35,6 +48,4 @@
             "env": {}
         }
     ],
-    "makefile.makefilePath": "papers/Computational-Weber-Electrodynamics/Makefile",
-    "makefile.configureOnOpen": false
 }
