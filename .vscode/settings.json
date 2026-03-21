@@ -1,6 +1,7 @@
 {
     "julia.environmentPath": "/Users/mac/.julia/environments/v1.12",
     "latex-workshop.formatting.latex": "latexindent",
+    "latex-workshop.linting.chktex.enabled": false,
     "latex-workshop.latex.autoBuild.run": "onSave",
     "latex-workshop.latex.outDir": "%DIR%/build",
     "latex-workshop.latex.recipes": [
@@ -47,5 +48,5 @@
             ],
             "env": {}
         }
-    ],
+    ]
 }
