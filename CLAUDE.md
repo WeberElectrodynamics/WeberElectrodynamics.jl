@@ -16,7 +16,7 @@ julia --project=. -e 'using Pkg; Pkg.test()'
 julia --project=. -e 'using Test; using WeberElectrodynamics; using WeberElectrodynamics: SymmetricProjectionIntegrator; using LinearAlgebra; using Symbolics; @testset "single" begin include("test/test_utils.jl"); include("test/test_physics.jl") end'
 
 # Format all Julia files
-make format   # requires JuliaFormatter
+julia -e 'using JuliaFormatter; format(".")'
 ```
 
 ## Repository Structure
@@ -32,7 +32,6 @@ WeberElectrodynamics/
 │   └── exploratory/        # Research notes and lessons learned
 ├── papers/
 │   └── Computational-Weber-Electrodynamics/   # LaTeX paper with own Project.toml
-├── Makefile                # `make format`, `make cwe-paper`, etc.
 ├── CHANGELOG.md            # Versioned changelog (semver)
 └── Project.toml            # Package metadata and compat bounds
 ```
