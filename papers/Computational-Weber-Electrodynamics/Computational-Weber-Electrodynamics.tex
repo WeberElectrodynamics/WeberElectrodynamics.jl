@@ -83,7 +83,7 @@ where $r^2 = (x_1 - x_2)^2 + (y_1 - y_2)^2 + (z_1 - z_2)^2$ is the squared dista
 
 In SI units, \eqref{potential} and \eqref{force} would have a factor of $1/(4\pi \epsilon_0)$ multiplying the right-hand side, where $\epsilon_0$ is the permittivity of free space. We choose to omit this factor by using an alternative system of units that better suits our computational purposes, see Section~\ref{units}.
 
-Weber's electrodynamics is an \textit{action at a distance} theory. It satisfies Newton's third law of motion in the \textit{strong form} and thus $\vec{F}_{21} = -\vec{F}_{12}$ is true in general. Therefore, energy, linear momentum and angular momentum are always conserved. Weber's force law \eqref{force} generalizes Coulomb's law for electrostatics to include \textit{velocity dependent} (magnetic) and \textit{acceleration dependent} (induction) forces. This general setup has a significant \textit{computational advantage} compared to Maxwell-Heaviside's field formalism together with the Lorentz force law. We discuss this advantage in more detail in Section~\ref{complexity}. We also have $\vec{F}_{12} = m_1\vec{a}_1$ and $\vec{F}_{21} = m_2\vec{a}_2$, where $m_1$ and $m_2$ are the \textit{inertial masses} of the particles and $\vec{a}_1$ and $\vec{a}_2$ are their accelerations with respect to an \textit{inertial frame of reference}. We discuss frames of reference in more detail in Section~\ref{details}.
+Weber's electrodynamics is an \textit{action at a distance} theory. It satisfies Newton's third law of motion in the \textit{strong form} and thus $\vec{F}_{21} = -\vec{F}_{12}$ is true in general. Therefore, energy, linear momentum and angular momentum are always conserved. Weber's force law \eqref{force} generalizes Coulomb's law for electrostatics to include \textit{velocity dependent} (magnetic) and \textit{acceleration dependent} (induction) forces. This general setup has a significant \textit{computational advantage} compared to Maxwell-Heaviside's field formalism together with the Lorentz force law. We discuss this advantage in more detail in Section~\ref{complexity}. We also have $\vec{F}_{12} = m_1\vec{a}_1$ and $\vec{F}_{21} = m_2\vec{a}_2$, where $m_1$ and $m_2$ are the \textit{inertial masses} of the particles and $\vec{a}_1$ and $\vec{a}_2$ are their accelerations with respect to an \textit{inertial frame of reference}. We adopt the \textit{Universal material frame of reference} described in Relational Mechanics \citep{assis-relational-mechanics} as our inertial reference frame.
 
 Helmholtz argued in the 19th century that Weber's model violates the \textit{principle of conservation of energy}, see \citet{assis-weber-vol4}. Weber replied with great detail to these claims and proved energy conservation extensively in his 6th and 7th memoirs. \citep{assis-weber-vol4} Weber proved that his force \eqref{force} can be derived from the potential \eqref{potential}, see equation \eqref{euler_lagrange}. Therefore, it is a conservative force and the work done is path-independant. Nowadays, Weber's electrodynamics is said to be valid only for small velocities (\textit{quasi-static approximation}) compared to $c$ and is not suitable for describing electromagnetic radiation. This might be the biggest point of critique against Weber's electrodynamics. Yet, the third term (acceleration dependant term) in \eqref{force} naturally falls of as $1/r$, leaving the door open for alternative theories of radiation.
 
@@ -286,6 +286,13 @@ A naive implementation would compute all $n(n-1)$ interactions, but by exploitin
 
 Furthermore, each evaluation of \eqref{xdot_expanded} and \eqref{pdot_expanded} only needs to compute $r_{ij}$ and $\dot{r}_{ij}$ and their powers once per unique pair, which further reduces the computational load.
 
+\subsection{Units and numerical values}\label{units}
+When performing numerical computations we often rely on the 64-bit floating point representation of decimal numbers. This number representation introduces a trade-off between range and precision. To maintain optimal precision, it is advantageous to work with number values near the order of magnitude of 1. In Weber's electrodynamics, we are mostly interested in numerical values that are relatively small when expressed in SI-units. In our numerical computations, we will convert to smaller units to obtain larger numerical values for the same physical quantities.
+
+In the 19th century, Gauss and Weber used an absolute system of units based on the \textit{millimeter}, \textit{milligram}, and \textit{second}. This system is not to be confused with the CGS-system of units, also known as the Gaussian system of units \citep{assis-weber-vol1}. \eqref{potential} and \eqref{force} were originally introduced by Weber in this absolute system of units. The units in this system for the potential \eqref{potential} are $mg \cdot mm^2 / s^2$ and for the force \eqref{force} are $mg \cdot mm / s^2$.
+
+Thus, the original system of Gauss and Weber, compared to the SI system, is better suited for our computational purposes, though not sufficient. In practice, we need even smaller units like \textit{micrometer}, \textit{microgram} and \textit{microsecond} or even smaller to obtain numerical values near the order of magnitude of 1 for typical values of charge, mass and distance encountered in Weber's electrodynamics.
+
 \section{Symplectic numerical integration of non-separable Hamiltonian systems}\label{symplectic}
 A numerical method is called \textit{symplectic} if it preserves the \textit{phase space volume} of Hamiltonian systems over time according to \textit{Liouville's theorem}. Standard symplectic methods require the Hamiltonian to be separable into kinetic and potential energy terms that depend only on positions or momenta. The general Hamiltonian for Weber's electrodynamics \eqref{hamiltonian} is non-separable because the velocity-dependent term
 
@@ -362,17 +369,9 @@ where $\epsilon$ is a small tolerance value.
 
 The full specification of this semi-explicit symplectic integrator can be found in \citet{Jayawardana2023}.
 
-\section{Units}\label{units}
-When performing numerical computations we often rely on the 64-bit floating point representation of decimal numbers. This number representation introduces a trade-off between range and precision. To maintain optimal precision, it is advantageous to work with number values near the order of magnitude of 1. In Weber's electrodynamics, we are mostly interested in numerical values that are relatively small when expressed in SI-units. In our numerical computations, we will convert to smaller units to obtain larger numerical values for the same physical quantities.
-
-In the 19th century, Gauss and Weber used an absolute system of units based on the \textit{millimeter}, \textit{milligram}, and \textit{second}. This system is not to be confused with the CGS-system of units, also known as the Gaussian system of units \citep{assis-weber-vol1}. \eqref{potential} and \eqref{force} were originally introduced by Weber in this absolute system of units. The units in this system for the potential \eqref{potential} are $mg \cdot mm^2 / s^2$ and for the force \eqref{force} are $mg \cdot mm / s^2$.
-
-Thus, the original system of Gauss and Weber, compared to the SI system, is better suited for our computational purposes, though not sufficient. In practice, we need even smaller units like \textit{micrometer}, \textit{microgram} and \textit{microsecond} or even smaller to obtain numerical values near the order of magnitude of 1 for typical values of charge, mass and distance encountered in Weber's electrodynamics.
-
 \section{Discussion}
 
 \subsection{Details}\label{details}
-\textit{Universal material frame of reference} from Relational Mechanics \citep{assis-relational-mechanics}
 
 \appendix
 
