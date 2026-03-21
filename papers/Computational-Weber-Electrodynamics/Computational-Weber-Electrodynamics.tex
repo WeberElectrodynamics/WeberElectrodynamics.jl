@@ -81,13 +81,13 @@ and \textit{Weber's force law}
 
 where $r^2 = (x_1 - x_2)^2 + (y_1 - y_2)^2 + (z_1 - z_2)^2$ is the squared distance between two particles with electric charges $q_1$ and $q_2$, $\rdot = dr/dt$ is the relative radial velocity, $\ddot{r} = d\rdot/dt$ is the relative radial acceleration and $c$ is the speed of light in vacuum. This setup is described in more detail in Appendix~\ref{app:notation} and follows conventions used in \citet{assis-weber}.
 
-In SI units, \eqref{potential} and \eqref{force} would have a factor of $1/(4\pi \epsilon_0)$ multiplying the right-hand side, where $\epsilon_0$ is the permittivity of free space. We choose to omit this factor by using an alternative system of units that better suits our computational purposes, see Section~\ref{units}.
+In SI units,~\eqref{potential} and~\eqref{force} would have a factor of $1/(4\pi \epsilon_0)$ multiplying the right-hand side, where $\epsilon_0$ is the permittivity of free space. We choose to omit this factor by using an alternative system of units that better suits our computational purposes, see Section~\ref{units}.
 
-Weber's electrodynamics is an \textit{action at a distance} theory. It satisfies Newton's third law of motion in the \textit{strong form} and thus $\vec{F}_{21} = -\vec{F}_{12}$ is true in general. Therefore, energy, linear momentum and angular momentum are always conserved. Weber's force law \eqref{force} generalizes Coulomb's law for electrostatics to include \textit{velocity dependent} (magnetic) and \textit{acceleration dependent} (induction) forces. This general setup has a significant \textit{computational advantage} compared to Maxwell-Heaviside's field formalism together with the Lorentz force law. We discuss this advantage in more detail in Section~\ref{complexity}. We also have $\vec{F}_{12} = m_1\vec{a}_1$ and $\vec{F}_{21} = m_2\vec{a}_2$, where $m_1$ and $m_2$ are the \textit{inertial masses} of the particles and $\vec{a}_1$ and $\vec{a}_2$ are their accelerations with respect to an \textit{inertial frame of reference}. We adopt the \textit{Universal material frame of reference} described in Relational Mechanics \citep{assis-relational-mechanics} as our inertial reference frame.
+Weber's electrodynamics is an \textit{action at a distance} theory. It satisfies Newton's third law of motion in the \textit{strong form} and thus $\vec{F}_{21} = -\vec{F}_{12}$ is true in general. Therefore, energy, linear momentum and angular momentum are always conserved. Weber's force law~\eqref{force} generalizes Coulomb's law for electrostatics to include \textit{velocity dependent} (magnetic) and \textit{acceleration dependent} (induction) forces. This general setup has a significant \textit{computational advantage} compared to Maxwell-Heaviside's field formalism together with the Lorentz force law. We discuss this advantage in more detail in Section~\ref{complexity}. We also have $\vec{F}_{12} = m_1\vec{a}_1$ and $\vec{F}_{21} = m_2\vec{a}_2$, where $m_1$ and $m_2$ are the \textit{inertial masses} of the particles and $\vec{a}_1$ and $\vec{a}_2$ are their accelerations with respect to an \textit{inertial frame of reference}. We adopt the \textit{Universal material frame of reference} described in Relational Mechanics \citep{assis-relational-mechanics} as our inertial reference frame.
 
-Helmholtz argued in the 19th century that Weber's model violates the \textit{principle of conservation of energy}, see \citet{assis-weber-vol4}. Weber replied with great detail to these claims and proved energy conservation extensively in his 6th and 7th memoirs. \citep{assis-weber-vol4} Weber proved that his force \eqref{force} can be derived from the potential \eqref{potential}, see equation \eqref{euler_lagrange}. Therefore, it is a conservative force and the work done is path-independent. Nowadays, Weber's electrodynamics is said to be valid only for small velocities (\textit{quasi-static approximation}) compared to $c$ and is not suitable for describing electromagnetic radiation. This might be the biggest point of critique against Weber's electrodynamics. Yet, the third term (acceleration dependent term) in \eqref{force} naturally falls off as $1/r$, leaving the door open for alternative theories of radiation.
+Helmholtz argued in the 19th century that Weber's model violates the \textit{principle of conservation of energy}, see \citet{assis-weber-vol4}. Weber replied with great detail to these claims and proved energy conservation extensively in his 6th and 7th memoirs. \citep{assis-weber-vol4} Weber proved that his force~\eqref{force} can be derived from the potential~\eqref{potential}, see equation~\eqref{euler_lagrange}. Therefore, it is a conservative force and the work done is path-independent. Nowadays, Weber's electrodynamics is said to be valid only for small velocities (\textit{quasi-static approximation}) compared to $c$ and is not suitable for describing electromagnetic radiation. This might be the biggest point of critique against Weber's electrodynamics. Yet, the third term (acceleration dependent term) in~\eqref{force} naturally falls off as $1/r$, leaving the door open for alternative theories of radiation.
 
-To test the strengths and weaknesses of Weber's electrodynamics, we provide a computational framework for investigating $n$-body systems of charged particles through numerical simulations. This allows us to explore the dynamics of charged particles interacting via Weber's force law \eqref{force} in various configurations and scenarios. Important aspects like energy, linear momentum and angular momentum conservation can be verified numerically. Furthermore, it paves the way for studying complex systems with oscillatory behavior and wave phenomena within the context of Weber's electrodynamics.
+To test the strengths and weaknesses of Weber's electrodynamics, we provide a computational framework for investigating $n$-body systems of charged particles through numerical simulations. This allows us to explore the dynamics of charged particles interacting via Weber's force law~\eqref{force} in various configurations and scenarios. Important aspects like energy, linear momentum and angular momentum conservation can be verified numerically. Furthermore, it paves the way for studying complex systems with oscillatory behavior and wave phenomena within the context of Weber's electrodynamics.
 
 \section{Lagrangian and Hamiltonian formulation of Weber's electrodynamics}\label{LH}
 The Lagrangian and Hamiltonian formulation of Weber's electrodynamics was introduced in 1868 by Carl Neumann, see English translation in \citep{assis-weber-vol4}. The standard formalism is described in modern notation in \citet{assis-weber}. We repeat some of the main equations and derive the general Hamiltonian and associated canonical equations for $n$ particles.
@@ -100,7 +100,7 @@ Consider a system of two particles with charges $q_1$ and $q_2$ and inertial mas
 
 where $\vec{v}_1 = (\dot{x}_1, \dot{y}_1, \dot{z}_1)$ and $\vec{v}_2 = (\dot{x}_2, \dot{y}_2, \dot{z}_2)$ are the velocities of particles 1 and 2 with respect to our \textit{Universal material frame of reference}.
 
-To define the Lagrangian, we first introduce an expression nearly identical to \eqref{potential} but with a positive sign in front of the velocity-dependent term:
+To define the Lagrangian, we first introduce an expression nearly identical to~\eqref{potential} but with a positive sign in front of the velocity-dependent term:
 
 \begin{equation}
     S = \frac{\qq}{r}\bigg(1 + \frac{\rdot^2}{2c^2}\bigg)
@@ -112,7 +112,7 @@ The Lagrangian is then defined as:
     \boxed{L = T - S}
 \end{equation}
 
-Although the following expression is not directly relevant for our goals, it is worth noting that we can apply the Euler-Lagrange equation to obtain the force \eqref{force} for particle 1 in the $x$-direction:
+Although the following expression is not directly relevant for our goals, it is worth noting that we can apply the Euler-Lagrange equation to obtain the force~\eqref{force} for particle 1 in the $x$-direction:
 
 \begin{equation}\label{euler_lagrange}
     F_{12}^x = \frac{d}{dt}\frac{\partial S}{\partial \dot{x}_1} - \frac{\partial S}{\partial x_1} = \qq \frac{(x_1 - x_2)}{r_{12}^3} \left(1 - \frac{\dot{r}^2}{2c^2} + \frac{r\ddot{r}}{c^2}\right)
@@ -133,7 +133,7 @@ This Hamiltonian is a function of individual particle \textit{positions} and \te
     H = H(x_1, y_1, z_1, x_2, y_2, z_2, \dot{x}_1, \dot{y}_1, \dot{z}_1, \dot{x}_2, \dot{y}_2, \dot{z}_2)
 \end{equation}
 
-Expanding and simplifying \eqref{H_def} yields the Hamiltonian for two charged particles in Weber's electrodynamics
+Expanding and simplifying~\eqref{H_def} yields the Hamiltonian for two charged particles in Weber's electrodynamics
 
 \begin{equation}\label{H}
     H = m_1 \frac{\vec{v}_1 \cdot \vec{v}_1}{2} + m_2 \frac{\vec{v}_2 \cdot \vec{v}_2}{2} + \frac{\qq}{r}\bigg(1 - \frac{\rdot^2}{2c^2}\bigg)
@@ -145,7 +145,7 @@ or more compactly,
     \boxed{H = T + U}
 \end{equation}
 
-where $T$ is given by \eqref{ke} and $U$ is the velocity-dependent potential \eqref{potential}.
+where $T$ is given by~\eqref{ke} and $U$ is the velocity-dependent potential~\eqref{potential}.
 
 Before we can apply Hamilton's canonical equations, we perform a \textit{Legendre transform} to express the Hamiltonian in terms of \textit{positions} and \textit{momenta}. For a system of two particles in three spatial dimensions we have
 
@@ -153,14 +153,14 @@ Before we can apply Hamilton's canonical equations, we perform a \textit{Legendr
     H = H(x_1, y_1, z_1, x_2, y_2, z_2, p_{x_1}, p_{y_1}, p_{z_1}, p_{x_2}, p_{y_2}, p_{z_2})
 \end{equation}
 
-where the velocity $\dot{x}_1$ in \eqref{H} is replaced by $p_{x_1}/m_1$ and similarly for all other velocity components.
+where the velocity $\dot{x}_1$ in~\eqref{H} is replaced by $p_{x_1}/m_1$ and similarly for all other velocity components.
 
 Defining
 \begin{equation}\label{alpha_x}
     \alpha_x = \frac{q_1 q_2}{c^2} \frac{\dot{r}_{12} (x_1 - x_2)}{r_{12}^2}
 \end{equation}
 
-with analogous definitions for $\alpha_y$ and $\alpha_z$, we apply Hamilton's equations \eqref{xdot} and \eqref{pdot} to obtain
+with analogous definitions for $\alpha_y$ and $\alpha_z$, we apply Hamilton's equations~\eqref{xdot} and~\eqref{pdot} to obtain
 
 \begin{equation}\label{xdot_two}
     \dot{x}_1 = \frac{1}{m_1} \left(p_{x_1} + \alpha_x\right)
@@ -183,10 +183,10 @@ and
 with analogous equations for the $y$ and $z$ directions. Note that $\dot{p}_{x_1} + \dot{p}_{x_2} = 0$, but $\dot{x}_1 - \dot{x}_2 \neq 0$ in general.
 
 \subsection{Conserved quantities and symmetries}
-Weber's electrodynamics for 2 particles conserves energy, linear momentum and angular momentum. These conserved quantities arise from symmetries in the Hamiltonian \eqref{h_box} according to Noether's theorem. The conservation of energy follows from the \textit{time-translation symmetry} of the Hamiltonian, meaning that the Hamiltonian has no explicit time dependence. The conservation of linear momentum arises from the \textit{translational symmetry} of the Hamiltonian, meaning that shifting all particle positions by a constant vector does not change the form of the Hamiltonian. The conservation of angular momentum is a consequence of the \textit{rotational symmetry} of the Hamiltonian, indicating that rotating the entire system around any axis does not change the form of the Hamiltonian. These symmetries arise from the fact that Weber's electrodynamics only relies on what Assis calls \textit{relational quantities}, see Appendix~\ref{app:additional-remarks}.
+Weber's electrodynamics for 2 particles conserves energy, linear momentum and angular momentum. These conserved quantities arise from symmetries in the Hamiltonian~\eqref{h_box} according to Noether's theorem. The conservation of energy follows from the \textit{time-translation symmetry} of the Hamiltonian, meaning that the Hamiltonian has no explicit time dependence. The conservation of linear momentum arises from the \textit{translational symmetry} of the Hamiltonian, meaning that shifting all particle positions by a constant vector does not change the form of the Hamiltonian. The conservation of angular momentum is a consequence of the \textit{rotational symmetry} of the Hamiltonian, indicating that rotating the entire system around any axis does not change the form of the Hamiltonian. These symmetries arise from the fact that Weber's electrodynamics only relies on what Assis calls \textit{relational quantities}, see Appendix~\ref{app:additional-remarks}.
 
 \subsection{Hamiltonian for \texorpdfstring{$n$}{n} particles}\label{n-body-hamiltonian}
-For a system with $n$ particles, the Hamiltonian \eqref{H} generalizes to:
+For a system with $n$ particles, the Hamiltonian~\eqref{H} generalizes to:
 \begin{equation}\label{hamiltonian}
     H = \sum_{i=1}^{n} \frac{1}{2} m_i v_i^2 + \sum_{i=1}^{n} \sum_{j=i+1}^{n} \frac{q_i q_j}{r_{ij}} \left(1 - \frac{\dot{r}_{ij}^2}{2 c^2}\right)
 \end{equation}
@@ -205,13 +205,13 @@ For a system of $n$ particles in one spatial dimension $x$, Hamilton's equations
 
 for particle $i \in \{1, 2, \ldots, n\}$. In three dimensions, we also have the analogous equations for $y_i$ and $z_i$.
 
-For a system of $n$ particles, \eqref{xdot} expands to
+For a system of $n$ particles,~\eqref{xdot} expands to
 
 \begin{equation}\label{xdot_expanded}
     \boxed{\dot{x}_i = \frac{1}{m_i} \left(p_{x_i} + \sum_{\substack{j=1 \\ j \neq i}}^{n} \frac{q_i q_j}{c^2} \frac{\dot{r}_{ij} (x_i - x_j)}{r_{ij}^2}\right)}
 \end{equation}
 
-for particle $i \in \{1, 2, \ldots, n\}$, with analogous expressions for $\dot{y}_i$ and $\dot{z}_i$, and \eqref{pdot} expands to
+for particle $i \in \{1, 2, \ldots, n\}$, with analogous expressions for $\dot{y}_i$ and $\dot{z}_i$, and~\eqref{pdot} expands to
 
 \begin{equation}\label{pdot_expanded}
     \boxed{\dot{p}_{x_i} = \sum_{\substack{j=1 \\ j \neq i}}^{n} \frac{q_i q_j}{r_{ij}^2}\left[\frac{(x_i - x_j)}{r_{ij}}\left(1 - \frac{3\dot{r}_{ij}^2}{2 c^2}\right) + \frac{\dot{r}_{ij}(\dot{x}_i - \dot{x}_j)}{c^2}\right]}
@@ -219,7 +219,7 @@ for particle $i \in \{1, 2, \ldots, n\}$, with analogous expressions for $\dot{y
 
 for particle $i \in \{1, 2, \ldots, n\}$, with analogous expressions for $\dot{p}_{y_i}$ and $\dot{p}_{z_i}$.
 
-Equations \eqref{xdot_expanded} and \eqref{pdot_expanded} together with their analogs for $y$ and $z$ directions form a system of $6n$ first-order ordinary differential equations that describe the time evolution in \textit{phase space} of an $n$-particle system for Weber's electrodynamics. For any time $t$, the \textit{state} of the system is represented by a point $\mathbf{z}$ in a $6n$-dimensional phase space
+Equations~\eqref{xdot_expanded} and~\eqref{pdot_expanded} together with their analogs for $y$ and $z$ directions form a system of $6n$ first-order ordinary differential equations that describe the time evolution in \textit{phase space} of an $n$-particle system for Weber's electrodynamics. For any time $t$, the \textit{state} of the system is represented by a point $\mathbf{z}$ in a $6n$-dimensional phase space
 
 \begin{equation}\label{z}
     \mathbf{z} = (x_1, y_1, z_1, \ldots, x_n, y_n, z_n, p_{x_1}, p_{y_1}, p_{z_1}, \ldots, p_{x_n}, p_{y_n}, p_{z_n}) \in \mathbb{R}^{6n}
@@ -234,7 +234,7 @@ where every component is a function of time $t$. To evolve the system in time us
     p_{x_i}^{t + \Delta t} = p_{x_i}^t + \Delta t \, \dot{p}_{x_i}^t
 \end{equation}
 
-and similarly for $y_i$ and $z_i$, where $\dot{x}_i^t$ and $\dot{p}_{x_i}^t$ are computed using \eqref{xdot_expanded} and \eqref{pdot_expanded} at time $t$. Repeating this process iteratively allows us to evolve a system of $n$ charged particles interacting via Weber's electrodynamics over time given some initial positions and momenta.
+and similarly for $y_i$ and $z_i$, where $\dot{x}_i^t$ and $\dot{p}_{x_i}^t$ are computed using~\eqref{xdot_expanded} and~\eqref{pdot_expanded} at time $t$. Repeating this process iteratively allows us to evolve a system of $n$ charged particles interacting via Weber's electrodynamics over time given some initial positions and momenta.
 
 \subsection[Computational complexity of Hamiltonian Weber electrodynamics]{Computational complexity of Hamiltonian Weber \\ electrodynamics}\label{complexity}
 To understand the total number of unique interactions, consider an $n \times n$ matrix where entry $(i,j)$ represents the interaction between particles $i$ and $j$:
@@ -282,19 +282,19 @@ To understand the total number of unique interactions, consider an $n \times n$ 
 
 For a system of $n$ particles, we thus have a total of $n(n-1)/2$ unique particle pairs, resulting in a computational complexity of order $\mathcal{O}(n^2)$.
 
-A naive implementation would compute all $n(n-1)$ interactions, but by exploiting \eqref{alpha_x}, \eqref{xdot_two}, \eqref{xdot_two_p2}, \eqref{pdot_two} and \eqref{pdot_two_p2}, we reduce this to $n(n-1)/2$ interactions.
+A naive implementation would compute all $n(n-1)$ interactions, but by exploiting~\eqref{alpha_x},~\eqref{xdot_two},~\eqref{xdot_two_p2},~\eqref{pdot_two} and~\eqref{pdot_two_p2}, we reduce this to $n(n-1)/2$ interactions.
 
-Furthermore, each evaluation of \eqref{xdot_expanded} and \eqref{pdot_expanded} only needs to compute $r_{ij}$ and $\dot{r}_{ij}$ and their powers once per unique pair, which further reduces the computational load.
+Furthermore, each evaluation of~\eqref{xdot_expanded} and~\eqref{pdot_expanded} only needs to compute $r_{ij}$ and $\dot{r}_{ij}$ and their powers once per unique pair, which further reduces the computational load.
 
 \subsection{Units and numerical values}\label{units}
 When performing numerical computations we often rely on the 64-bit floating point representation of decimal numbers. This number representation introduces a trade-off between range and precision. To maintain optimal precision, it is advantageous to work with number values near the order of magnitude of 1. In Weber's electrodynamics, we are mostly interested in numerical values that are relatively small when expressed in SI-units. In our numerical computations, we will convert to smaller units to obtain larger numerical values for the same physical quantities.
 
-In the 19th century, Gauss and Weber used an absolute system of units based on the \textit{millimeter}, \textit{milligram}, and \textit{second}. This system is not to be confused with the CGS-system of units, also known as the Gaussian system of units \citep{assis-weber-vol1}. \eqref{potential} and \eqref{force} were originally introduced by Weber in this absolute system of units. The units in this system for the potential \eqref{potential} are $mg \cdot mm^2 / s^2$ and for the force \eqref{force} are $mg \cdot mm / s^2$.
+In the 19th century, Gauss and Weber used an absolute system of units based on the \textit{millimeter}, \textit{milligram}, and \textit{second}. This system is not to be confused with the CGS-system of units, also known as the Gaussian system of units~\citep{assis-weber-vol1}.~\eqref{potential} and~\eqref{force} were originally introduced by Weber in this absolute system of units. The units in this system for the potential~\eqref{potential} are $mg \cdot mm^2 / s^2$ and for the force~\eqref{force} are $mg \cdot mm / s^2$.
 
 Thus, the original system of Gauss and Weber, compared to the SI system, is better suited for our computational purposes, though not sufficient. In practice, we need even smaller units like \textit{micrometer}, \textit{microgram} and \textit{microsecond} or even smaller to obtain numerical values near the order of magnitude of 1 for typical values of charge, mass and distance encountered in Weber's electrodynamics.
 
 \section{Symplectic numerical integration of non-separable Hamiltonian systems}\label{symplectic}
-A numerical method is called \textit{symplectic} if it preserves the \textit{phase space volume} of Hamiltonian systems over time according to \textit{Liouville's theorem}. Standard symplectic methods require the Hamiltonian to be separable into kinetic and potential energy terms that depend only on positions or momenta. The general Hamiltonian for Weber's electrodynamics \eqref{hamiltonian} is non-separable because the velocity-dependent term
+A numerical method is called \textit{symplectic} if it preserves the \textit{phase space volume} of Hamiltonian systems over time according to \textit{Liouville's theorem}. Standard symplectic methods require the Hamiltonian to be separable into kinetic and potential energy terms that depend only on positions or momenta. The general Hamiltonian for Weber's electrodynamics~\eqref{hamiltonian} is non-separable because the velocity-dependent term
 
 \begin{equation}
     -\frac{\qq \dot{r}_{ij}^2}{2 c^2 r_{ij}}
@@ -302,7 +302,7 @@ A numerical method is called \textit{symplectic} if it preserves the \textit{pha
 
 is both a function of the positions and momenta. Standard symplectic methods methods cannot be applied directly. Recent work by \citep{Pihajoki2015} and \citep{Tao2016} introduced explicit symplectic methods using the clever extended phase space method introduced by \citep{Pihajoki2015}. Building on these approaches, \citep{Jayawardana2023} developed a semi-explicit symplectic integrator for non-separable Hamiltonian systems that also preserves quadratic invariants, see \citep{Ohsawa2023}. As of today, this is one of the most suitable methods for our purposes. We describe it briefly here.
 
-We introduce compact vector notation $\mathbf{q} = (x_1, y_1, z_1, \ldots, x_n, y_n, z_n) \in \mathbb{R}^{3n}$ for positions and $\mathbf{p} = (p_{x_1}, p_{y_1}, p_{z_1}, \ldots, p_{x_n}, p_{y_n}, p_{z_n}) \in \mathbb{R}^{3n}$ for momenta, so that $\mathbf{z} = (\mathbf{q}, \mathbf{p}) \in \mathbb{R}^{6n}$ as in \eqref{z}. The extended phase space doubles the phase space by introducing another pair of positions and momenta $\mathbf{x} \in \mathbb{R}^{3n}$ and $\mathbf{y} \in \mathbb{R}^{3n}$, giving the state vector in extended phase space
+We introduce compact vector notation $\mathbf{q} = (x_1, y_1, z_1, \ldots, x_n, y_n, z_n) \in \mathbb{R}^{3n}$ for positions and $\mathbf{p} = (p_{x_1}, p_{y_1}, p_{z_1}, \ldots, p_{x_n}, p_{y_n}, p_{z_n}) \in \mathbb{R}^{3n}$ for momenta, so that $\mathbf{z} = (\mathbf{q}, \mathbf{p}) \in \mathbb{R}^{6n}$ as in~\eqref{z}. The extended phase space doubles the phase space by introducing another pair of positions and momenta $\mathbf{x} \in \mathbb{R}^{3n}$ and $\mathbf{y} \in \mathbb{R}^{3n}$, giving the state vector in extended phase space
 
 \begin{equation}\label{Z}
     \mathbf{Z} = (\mathbf{q}, \mathbf{x}, \mathbf{p}, \mathbf{y}) \in \mathbb{R}^{12n}
@@ -323,13 +323,13 @@ where $\mathbf{I}$ and $\mathbf{0}$ denote the $3n \times 3n$ identity and zero 
     \mathbf{A} \mathbf{Z} = (\mathbf{q} - \mathbf{x}, \mathbf{p} - \mathbf{y}) = 0
 \end{equation}
 
-We define a \textit{symplectic map} that updates the state vector \eqref{Z} over a time step $\Delta t$
+We define a \textit{symplectic map} that updates the state vector~\eqref{Z} over a time step $\Delta t$
 
 \begin{equation}\label{map}
     \Phi_{\Delta t}: \mathbf{Z}_t \mapsto \mathbf{Z}_{t+\Delta t}
 \end{equation}
 
-Using the update steps \eqref{update_step_x} and \eqref{update_step_p} to compute \eqref{xdot_expanded} and \eqref{pdot_expanded} for $(\mathbf{q}, \mathbf{p})$ and $(\mathbf{x}, \mathbf{y})$ separately, we can evolve the system in the extended phase space by defining two separate flows $\Phi^A_{\Delta t}$ and $\Phi^B_{\Delta t}$ that we apply in this order
+Using the update steps~\eqref{update_step_x} and~\eqref{update_step_p} to compute~\eqref{xdot_expanded} and~\eqref{pdot_expanded} for $(\mathbf{q}, \mathbf{p})$ and $(\mathbf{x}, \mathbf{y})$ separately, we can evolve the system in the extended phase space by defining two separate flows $\Phi^A_{\Delta t}$ and $\Phi^B_{\Delta t}$ that we apply in this order
 
 \begin{itemize}
     \item $\Phi^A_{\Delta t / 2}$ evolves $(\mathbf{x}, \mathbf{p})$ from $t$ to $t + \Delta t / 2$, using the values of $(\mathbf{q}, \mathbf{y})$ at time $t$
@@ -337,7 +337,7 @@ Using the update steps \eqref{update_step_x} and \eqref{update_step_p} to comput
     \item $\Phi^A_{\Delta t / 2}$ evolves $(\mathbf{x}, \mathbf{p})$ from $t + \Delta t / 2$ to $t + \Delta t$, using the values of $(\mathbf{q}, \mathbf{y})$ at time $t + \Delta t$
 \end{itemize}
 
-Our mapping \eqref{map} becomes
+Our mapping~\eqref{map} becomes
 
 \begin{equation}\label{Phi}
     \boxed{\Phi_{\Delta t} = \Phi^A_{\Delta t/2} \circ \Phi^B_{\Delta t} \circ \Phi^A_{\Delta t/2}}
@@ -345,7 +345,7 @@ Our mapping \eqref{map} becomes
 
 This staggered update scheme is referred to as the \textit{leapfrog} method, which is a second-order symplectic integrator.
 
-The key innovation of \citep{Jayawardana2023} is the \textit{symmetric projection method}, which applies a carefully chosen \textit{shift vector} $\boldsymbol{\mu} \in \mathbb{R}^{6n}$ before and after the explicit evolution step \eqref{Phi} to ensure \eqref{AZ}.
+The key innovation of \citep{Jayawardana2023} is the \textit{symmetric projection method}, which applies a carefully chosen \textit{shift vector} $\boldsymbol{\mu} \in \mathbb{R}^{6n}$ before and after the explicit evolution step~\eqref{Phi} to ensure~\eqref{AZ}.
 
 The full computation can then be succinctly expressed as a non-linear equation
 
@@ -353,7 +353,7 @@ The full computation can then be succinctly expressed as a non-linear equation
     \mathbf{f}(\boldsymbol{\mu}) = \mathbf{A} (\Phi_{\Delta t}(\mathbf{Z}_n + \mathbf{A}^T \boldsymbol{\mu}) + \mathbf{A}^T \boldsymbol{\mu}) = 0
 \end{equation}
 
-where the solution satisfies \eqref{AZ}. One can solve this equation iteratively using Newton's method. Starting from an initial guess $\boldsymbol{\mu}_{(0)} = 0$, we compute successive approximations using the \textit{simplified Newton approximations}, see \citep{Jayawardana2023} and \citep{Hairer2006}
+where the solution satisfies~\eqref{AZ}. One can solve this equation iteratively using Newton's method. Starting from an initial guess $\boldsymbol{\mu}_{(0)} = 0$, we compute successive approximations using the \textit{simplified Newton approximations}, see \citep{Jayawardana2023} and \citep{Hairer2006}
 
 \begin{equation}
     \boldsymbol{\mu}_{(k+1)} = \boldsymbol{\mu}_{(k)} - \frac{1}{4} \mathbf{f}(\boldsymbol{\mu}_{(k)})
