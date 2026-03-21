@@ -85,7 +85,7 @@ In SI units, \eqref{potential} and \eqref{force} would have a factor of $1/(4\pi
 
 Weber's electrodynamics is an \textit{action at a distance} theory. It satisfies Newton's third law of motion in the \textit{strong form} and thus $\vec{F}_{21} = -\vec{F}_{12}$ is true in general. Therefore, energy, linear momentum and angular momentum are always conserved. Weber's force law \eqref{force} generalizes Coulomb's law for electrostatics to include \textit{velocity dependent} (magnetic) and \textit{acceleration dependent} (induction) forces. This general setup has a significant \textit{computational advantage} compared to Maxwell-Heaviside's field formalism together with the Lorentz force law. We discuss this advantage in more detail in Section~\ref{complexity}. We also have $\vec{F}_{12} = m_1\vec{a}_1$ and $\vec{F}_{21} = m_2\vec{a}_2$, where $m_1$ and $m_2$ are the \textit{inertial masses} of the particles and $\vec{a}_1$ and $\vec{a}_2$ are their accelerations with respect to an \textit{inertial frame of reference}. We adopt the \textit{Universal material frame of reference} described in Relational Mechanics \citep{assis-relational-mechanics} as our inertial reference frame.
 
-Helmholtz argued in the 19th century that Weber's model violates the \textit{principle of conservation of energy}, see \citet{assis-weber-vol4}. Weber replied with great detail to these claims and proved energy conservation extensively in his 6th and 7th memoirs. \citep{assis-weber-vol4} Weber proved that his force \eqref{force} can be derived from the potential \eqref{potential}, see equation \eqref{euler_lagrange}. Therefore, it is a conservative force and the work done is path-independant. Nowadays, Weber's electrodynamics is said to be valid only for small velocities (\textit{quasi-static approximation}) compared to $c$ and is not suitable for describing electromagnetic radiation. This might be the biggest point of critique against Weber's electrodynamics. Yet, the third term (acceleration dependant term) in \eqref{force} naturally falls of as $1/r$, leaving the door open for alternative theories of radiation.
+Helmholtz argued in the 19th century that Weber's model violates the \textit{principle of conservation of energy}, see \citet{assis-weber-vol4}. Weber replied with great detail to these claims and proved energy conservation extensively in his 6th and 7th memoirs. \citep{assis-weber-vol4} Weber proved that his force \eqref{force} can be derived from the potential \eqref{potential}, see equation \eqref{euler_lagrange}. Therefore, it is a conservative force and the work done is path-independent. Nowadays, Weber's electrodynamics is said to be valid only for small velocities (\textit{quasi-static approximation}) compared to $c$ and is not suitable for describing electromagnetic radiation. This might be the biggest point of critique against Weber's electrodynamics. Yet, the third term (acceleration dependent term) in \eqref{force} naturally falls off as $1/r$, leaving the door open for alternative theories of radiation.
 
 To test the strengths and weaknesses of Weber's electrodynamics, we provide a computational framework for investigating $n$-body systems of charged particles through numerical simulations. This allows us to explore the dynamics of charged particles interacting via Weber's force law \eqref{force} in various configurations and scenarios. Important aspects like energy, linear momentum and angular momentum conservation can be verified numerically. Furthermore, it paves the way for studying complex systems with oscillatory behavior and wave phenomena within the context of Weber's electrodynamics.
 
@@ -183,7 +183,7 @@ and
 with analogous equations for the $y$ and $z$ directions. Note that $\dot{p}_{x_1} + \dot{p}_{x_2} = 0$, but $\dot{x}_1 - \dot{x}_2 \neq 0$ in general.
 
 \subsection{Conserved quantities and symmetries}
-Weber's electrodynamics for 2 particles conserves energy, linear momentum and angular momentum. These conserved quantities arise from symmetries in the Hamiltonian \eqref{h_box} according to Noether's theorem. The conservation of energy follows from the \textit{time-translation symmetry} of the Hamiltonian, meaning that the Hamiltonian has no explicit time dependence. The conservation of linear momentum arises from the \textit{translational symmetry} of the Hamiltonian, meaning that shifting all particle positions by a constant vector does not change the form of the Hamiltonian. The conservation of angular momentum is a consequence of the \textit{rotational symmetry} of the Hamiltonian, indicating that rotating the entire system around any axis does change the form of the Hamiltonian. These symmetries arrise from the fact that Weber's electrodynamics only relies on what Assis calls \textit{relational quantities}, see Appendix~\ref{app:additional-remarks}.
+Weber's electrodynamics for 2 particles conserves energy, linear momentum and angular momentum. These conserved quantities arise from symmetries in the Hamiltonian \eqref{h_box} according to Noether's theorem. The conservation of energy follows from the \textit{time-translation symmetry} of the Hamiltonian, meaning that the Hamiltonian has no explicit time dependence. The conservation of linear momentum arises from the \textit{translational symmetry} of the Hamiltonian, meaning that shifting all particle positions by a constant vector does not change the form of the Hamiltonian. The conservation of angular momentum is a consequence of the \textit{rotational symmetry} of the Hamiltonian, indicating that rotating the entire system around any axis does not change the form of the Hamiltonian. These symmetries arise from the fact that Weber's electrodynamics only relies on what Assis calls \textit{relational quantities}, see Appendix~\ref{app:additional-remarks}.
 
 \subsection{Hamiltonian for \texorpdfstring{$n$}{n} particles}\label{n-body-hamiltonian}
 For a system with $n$ particles, the Hamiltonian \eqref{H} generalizes to:
@@ -203,7 +203,7 @@ For a system of $n$ particles in one spatial dimension $x$, Hamilton's equations
     \dot{p}_{x_i} = -\frac{\partial H}{\partial x_i}
 \end{equation}
 
-for particle $i \in \{1, 2, ..., n\}$. In three dimensions, we also have the analogous equations for $y_i$ and $z_i$.
+for particle $i \in \{1, 2, \ldots, n\}$. In three dimensions, we also have the analogous equations for $y_i$ and $z_i$.
 
 For a system of $n$ particles, \eqref{xdot} expands to
 
@@ -211,13 +211,13 @@ For a system of $n$ particles, \eqref{xdot} expands to
     \boxed{\dot{x}_i = \frac{1}{m_i} \left(p_{x_i} + \sum_{\substack{j=1 \\ j \neq i}}^{n} \frac{q_i q_j}{c^2} \frac{\dot{r}_{ij} (x_i - x_j)}{r_{ij}^2}\right)}
 \end{equation}
 
-for particle $i \in \{1, 2, ..., n\}$, with analogous expressions for $\dot{y}_i$ and $\dot{z}_i$, and \eqref{pdot} expands to
+for particle $i \in \{1, 2, \ldots, n\}$, with analogous expressions for $\dot{y}_i$ and $\dot{z}_i$, and \eqref{pdot} expands to
 
 \begin{equation}\label{pdot_expanded}
     \boxed{\dot{p}_{x_i} = \sum_{\substack{j=1 \\ j \neq i}}^{n} \frac{q_i q_j}{r_{ij}^2}\left[\frac{(x_i - x_j)}{r_{ij}}\left(1 - \frac{3\dot{r}_{ij}^2}{2 c^2}\right) + \frac{\dot{r}_{ij}(\dot{x}_i - \dot{x}_j)}{c^2}\right]}
 \end{equation}
 
-for particle $i \in \{1, 2, ..., n\}$, with analogous expressions for $\dot{p}_{y_i}$ and $\dot{p}_{z_i}$.
+for particle $i \in \{1, 2, \ldots, n\}$, with analogous expressions for $\dot{p}_{y_i}$ and $\dot{p}_{z_i}$.
 
 Equations \eqref{xdot_expanded} and \eqref{pdot_expanded} together with their analogs for $y$ and $z$ directions form a system of $6n$ first-order ordinary differential equations that describe the time evolution in \textit{phase space} of an $n$-particle system for Weber's electrodynamics. For any time $t$, the \textit{state} of the system is represented by a point $\mathbf{z}$ in a $6n$-dimensional phase space
 
@@ -300,7 +300,7 @@ A numerical method is called \textit{symplectic} if it preserves the \textit{pha
     -\frac{\qq \dot{r}_{ij}^2}{2 c^2 r_{ij}}
 \end{equation}
 
-is both a function of the positions and momenta. Standard symplectic methods methods cannot be applied directly. Recent work by \citep{Pihajoki2015} and \citep{Tao2016} introduced explicit symplectic methods using the clever extended phase space method introduced by \citep{Pihajoki2015}. Building on these approaches, \citep{Jayawardana2023} developed a semi-explicit symplectic integrator for non-seperable Hamiltonian systems that also preserves quadratic invariants, see \citep{Ohsawa2023}. As of today, this is one of the most suitable methods for our purposes. We describe it briefly here.
+is both a function of the positions and momenta. Standard symplectic methods methods cannot be applied directly. Recent work by \citep{Pihajoki2015} and \citep{Tao2016} introduced explicit symplectic methods using the clever extended phase space method introduced by \citep{Pihajoki2015}. Building on these approaches, \citep{Jayawardana2023} developed a semi-explicit symplectic integrator for non-separable Hamiltonian systems that also preserves quadratic invariants, see \citep{Ohsawa2023}. As of today, this is one of the most suitable methods for our purposes. We describe it briefly here.
 
 We introduce compact vector notation $\mathbf{q} = (x_1, y_1, z_1, \ldots, x_n, y_n, z_n) \in \mathbb{R}^{3n}$ for positions and $\mathbf{p} = (p_{x_1}, p_{y_1}, p_{z_1}, \ldots, p_{x_n}, p_{y_n}, p_{z_n}) \in \mathbb{R}^{3n}$ for momenta, so that $\mathbf{z} = (\mathbf{q}, \mathbf{p}) \in \mathbb{R}^{6n}$ as in \eqref{z}. The extended phase space doubles the phase space by introducing another pair of positions and momenta $\mathbf{x} \in \mathbb{R}^{3n}$ and $\mathbf{y} \in \mathbb{R}^{3n}$, giving the state vector in extended phase space
 
@@ -329,7 +329,7 @@ We define a \textit{symplectic map} that updates the state vector \eqref{Z} over
     \Phi_{\Delta t}: \mathbf{Z}_t \mapsto \mathbf{Z}_{t+\Delta t}
 \end{equation}
 
-Using the the update steps \eqref{update_step_x} and \eqref{update_step_p} to compute \eqref{xdot_expanded} and \eqref{pdot_expanded} for $(\mathbf{q}, \mathbf{p})$ and $(\mathbf{x}, \mathbf{y})$ separately, we can evolve the system in the extended phase space by defining two separate flows $\Phi^A_{\Delta t}$ and $\Phi^B_{\Delta t}$ that we apply in this order
+Using the update steps \eqref{update_step_x} and \eqref{update_step_p} to compute \eqref{xdot_expanded} and \eqref{pdot_expanded} for $(\mathbf{q}, \mathbf{p})$ and $(\mathbf{x}, \mathbf{y})$ separately, we can evolve the system in the extended phase space by defining two separate flows $\Phi^A_{\Delta t}$ and $\Phi^B_{\Delta t}$ that we apply in this order
 
 \begin{itemize}
     \item $\Phi^A_{\Delta t / 2}$ evolves $(\mathbf{x}, \mathbf{p})$ from $t$ to $t + \Delta t / 2$, using the values of $(\mathbf{q}, \mathbf{y})$ at time $t$
@@ -405,15 +405,15 @@ The relative positions, velocities and accelerations between particle 1 and part
 
 The relative position, velocity and acceleration vectors are
 
-$$\vec{r} = (x, y, z)$$
-$$\vec{v} = (\dot{x}, \dot{y}, \dot{z})$$
-$$\vec{a} = (\ddot{x}, \ddot{y}, \ddot{z})$$
+\[\vec{r} = (x, y, z)\]
+\[\vec{v} = (\dot{x}, \dot{y}, \dot{z})\]
+\[\vec{a} = (\ddot{x}, \ddot{y}, \ddot{z})\]
 
 The relative distance is
-$$r = |\vec{r}| = \sqrt{x^2 + y^2 + z^2}$$
+\[r = |\vec{r}| = \sqrt{x^2 + y^2 + z^2}\]
 
 The relative radial velocity is
-$$\dot{r} = \frac{x\dot{x} + y\dot{y} + z\dot{z}}{r} =  \frac{\vec{r} \cdot \vec{v}}{r} = \hat{r} \cdot \vec{v}$$
+\[\dot{r} = \frac{x\dot{x} + y\dot{y} + z\dot{z}}{r} =  \frac{\vec{r} \cdot \vec{v}}{r} = \hat{r} \cdot \vec{v}\]
 
 The relative radial acceleration is
 
@@ -424,7 +424,7 @@ The relative radial acceleration is
 \end{align*}
 
 The relative unit vector is
-$$\hat{r} = \frac{\vec{r}}{r}$$
+\[\hat{r} = \frac{\vec{r}}{r}\]
 
 
 \section*{Acknowledgments}
