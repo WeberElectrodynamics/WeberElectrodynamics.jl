@@ -1,10 +1,6 @@
 # WeberElectrodynamics.jl
 
-A Julia package for n-body simulation of charged particles interacting via Weber's electrodynamics. Implements a symplectic Strang-splitting integrator with symmetric projection for Weber's non-separable Hamiltonian, with Levi-Civita/KS regularization for close encounters.
-
-## Paper
-
-[Computational Weber Electrodynamics with Symplectic Numerical Integrators (PDF)](papers/Computational-Weber-Electrodynamics/Computational-Weber-Electrodynamics.pdf)
+A Julia package for n-body simulation of charged particles interacting via [Weber's electrodynamics](https://arxiv.org/abs/2111.10915). Implements a symplectic Strang-splitting integrator with symmetric projection for Weber's non-separable Hamiltonian, with Levi-Civita/KS regularization for close encounters.
 
 ## Theory
 
@@ -13,8 +9,8 @@ A Julia package for n-body simulation of charged particles interacting via Weber
 
 ## Extensions
 
-- **Plots.jl** — static plotting of trajectories, energy, forces, momentum and phase space
-- **Makie.jl** — real-time animated dashboard with any backend (GLMakie, CairoMakie, WGLMakie)
+- **WeberElectrodynamicsPlotsExt** — static plotting of trajectories, energy, forces, momentum and phase space (loaded automatically when [Plots.jl](https://github.com/JuliaPlots/Plots.jl) is imported)
+- **WeberElectrodynamicsMakieExt** — real-time animated dashboard with any Makie backend (GLMakie, CairoMakie, WGLMakie) (loaded automatically when [Makie.jl](https://github.com/MakieOrg/Makie.jl) is imported)
 
 ## Examples
 
