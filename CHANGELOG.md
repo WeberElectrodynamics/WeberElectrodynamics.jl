@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Docs
+
+- Added Documenter.jl scaffold (`docs/`), API reference, quick-start guide, and theory page.
+- Added GitHub Actions workflow for automatic doc deployment to GitHub Pages (`Docs.yml`).
+- Added CI badges, Docs badges, Coverage (Codecov), PkgEval, Julia compat, and license badges to README.
+- Added Codecov coverage upload to `CI.yml`.
+- Moved research documents (`theory/`, `exploratory/`, `sub_critical_weber_research/`) from `docs/` to `research/`.
+
 ## [0.1.0] - 2026-03-22
 
 ### Added
