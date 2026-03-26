@@ -202,4 +202,8 @@ with:
 - Requires few iterations (typically 1-3) for small $\Delta t$
 - Computational cost scales as $O(d)$ per iteration for the projection step
 
+## Reference
+
+Jayawardana, B. & Ohsawa, T. (2021). *Variational Structures and Numerical Methods for Semi-Explicit Symplectic Integrators*. [arXiv:2111.10915](https://arxiv.org/abs/2111.10915)
+
 See also: [Regularization.md](Regularization.md), [RegularizedIntegrationDesign.md](RegularizedIntegrationDesign.md), [WeberElectrodynamics.md](WeberElectrodynamics.md).
