@@ -1,0 +1,17 @@
+{
+    "title": "WeberElectrodynamics.jl",
+    "description": "N-body Weber electrodynamics simulator with symplectic integrator",
+    "creators": [
+        {
+            "name": "Al Duleimi, Samer"
+        }
+    ],
+    "license": "MIT",
+    "keywords": [
+        "Weber electrodynamics",
+        "n-body simulation",
+        "Julia",
+        "symplectic integrator"
+    ],
+    "upload_type": "software"
+}
