@@ -992,6 +992,31 @@ end
 # Public API: Streaming Mode
 # =============================================================================
 
+"""
+    animate_weber(prob::WeberProblem; kwargs...) -> screen
+
+Launch an interactive real-time animation of a Weber simulation.
+
+Streams simulation data into a rolling buffer and displays a live dashboard
+with particle trajectories, energy, momentum, and phase-space panels.
+Requires a windowed Makie backend (GLMakie or WGLMakie recommended).
+Requires at least 2D (`prob.system.dims ≥ 2`).
+
+# Keywords
+- `buffer_size=2000`: Maximum timesteps retained in the rolling display window.
+- `tail_length=200`: Length of visible trajectory tail (must be ≤ `buffer_size`).
+- `compute_batch=1`: Integration steps computed per animation frame.
+- `initial_pair=(1,2)`: Default pair shown in the phase-space panel.
+- `phase_mode=:pair`: Phase-space mode; `:pair` for separation portrait,
+  `:particle` for single-particle phase space.
+- `initial_particle=1`: Particle index for `:particle` phase-space mode.
+- `initial_component=1`: Component index for particle phase-space mode.
+- `figure_size=(1400,900)`: Window size in pixels `(width, height)`.
+- `alg=SymmetricProjectionIntegrator()`: Integrator algorithm.
+
+# Returns
+- A Makie screen handle; close the window to stop the simulation.
+"""
 function WeberElectrodynamics.animate_weber(
     prob::WeberProblem;
     buffer_size::Int = 2000,
@@ -1061,6 +1086,29 @@ end
 # Public API: Replay Mode
 # =============================================================================
 
+"""
+    animate_weber(sol::WeberSolution; kwargs...) -> screen
+
+Replay a completed `WeberSolution` as an interactive animated dashboard.
+
+Identical dashboard layout to the streaming form, but replays pre-computed
+trajectory data. Useful for post-hoc visual exploration of long simulations.
+Requires at least 2D (`sol.prob.system.dims ≥ 2`).
+
+# Keywords
+- `buffer_size=2000`: Rolling display window size.
+- `tail_length=200`: Visible trajectory tail length (must be ≤ `buffer_size`).
+- `compute_batch=1`: Replay steps advanced per animation frame.
+- `initial_pair=(1,2)`: Default pair for the phase-space panel.
+- `phase_mode=:pair`: `:pair` or `:particle` phase-space mode.
+- `initial_particle=1`, `initial_component=1`: Phase-space selection for
+  `:particle` mode.
+- `figure_size=(1400,900)`: Window size in pixels `(width, height)`.
+- `stride=1`: Skip every `stride`-th stored timestep during replay.
+
+# Returns
+- A Makie screen handle; close the window to stop replay.
+"""
 function WeberElectrodynamics.animate_weber(
     sol::WeberSolution;
     buffer_size::Int = 2000,

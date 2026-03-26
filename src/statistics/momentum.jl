@@ -1,3 +1,23 @@
+"""
+    MomentumData
+
+Total linear and angular momentum timeseries from a simulation.
+
+Momentum conservation (constant |P| and |L|) is the primary quality indicator
+for simulations without external forces.
+
+# Fields
+- `t::Vector{Float64}`: Time points.
+- `linear_momentum::Vector{Vector{Float64}}`: Total momentum vector P(t).
+- `linear_momentum_components::Matrix{Float64}`: `(n_points, dims)` matrix of
+  individual momentum components.
+- `linear_momentum_magnitude::Vector{Float64}`: |P(t)|.
+- `angular_momentum`: `nothing` (1D), scalar `Vector{Float64}` (2D Lz values),
+  or `Vector{Vector{Float64}}` (3D, full L vector per timestep).
+- `angular_momentum_magnitude::Union{Nothing,Vector{Float64}}`: |L(t)|;
+  `nothing` in 1D.
+- `n_particles::Int`, `dims::Int`: System geometry.
+"""
 struct MomentumData
     t::Vector{Float64}
     linear_momentum::Vector{Vector{Float64}}
@@ -9,6 +29,17 @@ struct MomentumData
     dims::Int
 end
 
+"""
+    compute_momentum_timeseries(solution; stride=1) -> MomentumData
+
+Compute total linear and angular momentum timeseries from a `WeberSolution`.
+
+# Keywords
+- `stride=1`: Downsample factor; every `stride`-th timestep is included.
+
+# Returns
+- `MomentumData` with linear and angular momentum at each selected timestep.
+"""
 function compute_momentum_timeseries(solution::WeberSolution; stride::Int=1)::MomentumData
     if stride <= 0
         throw(ArgumentError("stride must be positive, got $stride"))

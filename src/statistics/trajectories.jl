@@ -1,3 +1,18 @@
+"""
+    TrajectoryData
+
+Per-particle position trajectories extracted from a `WeberSolution`.
+
+# Fields
+- `trajectories::Vector{Matrix{Float64}}`: One `(n_points, dims)` matrix per
+  particle, where rows are time steps and columns are spatial dimensions.
+- `initial_positions::Vector{Vector{Float64}}`: Position of each particle at
+  the first selected time step.
+- `final_positions::Vector{Vector{Float64}}`: Position of each particle at
+  the last selected time step.
+- `n_particles::Int`: Number of particles.
+- `dims::Int`: Spatial dimension.
+"""
 struct TrajectoryData
     trajectories::Vector{Matrix{Float64}}
     initial_positions::Vector{Vector{Float64}}
@@ -6,6 +21,22 @@ struct TrajectoryData
     dims::Int
 end
 
+"""
+    compute_trajectory_data(sol, n_particles, dims; stride=1) -> TrajectoryData
+
+Extract per-particle position trajectories from a `WeberSolution`.
+
+# Arguments
+- `sol::WeberSolution`: Completed simulation result.
+- `n_particles::Int`: Number of particles encoded in `sol`.
+- `dims::Int`: Spatial dimension (must match `sol.prob.system.dims`).
+
+# Keywords
+- `stride=1`: Downsample factor; every `stride`-th timestep is included.
+
+# Returns
+- `TrajectoryData` with one `(n_points, dims)` trajectory matrix per particle.
+"""
 function compute_trajectory_data(
     sol::WeberSolution,
     n_particles::Int,

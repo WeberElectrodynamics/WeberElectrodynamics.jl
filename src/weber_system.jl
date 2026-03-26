@@ -1,6 +1,28 @@
 using Symbolics
 using Latexify: latexify
 
+"""
+    WeberSystem
+
+Symbolic and compiled representation of the n-body Weber Hamiltonian.
+
+Constructed once for a given `(n_particles, dims)` pair via `WeberSystem(n_particles, dims)`.
+The compiled equations of motion are reused across many `WeberProblem` instances
+with different physical parameters. Construction involves symbolic differentiation
+and code generation via Symbolics.jl; expect a few seconds for the first call.
+
+# Fields
+- `n_particles::Int`: Number of charged particles.
+- `dims::Int`: Spatial dimension (1, 2, or 3).
+- `q_symbols::Vector{Num}`: Symbolic coordinate variables `[x1, y1, ..., xN, yN, ...]`.
+- `p_symbols::Vector{Num}`: Symbolic momentum variables `[px1, py1, ...]`.
+- `param_symbols`: Symbolic parameter vector `[m1…mN, q1…qN, c, κ12, κ13, …]`.
+- `hamiltonian_symbolic`: Full symbolic Weber Hamiltonian expression.
+- `dq_dt_symbolic`, `dp_dt_symbolic`: Symbolic Hamilton's equations.
+- `dq_dt_compiled`, `dp_dt_compiled`: In-place compiled equations of motion.
+- `hamiltonian_compiled`: Compiled scalar Hamiltonian function.
+- `degrees_of_freedom::Int`: Total DOF = `n_particles × dims`.
+"""
 struct WeberSystem{H,QD,PD,QF,PF,HF,PS}
     n_particles::Int
     dims::Int
@@ -108,6 +130,23 @@ function _build_weber_hamiltonian(
     return H
 end
 
+"""
+    WeberSystem(n_particles::Int, dims::Int) -> WeberSystem
+
+Build and compile the symbolic Weber Hamiltonian for `n_particles` particles in
+`dims` dimensions.
+
+Uses Symbolics.jl to derive Hamilton's equations analytically, then compiles
+them to efficient in-place Julia functions via `build_function`. The resulting
+`WeberSystem` can be reused across multiple `WeberProblem` instances.
+
+# Arguments
+- `n_particles`: Number of particles (≥ 1).
+- `dims`: Spatial dimension; must be 1, 2, or 3.
+
+# Returns
+- `WeberSystem` with compiled equations of motion ready for `WeberProblem`.
+"""
 function WeberSystem(n_particles::Int, dims::Int)
     @assert n_particles >= 1 "Must have at least 1 particle"
     @assert dims in (1, 2, 3) "Dimensions must be 1, 2, or 3, got $dims"

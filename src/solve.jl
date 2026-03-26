@@ -1021,6 +1021,18 @@ end
     return out
 end
 
+"""
+    init(prob::WeberProblem, alg::SymmetricProjectionIntegrator) -> WeberIntegrator
+
+Initialise a step-by-step integrator without running any steps.
+
+Pre-allocates all workspace buffers and history arrays sized to hold the full
+trajectory. Use the returned integrator with `step!` for fine-grained control,
+or pass it directly to `solve!`.
+
+# Returns
+- `WeberIntegrator` at `t = prob.tspan[1]` with `step_count = 0`.
+"""
 function CommonSolve.init(
     prob::WeberProblem,
     alg::SymmetricProjectionIntegrator = SymmetricProjectionIntegrator(),
@@ -1085,6 +1097,18 @@ end
     return nothing
 end
 
+"""
+    step!(integrator::WeberIntegrator) -> Bool
+
+Advance the integrator by one macro time step `prob.dt`.
+
+Dispatches to the regularized or plain Cartesian integration path based on
+current particle separations and `prob.regularization` settings. The final
+step is automatically shortened to land exactly on `prob.tspan[2]`.
+
+# Returns
+- `true` if more steps remain, `false` when integration is complete.
+"""
 function CommonSolve.step!(integrator::WeberIntegrator)
     max_steps = length(integrator.t_history) - 1
 
@@ -1126,6 +1150,17 @@ function CommonSolve.step!(integrator::WeberIntegrator)
     return integrator.step_count < max_steps
 end
 
+"""
+    solve!(integrator::WeberIntegrator) -> WeberSolution
+
+Run the integrator to completion and return the full solution.
+
+Repeatedly calls `step!` until `t ≥ t_end`. If the fixed-point projection
+fails to converge, `retcode` is set to `:Failure` rather than throwing.
+
+# Returns
+- `WeberSolution` containing the full time series and regularization diagnostics.
+"""
 function CommonSolve.solve!(integrator::WeberIntegrator)
     retcode = :Success
     try
@@ -1152,6 +1187,16 @@ function CommonSolve.solve!(integrator::WeberIntegrator)
     )
 end
 
+"""
+    solve(prob::WeberProblem, alg::SymmetricProjectionIntegrator) -> WeberSolution
+
+Initialise and run the integrator in a single call.
+
+Convenience wrapper equivalent to `solve!(init(prob, alg))`.
+
+# Returns
+- `WeberSolution` with `retcode ∈ {:Success, :Failure}`.
+"""
 function CommonSolve.solve(
     prob::WeberProblem,
     alg::WeberAlgorithm = SymmetricProjectionIntegrator(),

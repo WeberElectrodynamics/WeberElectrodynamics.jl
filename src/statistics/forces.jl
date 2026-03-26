@@ -1,5 +1,16 @@
 using LinearAlgebra
 
+"""
+    ForceStatistics
+
+Summary statistics over a force magnitude timeseries.
+
+# Fields
+- `min::Float64`: Minimum force magnitude.
+- `max::Float64`: Maximum force magnitude.
+- `mean::Float64`: Mean force magnitude.
+- `range::Float64`: `max − min`.
+"""
 struct ForceStatistics
     min::Float64
     max::Float64
@@ -7,6 +18,19 @@ struct ForceStatistics
     range::Float64
 end
 
+"""
+    PhaseSpaceData
+
+Pair (r, ṙ) phase-space timeseries extracted alongside force data.
+
+# Fields
+- `t::Vector{Float64}`: Time points.
+- `separation_distance::Vector{Float64}`: Interparticle separation r(t).
+- `radial_velocity::Vector{Float64}`: Radial velocity ṙ(t) = dr/dt.
+- `theta::Union{Vector{Float64},Nothing}`: Polar angle θ for 2D/3D; `nothing` in 1D.
+- `angular_momentum::Union{Vector{Float64},Nothing}`: Angular momentum magnitude;
+  `nothing` in 1D.
+"""
 struct PhaseSpaceData
     t::Vector{Float64}
     separation_distance::Vector{Float64}
@@ -15,6 +39,32 @@ struct PhaseSpaceData
     angular_momentum::Union{Vector{Float64},Nothing}
 end
 
+"""
+    PairForceData
+
+Comprehensive Weber force timeseries for a single particle pair (i, j).
+
+Forces are decomposed into a vector form (3 velocity/acceleration correction terms)
+and a radial form (2 terms), both sharing the same κ-scaled Coulomb base.
+
+# Fields
+- `t::Vector{Float64}`: Time points.
+- `dims::Int`: Spatial dimension.
+- `pair::Tuple{Int,Int}`: Particle indices (i, j).
+- `kappa::Float64`: Zöllner coupling factor κ_ij (1.0 = standard Weber).
+- `charge_product::Float64`: k = qᵢqⱼ; sign determines repulsion/attraction.
+- `force::Vector{Vector{Float64}}`: Total force vector at each time point.
+- `magnitude::Vector{Float64}`: |F| at each time point.
+- `stats::ForceStatistics`: Min/max/mean/range of |F|.
+- `coulomb::Vector{Vector{Float64}}`: κ-scaled Coulomb base force vector.
+- `vector_term_vv`, `vector_term_ra`, `vector_term_rv2`: Three correction terms
+  in the vector form decomposition.
+- `radial_term_rdot2`, `radial_term_rddot`: Two correction terms in the radial
+  form decomposition.
+- `zollner_extra_magnitude::Vector{Float64}`: |(κ−1)·F_Coulomb| (zero for
+  standard Weber without Zöllner).
+- `phase_space::PhaseSpaceData`: Pair phase-space portrait (r, ṙ, θ, L).
+"""
 struct PairForceData
     # Metadata
     t::Vector{Float64}
@@ -49,6 +99,27 @@ struct PairForceData
     phase_space::PhaseSpaceData
 end
 
+"""
+    compute_pair_force_timeseries(sol, pair, n_particles, dims, masses, charges, c; stride=1) -> PairForceData
+
+Compute the Weber force decomposition for one particle pair over a simulation.
+
+Both the vector form and the radial form of the Weber force are evaluated, together
+with phase-space data (r, ṙ, θ, L).
+
+# Arguments
+- `sol::WeberSolution`: Completed simulation.
+- `pair::Tuple{Int,Int}`: Particle pair indices (order does not matter; i ≠ j).
+- `n_particles::Int`, `dims::Int`: System geometry.
+- `masses`, `charges::Vector{Float64}`: Physical parameters.
+- `c::Float64`: Speed of light.
+
+# Keywords
+- `stride=1`: Downsample factor; every `stride`-th timestep is included.
+
+# Returns
+- `PairForceData` with force vectors, decompositions, statistics, and phase-space data.
+"""
 function compute_pair_force_timeseries(
     sol::WeberSolution,
     pair::Tuple{Int,Int},

@@ -1,3 +1,18 @@
+"""
+    PairEnergyData
+
+Energy decomposition timeseries for a single particle pair (i, j).
+
+# Fields
+- `pair::Tuple{Int,Int}`: Particle indices (i < j).
+- `kappa::Float64`: Zöllner coupling factor κ_ij (1.0 for standard Weber).
+- `coulomb_term::Vector{Float64}`: κ·qᵢqⱼ/r — Coulomb part of the potential.
+- `velocity_term::Vector{Float64}`: −κ·qᵢqⱼ/r·ṙ²/(2c²) — velocity correction.
+- `zollner_extra_potential::Vector{Float64}`: (κ−1)·qᵢqⱼ/r·(...) — extra
+  potential from the Zöllner mismatch (zero when Zöllner is disabled).
+- `total_pair_potential::Vector{Float64}`: Sum of all pair potential contributions.
+- `radial_velocity::Vector{Float64}`: Radial velocity ṙ = dr/dt.
+"""
 struct PairEnergyData
     pair::Tuple{Int,Int}
     kappa::Float64
@@ -8,6 +23,23 @@ struct PairEnergyData
     radial_velocity::Vector{Float64}
 end
 
+"""
+    EnergyStatistics
+
+Summary statistics for energy conservation over a simulation.
+
+Local error is the step-to-step absolute change |E_t − E_{t−1}|.
+Global error ratio is E_t / E_initial (ideal value: 1.0).
+Global error percentage is |E_t − E_initial| / |E_initial| × 100.
+
+# Fields
+- `local_error_max`, `local_error_min`, `local_error_avg::Float64`:
+  Maximum, minimum, and mean step-to-step energy change.
+- `global_error_ratio_max`, `global_error_ratio_min`, `global_error_ratio_avg::Float64`:
+  Maximum, minimum, and mean of E_t / E_initial.
+- `global_error_percent_max`, `global_error_percent_min`, `global_error_percent_avg::Float64`:
+  Maximum, minimum, and mean global error as a percentage.
+"""
 struct EnergyStatistics
     # Local error: |E_t - E_{t-1}| (absolute values)
     local_error_max::Float64
@@ -25,6 +57,24 @@ struct EnergyStatistics
     global_error_percent_avg::Float64
 end
 
+"""
+    EnergyData
+
+Complete energy timeseries and conservation statistics for an n-body simulation.
+
+# Fields
+- `t::Vector{Float64}`: Time points.
+- `total_energy::Vector{Float64}`: Total Hamiltonian H = KE + V at each time point.
+- `kinetic_energy::Vector{Float64}`: Total kinetic energy.
+- `total_potential_energy::Vector{Float64}`: Sum of all pair Weber potentials.
+- `total_zollner_residual::Vector{Float64}`: Summed Zöllner extra potential (zero
+  when Zöllner extension is disabled).
+- `pair_energies::Dict{Tuple{Int,Int},PairEnergyData}`: Per-pair energy decomposition.
+- `statistics::EnergyStatistics`: Energy conservation quality metrics.
+- `hamiltonian_validation_error::Vector{Float64}`: |H_manual − H_compiled| at each
+  time point, cross-checking the manual decomposition against the compiled Hamiltonian.
+- `n_particles::Int`, `n_pairs::Int`: System size.
+"""
 struct EnergyData
     t::Vector{Float64}
     total_energy::Vector{Float64}
@@ -171,6 +221,21 @@ function compute_energy_statistics(total_energy::Vector{Float64})::EnergyStatist
     )
 end
 
+"""
+    compute_energy_timeseries(sol; stride=1) -> EnergyData
+
+Compute the full energy decomposition timeseries from a `WeberSolution`.
+
+Evaluates kinetic energy, per-pair Weber potentials, and the compiled Hamiltonian
+at each selected timestep. The `hamiltonian_validation_error` field cross-checks
+the manual decomposition against the Symbolics-compiled function.
+
+# Keywords
+- `stride=1`: Downsample factor; every `stride`-th timestep is included.
+
+# Returns
+- `EnergyData` with all energy components and conservation statistics.
+"""
 function compute_energy_timeseries(solution::WeberSolution; stride::Int = 1)::EnergyData
     if stride <= 0
         throw(ArgumentError("stride must be positive, got $stride"))

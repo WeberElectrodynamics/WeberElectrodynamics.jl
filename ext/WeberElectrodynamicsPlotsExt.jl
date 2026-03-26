@@ -74,7 +74,21 @@ _square_size() = (SINGLE_COLUMN_WIDTH, SINGLE_COLUMN_WIDTH)
 # Public API
 # =============================================================================
 
-"""Plot particle trajectories (1D, 2D, or 3D based on `data.dims`)."""
+"""
+    plot_trajectories(data::TrajectoryData) -> Plot
+
+Plot particle trajectories in 1D, 2D, or 3D based on `data.dims`.
+
+- **1D**: Position vs. time for each particle.
+- **2D**: x–y scatter with equal aspect ratio and start/end markers.
+- **3D**: x–y–z line plot with start/end markers.
+
+# Arguments
+- `data::TrajectoryData`: Trajectory data from `compute_trajectory_data`.
+
+# Returns
+- A `Plots.Plot` object.
+"""
 function WeberElectrodynamics.plot_trajectories(data::TrajectoryData)::Plots.Plot
     if data.dims == 1
         return _plot_trajectories_1d(data)

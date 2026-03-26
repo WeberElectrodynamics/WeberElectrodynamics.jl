@@ -11,6 +11,23 @@ const REG_BACKEND_LIFTED = :lifted_pair
 const REG_BACKEND_DISABLED = :disabled
 const REG_BACKEND_MIXED = :mixed
 
+"""
+    SymmetricProjectionIntegrator(; relaxation=0.25)
+
+Symplectic integrator based on Strang-splitting with symmetric projection in
+extended phase space.
+
+Implements the method of Jayawardana & Ohsawa (2021) for Weber's
+velocity-dependent Hamiltonian. The projection step solves a fixed-point
+iteration whose convergence is controlled by `relaxation`.
+
+# Keywords
+- `relaxation=0.25`: Fixed-point relaxation factor ω ∈ (0, 1]. Smaller values
+  slow convergence but improve stability near close encounters.
+
+# Fields
+- `relaxation::Float64`: Stored relaxation factor.
+"""
 struct SymmetricProjectionIntegrator <: WeberAlgorithm
     relaxation::Float64
 
@@ -20,6 +37,23 @@ struct SymmetricProjectionIntegrator <: WeberAlgorithm
     end
 end
 
+"""
+    ZollnerOptions(; enabled=false, a=0.0)
+
+Configuration for the Zöllner electrogravitational extension to Weber's force law.
+
+When enabled, unlike-sign charge pairs receive a coupling factor κ = 1 + a,
+producing an emergent attractive correction to the Weber potential.
+Like-sign pairs are unaffected (κ = 1).
+
+# Keywords
+- `enabled=false`: Activate the Zöllner mismatch.
+- `a=0.0`: Mismatch parameter; must be positive when `enabled=true`.
+
+# Fields
+- `enabled::Bool`: Whether the extension is active.
+- `a::Float64`: Zöllner mismatch parameter a.
+"""
 struct ZollnerOptions
     enabled::Bool
     a::Float64
@@ -56,6 +90,37 @@ function _compute_zollner_kappas(
     return kappas
 end
 
+"""
+    RegularizationOptions(; kwargs...)
+
+Configuration for close-encounter regularization.
+
+When two particles approach within `r_on`, the integrator switches from
+Cartesian coordinates to a regularized representation (Levi-Civita/KS or
+adaptive Cartesian substeps) and back once the separation exceeds `r_off`.
+
+# Keywords
+- `enabled=true`: Enable regularization globally.
+- `r_on=nothing`: Absolute activation distance. If `nothing`, computed as
+  `r_on_factor × min_initial_separation`.
+- `r_off=nothing`: Absolute deactivation distance. If `nothing`, computed as
+  `r_off_factor × min_initial_separation`. Must be greater than `r_on`.
+- `r_on_factor=0.15`: Scale factor for automatic `r_on` (positive).
+- `r_off_factor=0.25`: Scale factor for automatic `r_off` (positive).
+- `max_substeps=512`: Maximum regularized substeps per macro-step.
+- `constraint_tolerance=1e-12`: Convergence threshold for the projection constraint.
+- `g_floor=1e-12`: Minimum regularization scale to prevent division by zero.
+- `chain_enabled=true`: Allow chain regularization for multi-particle close encounters.
+- `backend=:lifted_pair`: Regularization backend. `:lifted_pair` uses
+  Levi-Civita/KS (2D only; auto-falls back to `:adaptive_cartesian` for 3D).
+  `:adaptive_cartesian` works for all dimensions.
+- `warn_on_fallback=true`: Emit a warning when the backend is automatically changed.
+- `collision_bounce_radius=0.0`: Reflect pairs that come closer than this distance
+  before each macro-step (0.0 = disabled). Intended for head-on (ℓ=0) collisions.
+
+# Fields
+See keyword documentation above; each keyword maps directly to a stored field.
+"""
 struct RegularizationOptions
     enabled::Bool
     r_on::Union{Nothing,Float64}
@@ -119,6 +184,33 @@ struct RegularizationOptions
     end
 end
 
+"""
+    RegularizationDiagnostics
+
+Diagnostics collected during a `solve!` call describing regularization usage.
+
+Returned as `WeberSolution.regularization`. All step counts refer to macro-steps
+of the outer `SymmetricProjectionIntegrator`.
+
+# Fields
+- `enabled::Bool`: Whether regularization was active for this solve.
+- `requested_backend::Symbol`: Backend requested in `RegularizationOptions`.
+- `used_backend::Symbol`: Backend actually used (may differ due to fallback).
+- `activation_count::Int`: Number of times regularization was switched on.
+- `deactivation_count::Int`: Number of times regularization was switched off.
+- `active_steps::Int`: Steps taken while any regularization was active.
+- `pair_steps::Int`: Steps handled by the pair regularization path.
+- `adaptive_pair_steps::Int`: Steps handled by `:adaptive_cartesian`.
+- `lifted_pair_steps::Int`: Steps handled by `:lifted_pair` (Levi-Civita/KS).
+- `chain_steps::Int`: Steps handled by the chain (multi-pair) path.
+- `unregularized_steps::Int`: Steps taken in plain Cartesian coordinates.
+- `backend_fallback_steps::Int`: Steps where a fallback backend was used.
+- `total_substeps::Int`: Total regularized substeps across all macro-steps.
+- `max_substeps_used::Int`: Largest substep count used in any single macro-step.
+- `max_constraint_violation::Float64`: Maximum projection constraint residual observed.
+- `min_encounter_distance::Float64`: Minimum pairwise separation seen during the solve.
+- `mode_history::Vector{UInt8}`: Per-step regularization mode (0=none, 1=pair, 2=chain).
+"""
 mutable struct RegularizationDiagnostics
     enabled::Bool
     requested_backend::Symbol
@@ -321,6 +413,50 @@ mutable struct RegularizationBuffers
     end
 end
 
+"""
+    WeberProblem(system, tspan, q_initial, p_initial; kwargs...)
+
+Fully specified n-body Weber electrodynamics problem ready for integration.
+
+Packages the compiled `WeberSystem`, initial conditions, physical parameters,
+and solver/regularization options into a single immutable structure.
+
+# Arguments
+- `system::WeberSystem`: Pre-built symbolic + compiled Hamiltonian system.
+- `tspan::Tuple{Real,Real}`: Integration interval `(t_start, t_end)`.
+- `q_initial::AbstractVector`: Flattened initial positions, length = `n_particles × dims`.
+- `p_initial::AbstractVector`: Flattened initial momenta, length = `n_particles × dims`.
+
+# Keywords
+- `masses`: Particle masses (all positive), length `n_particles`.
+- `charges`: Particle charges, length `n_particles`.
+- `c`: Speed of light (positive).
+- `dt`: Fixed macro time step (positive).
+- `convergence_tolerance=1e-13`: Fixed-point convergence threshold for projection.
+- `maximum_iterations=100`: Maximum projection iterations per step.
+- `regularization_enabled=true`, `regularization_r_on`, `regularization_r_off`,
+  `regularization_r_on_factor=0.15`, `regularization_r_off_factor=0.25`,
+  `regularization_max_substeps=512`, `regularization_constraint_tolerance=1e-12`,
+  `regularization_g_floor=1e-12`, `regularization_chain_enabled=true`,
+  `regularization_backend=:lifted_pair`, `regularization_warn_on_fallback=true`,
+  `regularization_collision_bounce_radius=0.0`:
+  All forwarded to `RegularizationOptions`; see its documentation.
+- `zollner_enabled=false`, `zollner_a=0.0`: Forwarded to `ZollnerOptions`.
+
+# Fields
+- `system::WeberSystem`: Compiled Hamiltonian system.
+- `tspan::Tuple{Float64,Float64}`: Integration interval.
+- `q_initial`, `p_initial::Vector{Float64}`: Initial phase-space point.
+- `masses`, `charges::Vector{Float64}`: Physical parameters.
+- `c::Float64`: Speed of light.
+- `kappas::Vector{Float64}`: Per-pair Zöllner coupling factors κ_ij.
+- `params::Vector{Float64}`: Packed parameter vector `[masses; charges; c; kappas]`.
+- `dt::Float64`: Fixed step size.
+- `convergence_tolerance::Float64`: Projection convergence threshold.
+- `maximum_iterations::Int`: Maximum projection iterations per step.
+- `regularization::RegularizationOptions`: Regularization configuration.
+- `zollner::ZollnerOptions`: Zöllner extension configuration.
+"""
 struct WeberProblem
     system::WeberSystem
     tspan::Tuple{Float64,Float64}
@@ -418,6 +554,23 @@ struct WeberProblem
     end
 end
 
+"""
+    WeberSolution
+
+Result returned by `solve` or `solve!`.
+
+Supports Julia iteration (`for (t, q, p) in sol`), integer indexing (`sol[i]`),
+and `length(sol)`. Each index returns a `(t, q, p)` tuple.
+
+# Fields
+- `t::Vector{Float64}`: Time points.
+- `q::Vector{Vector{Float64}}`: Flattened position snapshots, one per time point.
+- `p::Vector{Vector{Float64}}`: Flattened momentum snapshots, one per time point.
+- `prob::WeberProblem`: The originating problem definition.
+- `retcode::Symbol`: `:Success` on normal completion, `:Failure` if the
+  projection fixed-point failed to converge.
+- `regularization::RegularizationDiagnostics`: Regularization usage statistics.
+"""
 struct WeberSolution
     t::Vector{Float64}
     q::Vector{Vector{Float64}}
@@ -561,6 +714,29 @@ mutable struct SymmetricProjectionBuffers
     end
 end
 
+"""
+    WeberIntegrator
+
+Mutable step-by-step integrator returned by `init`.
+
+Use `step!(integrator)` to advance one macro-step, or `solve!(integrator)` to
+run to completion. The current state is accessible via `integrator.q`,
+`integrator.p`, and `integrator.t`.
+
+# Fields
+- `prob::WeberProblem`: Problem definition.
+- `alg::SymmetricProjectionIntegrator`: Algorithm parameters.
+- `t::Float64`: Current time.
+- `t_end::Float64`: Final time (`prob.tspan[2]`).
+- `q::Vector{Float64}`: Current flattened positions.
+- `p::Vector{Float64}`: Current flattened momenta.
+- `step_count::Int`: Number of macro-steps completed so far.
+- `buffers::SymmetricProjectionBuffers`: Pre-allocated workspace (internal).
+- `diagnostics::RegularizationDiagnostics`: Live regularization statistics.
+- `t_history::Vector{Float64}`: Pre-allocated time history array.
+- `q_history::Vector{Vector{Float64}}`: Pre-allocated position history.
+- `p_history::Vector{Vector{Float64}}`: Pre-allocated momentum history.
+"""
 mutable struct WeberIntegrator
     prob::WeberProblem
     alg::SymmetricProjectionIntegrator
