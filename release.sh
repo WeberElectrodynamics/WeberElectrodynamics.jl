@@ -39,6 +39,10 @@ new = content.replace(
 open("CHANGELOG.md", "w").write(new)
 EOF
 
+if ! grep -q "## \[$NEW\]" CHANGELOG.md; then
+  echo "ERROR: CHANGELOG.md update failed — [Unreleased] section not found"
+  exit 1
+fi
 echo "Updated Project.toml and CHANGELOG.md"
 grep -A1 "## \[$NEW\]" CHANGELOG.md
 
