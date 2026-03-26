@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-03-26
+
 ### Docs
 
 - Added Documenter.jl scaffold (`docs/`), API reference, quick-start guide, and theory page.
