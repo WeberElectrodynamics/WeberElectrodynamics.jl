@@ -1022,7 +1022,7 @@ end
 end
 
 """
-    init(prob::WeberProblem, alg::SymmetricProjectionIntegrator) -> WeberIntegrator
+    init(prob::WeberProblem, alg::SymmetricProjectionIntegrator = SymmetricProjectionIntegrator()) -> WeberIntegrator
 
 Initialise a step-by-step integrator without running any steps.
 
@@ -1188,7 +1188,7 @@ function CommonSolve.solve!(integrator::WeberIntegrator)
 end
 
 """
-    solve(prob::WeberProblem, alg::SymmetricProjectionIntegrator) -> WeberSolution
+    solve(prob::WeberProblem, alg::WeberAlgorithm = SymmetricProjectionIntegrator()) -> WeberSolution
 
 Initialise and run the integrator in a single call.
 
