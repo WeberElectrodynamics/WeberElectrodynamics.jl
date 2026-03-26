@@ -68,6 +68,10 @@ $$p_{y_2} = m_2 \dot{y}_2$$
 
 $$p_{z_2} = m_2 \dot{z}_2$$
 
+> **Note:** These are the *physical* (mechanical) momenta $p_i = m_i \dot{x}_i$. For the Weber Lagrangian $L = T - U$, the *canonical* (conjugate) momenta obtained via the Legendre transform differ by an $\mathcal{O}(v^2/c^2)$ velocity-dependent correction:
+> $$p_{x_i}^{\mathrm{canon}} = \frac{\partial L}{\partial \dot{x}_i} = m_i \dot{x}_i \pm \sum_{j \neq i} \frac{q_i q_j}{c^2} \frac{\dot{r}_{ij}(x_i - x_j)}{r_{ij}^2}$$
+> The code uses the approximation $p \approx m\dot{x}$ (replacing velocities by $p/m$ in $\dot{r}$), which is accurate to $\mathcal{O}(v^2/c^2)$ in the quasi-static regime $v \ll c$.
+
 ### Relative Coordinates and Vectors for Particle 1 and Particle 2
 
 #### Relative position
