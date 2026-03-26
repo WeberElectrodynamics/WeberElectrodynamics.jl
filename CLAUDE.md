@@ -17,6 +17,9 @@ julia --project=. -e 'using Test; using WeberElectrodynamics; using WeberElectro
 
 # Format all Julia files
 julia -e 'using JuliaFormatter; format(".")'
+
+# Release a new version (patch / minor / major)
+./release.sh patch
 ```
 
 ## Repository Structure
