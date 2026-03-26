@@ -51,19 +51,18 @@ end
 sol = solve!(integrator)
 ```
 
-## Zöllner extension
+## Static plots (requires Plots.jl)
 
 ```julia
-prob_z = WeberProblem(
-    sys, (0.0, 10.0), q0, p0;
-    masses         = [1.0, 1.0],
-    charges        = [1.0, -1.0],
-    c              = 10.0,
-    dt             = 0.01,
-    zollner_enabled = true,
-    zollner_a       = 0.1,
-)
-sol_z = solve(prob_z)
+using Plots
+
+traj     = compute_trajectory_data(sol, 2, 2)
+energy   = compute_energy_timeseries(sol)
+momentum = compute_momentum_timeseries(sol)
+
+plot_trajectories(traj)     # particle paths in configuration space
+plot_energy(energy)         # Hamiltonian drift over time
+plot_momentum(momentum)     # total linear momentum components
 ```
 
 ## Interactive animation (requires GLMakie)
