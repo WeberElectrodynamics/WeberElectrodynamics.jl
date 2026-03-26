@@ -27,9 +27,11 @@ WeberElectrodynamics/
 ├── ext/                    # Weak-dependency extensions (Plots, Makie)
 ├── test/                   # Test suite (20,297 tests)
 ├── examples/               # Jupyter notebooks (run from default Julia env)
-├── docs/
+├── docs/                   # Documenter.jl scaffold (make.jl, src/, build/)
+├── research/
 │   ├── theory/             # Mathematical derivations and theory documents
-│   └── exploratory/        # Research notes and lessons learned
+│   ├── exploratory/        # Research notes and lessons learned
+│   └── sub_critical_weber_research/  # Sub-critical Weber research
 ├── papers/
 │   └── Computational-Weber-Electrodynamics/   # LaTeX paper with own Project.toml
 ├── CHANGELOG.md            # Versioned changelog (semver)
@@ -66,8 +68,13 @@ Jupyter notebooks run via IJulia from the default Julia environment (where this 
 
 ### Docs (`docs/`)
 
+Documenter.jl scaffold: `make.jl`, `Project.toml`, `src/` (page sources), `build/` (generated output).
+
+### Research (`research/`)
+
 - `theory/` — Weber electrodynamics, semi-explicit integrator, regularization, critical radius, initial conditions, Zöllner theory
 - `exploratory/` — Collision bounce lessons learned, three-body bound states
+- `sub_critical_weber_research/` — Sub-critical Weber exploration and literature searches
 
 ## Critical Conventions
 

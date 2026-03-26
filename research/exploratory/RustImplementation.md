@@ -180,7 +180,7 @@ impl PairwiseForce<3> for WeberForce {
         // The full Weber force expression (from analytical differentiation):
         //   F_ij = k/r^2 * r_hat * [ -(1 - rdot^2/(2c^2)) + rdot^2/c^2 ]
         //        + k/(r * c^2) * rdot * dv_perp_terms
-        //        ... (see docs/theory/WeberElectrodynamics.md for full expression)
+        //        ... (see research/theory/WeberElectrodynamics.md for full expression)
         //
         // Implementation computes dp_i; dp_j = -dp_i exactly.
 
@@ -224,7 +224,7 @@ impl PairwiseForce<3> for WeberForce {
 }
 ```
 
-> **Note:** The force expression above is schematic. The exact analytical derivatives of the Weber potential must be carefully verified against the Julia symbolic output (or against the formulas in `docs/theory/WeberElectrodynamics.md`) before use. The key structural point is that `dp_j = -dp_i` holds exactly.
+> **Note:** The force expression above is schematic. The exact analytical derivatives of the Weber potential must be carefully verified against the Julia symbolic output (or against the formulas in `research/theory/WeberElectrodynamics.md`) before use. The key structural point is that `dp_j = -dp_i` holds exactly.
 
 ### 3.4 The Full RHS Evaluation
 

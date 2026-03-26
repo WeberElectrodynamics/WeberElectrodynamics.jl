@@ -103,7 +103,7 @@ $$
 \left(1-\frac{\dot r_{ij}^2}{2c^2}+\frac{r_{ij}\ddot r_{ij}}{c^2}\right).
 $$
 
-Using the same notation as `docs/theory/WeberElectrodynamics.md`, this is equivalently
+Using the same notation as `research/theory/WeberElectrodynamics.md`, this is equivalently
 
 $$
 \vec{F}^{(W)}_{ij}
