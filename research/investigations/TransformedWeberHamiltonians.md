@@ -356,4 +356,4 @@ For $E < 0$ (bound) and $k < 0$ (attractive): $K > 0$ (focusing) outside the tur
 - McGehee, R. "Triple collision in the collinear three-body problem." *Invent. Math.* **27** (1974), 191--227.
 - Deprit, A. "Canonical transformations depending on a small parameter." *Celest. Mech.* **1** (1969), 12--30.
 
-See also: [WeberElectrodynamics.md](WeberElectrodynamics.md), [CriticalRadiusAndLikeChargeAttraction.md](CriticalRadiusAndLikeChargeAttraction.md), [Regularization.md](Regularization.md).
+See also: [WeberElectrodynamics.md](../theory/WeberElectrodynamics.md), [CriticalRadiusAndLikeChargeAttraction.md](CriticalRadiusAndLikeChargeAttraction.md), [Regularization.md](../theory/Regularization.md).

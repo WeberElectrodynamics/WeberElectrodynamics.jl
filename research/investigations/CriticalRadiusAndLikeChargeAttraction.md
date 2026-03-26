@@ -10,11 +10,11 @@ We consider two charged particles with charges $e, e'$ and inertial masses $\var
 
 $$\mu = \frac{\varepsilon\varepsilon'}{\varepsilon + \varepsilon'}.$$
 
-Separation $r$, radial velocity $\dot{r} = dr/dt$, radial acceleration $\ddot{r} = d^2r/dt^2$. Throughout this document $c$ denotes the speed of light ($c = c_{\text{light}}$), consistent with [WeberElectrodynamics.md](WeberElectrodynamics.md). Weber's original works used the electrodynamic constant $c_W = \sqrt{2}\,c$; formulas transcribed from the Memoirs are converted to the $c = c_{\text{light}}$ convention unless otherwise noted.
+Separation $r$, radial velocity $\dot{r} = dr/dt$, radial acceleration $\ddot{r} = d^2r/dt^2$. Throughout this document $c$ denotes the speed of light ($c = c_{\text{light}}$), consistent with [WeberElectrodynamics.md](../theory/WeberElectrodynamics.md). Weber's original works used the electrodynamic constant $c_W = \sqrt{2}\,c$; formulas transcribed from the Memoirs are converted to the $c = c_{\text{light}}$ convention unless otherwise noted.
 
 ## Weber Force and Effective Inertial Mass
 
-The radial Weber force between $e$ and $e'$ is (see [WeberElectrodynamics.md](WeberElectrodynamics.md)):
+The radial Weber force between $e$ and $e'$ is (see [WeberElectrodynamics.md](../theory/WeberElectrodynamics.md)):
 
 $$F = \frac{ee'}{r^2}\left(1 - \frac{\dot{r}^2}{2c^2} + \frac{r\ddot{r}}{c^2}\right).$$
 
@@ -188,7 +188,7 @@ The super-critical case $h > h_c$ reveals a new phenomenon not discussed in Webe
 
 ### Collision regularity
 
-For $\ell = 0$ (purely radial motion), collisions with the origin occur at finite speed $\sqrt{2}\,c$ and are $C^0$-continuable. These collisions are regularizable by the techniques described in [Regularization.md](Regularization.md).
+For $\ell = 0$ (purely radial motion), collisions with the origin occur at finite speed $\sqrt{2}\,c$ and are $C^0$-continuable. These collisions are regularizable by the techniques described in [Regularization.md](../theory/Regularization.md).
 
 For $\ell \neq 0$, trajectories inside $\rho$ spiral into the origin at infinite speed in finite time. These collisions are *not* regularizable: no smooth coordinate-time transform can remove the singularity. The obstruction is topological — the particle makes infinitely many revolutions ($\phi \to \infty$), and this infinite winding number is preserved by all smooth coordinate changes. Seven regularization approaches (Sundman, Levi-Civita, McGehee, conformal maps, and others) were tested and all fail; see [AngularMomentumRegularization.md](AngularMomentumRegularization.md) for the detailed investigation. In particular, no periodic orbits exist inside the critical radius — the spiralling is always terminal.
 
@@ -215,7 +215,7 @@ The regularity that permits classical regularization at $\ell = 0$ is mirrored b
 
 ## Connection to Zöllner Gravitation and the Planetary Atom
 
-Weber's sub-critical binding of like charges is the dynamical foundation for the program described in [ZollnerElectrogravitationalTheory.md](ZollnerElectrogravitationalTheory.md).
+Weber's sub-critical binding of like charges is the dynamical foundation for the program described in [ZollnerElectrogravitationalTheory.md](../theory/ZollnerElectrogravitationalTheory.md).
 
 In the Eighth Memoir (§15.1), Weber proposed that all ponderable matter consists of bound pairs of positive and negative electrical molecules. The molecular state provides the mechanism: like charges can be permanently bound at sub-$\rho$ separations, forming a stable nucleus. Unlike charges then orbit this nucleus under the combined electrodynamic and gravitational residual forces.
 
@@ -236,4 +236,4 @@ Without the sub-critical regime, there is no mechanism for like charges to coher
 - Frauenfelder, U., Weber, J. "A mathematical description of the Weber nucleus as a classical and quantum mechanical system." *Anal. Math. Phys.* **14**:31 (2024). DOI: [10.1007/s13324-024-00891-5](https://doi.org/10.1007/s13324-024-00891-5).
 - Frauenfelder, U., Weber, J. "The fine structure of Weber's hydrogen atom: Bohr–Sommerfeld approach." *Z. Angew. Math. Phys.* **70**(4), 105–116 (2019).
 
-See also: [WeberElectrodynamics.md](WeberElectrodynamics.md), [ZollnerElectrogravitationalTheory.md](ZollnerElectrogravitationalTheory.md), [Regularization.md](Regularization.md), [AngularMomentumRegularization.md](AngularMomentumRegularization.md).
+See also: [WeberElectrodynamics.md](../theory/WeberElectrodynamics.md), [ZollnerElectrogravitationalTheory.md](../theory/ZollnerElectrogravitationalTheory.md), [Regularization.md](../theory/Regularization.md), [AngularMomentumRegularization.md](AngularMomentumRegularization.md).

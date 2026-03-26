@@ -4,7 +4,7 @@
 
 This document investigates whether the spiraling collision singularity arising when two like charges with angular momentum $\ell \neq 0$ collide inside the critical radius can be regularized by any smooth coordinate-time transformation. Seven regularization approaches are tested analytically and numerically. All fail: the obstruction is topological (infinite winding number) and fundamental. The document records what was tried, why each approach fails, and the lessons learned.
 
-For the basic theory of the critical radius and the two collision types, see [CriticalRadiusAndLikeChargeAttraction.md](CriticalRadiusAndLikeChargeAttraction.md). For the standard regularization techniques used here, see [Regularization.md](Regularization.md).
+For the basic theory of the critical radius and the two collision types, see [CriticalRadiusAndLikeChargeAttraction.md](CriticalRadiusAndLikeChargeAttraction.md). For the standard regularization techniques used here, see [Regularization.md](../theory/Regularization.md).
 
 ## The Problem
 
@@ -62,7 +62,6 @@ This is a **topological invariant**. The winding number of a curve around the or
 
 **Results.** For $r_0 = 0.5$, $\ell = 0.1$: collision at $t = 0.561$, $\sim 3179$ revolutions, final $|\dot{r}| = 10^3$. For $\ell = 0$: collision at $t = 0.574$, final $|\dot{r}| = 1.414 \approx \sqrt{2}$ (finite). Confirms all analytical predictions.
 
-**Script.** [`scripts/reg_exp0_baseline.py`](scripts/reg_exp0_baseline.py)
 
 ### Experiment 1: Standard Sundman ($dt = r\,d\tau$)
 
@@ -78,7 +77,6 @@ $$\frac{d\phi}{d\tau} = r \cdot \dot\phi = \frac{\ell}{r} \to \infty \quad \text
 
 **Failure mode.** The Sundman factor $g = r$ slows the radial singularity ($r^{-1/2}$ becomes $r^{1/2}$) but only partially compensates the angular one ($r^{-2}$ becomes $r^{-1}$).
 
-**Script.** [`scripts/reg_exp1_sundman_r.py`](scripts/reg_exp1_sundman_r.py)
 
 ### Experiment 2: Higher-order Sundman ($dt = r^\alpha\,d\tau$)
 
@@ -98,7 +96,6 @@ For $\alpha > 2$, $d\phi/d\tau \to 0$ but $\tau \to \infty$ even faster, and $\p
 
 **Conclusion.** No Sundman exponent $\alpha$ can eliminate the infinite winding. For $\alpha < 2$, the angular velocity diverges in finite fictitious time. For $\alpha \geq 2$, derivatives are bounded, but the collision takes infinite fictitious time and the total angle is still infinite.
 
-**Script.** [`scripts/reg_exp2_sundman_r2.py`](scripts/reg_exp2_sundman_r2.py)
 
 ### Experiment 3: Levi-Civita + Sundman
 
@@ -118,7 +115,6 @@ For $\ell = 0$: LC works as expected. The $\ell^2/(2|u|^2)$ term vanishes, and a
 
 **Failure mode.** In Kepler, $\ell \neq 0$ creates a centrifugal barrier at $r = 0$ (equivalently $u = 0$), so the $\ell^2/(2|u|^2)$ term is never tested. In Weber inside $\rho$, the inverted barrier allows reaching $u = 0$, and the LC transform cannot absorb the angular singularity.
 
-**Script.** [`scripts/reg_exp3_lc.py`](scripts/reg_exp3_lc.py)
 
 ### Experiment 4: McGehee blow-up
 
@@ -135,7 +131,6 @@ For $\ell \neq 0$: both $w$ and the angular component $\omega = \ell/s$ diverge 
 | 0.1 | $-500$ | 1000 | no |
 | 0.3 | $-1500$ | 3000 | no |
 
-**Script.** [`scripts/reg_exp4_mcgehee.py`](scripts/reg_exp4_mcgehee.py)
 
 ### Experiment 5: Partial radial regularization
 
@@ -149,7 +144,6 @@ The angular quadrature $\phi(\tau) = \int \ell/r\,d\tau$ diverges: near the coll
 
 **Practical utility.** Moderate. One can integrate the radial dynamics smoothly through the collision in regularized time, accepting that the angle is undefined at the collision point. This is analogous to the collision bounce approach used for $\ell = 0$ but formulated in regularized coordinates.
 
-**Script.** [`scripts/reg_exp5_partial.py`](scripts/reg_exp5_partial.py)
 
 ### Experiments 6--7: Conformal maps
 
@@ -159,7 +153,6 @@ The angular quadrature $\phi(\tau) = \int \ell/r\,d\tau$ diverges: near the coll
 
 **Conclusion.** The log map removes the winding but converts it to an escape-to-infinity singularity with divergent speed. No conformal or smooth coordinate change can simultaneously eliminate both the topological obstruction (winding) and the metric obstruction (speed divergence).
 
-**Script.** [`scripts/reg_exp67_conformal.py`](scripts/reg_exp67_conformal.py)
 
 ## Summary Table
 
@@ -212,4 +205,4 @@ The classical regularity that permits regularization at $\ell = 0$ is mirrored b
 - McGehee, R. "Triple collision in the collinear three-body problem." *Inventiones math.* **27**, 191--227 (1974).
 - Sundman, K. F. "M\'{e}moire sur le probl\`{e}me des trois corps." *Acta Math.* **36**, 105--179 (1913).
 
-See also: [CriticalRadiusAndLikeChargeAttraction.md](CriticalRadiusAndLikeChargeAttraction.md), [Regularization.md](Regularization.md), [WeberElectrodynamics.md](WeberElectrodynamics.md).
+See also: [CriticalRadiusAndLikeChargeAttraction.md](CriticalRadiusAndLikeChargeAttraction.md), [Regularization.md](../theory/Regularization.md), [WeberElectrodynamics.md](../theory/WeberElectrodynamics.md).
