@@ -46,6 +46,21 @@ fi
 echo "Updated Project.toml and CHANGELOG.md"
 grep -A1 "## \[$NEW\]" CHANGELOG.md
 
+# ── Extract release notes (guard against empty section) ───────────────────────
+NOTES=$(python3 -c "
+import re
+content = open('CHANGELOG.md').read()
+m = re.search(r'## \[$NEW\][^\n]*\n(.*?)(?=\n## \[|\Z)', content, re.DOTALL)
+print(m.group(1).strip() if m else '')
+")
+
+if [ -z "$NOTES" ]; then
+  echo "ERROR: No release notes found under '## [$NEW]' in CHANGELOG.md"
+  echo "Add content under the new version heading before releasing."
+  exit 1
+fi
+echo "Release notes extracted ($(printf '%s' "$NOTES" | wc -l | tr -d ' ') lines)"
+
 # ── Commit & push ─────────────────────────────────────────────────────────────
 git add Project.toml CHANGELOG.md
 git commit -m "release: v$NEW"
@@ -53,7 +68,8 @@ git push origin main
 
 # ── Trigger JuliaRegistrator ──────────────────────────────────────────────────
 SHA=$(git rev-parse HEAD)
-gh api "/repos/$REPO/commits/$SHA/comments" -f body='@JuliaRegistrator register'
+BODY=$(printf '@JuliaRegistrator register\n\nRelease notes:\n\nSee CHANGELOG.md for full details.\n\n%s' "$NOTES")
+gh api "/repos/$REPO/commits/$SHA/comments" -f body="$BODY"
 
 echo ""
 echo "✓ v$NEW pushed and JuliaRegistrator triggered"
