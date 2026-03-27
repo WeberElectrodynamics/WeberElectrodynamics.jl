@@ -191,3 +191,14 @@ there are actual breaking changes — it makes the notes self-documenting and cl
 
 **Guard**: `release.sh` will exit with an error (before touching git) if the new version section
 is empty. Always populate `[Unreleased]` before running the release script.
+
+### GitHub account
+
+Always use the **WeberElectrodynamics** account for `gh` CLI operations on this repo.
+Only `WeberElectrodynamics` has collaborator status — JuliaRegistrator will reject comments
+from any other account. Before running `release.sh` or any `gh api` command, verify:
+
+```bash
+gh auth switch --user WeberElectrodynamics
+gh auth status   # confirm Active account: WeberElectrodynamics
+```
