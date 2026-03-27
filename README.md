@@ -7,7 +7,7 @@
 [![PkgEval](https://juliaci.github.io/NanosoldierReports/pkgeval_badges/W/WeberElectrodynamics.svg)](https://juliaci.github.io/NanosoldierReports/pkgeval_badges/W/WeberElectrodynamics.html)
 [![Julia ≥1.9](https://img.shields.io/badge/julia-%E2%89%A51.9-9558B2?logo=julia&logoColor=white)](https://julialang.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![DOI](https://zenodo.org/badge/1099216451.svg)](https://doi.org/10.5281/zenodo.19239678)
+[![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.19239678.svg)](https://doi.org/10.5281/zenodo.19239678)
 
 A Julia package for n-body simulation of charged particles interacting via Weber's electrodynamics. Implements a symplectic Strang-splitting integrator with symmetric projection for Weber's non-separable Hamiltonian, with Levi-Civita/KS regularization for close encounters. The integrator follows [Jayawardana & Ohsawa (2021)](https://arxiv.org/abs/2111.10915).
 
