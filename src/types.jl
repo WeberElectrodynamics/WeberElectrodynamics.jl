@@ -37,6 +37,10 @@ struct SymmetricProjectionIntegrator <: WeberAlgorithm
     end
 end
 
+# =============================================================================
+# Zöllner Extension (research/experimental — see docs/src/zollner.md)
+# =============================================================================
+
 """
     ZollnerOptions(; enabled=false, a=0.0)
 
@@ -90,6 +94,10 @@ function _compute_zollner_kappas(
     return kappas
 end
 
+# =============================================================================
+# Regularization (optional, advanced — see docs/src/regularization.md)
+# =============================================================================
+
 """
     RegularizationOptions(; kwargs...)
 
@@ -100,7 +108,7 @@ Cartesian coordinates to a regularized representation (Levi-Civita/KS or
 adaptive Cartesian substeps) and back once the separation exceeds `r_off`.
 
 # Keywords
-- `enabled=true`: Enable regularization globally.
+- `enabled=false`: Enable regularization globally.
 - `r_on=nothing`: Absolute activation distance. If `nothing`, computed as
   `r_on_factor × min_initial_separation`.
 - `r_off=nothing`: Absolute deactivation distance. If `nothing`, computed as
@@ -137,7 +145,7 @@ struct RegularizationOptions
 
     function RegularizationOptions(
         ;
-        enabled::Bool = true,
+        enabled::Bool = false,
         r_on::Union{Nothing,Real} = nothing,
         r_off::Union{Nothing,Real} = nothing,
         r_on_factor::Real = 0.15,
@@ -484,7 +492,7 @@ struct WeberProblem
         dt::Real,
         convergence_tolerance::Real = 1e-13,
         maximum_iterations::Integer = 100,
-        regularization_enabled::Bool = true,
+        regularization_enabled::Bool = false,
         regularization_r_on::Union{Nothing,Real} = nothing,
         regularization_r_off::Union{Nothing,Real} = nothing,
         regularization_r_on_factor::Real = 0.15,

@@ -72,3 +72,14 @@ using GLMakie
 animate_weber(prob)   # live streaming
 animate_weber(sol)    # replay
 ```
+
+## Optional features
+
+The integrator above runs the core unregularized symplectic method. Two optional
+extensions can be enabled explicitly:
+
+- **[Regularization](regularization.md)** — Levi-Civita / KS handling for
+  close encounters. Pass `regularization_enabled = true` to `WeberProblem`.
+- **[Zöllner Extension](zollner.md)** — research feature implementing Zöllner's
+  electrogravitational mismatch hypothesis. Pass `zollner_enabled = true` and
+  `zollner_a = <value>` to `WeberProblem`.

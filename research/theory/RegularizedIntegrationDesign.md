@@ -6,7 +6,7 @@ This document specifies the regularized integration design implemented for Weber
 
 - Scope is limited to the Weber Hamiltonian produced by `WeberSystem`.
 - Public solver signatures (`solve/init/step!/solve!`) remain unchanged.
-- Regularization is problem-level configurable and enabled by default.
+- Regularization is problem-level configurable and disabled by default.
 - Far-field evolution remains on the existing Cartesian projected kernel.
 
 ## Backend Semantics

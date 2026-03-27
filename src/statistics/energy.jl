@@ -18,6 +18,7 @@ struct PairEnergyData
     kappa::Float64
     coulomb_term::Vector{Float64}
     velocity_term::Vector{Float64}
+    # Zöllner extension field (zero when Zöllner is disabled)
     zollner_extra_potential::Vector{Float64}
     total_pair_potential::Vector{Float64}
     radial_velocity::Vector{Float64}
@@ -80,6 +81,7 @@ struct EnergyData
     total_energy::Vector{Float64}
     kinetic_energy::Vector{Float64}
     total_potential_energy::Vector{Float64}
+    # Zöllner extension field (zero when Zöllner is disabled)
     total_zollner_residual::Vector{Float64}
     pair_energies::Dict{Tuple{Int,Int},PairEnergyData}
     statistics::EnergyStatistics
