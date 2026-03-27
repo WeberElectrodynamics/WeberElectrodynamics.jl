@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-Julia package (v0.1.0) for n-body Weber electrodynamics simulation with Zöllner electrogravitational extension. Implements a symplectic Strang-splitting symmetric-projection integrator with Levi-Civita/KS regularization for close encounters and collision bounce for head-on singularities.
+Julia package (v0.2.0) for n-body Weber electrodynamics simulation with Zöllner electrogravitational extension. Implements a symplectic Strang-splitting symmetric-projection integrator with Levi-Civita/KS regularization for close encounters and collision bounce for head-on singularities.
 
 ## Commands
 
@@ -135,9 +135,59 @@ Neither backend regularizes Weber's velocity-dependent force — only the Coulom
 
 ## Releasing a New Version
 
-1. Bump `version` in `Project.toml`
-2. Add entry to `CHANGELOG.md` under the new version heading
-3. Update the version number in `CLAUDE.md` Project description
-4. Commit all changed files (Project.toml, CHANGELOG.md, CLAUDE.md, and any source files)
-5. Tag: `git tag v<VERSION>`
-6. Push: `git push && git push --tags`
+**Claude Code handles all CHANGELOG entries for this project.** See conventions below.
+
+### Steps
+
+1. Write release notes under `## [Unreleased]` in `CHANGELOG.md` (see conventions below)
+2. Update the version number in the `CLAUDE.md` Project description
+3. Commit all changed source/doc/test files
+4. Run `./release.sh patch|minor|major`
+
+`release.sh` handles everything else: bumps `Project.toml`, moves `[Unreleased]` entries to the
+new version heading, commits, pushes, and posts the `@JuliaRegistrator register` comment with
+the changelog content embedded.
+
+### Full automated pipeline (after `release.sh`)
+
+```
+release.sh posts @JuliaRegistrator register comment
+  → JuliaRegistrator opens PR to JuliaRegistries/General (~15 min)
+  → AutoMerge validates and merges (see requirements below)
+  → JuliaTagBot creates the git tag automatically
+  → TagBot.yml creates a GitHub Release using CHANGELOG.md (changelog: true)
+  → Docs.yml deploys /stable/ on the new tag
+```
+
+No manual `git tag` or GitHub Release creation needed — TagBot and Docs deploy automatically.
+
+### CHANGELOG conventions
+
+**Format**: Keep a Changelog (`## [Unreleased]` at top, sections like `### Added`, `### Fixed`,
+`### Changed`, `### Breaking changes`).
+
+**AutoMerge requirement**: JuliaRegistries AutoMerge requires the words **"breaking"** or
+**"changelog"** to appear in the release notes for any breaking version bump. The release script
+prepends `"See CHANGELOG.md for full details."` to every registrator comment, so the word
+"changelog" is always present. Still, use `### Breaking changes` as the section header whenever
+there are actual breaking changes — it makes the notes self-documenting and clear to users.
+
+**What counts as breaking (Julia semver)**:
+- Package is pre-1.0 (`0.x.x`): every **minor** bump (`0.2 → 0.3`) is treated as breaking by
+  the registry. Patch bumps (`0.2.0 → 0.2.1`) are not.
+- Post-1.0: only **major** bumps are breaking.
+
+**Example CHANGELOG entry for a breaking minor release**:
+
+```markdown
+## [Unreleased]
+
+### Breaking changes
+- `foo` now returns `Bar` instead of `Baz`. Upgrade: replace `x::Baz` with `x::Bar`.
+
+### Added
+- New `bar` function for ...
+```
+
+**Guard**: `release.sh` will exit with an error (before touching git) if the new version section
+is empty. Always populate `[Unreleased]` before running the release script.
