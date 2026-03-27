@@ -95,7 +95,7 @@
         @test prob.kappas == [1.0]  # unlike charges but Zöllner disabled → κ=1
         @test prob.zollner.enabled == false
         @test prob.zollner.a == 0.0
-        @test prob.regularization.enabled == true
+        @test prob.regularization.enabled == false
         @test prob.regularization.r_on === nothing
         @test prob.regularization.r_off === nothing
         @test prob.regularization.max_substeps == 512

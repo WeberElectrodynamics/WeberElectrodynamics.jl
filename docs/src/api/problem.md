@@ -6,10 +6,9 @@
 WeberProblem
 ```
 
-## Configuration options
+## Optional features
 
-```@docs
-ZollnerOptions
-RegularizationOptions
-RegularizationDiagnostics
-```
+Configuration types for optional features are documented on their own pages:
+
+- [Regularization](../regularization.md) — `RegularizationOptions`, `RegularizationDiagnostics`
+- [Zöllner Extension](../zollner.md) — `ZollnerOptions`

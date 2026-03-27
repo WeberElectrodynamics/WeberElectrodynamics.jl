@@ -70,7 +70,8 @@ struct PairForceData
     t::Vector{Float64}
     dims::Int
     pair::Tuple{Int,Int}
-    kappa::Float64           # Zöllner coupling factor κ_ij (1.0 = standard Weber)
+    # Zöllner extension field (1.0 = standard Weber, no Zöllner)
+    kappa::Float64           # coupling factor κ_ij
     charge_product::Float64  # k = q_i * q_j, determines repulsion/attraction sign
 
     # Total force (vector per timestep)

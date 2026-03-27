@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- `regularization_enabled` now defaults to `false` (was `true`). The core
+  symplectic integrator runs unregularized by default. Pass
+  `regularization_enabled = true` to `WeberProblem` to opt in to Levi-Civita /
+  KS regularization for close encounters.
+- `RegularizationOptions(enabled = ...)` default flipped to `false` accordingly.
+
+### Docs
+- New page **Regularization** (`docs/src/regularization.md`): usage guide,
+  backend selection, hysteresis parameters, chain mode, and collision bounce.
+- New page **Zöllner Extension** (`docs/src/zollner.md`): theory background,
+  usage, and Zöllner-specific plot functions. Marked *Research / Experimental*.
+- Doc navigation reorganised into Core → Advanced (Regularization) →
+  Research (Zöllner Extension) → Theory tiers.
+- `RegularizationOptions`, `RegularizationDiagnostics`, and `ZollnerOptions`
+  API docs moved from `api/problem.md` to their dedicated feature pages.
+- Added "Optional features" section to Quick Start linking both feature pages.
+
+### Refactored
+- Added `# Zöllner Extension` and `# Regularization` section comment headers
+  in `src/types.jl`, `src/statistics/energy.jl`, and `src/statistics/forces.jl`
+  to make the tier boundaries visible at a glance in the source.
+
 ## [0.1.1] - 2026-03-26
 
 ### Docs

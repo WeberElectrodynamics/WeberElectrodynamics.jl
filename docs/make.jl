@@ -28,6 +28,12 @@ makedocs(
             "Statistics"    => "api/statistics.md",
             "Visualization" => "api/visualization.md",
         ],
+        "Advanced" => [
+            "Regularization" => "regularization.md",
+        ],
+        "Research" => [
+            "Zöllner Extension" => "zollner.md",
+        ],
         "Theory" => "theory.md",
     ],
     checkdocs = :exports,
