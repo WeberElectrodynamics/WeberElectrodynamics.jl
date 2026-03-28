@@ -1,6 +1,6 @@
 {
     "title": "WeberElectrodynamics.jl",
-    "description": "N-body Weber electrodynamics simulator with symplectic integrator",
+    "description": "A Julia package for symplectic numerical integration of Weber electrodynamics",
     "creators": [
         {
             "name": "Al Duleimi, Samer"
