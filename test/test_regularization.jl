@@ -138,6 +138,54 @@
         @test_logs (:warn, r"falling back to :adaptive_cartesian") init(prob_warn)
     end
 
+    @testset "3D lifted pair fallback to adaptive_cartesian" begin
+        sys3 = WeberSystem(2, 3)
+        # Start within r_on (separation 0.16 < r_on 0.2) so regularization fires
+        # on the first step and backend_fallback_steps is immediately exercised.
+        q0_3d = [-0.08, 0.0, 0.0, 0.08, 0.0, 0.0]
+        p0_3d = [0.0, -0.05, 0.0, 0.0, 0.05, 0.0]
+
+        prob_3d = WeberProblem(
+            sys3,
+            (0.0, 0.01),
+            q0_3d,
+            p0_3d;
+            masses = [1.0, 0.5],
+            charges = [0.1, -0.1],
+            c = 4.0,
+            dt = 0.001,
+            regularization_enabled = true,
+            regularization_backend = :lifted_pair,
+            regularization_warn_on_fallback = false,
+            regularization_r_on = 0.2,
+            regularization_r_off = 0.3,
+        )
+        int_3d = init(prob_3d)
+        rb_3d = int_3d.buffers.regularization_buffers
+        @test rb_3d.effective_backend == WeberElectrodynamics.REG_BACKEND_ADAPTIVE
+        @test rb_3d.backend_fallback
+
+        step!(int_3d)
+        @test int_3d.diagnostics.backend_fallback_steps == 1
+        @test int_3d.diagnostics.lifted_pair_steps == 0
+
+        @test_logs (:warn, r"falling back to :adaptive_cartesian") init(WeberProblem(
+            sys3,
+            (0.0, 0.01),
+            q0_3d,
+            p0_3d;
+            masses = [1.0, 0.5],
+            charges = [0.1, -0.1],
+            c = 4.0,
+            dt = 0.001,
+            regularization_enabled = true,
+            regularization_backend = :lifted_pair,
+            regularization_warn_on_fallback = true,
+            regularization_r_on = 0.2,
+            regularization_r_off = 0.3,
+        ))
+    end
+
     @testset "Transform identities" begin
         @testset "Levi-Civita" begin
             rb = WeberElectrodynamics.RegularizationBuffers(2, 2, 4, 0.1, 0.2, :lifted_pair, false)
@@ -383,6 +431,49 @@
         # Multiple oscillation cycles occur (at least 10 half-periods in 10T).
         n_minima = count(k -> rs[k] < rs[k-1] && rs[k] < rs[k+1], 2:length(rs)-1)
         @test n_minima >= 10
+    end
+
+    @testset "Collision bounce with regularization enabled" begin
+        # Smoke test: collision bounce + adaptive_cartesian regularization simultaneously.
+        # Documented as "works best without LC" but must not crash with adaptive Cartesian.
+        m1 = m2 = 1.0
+        q1 = q2 = 1.0
+        c = 4.0
+        r0 = 0.05
+        mu = m1 * m2 / (m1 + m2)
+        rho = q1 * q2 / (mu * c^2)
+        T_est = (2π / c) * rho
+
+        sys = WeberSystem(2, 2)
+        q_init = [r0 / 2, 0.0, -r0 / 2, 0.0]
+        p_init = [0.0, 0.0, 0.0, 0.0]
+
+        prob = WeberProblem(
+            sys,
+            (0.0, 5 * T_est),
+            q_init,
+            p_init;
+            masses = [m1, m2],
+            charges = [q1, q2],
+            c = c,
+            dt = T_est / 1000,
+            regularization_enabled = true,
+            regularization_backend = :adaptive_cartesian,
+            regularization_warn_on_fallback = false,
+            # Set r_on below bounce_r so regularization stays idle;
+            # bounce handles the singularity and the two features coexist.
+            regularization_r_on = 0.005,
+            regularization_r_off = 0.015,
+            regularization_collision_bounce_radius = 0.01,
+        )
+
+        sol = solve(prob)
+        @test sol.retcode == :Success
+        @test all(isfinite, sol.q[end])
+        @test all(isfinite, sol.p[end])
+
+        en = compute_energy_timeseries(sol)
+        @test en.statistics.global_error_percent_max < 1.0
     end
 
     @testset "Chain mode correctness" begin

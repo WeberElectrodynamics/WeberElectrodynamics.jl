@@ -105,6 +105,16 @@ println("Activation count: ", d.activation_count)
 println("Min encounter distance: ", d.min_encounter_distance)
 ```
 
+Key fields and what they mean:
+
+| Field | Meaning | Worth investigating if… |
+|-------|---------|------------------------|
+| `activation_count` | How many times regularization switched on | Very high → r_off is too close to r_on |
+| `min_encounter_distance` | Closest particle approach over the run | Near 0 → singularity risk; consider bounce radius |
+| `max_constraint_violation` | Peak KS constraint residual (3D only) | > 1e-8 → reduce `dt` or `max_substeps` |
+| `backend_fallback_steps` | Steps that used the fallback backend | > 0 when `:lifted_pair` was requested on a 3D problem |
+| `total_substeps` | Total regularization micro-steps taken | Very large → consider wider r_on/r_off thresholds |
+
 ## API reference
 
 ```@docs
