@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Four new tests covering previously untested scenarios: 3D `:lifted_pair` →
+  `:adaptive_cartesian` fallback; collision bounce with `regularization_enabled = true`;
+  Zöllner κ values respected during regularized substeps; `prob.params` tail equals
+  `prob.kappas` (explicit params-vector layout verification).
+- Diagnostics field reference table in `docs/src/regularization.md` explaining
+  when `activation_count`, `min_encounter_distance`, `max_constraint_violation`,
+  `backend_fallback_steps`, and `total_substeps` warrant attention.
+- Clarification in `docs/src/zollner.md` that κ values are automatically included in
+  the parameter vector for regularization sub-steps — no extra configuration needed.
+
+### Fixed
+- Added comment in `src/solve.jl` documenting the intentional sign-flip behaviour in
+  the 1D regularization lift branch (explains why sign continuity is not enforced
+  there, unlike the 2D/3D branches).
+
 ## [0.2.0] - 2026-03-27
 
 ### Changed

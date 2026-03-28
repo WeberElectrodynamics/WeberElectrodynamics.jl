@@ -57,6 +57,10 @@ prob = WeberProblem(sys, tspan, q0, p0; ...
 )
 ```
 
+κ values are automatically included in the parameter vector passed to regularization
+sub-steps, so the Zöllner coupling is respected even during close-encounter
+regularization. No extra configuration is needed.
+
 ## Zöllner-specific plots
 
 The Plots.jl extension provides four functions for visualizing the Zöllner

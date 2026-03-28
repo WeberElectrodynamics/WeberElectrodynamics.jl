@@ -781,6 +781,10 @@ end
         if dims == 1
             x = rb.rel_q[1]
             px = rb.rel_p[1]
+            # Sign flip at x=0 is intentional: represents passing-through collision
+            # in 1D (the only allowed topology).  Unlike 2D/3D, we do not enforce
+            # sign continuity across the map's two sheets because in 1D both sheets
+            # are physically distinct (particle labels exchange at the collision).
             s = x >= 0 ? 1.0 : -1.0
             u = sqrt(abs(x))
             rb.lc_u[1] = u

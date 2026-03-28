@@ -82,6 +82,9 @@
             expected_len = 2N + 1 + N * (N - 1) ÷ 2
             @test length(prob.params) == expected_len
             @test length(prob.kappas) == N * (N - 1) ÷ 2
+            # params must literally end with the kappas values
+            n_pairs = N * (N - 1) ÷ 2
+            @test prob.params[end-n_pairs+1:end] == prob.kappas
         end
     end
 
@@ -169,6 +172,48 @@
         sol = solve(prob, SymmetricProjectionIntegrator())
         @test sol.retcode == :Success
         @test length(sol.t) > 1
+    end
+
+    @testset "Zöllner kappas respected during regularized substeps" begin
+        # Verify that κ ≠ 1 is actually used inside regularization substeps,
+        # not just during unregularized steps.  Use a circular orbit at r0 < r_on
+        # so regularization fires on every step.  Energy conservation confirms
+        # the params_pair kappas path is exercised correctly.
+        a = 0.05
+        m1 = m2 = 1.0
+        q1 = 0.1
+        q2 = -0.1
+        c = 10.0
+        r0 = 0.1
+        M = m1 + m2
+        v_circ = sqrt(abs(q1 * q2) * M / (m1 * m2 * r0))
+
+        sys = WeberSystem(2, 2)
+        q0 = [-m2 / M * r0, 0.0, m1 / M * r0, 0.0]
+        p0 = [0.0, m1 * (-m2 / M) * v_circ, 0.0, m2 * (m1 / M) * v_circ]
+        prob = WeberProblem(
+            sys, (0.0, 1.0), q0, p0;
+            masses = [m1, m2], charges = [q1, q2], c = c, dt = 0.001,
+            zollner_enabled = true, zollner_a = a,
+            regularization_enabled = true,
+            regularization_backend = :adaptive_cartesian,
+            regularization_warn_on_fallback = false,
+            regularization_r_on = 0.15,
+            regularization_r_off = 0.25,
+        )
+        sol = solve(prob, SymmetricProjectionIntegrator())
+        @test sol.retcode == :Success
+        # r0 < r_on so regularization fires on every step.
+        @test sol.regularization.pair_steps > 0
+        # Energy conservation validates the params_pair kappas path.
+        energy = compute_energy_timeseries(sol)
+        E0 = energy.total_energy[1]
+        if abs(E0) > 1e-10
+            max_drift = maximum(abs.((energy.total_energy .- E0) ./ E0))
+            @test max_drift < 1e-3
+        end
+        # κ for this unlike-charge pair should be 1+a.
+        @test sol.prob.kappas[1] ≈ 1.0 + a
     end
 
 end
