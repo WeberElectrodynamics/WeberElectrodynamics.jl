@@ -66,6 +66,38 @@ H_qp = T_p + q1*q2/r12 * (1 - rdot12_p**2 / (2*c**2))
 alpha_x = q1*q2/c**2 * rdot12_p*(x1 - x2)/r12**2
 alpha_y = q1*q2/c**2 * rdot12_p*(y1 - y2)/r12**2
 
+# ============================================================
+# 3-PARTICLE SETUP (shared by Group H and Group I)
+# Builds H3 from the n-body formula (Eq. hamiltonian).
+# ============================================================
+
+x3, y3   = symbols('x3 y3', real=True)
+px3, py3 = symbols('px3 py3', real=True)
+m3       = symbols('m3', positive=True)
+q3       = symbols('q3', real=True)
+
+x_rel_13 = x1 - x3
+y_rel_13 = y1 - y3
+x_rel_23 = x2 - x3
+y_rel_23 = y2 - y3
+r13      = sqrt(x_rel_13**2 + y_rel_13**2)
+r23      = sqrt(x_rel_23**2 + y_rel_23**2)
+
+# ṙ₁₃ and ṙ₂₃ in (q,p) space (v_i ≈ p_i/m_i)
+rdot13_p = (x_rel_13*(px1/m1 - px3/m3) + y_rel_13*(py1/m1 - py3/m3)) / r13
+rdot23_p = (x_rel_23*(px2/m2 - px3/m3) + y_rel_23*(py2/m2 - py3/m3)) / r23
+
+# 3-particle kinetic energy
+T3 = (px1**2/(2*m1) + py1**2/(2*m1)
+     + px2**2/(2*m2) + py2**2/(2*m2)
+     + px3**2/(2*m3) + py3**2/(2*m3))
+
+# 3-particle Hamiltonian (Eq. hamiltonian, n=3)
+H3 = (T3
+     + q1*q2/r12 * (1 - rdot12_p**2/(2*c**2))
+     + q1*q3/r13 * (1 - rdot13_p**2/(2*c**2))
+     + q2*q3/r23 * (1 - rdot23_p**2/(2*c**2)))
+
 
 # ============================================================
 # HELPER FUNCTIONS
@@ -104,6 +136,19 @@ def _num_vals_3d():
         xdd: uniform(-0.1, 0.1), ydd: uniform(-0.1, 0.1), zdd: uniform(-0.1, 0.1),
     }
 
+def _num_vals_3body():
+    """Random values for 3-particle 2D system with all pairs well-separated."""
+    return {
+        x1: uniform(4.0, 5.0),   x2: uniform(0.5, 1.5),   x3: uniform(-2.5, -1.5),
+        y1: uniform(2.0, 3.0),   y2: uniform(-1.5, -0.5),  y3: uniform(2.0, 3.0),
+        px1: uniform(-0.5, 0.5), py1: uniform(-0.5, 0.5),
+        px2: uniform(-0.5, 0.5), py2: uniform(-0.5, 0.5),
+        px3: uniform(-0.5, 0.5), py3: uniform(-0.5, 0.5),
+        m1: uniform(0.5, 2.0),   m2: uniform(0.5, 2.0),   m3: uniform(0.5, 2.0),
+        q1: uniform(0.2, 1.5),   q2: uniform(0.2, 1.5),   q3: uniform(0.2, 1.5),
+        c:  uniform(3.0, 8.0),
+    }
+
 def numerical_check(expr, val_func, n_trials=25, tol=1e-7):
     """Verify expr ≈ 0 by substituting random numeric values."""
     for _ in range(n_trials):
@@ -115,6 +160,12 @@ def numerical_check(expr, val_func, n_trials=25, tol=1e-7):
         except Exception:
             pass  # Skip if substitution fails (e.g., sqrt of negative)
     return True
+
+def check_zero_fast(expr, label, val_func):
+    """Numerical-only check (skips symbolic simplification for expensive expressions)."""
+    if numerical_check(expr, val_func):
+        return (True, label, "numerically verified")
+    return (False, label, "FAILED — non-zero residual (numerical check)")
 
 def check_zero(expr, label, val_func=None):
     """
@@ -477,6 +528,145 @@ def verify_group_G():
 
 
 # ============================================================
+# GROUP H: n=3 Particle EOM Verification
+#
+# Directly tests the paper's two boxed equations for general n:
+#   xdot_expanded (Eq. 209):  ẋᵢ = (1/mᵢ)(pxᵢ − Σⱼ≠ᵢ qᵢqⱼ/c² ṙᵢⱼ(xᵢ−xⱼ)/rᵢⱼ²)
+#   pdot_expanded (Eq. 215):  ṗxᵢ = Σⱼ≠ᵢ qᵢqⱼ/rᵢⱼ² [(xᵢ−xⱼ)/rᵢⱼ(1−3ṙᵢⱼ²/2c²) + ṙᵢⱼ(ẋᵢ−ẋⱼ)/c²]
+#
+# Uses a 3-particle system to exercise the multi-pair sum structure.
+# Note: ṙᵢⱼ = ṙⱼᵢ (radial velocity is symmetric in index order).
+# ============================================================
+
+def verify_group_H():
+    results = []
+
+    def pair_pdot_x(qi, qj, xi, xj, rij, rdot_ij, vxi, vxj):
+        """x-component of ṗᵢ contribution from one (i,j) pair, Eq. pdot_expanded."""
+        return (qi*qj/rij**2
+                * ((xi - xj)/rij * (1 - Rational(3, 2)*rdot_ij**2/c**2)
+                   + rdot_ij*(vxi - vxj)/c**2))
+
+    vf = _num_vals_3body
+
+    # ----- H.1–H.3: xdot_expanded -----
+    # ẋᵢ = (1/mᵢ)(pxᵢ − Σⱼ≠ᵢ qᵢqⱼ/c² ṙᵢⱼ(xᵢ−xⱼ)/rᵢⱼ²)
+
+    xdot1_formula = (px1 - q1*q2/c**2 * rdot12_p*(x1 - x2)/r12**2
+                         - q1*q3/c**2 * rdot13_p*(x1 - x3)/r13**2) / m1
+    results.append(check_zero_fast(
+        xdot1_formula - diff(H3, px1),
+        "H.1  xdot_expanded (n=3, i=1) equals ∂H3/∂px1  [Eq. xdot_expanded]",
+        vf,
+    ))
+
+    # i=2: ṙ₂₁ = ṙ₁₂ (symmetric), so rdot12_p is used for the (2,1) pair
+    xdot2_formula = (px2 - q2*q1/c**2 * rdot12_p*(x2 - x1)/r12**2
+                         - q2*q3/c**2 * rdot23_p*(x2 - x3)/r23**2) / m2
+    results.append(check_zero_fast(
+        xdot2_formula - diff(H3, px2),
+        "H.2  xdot_expanded (n=3, i=2) equals ∂H3/∂px2  [Eq. xdot_expanded]",
+        vf,
+    ))
+
+    # i=3: ṙ₃₁ = ṙ₁₃, ṙ₃₂ = ṙ₂₃
+    xdot3_formula = (px3 - q3*q1/c**2 * rdot13_p*(x3 - x1)/r13**2
+                         - q3*q2/c**2 * rdot23_p*(x3 - x2)/r23**2) / m3
+    results.append(check_zero_fast(
+        xdot3_formula - diff(H3, px3),
+        "H.3  xdot_expanded (n=3, i=3) equals ∂H3/∂px3  [Eq. xdot_expanded]",
+        vf,
+    ))
+
+    # ----- H.4–H.6: pdot_expanded -----
+    # ṗxᵢ = Σⱼ≠ᵢ qᵢqⱼ/rᵢⱼ² [(xᵢ−xⱼ)/rᵢⱼ(1−3ṙᵢⱼ²/2c²) + ṙᵢⱼ(vxᵢ−vxⱼ)/c²]
+
+    pdot_x1_formula = (pair_pdot_x(q1, q2, x1, x2, r12, rdot12_p, px1/m1, px2/m2)
+                     + pair_pdot_x(q1, q3, x1, x3, r13, rdot13_p, px1/m1, px3/m3))
+    results.append(check_zero_fast(
+        pdot_x1_formula - (-diff(H3, x1)),
+        "H.4  pdot_expanded (n=3, i=1) equals −∂H3/∂x1  [Eq. pdot_expanded]",
+        vf,
+    ))
+
+    pdot_x2_formula = (pair_pdot_x(q2, q1, x2, x1, r12, rdot12_p, px2/m2, px1/m1)
+                     + pair_pdot_x(q2, q3, x2, x3, r23, rdot23_p, px2/m2, px3/m3))
+    results.append(check_zero_fast(
+        pdot_x2_formula - (-diff(H3, x2)),
+        "H.5  pdot_expanded (n=3, i=2) equals −∂H3/∂x2  [Eq. pdot_expanded]",
+        vf,
+    ))
+
+    pdot_x3_formula = (pair_pdot_x(q3, q1, x3, x1, r13, rdot13_p, px3/m3, px1/m1)
+                     + pair_pdot_x(q3, q2, x3, x2, r23, rdot23_p, px3/m3, px2/m2))
+    results.append(check_zero_fast(
+        pdot_x3_formula - (-diff(H3, x3)),
+        "H.6  pdot_expanded (n=3, i=3) equals −∂H3/∂x3  [Eq. pdot_expanded]",
+        vf,
+    ))
+
+    # ----- H.7–H.8: Total momentum conservation -----
+    results.append(check_zero_fast(
+        (-diff(H3, x1)) + (-diff(H3, x2)) + (-diff(H3, x3)),
+        "H.7  ṗx1 + ṗx2 + ṗx3 = 0  (n=3 x-momentum conservation)",
+        vf,
+    ))
+    results.append(check_zero_fast(
+        (-diff(H3, y1)) + (-diff(H3, y2)) + (-diff(H3, y3)),
+        "H.8  ṗy1 + ṗy2 + ṗy3 = 0  (n=3 y-momentum conservation)",
+        vf,
+    ))
+
+    return results
+
+
+# ============================================================
+# GROUP I: Angular Momentum Conservation
+#
+# Verifies {H, Lz} = 0 via Poisson bracket for n=2 and n=3,
+# confirming the rotational symmetry claimed in Section 2.2.
+#
+# Poisson bracket: {H, Lz} = Σᵢ [∂H/∂xᵢ ∂Lz/∂pxᵢ − ∂H/∂pxᵢ ∂Lz/∂xᵢ
+#                                 + ∂H/∂yᵢ ∂Lz/∂pyᵢ − ∂H/∂pyᵢ ∂Lz/∂yᵢ]
+# With Lz = Σᵢ(xᵢpyᵢ − yᵢpxᵢ):
+#   ∂Lz/∂pxᵢ = −yᵢ,  ∂Lz/∂pyᵢ = xᵢ,  ∂Lz/∂xᵢ = pyᵢ,  ∂Lz/∂yᵢ = −pxᵢ
+# ============================================================
+
+def verify_group_I():
+    results = []
+
+    def poisson_bracket_Lz(H_expr, coord_tuples):
+        """Compute {H, Lz} for Lz = Σᵢ(xᵢpyᵢ − yᵢpxᵢ).
+        coord_tuples: list of (xi, yi, pxi, pyi) for each particle.
+        """
+        bracket = Integer(0)
+        for xi, yi, pxi, pyi in coord_tuples:
+            bracket += (diff(H_expr, xi)*(-yi) - diff(H_expr, pxi)*pyi
+                      + diff(H_expr, yi)*xi    - diff(H_expr, pyi)*(-pxi))
+        return bracket
+
+    # I.1: {H_qp, Lz} = 0  (2-particle)
+    bracket_2 = poisson_bracket_Lz(H_qp, [(x1, y1, px1, py1), (x2, y2, px2, py2)])
+    results.append(check_zero_fast(
+        bracket_2,
+        "I.1  {H(q,p), Lz} = 0  (angular momentum conservation, n=2)",
+        _num_vals_2d,
+    ))
+
+    # I.2: {H3, Lz} = 0  (3-particle — exercises the full multi-pair structure)
+    bracket_3 = poisson_bracket_Lz(
+        H3, [(x1, y1, px1, py1), (x2, y2, px2, py2), (x3, y3, px3, py3)]
+    )
+    results.append(check_zero_fast(
+        bracket_3,
+        "I.2  {H3(q,p), Lz} = 0  (angular momentum conservation, n=3)",
+        _num_vals_3body,
+    ))
+
+    return results
+
+
+# ============================================================
 # MAIN
 # ============================================================
 
@@ -507,6 +697,12 @@ def main():
 
     print("--- Group G: Conservation Laws ---")
     all_results += verify_group_G()
+
+    print("--- Group H: n=3 Body EOM Verification ---")
+    all_results += verify_group_H()
+
+    print("--- Group I: Angular Momentum Conservation ---")
+    all_results += verify_group_I()
 
     print("\n" + "=" * 68)
     print("  VERIFICATION SUMMARY")
