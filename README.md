@@ -4,7 +4,6 @@
 [![Docs (stable)](https://img.shields.io/badge/docs-stable-blue.svg)](https://WeberElectrodynamics.github.io/WeberElectrodynamics.jl/stable)
 [![Docs (dev)](https://img.shields.io/badge/docs-dev-blue.svg)](https://WeberElectrodynamics.github.io/WeberElectrodynamics.jl/dev)
 [![Coverage](https://codecov.io/gh/WeberElectrodynamics/WeberElectrodynamics.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/WeberElectrodynamics/WeberElectrodynamics.jl)
-[![PkgEval](https://juliaci.github.io/NanosoldierReports/pkgeval_badges/W/WeberElectrodynamics.svg)](https://juliaci.github.io/NanosoldierReports/pkgeval_badges/W/WeberElectrodynamics.html)
 [![Julia ≥1.9](https://img.shields.io/badge/julia-%E2%89%A51.9-9558B2?logo=julia&logoColor=white)](https://julialang.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.19239678.svg)](https://doi.org/10.5281/zenodo.19239678)
