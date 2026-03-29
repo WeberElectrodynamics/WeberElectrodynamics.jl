@@ -137,31 +137,52 @@ Neither backend regularizes Weber's velocity-dependent force — only the Coulom
 
 **Claude Code handles all CHANGELOG entries for this project.** See conventions below.
 
-### Steps
+### Pre-release checklist
 
-1. Write release notes under `## [Unreleased]` in `CHANGELOG.md` (see conventions below)
-2. Update the version number in the `CLAUDE.md` Project description
-3. Commit all changed source/doc/test files
-4. Run `./release.sh patch|minor|major`
+1. Commit all changed source/doc/test files
+2. Write release notes in `RELEASENOTES.md` (the developer-facing input point)
+3. If the paper changed, bump `papers/<name>/VERSION` (see [Paper versioning](#paper-versioning))
+4. Update the version number in the `CLAUDE.md` Project description
+5. Dry-run: `./release.sh patch` (or `minor`/`major`) — safe, no changes made
+6. Execute: `./release.sh patch --execute`
 
-`release.sh` handles everything else: bumps `Project.toml`, moves `[Unreleased]` entries to the
-new version heading, commits, pushes, and posts the `@JuliaRegistrator register` comment with
-the changelog content embedded.
+`release.sh --execute` handles everything else: bumps `Project.toml`, moves notes from
+`RELEASENOTES.md` into `CHANGELOG.md`, resets `RELEASENOTES.md`, commits, pushes, and posts
+the `@JuliaRegistrator register` comment.
 
-### Full automated pipeline (after `release.sh`)
+### release.sh usage
+
+```bash
+./release.sh [patch|minor|major]            # dry-run (default, safe)
+./release.sh [patch|minor|major] --execute  # actually release
+```
+
+**Dry-run** prints a preview of the version bump, the release notes, and every action that would
+be taken — no files are modified.
+
+**Gate**: both modes fail immediately if `RELEASENOTES.md` is empty (blank lines and
+`<!-- comments -->` don't count).
+
+### Full automated pipeline (after `release.sh --execute`)
 
 ```
-release.sh posts @JuliaRegistrator register comment
+release.sh --execute
+  → commits Project.toml + CHANGELOG.md + RELEASENOTES.md, pushes
+  → posts @JuliaRegistrator register comment
   → JuliaRegistrator opens PR to JuliaRegistries/General (~15 min)
-  → AutoMerge validates and merges (see requirements below)
+  → AutoMerge validates and merges
   → JuliaTagBot creates the git tag automatically
-  → TagBot.yml creates a GitHub Release using CHANGELOG.md (changelog: true)
+  → TagBot.yml creates a GitHub Release (description = release notes)
+  → Papers.yml fires on release published → compiles PDFs → uploads as assets
   → Docs.yml deploys /stable/ on the new tag
 ```
 
-No manual `git tag` or GitHub Release creation needed — TagBot and Docs deploy automatically.
+No manual `git tag`, GitHub Release creation, or PDF upload needed — all automated.
 
 ### CHANGELOG conventions
+
+`CHANGELOG.md` is now populated **automatically** from `RELEASENOTES.md` by `release.sh`.
+Claude Code still writes `RELEASENOTES.md` content when preparing a release.
 
 **Format**: Keep a Changelog (`## [Unreleased]` at top, sections like `### Added`, `### Fixed`,
 `### Changed`, `### Breaking changes`).
@@ -177,20 +198,15 @@ there are actual breaking changes — it makes the notes self-documenting and cl
   the registry. Patch bumps (`0.2.0 → 0.2.1`) are not.
 - Post-1.0: only **major** bumps are breaking.
 
-**Example CHANGELOG entry for a breaking minor release**:
+**Example `RELEASENOTES.md` for a breaking minor release**:
 
 ```markdown
-## [Unreleased]
-
 ### Breaking changes
 - `foo` now returns `Bar` instead of `Baz`. Upgrade: replace `x::Baz` with `x::Bar`.
 
 ### Added
 - New `bar` function for ...
 ```
-
-**Guard**: `release.sh` will exit with an error (before touching git) if the new version section
-is empty. Always populate `[Unreleased]` before running the release script.
 
 ### GitHub account
 
@@ -202,3 +218,34 @@ from any other account. Before running `release.sh` or any `gh api` command, ver
 gh auth switch --user WeberElectrodynamics
 gh auth status   # confirm Active account: WeberElectrodynamics
 ```
+
+## Paper versioning
+
+Papers live in `papers/<name>/` and each has its own independent version in `papers/<name>/VERSION`.
+
+**Convention**: `MAJOR.MINOR` (e.g. `1.0`, `1.1`, `2.0`) — independent of the Julia package version.
+
+| Bump | When |
+|------|------|
+| `MINOR` (1.0 → 1.1) | Corrections, new sections, new references |
+| `MAJOR` (1.0 → 2.0) | Substantial restructuring or a new paper version |
+
+The VERSION file is committed as part of the normal pre-release commit. The PDF filename on the
+Releases page is `<paper-name>-v<version>.pdf` (e.g. `Computational-Weber-Electrodynamics-v1.0.pdf`).
+
+If the paper has **not** changed since the last release, leave VERSION as-is — the same filename
+will simply be re-uploaded to the new release.
+
+### Adding a new paper
+
+1. Create `papers/<new-paper>/` with `.tex`, `.bib`, and a `VERSION` file (start at `1.0`)
+2. Add `- <new-paper>` to the matrix in `.github/workflows/Papers.yml`
+3. That's it — the paper compiles and uploads on every future release automatically
+
+### Zenodo & arXiv notes
+
+- **Zenodo**: `.zenodo.json` is already present at the repo root → Zenodo auto-archives every
+  GitHub Release. The PDF asset is included automatically. Each paper will eventually get its
+  own separate Zenodo record.
+- **arXiv**: arXiv requires source submission (`.tex` + `.bib` + figures), not the compiled PDF.
+  This is a deliberate manual step when ready — no automation needed.

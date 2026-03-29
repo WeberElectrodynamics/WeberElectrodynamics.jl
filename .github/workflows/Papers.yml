@@ -1,0 +1,39 @@
+name: Papers
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    name: Build ${{ matrix.paper }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        paper:
+          - Computational-Weber-Electrodynamics
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read paper version
+        id: ver
+        run: echo "version=$(cat papers/${{ matrix.paper }}/VERSION | tr -d '[:space:]')" >> $GITHUB_OUTPUT
+
+      - name: Compile PDF
+        uses: xu-cheng/latex-action@v4
+        with:
+          root_file: ${{ matrix.paper }}.tex
+          working_directory: papers/${{ matrix.paper }}
+
+      - name: Rename PDF with version
+        run: |
+          mv papers/${{ matrix.paper }}/${{ matrix.paper }}.pdf \
+             papers/${{ matrix.paper }}/${{ matrix.paper }}-v${{ steps.ver.outputs.version }}.pdf
+
+      - name: Upload PDF to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: papers/${{ matrix.paper }}/${{ matrix.paper }}-v${{ steps.ver.outputs.version }}.pdf
