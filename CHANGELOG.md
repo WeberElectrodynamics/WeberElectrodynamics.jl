@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.3] - 2026-03-29
+
+### Changed
+
+- Factored source-code architecture and internal conventions out of `CLAUDE.md` into a new [Developer Guide](docs/src/developer-guide.md) docs page. `CLAUDE.md` now contains concise reminders with links; the full reference lives in the rendered docs.
+
 ## [0.2.2] - 2026-03-28
 
 ### Added
