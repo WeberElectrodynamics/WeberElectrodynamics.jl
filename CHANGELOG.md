@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.4] - 2026-03-29
+
+### Changed
+
+- Added DOIs to all journal articles (7) and Springer books (2) in the paper bibliography (`references.bib`); all verified via CrossRef.
+- Fixed BibTeX title-casing: protected `{H}amiltonian` in Jayawardana2023 and Ohsawa2023 entries, `{WeberElectrodynamics.jl}` and `{Julia}` in the software entry.
+- Corrected publisher of `assis-electric-force` from `C. Roy Keys Inc.` to `Apeiron` for consistency with all other Assis entries.
+- Corrected year of `assis-weber-vol5` from 2024 to the confirmed publication year.
+- Paper version bumped to 1.1.
+
 ## [0.2.3] - 2026-03-29
 
 ### Changed
