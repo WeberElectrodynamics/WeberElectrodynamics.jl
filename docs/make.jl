@@ -29,7 +29,8 @@ makedocs(
             "Visualization" => "api/visualization.md",
         ],
         "Advanced" => [
-            "Regularization" => "regularization.md",
+            "Regularization"  => "regularization.md",
+            "Developer Guide" => "developer-guide.md",
         ],
         "Research" => [
             "Zöllner Extension" => "zollner.md",
