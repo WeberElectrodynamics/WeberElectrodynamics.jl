@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-Julia package (v0.2.0) for n-body Weber electrodynamics simulation with Zöllner electrogravitational extension. Implements a symplectic Strang-splitting symmetric-projection integrator with Levi-Civita/KS regularization for close encounters and collision bounce for head-on singularities.
+Julia package (v0.2.2) for n-body Weber electrodynamics simulation with Zöllner electrogravitational extension. Implements a symplectic Strang-splitting symmetric-projection integrator with Levi-Civita/KS regularization for close encounters and collision bounce for head-on singularities.
 
 ## Commands
 
@@ -18,8 +18,10 @@ julia --project=. -e 'using Test; using WeberElectrodynamics; using WeberElectro
 # Format all Julia files
 julia -e 'using JuliaFormatter; format(".")'
 
-# Release a new version (patch / minor / major)
+# Release a new version — dry-run (safe, no changes)
 ./release.sh patch
+# Release a new version — actually execute
+./release.sh patch --execute
 ```
 
 ## Repository Structure
@@ -132,6 +134,61 @@ Neither backend regularizes Weber's velocity-dependent force — only the Coulom
 - Package is `dev`'d in default Julia environment (`~/.julia/environments/v1.12/`)
 - Notebooks run via IJulia `julia-1.12` kernel from the same default environment
 - Tests run via `julia --project=. -e 'using Pkg; Pkg.test()'`
+
+## Git Workflow
+
+### Branch strategy
+
+`main` is always stable and releasable. All non-trivial changes go through a branch and PR.
+
+**When to push directly to `main`:** only for truly trivial changes — a typo fix, a single-word
+doc tweak, a one-liner correction. Everything else gets a branch.
+
+**Branch naming:**
+
+| Prefix | Use for |
+|--------|---------|
+| `feature/<name>` | New functionality |
+| `fix/<name>` | Bug fixes |
+| `docs/<name>` | Documentation only |
+| `refactor/<name>` | Internal restructuring, no behaviour change |
+| `experiment/<name>` | Exploratory / research branches — may not merge |
+
+Examples: `feature/3d-regularization`, `fix/energy-drift`, `docs/zollner-theory`,
+`experiment/three-body-bound-states`
+
+### Pull requests
+
+- Open a PR to `main` for all non-trivial branches
+- Title should match the eventual commit message (conventional commit format, see below)
+- Tests must pass (CI runs automatically on push)
+- Merge strategy: **regular merge commit** (not squash)
+- Never force-push `main`
+
+### Commit message conventions
+
+This repo uses [Conventional Commits](https://www.conventionalcommits.org/):
+
+```
+feat:      new user-facing functionality
+fix:       bug fix
+docs:      documentation only
+refactor:  internal restructuring, no behaviour change
+test:      adding or fixing tests
+chore:     tooling, CI, dependencies
+release:   version bump commits made by release.sh
+```
+
+Examples:
+```
+feat: add 3D Levi-Civita regularization backend
+fix: correct sign flip in 1D regularization lift
+docs: add Zöllner theory page
+refactor: extract pair-distance helpers into regularization.jl
+test: add collision bounce smoke test for 3D case
+chore: bump Symbolics compat to 7
+release: v0.2.3
+```
 
 ## Releasing a New Version
 
