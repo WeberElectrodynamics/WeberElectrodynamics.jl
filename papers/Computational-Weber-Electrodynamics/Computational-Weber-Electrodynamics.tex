@@ -52,7 +52,7 @@
 \newcommand{\genmom}{p}                 % Generalized momentum
 
 % Document metadata
-\title{Computational Weber electrodynamics with symplectic numerical integrators}
+\title{Computational Weber electrodynamics: symplectic n-body integration}
 \author{Samer Al Duleimi \\
 \small samerweb3@gmail.com}
 \date{March 2026}
@@ -62,7 +62,7 @@
 \maketitle
 
 \begin{abstract}
-    We describe the numerical simulation of $n$-body systems in Weber's electrodynamics. We derive the general Hamiltonian and equations of motion for $n$ particles and apply a symplectic integrator. This method enables investigations of the kinematics and dynamics given some initial conditions and the numerical verification of conserved quantities like energy, momentum, and angular momentum. Furthermore, it opens the door to exploring alternative models for electromagnetic radiation and bound states of like charges below Weber's critical radius.
+    We present the numerical simulation of $n$-body systems in Weber's electrodynamics. We derive the general Hamiltonian and equations of motion for $n$ particles and apply a symplectic integrator for non-separable Hamiltonians. Conserved quantities including energy, linear momentum, and angular momentum are verified numerically. This framework enables systematic exploration of alternative electrodynamic models for radiation and bound states of like charges below Weber's critical radius.
 \end{abstract}
 
 \section{Introduction}
@@ -79,13 +79,13 @@ and \textit{Weber's force law}
     \vec{F}_{12} = \qq \frac{\hat{r}}{r^2}\bigg(1 - \frac{\rdot^2}{2c^2} + \frac{r\ddot{r}}{c^2}\bigg)
 \end{equation}
 
-where $q_1$ and $q_2$ are the electric charges of the two particles, $\vec{F}_{12}$ is the force on $q_1$ due to $q_2$, $r$ is the relative distance between the two particles, $\rdot = dr/dt$ is the relative radial velocity, $\ddot{r} = d\rdot/dt$ is the relative radial acceleration and $c$ is the speed of light in vacuum. This setup is described in more detail in Appendix~\ref{app:notation} and follows conventions used in \citep{assis-weber}.
+where $q_1$ and $q_2$ are the electric charges of the two particles, $\vec{F}_{12}$ is the force on $q_1$ due to $q_2$, $r$ is the relative distance between the two particles, $\rdot = dr/dt$ is the relative radial velocity, $\ddot{r} = d\rdot/dt$ is the relative radial acceleration, and $c$ is the speed of light in vacuum. This setup is described in more detail in Appendix~\ref{app:notation} and follows conventions used in \citep{assis-weber}.
 
 In SI units,~\eqref{potential} and~\eqref{force} would have a factor of $1/(4\pi \epsilon_0)$ multiplying the right-hand side, where $\epsilon_0$ is the permittivity of free space. We choose to omit this factor by using an alternative system of units that better suits our computational purposes (see Section~\ref{units}).
 
-Weber's electrodynamics is an \textit{action at a distance} theory. It satisfies Newton's third law of motion in the \textit{strong form} and thus $\vec{F}_{21} = -\vec{F}_{12}$ is true in general. Therefore, energy, linear momentum, and angular momentum are always conserved. Weber's force law~\eqref{force} generalizes Coulomb's law for electrostatics to include \textit{velocity-dependent} (magnetic) and \textit{acceleration-dependent} (induction) forces. This general setup has a significant \textit{computational advantage} compared to Maxwell-Heaviside's field formalism together with the Lorentz force law. We also have $\vec{F}_1 = m_1\vec{a}_1$ and $\vec{F}_2 = m_2\vec{a}_2$, where $m_1$ and $m_2$ are the \textit{inertial masses} of the particles and $\vec{a}_1$ and $\vec{a}_2$ are their accelerations with respect to an \textit{inertial frame of reference}. We adopt the \textit{Universal material frame of reference} described in Relational Mechanics \citep{assis-relational-mechanics} as our inertial reference frame.
+Weber's electrodynamics is an \textit{action-at-a-distance} theory. It satisfies Newton's third law of motion in the \textit{strong form} and thus $\vec{F}_{21} = -\vec{F}_{12}$ is true in general. Therefore, energy, linear momentum, and angular momentum are always conserved. Weber's force law~\eqref{force} generalizes Coulomb's law for electrostatics to include \textit{velocity-dependent} (magnetic) and \textit{acceleration-dependent} (induction) forces. This general setup has a significant \textit{computational advantage} compared to Maxwell-Heaviside's field formalism together with the Lorentz force law. We also have $\vec{F}_1 = m_1\vec{a}_1$ and $\vec{F}_2 = m_2\vec{a}_2$, where $m_1$ and $m_2$ are the \textit{inertial masses} of the particles and $\vec{a}_1$ and $\vec{a}_2$ are their accelerations with respect to an \textit{inertial frame of reference}. We adopt the \textit{Universal material frame of reference} described in Relational Mechanics \citep{assis-relational-mechanics} as our inertial reference frame.
 
-Helmholtz argued in the 19th century that Weber's model violates the \textit{principle of conservation of energy} (see \citep{assis-weber-vol4}). Weber replied with great detail to these claims and proved energy conservation extensively in his 6th and 7th memoirs \citep{assis-weber-vol4}. Weber proved that his force~\eqref{force} can be derived from the potential~\eqref{potential}. Therefore, it is a conservative force and the work done is path-independent. The Euler-Lagrange formalism indicates that Weber's electrodynamics is consistent with the principles of mechanics (see equation~\eqref{euler_lagrange}). Nowadays, Weber's electrodynamics is said to be valid only for small velocities (\textit{quasi-static approximation}) compared to $c$ and is not suitable for describing electromagnetic radiation. This might be the biggest point of critique against Weber's electrodynamics. Yet, the third term (acceleration-dependent term) in~\eqref{force} naturally falls off as $1/r$, leaving the door open for alternative theories of radiation.
+Helmholtz argued in the 19th century that Weber's model violates the \textit{principle of conservation of energy} (see \citep{assis-weber-vol4}). Weber replied with great detail to these claims and proved energy conservation extensively in his 6th and 7th memoirs \citep{assis-weber-vol4}. Weber proved that his force~\eqref{force} can be derived from the potential~\eqref{potential}. Therefore, this force is conservative and the work done is path-independent. The Euler-Lagrange formalism indicates that Weber's electrodynamics is consistent with the principles of mechanics (see equation~\eqref{euler_lagrange}). Nowadays, Weber's electrodynamics is said to be valid only for small velocities (\textit{quasi-static approximation}) compared to $c$ and is not suitable for describing electromagnetic radiation. This might be the biggest point of critique against Weber's electrodynamics. Yet, the third term (acceleration-dependent term) in~\eqref{force} naturally falls off as $1/r$, leaving the door open for alternative theories of radiation.
 
 To test the strengths and weaknesses of Weber's electrodynamics, we implement a \textit{symplectic numerical integrator} for investigating $n$-body systems of charged particles~\citep{WeberElectrodynamics.jl}. This allows us to explore the dynamics of charged particles interacting via Weber's force law~\eqref{force} in various configurations and scenarios. Important aspects like energy, linear momentum, and angular momentum conservation can be verified numerically. Furthermore, it paves the way for studying complex systems with oscillatory behavior and wave phenomena within the context of Weber's electrodynamics. Perhaps most interestingly, Weber's force law admits \textit{attraction between like charges} below a critical distance. We can explore the dynamics below \textit{Weber's critical radius}, which may one day lead to a purely electrodynamic planetary model of the atom \citep{assis-planetary-model}.
 
@@ -112,7 +112,7 @@ The Lagrangian is then defined as:
     \boxed{L = T - S}
 \end{equation}
 
-Although the following expression is not directly relevant for our goals, it is worth noting that we can apply the Euler-Lagrange equation to obtain the force~\eqref{force} for particle 1 in the $x$-direction by differentiating w.r.t. particle 1's position $x_1$ and velocity $\dot{x}_1$ (see Appendix~\ref{app:notation} for the notation)
+Although the following expression is not directly relevant for our goals, it is worth noting that we can apply the Euler-Lagrange equation to obtain the force~\eqref{force} for particle 1 in the $x$-direction by differentiating w.r.t. particle 1's position $x_1$ and velocity $\dot{x}_1$ (see Appendix~\ref{app:notation} for the notation).
 
 \begin{equation}\label{euler_lagrange}
     F_{12}^x = \frac{d}{dt}\frac{\partial S}{\partial \dot{x}_1} - \frac{\partial S}{\partial x_1} = \qq \frac{(x_1 - x_2)}{r_{12}^3} \left(1 - \frac{\dot{r}^2}{2c^2} + \frac{r\ddot{r}}{c^2}\right)
@@ -127,13 +127,13 @@ The Hamiltonian, by definition, is derived from the Lagrangian. For two particle
     H = \sum_{i=1}^{2} \left(\dot{x}_i \frac{\partial L}{\partial \dot{x}_i} + \dot{y}_i \frac{\partial L}{\partial \dot{y}_i} + \dot{z}_i \frac{\partial L}{\partial \dot{z}_i}\right) - L
 \end{equation}
 
-This Hamiltonian is a function of individual particle \textit{positions} and \textit{velocities} in three spatial dimensions
+This Hamiltonian is a function of individual particle \textit{positions} and \textit{velocities} in three spatial dimensions.
 
 \begin{equation}
     H = H(x_1, y_1, z_1, x_2, y_2, z_2, \dot{x}_1, \dot{y}_1, \dot{z}_1, \dot{x}_2, \dot{y}_2, \dot{z}_2)
 \end{equation}
 
-Expanding and simplifying~\eqref{H_def} yields the Hamiltonian for two charged particles in Weber's electrodynamics
+Expanding and simplifying~\eqref{H_def} yields the Hamiltonian for two charged particles in Weber's electrodynamics.
 
 \begin{equation}\label{H}
     H = m_1 \frac{\vec{v}_1 \cdot \vec{v}_1}{2} + m_2 \frac{\vec{v}_2 \cdot \vec{v}_2}{2} + \frac{\qq}{r}\bigg(1 - \frac{\rdot^2}{2c^2}\bigg)
@@ -183,12 +183,12 @@ and
 with analogous equations for the $y$ and $z$ directions. Note that $\dot{p}_{x_1} + \dot{p}_{x_2} = 0$, but $\dot{x}_1 - \dot{x}_2 \neq 0$ in general.
 
 \subsection{Conserved quantities and symmetries}
-Weber's electrodynamics for 2 particles conserves energy, linear momentum and angular momentum. These conserved quantities arise from symmetries in the Hamiltonian~\eqref{h_box} according to Noether's theorem. The conservation of energy follows from the \textit{time-translation symmetry} of the Hamiltonian, meaning that the Hamiltonian has no explicit time dependence. The conservation of linear momentum arises from the \textit{translational symmetry} of the Hamiltonian, meaning that shifting all particle positions by a constant vector does not change the form of the Hamiltonian. The conservation of angular momentum is a consequence of the \textit{rotational symmetry} of the Hamiltonian, indicating that rotating the entire system around any axis does not change the form of the Hamiltonian. These symmetries arise from the fact that Weber's electrodynamics only relies on what Assis calls \textit{relational magnitudes} (see Appendix~\ref{app:additional-remarks}).
+Weber's electrodynamics for 2 particles conserves energy, linear momentum, and angular momentum. These conserved quantities arise from symmetries in the Hamiltonian~\eqref{h_box} according to Noether's theorem. The conservation of energy follows from the \textit{time-translation symmetry} of the Hamiltonian, meaning that the Hamiltonian has no explicit time dependence. The conservation of linear momentum arises from the \textit{translational symmetry} of the Hamiltonian, meaning that shifting all particle positions by a constant vector does not change the form of the Hamiltonian. The conservation of angular momentum is a consequence of the \textit{rotational symmetry} of the Hamiltonian, indicating that rotating the entire system around any axis does not change the form of the Hamiltonian. These symmetries arise from the fact that Weber's electrodynamics relies only on what Assis calls \textit{relational magnitudes} (see Appendix~\ref{app:additional-remarks}).
 
 \subsection{Hamiltonian for \texorpdfstring{$n$}{n} particles}\label{n-body-hamiltonian}
 For a system with $n$ particles, the Hamiltonian~\eqref{H} generalizes to:
 \begin{equation}\label{hamiltonian}
-    H = \sum_{i=1}^{n} \frac{1}{2} m_i v_i^2 + \sum_{i=1}^{n} \sum_{j=i+1}^{n} \frac{q_i q_j}{r_{ij}} \left(1 - \frac{\dot{r}_{ij}^2}{2 c^2}\right)
+    H_n = \sum_{i=1}^{n} \frac{1}{2} m_i v_i^2 + \sum_{i=1}^{n} \sum_{j=i+1}^{n} \frac{q_i q_j}{r_{ij}} \left(1 - \frac{\dot{r}_{ij}^2}{2 c^2}\right)
 \end{equation}
 
 where the double sum is taken over every unique particle pair $i$ and $j$ (see Section~\ref{complexity}). The conservation laws stated previously still hold for this general case.
@@ -196,11 +196,11 @@ where the double sum is taken over every unique particle pair $i$ and $j$ (see S
 For a system of $n$ particles in one spatial dimension $x$, Hamilton's equations of motion are given by
 
 \begin{equation}\label{xdot}
-    \dot{x}_i = \frac{\partial H}{\partial p_{x_i}}
+    \dot{x}_i = \frac{\partial H_n}{\partial p_{x_i}}
 \end{equation}
 
 \begin{equation}\label{pdot}
-    \dot{p}_{x_i} = -\frac{\partial H}{\partial x_i}
+    \dot{p}_{x_i} = -\frac{\partial H_n}{\partial x_i}
 \end{equation}
 
 for particle $i \in \{1, 2, \ldots, n\}$. In three dimensions, we also have the analogous equations for $y_i$ and $z_i$.
@@ -287,7 +287,7 @@ A naive implementation would compute all $n(n-1)$ interactions, but by exploitin
 Furthermore, each evaluation of~\eqref{xdot_expanded} and~\eqref{pdot_expanded} only needs to compute $r_{ij}$ and $\dot{r}_{ij}$ and their powers once per unique pair, which further reduces the computational load.
 
 \subsection{Units and numerical values}\label{units}
-When performing numerical computations we often rely on the 64-bit floating point representation of decimal numbers. This number representation introduces a trade-off between range and precision. To maintain optimal precision, it is advantageous to work with number values near the order of magnitude of 1. In Weber's electrodynamics, we are mostly interested in numerical values that are relatively small when expressed in SI-units. In our numerical computations, we will convert to smaller units to obtain larger numerical values for the same physical quantities.
+When performing numerical computations, we often rely on the 64-bit floating-point representation of decimal numbers. This number representation introduces a trade-off between range and precision. To maintain optimal precision, it is advantageous to work with number values near the order of magnitude of 1. In Weber's electrodynamics, we are mostly interested in numerical values that are relatively small when expressed in SI units. In our numerical computations, we will convert to smaller units to obtain larger numerical values for the same physical quantities.
 
 In the 19th century, Gauss and Weber used an absolute system of units based on the \textit{millimeter}, \textit{milligram}, and \textit{second}. This system is not to be confused with the CGS-system of units, also known as the Gaussian system of units~\citep{assis-weber-vol1}. The potential~\eqref{potential} and force~\eqref{force} were originally introduced by Weber in this absolute system of units. The units in this system for the potential~\eqref{potential} are $mg \cdot mm^2 / s^2$ and for the force~\eqref{force} are $mg \cdot mm / s^2$.
 
@@ -296,13 +296,13 @@ Thus, the original system of Gauss and Weber, compared to the SI system, is bett
 Another common system of units is obtained by setting $c = 1$ and (in the case of SI units) $1/(4\pi \epsilon_0) = 1$. This system is often used in computational physics for the same reasons mentioned above.
 
 \section{Symplectic numerical integration of non-separable Hamiltonian systems}\label{symplectic}
-A numerical method is called \textit{symplectic} if it preserves the \textit{phase space volume} of Hamiltonian systems over time according to \textit{Liouville's theorem}. Standard symplectic methods require the Hamiltonian to be separable into kinetic and potential energy terms that depend only on positions or momenta. The general Hamiltonian for Weber's electrodynamics~\eqref{hamiltonian} is non-separable because the velocity-dependent term
+A numerical method is called \textit{symplectic} if it preserves the \textit{phase space volume} of Hamiltonian systems over time according to \textit{Liouville's theorem}. Standard symplectic methods require the Hamiltonian to be separable into kinetic and potential energy terms that each depend only on positions or momenta. The general Hamiltonian for Weber's electrodynamics~\eqref{hamiltonian} is non-separable because the velocity-dependent term
 
 \begin{equation}
     -\frac{\qq \dot{r}_{ij}^2}{2 c^2 r_{ij}}
 \end{equation}
 
-is both a function of the positions and momenta after the Legendre transformation. Therefore, standard symplectic methods cannot be applied directly. Recent work by \citet{Pihajoki2015} and \citet{Tao2016} introduced explicit symplectic methods using the extended phase space method. Building on these approaches, \citet{Jayawardana2023} developed a semi-explicit symplectic integrator for non-separable Hamiltonian systems that also preserves quadratic invariants (see \citep{Ohsawa2023}). Currently, this is one of the most suitable methods for our purposes. We describe it briefly here.
+is both a function of the positions and momenta after the Legendre transformation. Therefore, standard symplectic methods cannot be applied directly. Recent work by \citet{Pihajoki2015} and \citet{Tao2016} introduced explicit symplectic methods using the clever extended phase space method. Building on these approaches, \citet{Jayawardana2023} developed a semi-explicit symplectic integrator for non-separable Hamiltonian systems that also preserves quadratic invariants (see \citep{Ohsawa2023}). Currently, this is one of the most suitable methods for our purposes. We describe it briefly here.
 
 We introduce compact vector notation $\mathbf{q} = (x_1, y_1, z_1, \ldots, x_n, y_n, z_n) \in \mathbb{R}^{3n}$ for positions and $\mathbf{p} = (p_{x_1}, p_{y_1}, p_{z_1}, \ldots, p_{x_n}, p_{y_n}, p_{z_n}) \in \mathbb{R}^{3n}$ for momenta, so that $\mathbf{z} = (\mathbf{q}, \mathbf{p}) \in \mathbb{R}^{6n}$ as in~\eqref{z}. The extended phase space doubles the phase space by introducing another pair of positions and momenta $\mathbf{x} \in \mathbb{R}^{3n}$ and $\mathbf{y} \in \mathbb{R}^{3n}$, giving the state vector in extended phase space
 
@@ -310,7 +310,7 @@ We introduce compact vector notation $\mathbf{q} = (x_1, y_1, z_1, \ldots, x_n, 
     \mathbf{Z} = (\mathbf{q}, \mathbf{x}, \mathbf{p}, \mathbf{y}) \in \mathbb{R}^{12n}
 \end{equation}
 
-The condition $\mathbf{x} = \mathbf{q}$ and $\mathbf{y} = \mathbf{p}$ is equivalent to a system in the original phase space. If
+The conditions $\mathbf{x} = \mathbf{q}$ and $\mathbf{y} = \mathbf{p}$ are equivalent to a system in the original phase space. If
 
 \begin{equation}
     \mathbf{A} = \begin{pmatrix}
@@ -369,7 +369,7 @@ where $k$ is the iteration index. We repeat this process until
 
 where $\epsilon$ is a small tolerance value.
 
-The full specification of this semi-explicit symplectic integrator can be found in \citep{Jayawardana2023}. We have implemented this integrator in the Julia programming language. For examples and ongoing work, see \citep{WeberElectrodynamics.jl}.
+The full specification of this semi-explicit symplectic integrator can be found in \citep{Jayawardana2023}. We have implemented this integrator in the Julia programming language. For examples, ongoing work, and numerical validation including energy conservation benchmarks and convergence studies, see \citep{WeberElectrodynamics.jl}.
 
 \section{Discussion}
 
@@ -381,14 +381,14 @@ Perhaps the most promising direction for future research lies in the remarkable 
 
 \citet{Frauenfelder2024} have shown that classical collisions at the origin are regularizable only when the angular momentum $\ell = 0$, corresponding to purely radial (head-on) motion. For $\ell \neq 0$, the system is not regularizable. This constraint poses a fundamental challenge: finding stable, bound configurations of like charges below the critical radius that go beyond purely radial oscillation. One avenue is to develop advanced regularization or stabilization techniques that could handle the $\ell \neq 0$ singularity. Another, perhaps more promising, approach is to expand our view beyond the isolated two-body problem and consider multi-particle systems. For instance, we could balance a pair of like charges in the sub-critical regime with oppositely charged particles above $\rho$, or explore other conceivable configurations whose mutual interactions provide the stabilizing forces that a single pair lacks.
 
-This line of investigation is part of a long-standing program that originated with Weber himself and his planetary model of the atom~\citep{assis-planetary-model}, in which bound pairs of like charges form atomic nuclei while unlike charges orbit under the combined electrodynamic forces. With the computational tools presented here, and with modern AI-assisted methods that can efficiently search the space of possible configurations, we can explore this vast landscape of possibilities more thoroughly than was previously feasible. We could in principle automate algebraic manipulations and systematic testing. The ultimate goal of this program is to uncover the electrodynamic origins of the periodic table of elements.
+This line of investigation is part of a long-standing program that originated with Weber himself and his planetary model of the atom (see \citep{assis-planetary-model} and \citep{assis-weber-vol4}), in which bound pairs of like charges form atomic nuclei while unlike charges orbit under the combined electrodynamic forces. With the computational tools presented here, and with modern AI-assisted methods that can efficiently search the space of possible configurations, we can explore this vast landscape of possibilities more thoroughly than was previously feasible. We could in principle automate algebraic manipulations and systematic testing. The ultimate goal of this program is to uncover the electrodynamic origins of the periodic table of elements.
 
 \appendix
 
 \section{Notation and relational magnitudes}\label{app:notation}
 For a system of two particles, we define the following quantities. Particle 1 and particle 2 have electric charges $q_1, q_2$ and inertial masses $m_1, m_2$. In the Gauss-Weber system of units, charge has units of $\sqrt{mg \cdot mm^3 / s^2}$.
 
-The individual particle positions, velocities and accelerations are
+The individual particle positions, velocities, and accelerations are
 
 \begin{align*}
     \vec{r}_1 = (x_1, y_1, z_1)                      &  & \vec{r}_2 = (x_2, y_2, z_2)                      \\
@@ -404,7 +404,7 @@ The individual particle momenta are
     p_{z_1} = m_1 \dot{z}_1 &  & p_{z_2} = m_2 \dot{z}_2
 \end{align*}
 
-The relative positions, velocities and accelerations between particle 1 and particle 2 are
+The relative positions, velocities, and accelerations between particle 1 and particle 2 are
 
 \begin{alignat*}{3}
     x & = x_1 - x_2 \qquad & \dot{x} & = \dot{x}_1 - \dot{x}_2 \qquad & \ddot{x} & = \ddot{x}_1 - \ddot{x}_2 \\
@@ -412,14 +412,14 @@ The relative positions, velocities and accelerations between particle 1 and part
     z & = z_1 - z_2 \qquad & \dot{z} & = \dot{z}_1 - \dot{z}_2 \qquad & \ddot{z} & = \ddot{z}_1 - \ddot{z}_2
 \end{alignat*}
 
-The relative position, velocity and acceleration vectors are
+The relative position, velocity, and acceleration vectors are
 
 \[\vec{r} = (x, y, z)\]
 \[\vec{v} = (\dot{x}, \dot{y}, \dot{z})\]
 \[\vec{a} = (\ddot{x}, \ddot{y}, \ddot{z})\]
 
 \subsection{Relational magnitudes}\label{app:additional-remarks}
-We adopt the term \textit{relational magnitudes} from \citep{assis-relational-mechanics} for quantities that are intrinsic to the system. Relational magnitudes have the same value in all reference frames and for all observers, even non-inertial ones. The relational magnitudes in Weber's electrodynamics are $\vec{r}$, $r$, $\dot{r}$, $\ddot{r}$ and $\hat{r}$.
+We adopt the term \textit{relational magnitudes} from \citep{assis-relational-mechanics} for quantities that are intrinsic to the system. Relational magnitudes have the same value in all reference frames and for all observers, even non-inertial ones. The relational magnitudes in Weber's electrodynamics are $\vec{r}$, $r$, $\dot{r}$, $\ddot{r}$, and $\hat{r}$.
 
 The relative distance is
 \[r = |\vec{r}| = \sqrt{x^2 + y^2 + z^2}\]
