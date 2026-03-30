@@ -62,7 +62,7 @@
 \maketitle
 
 \begin{abstract}
-    We describe the numerical simulation of $n$-body systems in Weber's electrodynamics. We derive the general Hamiltonian and equations of motion for $n$ particles and apply a symplectic integrator. This method enables investigations of the kinematics and dynamics given some initial conditions and the numerical verification of conserved quantities like energy, momentum, and angular momentum. Furthermore, it opens the door to exploring alternative models for electromagnetic radiation and bound states of like charges below Weber's critical radius.
+    We describe the numerical simulation of $n$-body systems in Weber's electrodynamics. We derive the general Hamiltonian and equations of motion for $n$ particles and apply a symplectic integrator. This method enables investigations of the kinematics and dynamics given some initial conditions. Conserved quantities like energy, momentum, and angular momentum are verified numerically. Furthermore, it opens the door to exploring alternative models for electromagnetic radiation and bound states of like charges below Weber's critical radius.
 \end{abstract}
 
 \section{Introduction}
@@ -188,7 +188,7 @@ Weber's electrodynamics for 2 particles conserves energy, linear momentum and an
 \subsection{Hamiltonian for \texorpdfstring{$n$}{n} particles}\label{n-body-hamiltonian}
 For a system with $n$ particles, the Hamiltonian~\eqref{H} generalizes to:
 \begin{equation}\label{hamiltonian}
-    H = \sum_{i=1}^{n} \frac{1}{2} m_i v_i^2 + \sum_{i=1}^{n} \sum_{j=i+1}^{n} \frac{q_i q_j}{r_{ij}} \left(1 - \frac{\dot{r}_{ij}^2}{2 c^2}\right)
+    H_n = \sum_{i=1}^{n} \frac{1}{2} m_i v_i^2 + \sum_{i=1}^{n} \sum_{j=i+1}^{n} \frac{q_i q_j}{r_{ij}} \left(1 - \frac{\dot{r}_{ij}^2}{2 c^2}\right)
 \end{equation}
 
 where the double sum is taken over every unique particle pair $i$ and $j$ (see Section~\ref{complexity}). The conservation laws stated previously still hold for this general case.
@@ -196,11 +196,11 @@ where the double sum is taken over every unique particle pair $i$ and $j$ (see S
 For a system of $n$ particles in one spatial dimension $x$, Hamilton's equations of motion are given by
 
 \begin{equation}\label{xdot}
-    \dot{x}_i = \frac{\partial H}{\partial p_{x_i}}
+    \dot{x}_i = \frac{\partial H_n}{\partial p_{x_i}}
 \end{equation}
 
 \begin{equation}\label{pdot}
-    \dot{p}_{x_i} = -\frac{\partial H}{\partial x_i}
+    \dot{p}_{x_i} = -\frac{\partial H_n}{\partial x_i}
 \end{equation}
 
 for particle $i \in \{1, 2, \ldots, n\}$. In three dimensions, we also have the analogous equations for $y_i$ and $z_i$.
@@ -296,13 +296,13 @@ Thus, the original system of Gauss and Weber, compared to the SI system, is bett
 Another common system of units is obtained by setting $c = 1$ and (in the case of SI units) $1/(4\pi \epsilon_0) = 1$. This system is often used in computational physics for the same reasons mentioned above.
 
 \section{Symplectic numerical integration of non-separable Hamiltonian systems}\label{symplectic}
-A numerical method is called \textit{symplectic} if it preserves the \textit{phase space volume} of Hamiltonian systems over time according to \textit{Liouville's theorem}. Standard symplectic methods require the Hamiltonian to be separable into kinetic and potential energy terms that depend only on positions or momenta. The general Hamiltonian for Weber's electrodynamics~\eqref{hamiltonian} is non-separable because the velocity-dependent term
+A numerical method is called \textit{symplectic} if it preserves the \textit{phase space volume} of Hamiltonian systems over time according to \textit{Liouville's theorem}. Standard symplectic methods require the Hamiltonian to be separable into kinetic and potential energy terms that each depend only on positions or momenta. The general Hamiltonian for Weber's electrodynamics~\eqref{hamiltonian} is non-separable because the velocity-dependent term
 
 \begin{equation}
     -\frac{\qq \dot{r}_{ij}^2}{2 c^2 r_{ij}}
 \end{equation}
 
-is both a function of the positions and momenta after the Legendre transformation. Therefore, standard symplectic methods cannot be applied directly. Recent work by \citet{Pihajoki2015} and \citet{Tao2016} introduced explicit symplectic methods using the extended phase space method. Building on these approaches, \citet{Jayawardana2023} developed a semi-explicit symplectic integrator for non-separable Hamiltonian systems that also preserves quadratic invariants (see \citep{Ohsawa2023}). Currently, this is one of the most suitable methods for our purposes. We describe it briefly here.
+is both a function of the positions and momenta after the Legendre transformation. Therefore, standard symplectic methods cannot be applied directly. Recent work by \citet{Pihajoki2015} and \citet{Tao2016} introduced explicit symplectic methods using the clever extended phase space method. Building on these approaches, \citet{Jayawardana2023} developed a semi-explicit symplectic integrator for non-separable Hamiltonian systems that also preserves quadratic invariants (see \citep{Ohsawa2023}). Currently, this is one of the most suitable methods for our purposes. We describe it briefly here.
 
 We introduce compact vector notation $\mathbf{q} = (x_1, y_1, z_1, \ldots, x_n, y_n, z_n) \in \mathbb{R}^{3n}$ for positions and $\mathbf{p} = (p_{x_1}, p_{y_1}, p_{z_1}, \ldots, p_{x_n}, p_{y_n}, p_{z_n}) \in \mathbb{R}^{3n}$ for momenta, so that $\mathbf{z} = (\mathbf{q}, \mathbf{p}) \in \mathbb{R}^{6n}$ as in~\eqref{z}. The extended phase space doubles the phase space by introducing another pair of positions and momenta $\mathbf{x} \in \mathbb{R}^{3n}$ and $\mathbf{y} \in \mathbb{R}^{3n}$, giving the state vector in extended phase space
 
@@ -381,7 +381,7 @@ Perhaps the most promising direction for future research lies in the remarkable 
 
 \citet{Frauenfelder2024} have shown that classical collisions at the origin are regularizable only when the angular momentum $\ell = 0$, corresponding to purely radial (head-on) motion. For $\ell \neq 0$, the system is not regularizable. This constraint poses a fundamental challenge: finding stable, bound configurations of like charges below the critical radius that go beyond purely radial oscillation. One avenue is to develop advanced regularization or stabilization techniques that could handle the $\ell \neq 0$ singularity. Another, perhaps more promising, approach is to expand our view beyond the isolated two-body problem and consider multi-particle systems. For instance, we could balance a pair of like charges in the sub-critical regime with oppositely charged particles above $\rho$, or explore other conceivable configurations whose mutual interactions provide the stabilizing forces that a single pair lacks.
 
-This line of investigation is part of a long-standing program that originated with Weber himself and his planetary model of the atom~\citep{assis-planetary-model}, in which bound pairs of like charges form atomic nuclei while unlike charges orbit under the combined electrodynamic forces. With the computational tools presented here, and with modern AI-assisted methods that can efficiently search the space of possible configurations, we can explore this vast landscape of possibilities more thoroughly than was previously feasible. We could in principle automate algebraic manipulations and systematic testing. The ultimate goal of this program is to uncover the electrodynamic origins of the periodic table of elements.
+This line of investigation is part of a long-standing program that originated with Weber himself and his planetary model of the atom, (see \citep{assis-planetary-model} and \citep{assis-weber-vol4}), in which bound pairs of like charges form atomic nuclei while unlike charges orbit under the combined electrodynamic forces. With the computational tools presented here, and with modern AI-assisted methods that can efficiently search the space of possible configurations, we can explore this vast landscape of possibilities more thoroughly than was previously feasible. We could in principle automate algebraic manipulations and systematic testing. The ultimate goal of this program is to uncover the electrodynamic origins of the periodic table of elements.
 
 \appendix
 
