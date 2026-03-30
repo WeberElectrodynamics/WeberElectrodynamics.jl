@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.5] - 2026-03-30
+
+### Changed
+- Language and citation improvements to the Computational Weber Electrodynamics paper (v1.2).
+
 ## [0.2.4] - 2026-03-29
 
 ### Changed
