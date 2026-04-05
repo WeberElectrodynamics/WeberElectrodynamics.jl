@@ -1,6 +1,6 @@
 name = "WeberElectrodynamics"
 uuid = "b7b438b0-8b51-4018-ba50-da6ecf296240"
-version = "0.2.6"
+version = "0.2.7"
 authors = ["Samer"]
 
 [deps]

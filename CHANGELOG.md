@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.7] - 2026-04-05
+
+### Fixed
+- `_lc_lift!`: catastrophic cancellation in `r + x` when `x ≈ −r` (i.e. when the first LC pre-image coordinate is much smaller than the second). Direct subtraction `r + x` lost ~7 digits of precision; now uses `y²/(r − x)` (and symmetrically `y²/(r + x)` for the `r − x` branch), which is well-conditioned for all inputs. The bug surfaced as a flaky CI failure in the Levi-Civita round-trip identity test (`test_regularization.jl:215`, error ~3×10⁻⁷ vs tolerance 10⁻¹⁰).
+- Levi-Civita round-trip test is now seeded (`Random.seed!(42)`) for deterministic reproduction.
+
 ## [0.2.6] - 2026-04-05
 
 ### Fixed
