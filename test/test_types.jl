@@ -199,6 +199,18 @@
         )
     end
 
+    @testset "Old flat kwargs rejected" begin
+        # Regression: old flat kwargs must now raise MethodError (unrecognized keyword)
+        sys = WeberSystem(2, 2)
+        q0 = [1.0, 0.0, -1.0, 0.0]
+        p0 = [0.0, 0.1, 0.0, -0.1]
+        base = (masses = [1.0, 0.5], charges = [1.0, -1.0], c = 4.0, dt = 0.01)
+        @test_throws MethodError WeberProblem(sys, (0.0, 1.0), q0, p0; base..., regularization_enabled = false)
+        @test_throws MethodError WeberProblem(sys, (0.0, 1.0), q0, p0; base..., regularization_backend = :lifted_pair)
+        @test_throws MethodError WeberProblem(sys, (0.0, 1.0), q0, p0; base..., zollner_enabled = false)
+        @test_throws MethodError WeberProblem(sys, (0.0, 1.0), q0, p0; base..., zollner_a = 0.0)
+    end
+
     @testset "WeberSolution" begin
         prob = make_weber_problem(tspan = (0.0, 0.1))
         sol = solve(prob)

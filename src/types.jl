@@ -161,20 +161,20 @@ struct RegularizationOptions
         collision_bounce_radius::Real = 0.0,
     )
         if !isnothing(r_on)
-            @assert r_on > 0 "regularization_r_on must be positive"
+            @assert r_on > 0 "r_on must be positive"
         end
         if !isnothing(r_off)
-            @assert r_off > 0 "regularization_r_off must be positive"
+            @assert r_off > 0 "r_off must be positive"
         end
-        @assert r_on_factor > 0 "regularization_r_on_factor must be positive"
-        @assert r_off_factor > 0 "regularization_r_off_factor must be positive"
-        @assert max_substeps > 0 "regularization_max_substeps must be positive"
-        @assert constraint_tolerance > 0 "regularization_constraint_tolerance must be positive"
-        @assert g_floor > 0 "regularization_g_floor must be positive"
+        @assert r_on_factor > 0 "r_on_factor must be positive"
+        @assert r_off_factor > 0 "r_off_factor must be positive"
+        @assert max_substeps > 0 "max_substeps must be positive"
+        @assert constraint_tolerance > 0 "constraint_tolerance must be positive"
+        @assert g_floor > 0 "g_floor must be positive"
         if !isnothing(r_on) && !isnothing(r_off)
-            @assert r_off > r_on "regularization_r_off must be greater than regularization_r_on"
+            @assert r_off > r_on "r_off must be greater than r_on"
         end
-        @assert backend in (REG_BACKEND_ADAPTIVE, REG_BACKEND_LIFTED) "regularization_backend must be :adaptive_cartesian or :lifted_pair"
+        @assert backend in (REG_BACKEND_ADAPTIVE, REG_BACKEND_LIFTED) "backend must be :adaptive_cartesian or :lifted_pair"
         @assert collision_bounce_radius >= 0 "collision_bounce_radius must be non-negative"
 
         new(
