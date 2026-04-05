@@ -648,6 +648,10 @@ end
             rb.lc_U[2] = -rb.lc_U[2]
         end
     end
+    # r_eff is frozen for the entire midpoint step: the physical-time increment
+    # dt = r·dτ uses the separation at substep start, not the midpoint value.
+    # This preserves a consistent Δt per substep while still letting the monitor
+    # vary between substeps. See RegularizedIntegrationDesign.md §"Frozen monitor".
     r_eff = max(rb.lc_u[1] * rb.lc_u[1] + rb.lc_u[2] * rb.lc_u[2], g_floor)
     _compute_lc_tau_derivatives!(
         rb.lc_du_tau,
@@ -793,6 +797,11 @@ end
             _lc_lift!(rb)
             _lc_project!(rb.rel_q, rb.rel_p, rb.lc_u, rb.lc_U)
         elseif dims == 3
+            # KS lift + one-pass constraint projection (diagnostic only).
+            # The Cartesian substep that follows does not maintain the KS bilinear
+            # constraint; c_err is tracked for diagnostics but not iterated to
+            # convergence. True 3D lifted-KS stepping is deferred per design.
+            # See RegularizedIntegrationDesign.md §"KS Constraint Handling".
             _ks_lift!(rb)
             c_err = _ks_project_constraint!(rb.ks_U, rb.ks_u, rb.ks_n)
             if c_err <= constraint_tolerance
