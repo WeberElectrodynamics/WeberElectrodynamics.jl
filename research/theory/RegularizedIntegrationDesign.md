@@ -11,7 +11,7 @@ This document specifies the regularized integration design implemented for Weber
 
 ## Backend Semantics
 
-Regularization backend is configured through `RegularizationOptions.backend` (or `WeberProblem(...; regularization_backend=...)`):
+Regularization backend is configured through `RegularizationOptions(backend = ...)` passed to `WeberProblem`:
 
 - `:lifted_pair`
 - `:adaptive_cartesian`

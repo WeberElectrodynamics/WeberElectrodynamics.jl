@@ -43,7 +43,7 @@ The unregularized Strang splitting integrator preserves a modified Hamiltonian (
 |---|---|---|
 | dt | 1e-4 (fixed, absolute) | 1e-4 (fixed, absolute) |
 | bounce_r | 0.02 | 0.02 |
-| regularization_enabled | false | false |
+| RegularizationOptions(enabled=...) | false | false |
 | Energy error (100 periods) | 0.014% | 0.005% |
 | max |ṙ|/c | 1.20 | 1.38 |
 

@@ -1,7 +1,8 @@
 # Regularization
 
 Regularization is an **optional, advanced** feature. The core integrator runs
-unregularized by default; pass `regularization_enabled = true` to opt in.
+unregularized by default; pass `regularization = RegularizationOptions(enabled = true)`
+to opt in.
 
 ## When to use it
 
@@ -26,7 +27,7 @@ prob = WeberProblem(
     charges = [1.0, -1.0],
     c       = 10.0,
     dt      = 0.01,
-    regularization_enabled = true,   # opt in
+    regularization = RegularizationOptions(enabled = true),   # opt in
 )
 ```
 
@@ -38,7 +39,7 @@ prob = WeberProblem(
 | Adaptive Cartesian | `:adaptive_cartesian` | 2D and 3D | Cartesian sub-stepping with KS constraint |
 
 For 3D problems, `:lifted_pair` automatically falls back to `:adaptive_cartesian`
-(with an optional warning controlled by `regularization_warn_on_fallback`).
+(with an optional warning controlled by `warn_on_fallback`).
 
 !!! note "3D KS constraint"
     The `:adaptive_cartesian` backend applies a one-pass KS constraint projection
@@ -50,8 +51,10 @@ For 3D problems, `:lifted_pair` automatically falls back to `:adaptive_cartesian
 ```julia
 # Explicit 3D choice
 prob = WeberProblem(sys, tspan, q0, p0; ...
-    regularization_enabled  = true,
-    regularization_backend  = :adaptive_cartesian,
+    regularization = RegularizationOptions(
+        enabled = true,
+        backend = :adaptive_cartesian,
+    ),
 )
 ```
 
@@ -70,9 +73,11 @@ You can override them directly:
 
 ```julia
 prob = WeberProblem(sys, tspan, q0, p0; ...
-    regularization_enabled = true,
-    regularization_r_on    = 0.05,
-    regularization_r_off   = 0.10,
+    regularization = RegularizationOptions(
+        enabled = true,
+        r_on    = 0.05,
+        r_off   = 0.10,
+    ),
 )
 ```
 
@@ -81,7 +86,7 @@ prob = WeberProblem(sys, tspan, q0, p0; ...
 When three or more particles form a connected close-encounter cluster,
 regularization falls back to chain mode (adaptive Cartesian substeps for the
 whole cluster). Chain mode is enabled by default; disable with
-`regularization_chain_enabled = false`.
+`RegularizationOptions(chain_enabled = false)`.
 
 ## Collision bounce
 
@@ -91,7 +96,7 @@ boundary can be applied before each macro-step. This avoids the non-regularizabl
 
 ```julia
 prob = WeberProblem(sys, tspan, q0, p0; ...
-    regularization_collision_bounce_radius = 0.02,  # reflect at r < 0.02
+    regularization = RegularizationOptions(collision_bounce_radius = 0.02),  # reflect at r < 0.02
 )
 ```
 

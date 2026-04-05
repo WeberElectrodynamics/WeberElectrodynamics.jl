@@ -444,14 +444,10 @@ and solver/regularization options into a single immutable structure.
 - `dt`: Fixed macro time step (positive).
 - `convergence_tolerance=1e-13`: Fixed-point convergence threshold for projection.
 - `maximum_iterations=100`: Maximum projection iterations per step.
-- `regularization_enabled=false`, `regularization_r_on`, `regularization_r_off`,
-  `regularization_r_on_factor=0.15`, `regularization_r_off_factor=0.25`,
-  `regularization_max_substeps=512`, `regularization_constraint_tolerance=1e-12`,
-  `regularization_g_floor=1e-12`, `regularization_chain_enabled=true`,
-  `regularization_backend=:lifted_pair`, `regularization_warn_on_fallback=true`,
-  `regularization_collision_bounce_radius=0.0`:
-  All forwarded to `RegularizationOptions`; see its documentation.
-- `zollner_enabled=false`, `zollner_a=0.0`: Forwarded to `ZollnerOptions`.
+- `regularization=RegularizationOptions()`: Close-encounter regularization options.
+  See `RegularizationOptions` for all available fields.
+- `zollner=ZollnerOptions()`: Zöllner electrogravitational extension options.
+  See `ZollnerOptions` for all available fields.
 
 # Fields
 - `system::WeberSystem`: Compiled Hamiltonian system.
@@ -494,20 +490,8 @@ struct WeberProblem
         dt::Real,
         convergence_tolerance::Real = 1e-13,
         maximum_iterations::Integer = 100,
-        regularization_enabled::Bool = false,
-        regularization_r_on::Union{Nothing,Real} = nothing,
-        regularization_r_off::Union{Nothing,Real} = nothing,
-        regularization_r_on_factor::Real = 0.15,
-        regularization_r_off_factor::Real = 0.25,
-        regularization_max_substeps::Integer = 512,
-        regularization_constraint_tolerance::Real = 1e-12,
-        regularization_g_floor::Real = 1e-12,
-        regularization_chain_enabled::Bool = true,
-        regularization_backend::Symbol = REG_BACKEND_LIFTED,
-        regularization_warn_on_fallback::Bool = true,
-        regularization_collision_bounce_radius::Real = 0.0,
-        zollner_enabled::Bool = false,
-        zollner_a::Real = 0.0,
+        regularization::RegularizationOptions = RegularizationOptions(),
+        zollner::ZollnerOptions = ZollnerOptions(),
     )
         n_particles = system.n_particles
         dof = system.degrees_of_freedom
@@ -526,24 +510,8 @@ struct WeberProblem
         charges_f64 = Vector{Float64}(charges)
         c_f64 = Float64(c)
 
-        zollner = ZollnerOptions(enabled = zollner_enabled, a = Float64(zollner_a))
         kappas = _compute_zollner_kappas(charges_f64, zollner, n_particles)
         params = vcat(masses_f64, charges_f64, [c_f64], kappas)
-
-        regularization = RegularizationOptions(
-            enabled = regularization_enabled,
-            r_on = regularization_r_on,
-            r_off = regularization_r_off,
-            r_on_factor = regularization_r_on_factor,
-            r_off_factor = regularization_r_off_factor,
-            max_substeps = regularization_max_substeps,
-            constraint_tolerance = regularization_constraint_tolerance,
-            g_floor = regularization_g_floor,
-            chain_enabled = regularization_chain_enabled,
-            backend = regularization_backend,
-            warn_on_fallback = regularization_warn_on_fallback,
-            collision_bounce_radius = regularization_collision_bounce_radius,
-        )
 
         new(
             system,

@@ -159,7 +159,7 @@ Visualise Zöllner potential contributions against standard Weber energies.
 
 Two-panel layout: total potential with per-pair breakdown and Zöllner extra terms
 (κ values shown); Zöllner gravitational residual ΣΔV_Z compared to total energy.
-Only meaningful when `zollner_enabled=true`.
+Only meaningful when `prob.zollner.enabled == true`.
 
 Requires `using Plots` to activate the Plots.jl extension.
 """

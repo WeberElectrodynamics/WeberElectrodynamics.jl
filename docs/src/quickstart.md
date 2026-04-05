@@ -79,7 +79,8 @@ The integrator above runs the core unregularized symplectic method. Two optional
 extensions can be enabled explicitly:
 
 - **[Regularization](regularization.md)** — Levi-Civita / KS handling for
-  close encounters. Pass `regularization_enabled = true` to `WeberProblem`.
+  close encounters. Pass `regularization = RegularizationOptions(enabled = true)`
+  to `WeberProblem`.
 - **[Zöllner Extension](zollner.md)** — research feature implementing Zöllner's
-  electrogravitational mismatch hypothesis. Pass `zollner_enabled = true` and
-  `zollner_a = <value>` to `WeberProblem`.
+  electrogravitational mismatch hypothesis. Pass
+  `zollner = ZollnerOptions(enabled = true, a = <value>)` to `WeberProblem`.

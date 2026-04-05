@@ -957,9 +957,6 @@ end
 
 function _make_extended_problem(prob::WeberProblem)
     max_time = prob.tspan[1] + 1000 * prob.dt
-    reg = prob.regularization
-    zol = prob.zollner
-
     return WeberProblem(
         prob.system,
         (prob.tspan[1], max_time),
@@ -971,20 +968,8 @@ function _make_extended_problem(prob::WeberProblem)
         dt = prob.dt,
         convergence_tolerance = prob.convergence_tolerance,
         maximum_iterations = prob.maximum_iterations,
-        regularization_enabled = reg.enabled,
-        regularization_r_on = reg.r_on,
-        regularization_r_off = reg.r_off,
-        regularization_r_on_factor = reg.r_on_factor,
-        regularization_r_off_factor = reg.r_off_factor,
-        regularization_max_substeps = reg.max_substeps,
-        regularization_constraint_tolerance = reg.constraint_tolerance,
-        regularization_g_floor = reg.g_floor,
-        regularization_chain_enabled = reg.chain_enabled,
-        regularization_backend = reg.backend,
-        regularization_warn_on_fallback = reg.warn_on_fallback,
-        regularization_collision_bounce_radius = reg.collision_bounce_radius,
-        zollner_enabled = zol.enabled,
-        zollner_a = zol.a,
+        regularization = prob.regularization,
+        zollner = prob.zollner,
     )
 end
 

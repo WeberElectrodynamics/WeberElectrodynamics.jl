@@ -57,7 +57,7 @@ Pair index: `_pair_index(i, j, n) = (i-1)*(2n-i)÷2 + (j-i)` (1-based, i < j)
 
 ### Regularization backends
 
-Only two valid values for `regularization_backend`:
+Only two valid values for `RegularizationOptions.backend`:
 - `:adaptive_cartesian` — KS-style, works for 2D and 3D
 - `:lifted_pair` — Levi-Civita, **2D only** (auto-falls back to `:adaptive_cartesian` for 3D)
 
@@ -65,7 +65,7 @@ Neither backend regularizes Weber's velocity-dependent force — only the Coulom
 
 ### Collision bounce
 
-- Enabled via `regularization_collision_bounce_radius` kwarg on `WeberProblem` (default 0.0 = off)
+- Enabled via `RegularizationOptions(collision_bounce_radius = <r>)` passed to `WeberProblem` (default 0.0 = off)
 - Only valid for ℓ=0 (head-on) collisions
 - Works best with the **unregularized** integrator (symplectic error stays bounded)
 

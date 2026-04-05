@@ -38,12 +38,11 @@ prob = WeberProblem(
     charges = [1.0, -1.0],
     c       = 10.0,
     dt      = 0.01,
-    zollner_enabled = true,
-    zollner_a       = 0.01,   # mismatch parameter; must be > 0
+    zollner = ZollnerOptions(enabled = true, a = 0.01),   # mismatch parameter; must be > 0
 )
 ```
 
-`zollner_a` must be strictly positive when `zollner_enabled = true`.
+`a` must be strictly positive when `enabled = true`.
 
 ## Combining with regularization
 
@@ -51,9 +50,8 @@ Zöllner is fully compatible with regularization:
 
 ```julia
 prob = WeberProblem(sys, tspan, q0, p0; ...
-    zollner_enabled        = true,
-    zollner_a              = 0.01,
-    regularization_enabled = true,
+    zollner        = ZollnerOptions(enabled = true, a = 0.01),
+    regularization = RegularizationOptions(enabled = true),
 )
 ```
 

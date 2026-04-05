@@ -1070,7 +1070,7 @@ function CommonSolve.init(
         RegularizationDiagnostics(prob.regularization.enabled, n_steps, requested_backend, used_backend)
 
     if prob.regularization.enabled && rb.backend_fallback && prob.regularization.warn_on_fallback
-        @warn "regularization_backend=:lifted_pair is currently supported only for 2D; falling back to :adaptive_cartesian for $(prob.system.dims)D"
+        @warn "RegularizationOptions(backend=:lifted_pair) is currently supported only for 2D; falling back to :adaptive_cartesian for $(prob.system.dims)D"
     end
 
     WeberIntegrator(
