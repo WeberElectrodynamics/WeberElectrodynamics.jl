@@ -2,6 +2,7 @@ using Test
 using WeberElectrodynamics
 using WeberElectrodynamics: SymmetricProjectionIntegrator
 using LinearAlgebra
+using Random
 using Symbolics
 
 @testset "WeberElectrodynamics.jl" begin

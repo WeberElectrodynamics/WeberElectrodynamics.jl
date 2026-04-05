@@ -188,6 +188,7 @@
 
     @testset "Transform identities" begin
         @testset "Levi-Civita" begin
+            Random.seed!(42)
             rb = WeberElectrodynamics.RegularizationBuffers(2, 2, 4, 0.1, 0.2, :lifted_pair, false)
             q_rel = zeros(2)
             p_rel = zeros(2)

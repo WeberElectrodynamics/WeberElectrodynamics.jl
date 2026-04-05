@@ -264,12 +264,16 @@ end
         return 0.0
     end
 
-    u1 = sqrt(max((r + x) * 0.5, 0.0))
+    # Stable: direct r±x cancels when |x|≈r; use y²/(r∓x) instead.
+    r_plus_x = x >= 0.0 ? r + x : y * y / (r - x)
+    r_minus_x = x <= 0.0 ? r - x : y * y / (r + x)
+
+    u1 = sqrt(max(r_plus_x * 0.5, 0.0))
     u2 = 0.0
     if u1 > 100 * eps(Float64)
         u2 = y / (2 * u1)
     else
-        u2 = sqrt(max((r - x) * 0.5, 0.0))
+        u2 = sqrt(max(r_minus_x * 0.5, 0.0))
         if y < 0
             u2 = -u2
         end
