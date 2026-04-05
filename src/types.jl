@@ -73,6 +73,8 @@ end
 # Compute per-pair Zöllner coupling factors κ_ij.
 # κ_ij = 1+a for unlike-sign charge pairs, 1.0 for like-sign pairs.
 # Returns a vector of length n_particles*(n_particles-1)/2, ordered by (i<j).
+# Note: sign(0.0) == 0.0, so a neutral particle (q=0) is treated as unlike
+# any charged particle and receives κ = 1+a when Zöllner is enabled.
 function _compute_zollner_kappas(
     charges::Vector{Float64},
     zollner::ZollnerOptions,
@@ -442,7 +444,7 @@ and solver/regularization options into a single immutable structure.
 - `dt`: Fixed macro time step (positive).
 - `convergence_tolerance=1e-13`: Fixed-point convergence threshold for projection.
 - `maximum_iterations=100`: Maximum projection iterations per step.
-- `regularization_enabled=true`, `regularization_r_on`, `regularization_r_off`,
+- `regularization_enabled=false`, `regularization_r_on`, `regularization_r_off`,
   `regularization_r_on_factor=0.15`, `regularization_r_off_factor=0.25`,
   `regularization_max_substeps=512`, `regularization_constraint_tolerance=1e-12`,
   `regularization_g_floor=1e-12`, `regularization_chain_enabled=true`,

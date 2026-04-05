@@ -40,6 +40,13 @@ prob = WeberProblem(
 For 3D problems, `:lifted_pair` automatically falls back to `:adaptive_cartesian`
 (with an optional warning controlled by `regularization_warn_on_fallback`).
 
+!!! note "3D KS constraint"
+    The `:adaptive_cartesian` backend applies a one-pass KS constraint projection
+    at each close-encounter lift, then runs a Cartesian sub-step. The constraint
+    is not iterated to convergence within the sub-step; `max_constraint_violation`
+    in the diagnostics tracks the residual. For current 2D-heavy use cases this
+    is sufficient. True iterative 3D KS stepping is deferred to a future release.
+
 ```julia
 # Explicit 3D choice
 prob = WeberProblem(sys, tspan, q0, p0; ...
