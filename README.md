@@ -16,8 +16,8 @@ A Julia package for symplectic numerical integration of n-body Weber electrodyna
 
 ## Theory
 
-- [Weber Electrodynamics](research/theory/WeberElectrodynamics.md) — potential, force, Lagrangian and Hamiltonian formulation, equations of motion
-- [Semi-Explicit Symplectic Integrator](research/theory/SemiExplicitIntegrator.md) — extended phase space, Strang splitting, symmetric projection algorithm
+- [Weber Electrodynamics](theory/WeberElectrodynamics.md) — potential, force, Lagrangian and Hamiltonian formulation, equations of motion
+- [Semi-Explicit Symplectic Integrator](theory/SemiExplicitIntegrator.md) — extended phase space, Strang splitting, symmetric projection algorithm
 
 ## Extensions
 

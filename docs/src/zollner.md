@@ -26,7 +26,7 @@ U_ij = κ_ij · qᵢqⱼ / r · (1 - ṙ²/(2c²))
 When `a = 0` (or Zöllner disabled) all κ = 1 and the standard Weber
 potential is recovered exactly.
 
-See [Zöllner Electrogravitational Theory](https://github.com/WeberElectrodynamics/WeberElectrodynamics.jl/blob/main/research/theory/ZollnerElectrogravitationalTheory.md)
+See [Zöllner Electrogravitational Theory](https://github.com/WeberElectrodynamics/WeberElectrodynamics.jl/blob/main/theory/ZollnerElectrogravitationalTheory.md)
 for the full theoretical derivation.
 
 ## Enabling Zöllner

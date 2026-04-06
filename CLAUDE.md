@@ -33,8 +33,8 @@ WeberElectrodynamics/
 ├── test/                   # Test suite (20,297 tests)
 ├── examples/               # Jupyter notebooks (run from default Julia env)
 ├── docs/                   # Documenter.jl scaffold (make.jl, src/, build/)
+├── theory/                 # Mathematical derivations and theory documents
 ├── research/
-│   ├── theory/             # Mathematical derivations and theory documents
 │   ├── exploratory/        # Research notes and lessons learned
 │   └── sub_critical_weber_research/  # Sub-critical Weber research
 ├── papers/
@@ -47,11 +47,11 @@ WeberElectrodynamics/
 
 **Pipeline**: Symbolic Hamiltonian → compiled equations of motion → symplectic integration → statistics/plotting/animation
 
-See [docs/src/developer-guide.md](docs/src/developer-guide.md) for per-file descriptions of `src/`, extensions, tests, and research directories.
+See [docs/src/internals.md](docs/src/internals.md) for per-file descriptions of `src/`, extensions, tests, and research directories.
 
 ## Critical Conventions
 
-See [docs/src/developer-guide.md](docs/src/developer-guide.md) for full details.
+See [docs/src/internals.md](docs/src/internals.md) for full details.
 
 ### Params vector layout
 

@@ -2,7 +2,7 @@
 
 ## Scope
 
-This document specifies the regularized integration design implemented for WeberElectrodynamics v3 continuation.
+This document specifies the regularized integration design implemented for the Weber Hamiltonian.
 
 - Scope is limited to the Weber Hamiltonian produced by `WeberSystem`.
 - Public solver signatures (`solve/init/step!/solve!`) remain unchanged.
@@ -26,7 +26,7 @@ Fallback behavior:
 - one init-time warning when `warn_on_fallback=true`
 - diagnostics counter increment on fallback pair steps
 
-Support matrix in this milestone:
+Support matrix:
 
 - 2D pair mode: true lifted pair backend available
 - 1D pair mode: adaptive Cartesian backend
@@ -104,7 +104,7 @@ The frozen-per-substep monitor avoids distortion from re-scaling midpoint stages
 
 ## Chain Mode
 
-Chain mode remains on adaptive Cartesian integration in this milestone:
+Chain mode uses adaptive Cartesian integration:
 
 1. Build deterministic chain ordering from closest-link traversal.
 2. Compute active-component monitor
@@ -120,7 +120,7 @@ Chain mode remains on adaptive Cartesian integration in this milestone:
 - project momentum to satisfy bilinear KS constraint
 - track max constraint violation in diagnostics
 
-True 3D lifted KS stepping is deferred.
+True 3D lifted KS stepping is deferred to a future release.
 
 ## Diagnostics
 

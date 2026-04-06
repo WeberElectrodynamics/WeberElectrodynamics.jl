@@ -1,6 +1,6 @@
-# Developer Guide
+# Internals
 
-Reference for contributors and developers working on the WeberElectrodynamics.jl source code.
+Reference for contributors, developers, and AI agents working with WeberElectrodynamics.jl internals.
 
 ## Architecture
 
