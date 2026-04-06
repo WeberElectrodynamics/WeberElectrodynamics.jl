@@ -12,6 +12,7 @@ makedocs(
     sitename = "WeberElectrodynamics.jl",
     authors = "Samer",
     modules = [WeberElectrodynamics],
+    repo = "github.com/WeberElectrodynamics/WeberElectrodynamics.jl.git",
     format = Documenter.HTML(
         prettyurls = get(ENV, "CI", nothing) == "true",
         canonical = "https://WeberElectrodynamics.github.io/WeberElectrodynamics.jl",
@@ -28,9 +29,9 @@ makedocs(
             "Statistics"    => "api/statistics.md",
             "Visualization" => "api/visualization.md",
         ],
+        "Internals"   => "internals.md",
         "Advanced" => [
             "Regularization"  => "regularization.md",
-            "Developer Guide" => "developer-guide.md",
         ],
         "Research" => [
             "Zöllner Extension" => "zollner.md",

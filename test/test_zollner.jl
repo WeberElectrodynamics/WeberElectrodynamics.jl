@@ -28,7 +28,7 @@
             sys, (0.0, 1.0),
             [1.0, 0.0, -1.0, 0.0], [0.0, 0.0, 0.0, 0.0];
             masses = [1.0, 1.0], charges = [1.0, -1.0], c = 10.0, dt = 0.01,
-            zollner_enabled = true, zollner_a = 0.1,
+            zollner = ZollnerOptions(enabled = true, a = 0.1),
         )
         @test length(prob.kappas) == 1
         @test prob.kappas[1] ≈ 1.1  # 1 + a for unlike charges
@@ -42,7 +42,7 @@
             sys, (0.0, 1.0),
             [1.0, 0.0, -1.0, 0.0], [0.0, 0.0, 0.0, 0.0];
             masses = [1.0, 1.0], charges = [1.0, 1.0], c = 10.0, dt = 0.01,
-            zollner_enabled = true, zollner_a = 0.1,
+            zollner = ZollnerOptions(enabled = true, a = 0.1),
         )
         @test length(prob.kappas) == 1
         @test prob.kappas[1] ≈ 1.0  # like charges: κ = 1 regardless of a
@@ -59,7 +59,7 @@
             sys, (0.0, 1.0),
             [1.0, 0.0, 0.0, 0.0, -1.0, 0.0], zeros(6);
             masses = [1.0, 1.0, 1.0], charges = [1.0, -1.0, 1.0],
-            c = 10.0, dt = 0.01, zollner_enabled = true, zollner_a = a,
+            c = 10.0, dt = 0.01, zollner = ZollnerOptions(enabled = true, a = a),
         )
         @test length(prob.kappas) == 3
         @test prob.kappas[1] ≈ 1.0 + a   # pair (1,2): unlike
@@ -95,7 +95,7 @@
             sys, (0.0, 1.0),
             [1.0, 0.0, -1.0, 0.0], [0.0, 0.1, 0.0, -0.1];
             masses = [1.0, 1.0], charges = [1.0, -1.0], c = 10.0, dt = 0.01,
-            zollner_enabled = false, zollner_a = 0.5,
+            zollner = ZollnerOptions(enabled = false, a = 0.5),
         )
         @test all(k -> k ≈ 1.0, prob_off.kappas)
         # params tail should be all 1.0
@@ -109,8 +109,7 @@
             sys, (0.0, 0.1),
             [1.0, 0.0, -1.0, 0.0], [0.0, 0.3, 0.0, -0.3];
             masses = [1.0, 1.0], charges = [1.0, -1.0], c = 10.0, dt = 0.005,
-            zollner_enabled = true, zollner_a = 0.01,
-            regularization_enabled = false,
+            zollner = ZollnerOptions(enabled = true, a = 0.01),
         )
         sol = solve(prob, SymmetricProjectionIntegrator())
         @test sol.retcode == :Success
@@ -132,7 +131,6 @@
             sys, (0.0, 0.1),
             [1.0, 0.0, -1.0, 0.0], [0.0, 0.3, 0.0, -0.3];
             masses = [1.0, 1.0], charges = [1.0, -1.0], c = 10.0, dt = 0.005,
-            zollner_enabled = false, regularization_enabled = false,
         )
         sol_off = solve(prob_off, SymmetricProjectionIntegrator())
         en_off = compute_energy_timeseries(sol_off)
@@ -146,7 +144,7 @@
             sys, (0.0, 0.1),
             [1.0, 0.0, -1.0, 0.0], [0.0, 0.3, 0.0, -0.3];
             masses = [1.0, 1.0], charges = [1.0, -1.0], c = 10.0, dt = 0.005,
-            zollner_enabled = true, zollner_a = 0.05, regularization_enabled = false,
+            zollner = ZollnerOptions(enabled = true, a = 0.05),
         )
         sol_on = solve(prob_on, SymmetricProjectionIntegrator())
         en_on = compute_energy_timeseries(sol_on)
@@ -166,8 +164,8 @@
             sys, (0.0, 0.5),
             [1.0, 0.0, -1.0, 0.0], [0.0, 0.5, 0.0, -0.5];
             masses = [1.0, 1.0], charges = [1.0, -1.0], c = 10.0, dt = 0.005,
-            zollner_enabled = true, zollner_a = 0.01,
-            regularization_enabled = true,
+            zollner = ZollnerOptions(enabled = true, a = 0.01),
+            regularization = RegularizationOptions(enabled = true),
         )
         sol = solve(prob, SymmetricProjectionIntegrator())
         @test sol.retcode == :Success
@@ -194,12 +192,14 @@
         prob = WeberProblem(
             sys, (0.0, 1.0), q0, p0;
             masses = [m1, m2], charges = [q1, q2], c = c, dt = 0.001,
-            zollner_enabled = true, zollner_a = a,
-            regularization_enabled = true,
-            regularization_backend = :adaptive_cartesian,
-            regularization_warn_on_fallback = false,
-            regularization_r_on = 0.15,
-            regularization_r_off = 0.25,
+            zollner = ZollnerOptions(enabled = true, a = a),
+            regularization = RegularizationOptions(
+                enabled = true,
+                backend = :adaptive_cartesian,
+                warn_on_fallback = false,
+                r_on = 0.15,
+                r_off = 0.25,
+            ),
         )
         sol = solve(prob, SymmetricProjectionIntegrator())
         @test sol.retcode == :Success

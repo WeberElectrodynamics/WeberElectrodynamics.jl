@@ -1,3 +1,5 @@
+using WeberElectrodynamics: _pair_index
+
 @testset "Weber System" begin
     @testset "Weber Hamiltonian structure" begin
         # 2-body 2D Weber system
@@ -146,5 +148,29 @@
         @test occursin("q1", H_str)
         @test occursin("q2", H_str)
         @test occursin("c", H_str)
+    end
+
+    @testset "_pair_index" begin
+        # n=2: one pair (1,2) → 1
+        @test _pair_index(1, 2, 2) == 1
+
+        # n=3: pairs in order (1,2), (1,3), (2,3) → 1, 2, 3
+        @test _pair_index(1, 2, 3) == 1
+        @test _pair_index(1, 3, 3) == 2
+        @test _pair_index(2, 3, 3) == 3
+
+        # n=4: pairs in order (1,2),(1,3),(1,4),(2,3),(2,4),(3,4) → 1..6
+        @test _pair_index(1, 2, 4) == 1
+        @test _pair_index(1, 3, 4) == 2
+        @test _pair_index(1, 4, 4) == 3
+        @test _pair_index(2, 3, 4) == 4
+        @test _pair_index(2, 4, 4) == 5
+        @test _pair_index(3, 4, 4) == 6
+
+        # All indices for a given n are unique and cover 1:n_pairs exactly
+        for n in 2:5
+            indices = [_pair_index(i, j, n) for i in 1:n for j in (i+1):n]
+            @test sort(indices) == collect(1:n*(n-1)÷2)
+        end
     end
 end

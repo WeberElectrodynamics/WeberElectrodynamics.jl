@@ -112,10 +112,12 @@
             dt = 0.01,
             convergence_tolerance = 1e-10,
             maximum_iterations = 50,
-            regularization_enabled = false,
-            regularization_r_on = 0.2,
-            regularization_r_off = 0.3,
-            regularization_max_substeps = 64,
+            regularization = RegularizationOptions(
+                enabled = false,
+                r_on = 0.2,
+                r_off = 0.3,
+                max_substeps = 64,
+            ),
         )
         @test prob2.convergence_tolerance == 1e-10
         @test prob2.maximum_iterations == 50

@@ -46,12 +46,14 @@
             charges = charges,
             c = c,
             dt = dt,
-            regularization_enabled = regularization_enabled,
-            regularization_backend = backend,
-            regularization_warn_on_fallback = warn_on_fallback,
-            regularization_r_on = r_on,
-            regularization_r_off = r_off,
-            regularization_max_substeps = max_substeps,
+            regularization = RegularizationOptions(
+                enabled = regularization_enabled,
+                backend = backend,
+                warn_on_fallback = warn_on_fallback,
+                r_on = r_on,
+                r_off = r_off,
+                max_substeps = max_substeps,
+            ),
         )
     end
 
@@ -72,9 +74,11 @@
             charges = [0.1, -0.1],
             c = 4.0,
             dt = 0.001,
-            regularization_enabled = true,
-            regularization_backend = :adaptive_cartesian,
-            regularization_warn_on_fallback = false,
+            regularization = RegularizationOptions(
+                enabled = true,
+                backend = :adaptive_cartesian,
+                warn_on_fallback = false,
+            ),
         )
         @test prob_valid.regularization.backend == WeberElectrodynamics.REG_BACKEND_ADAPTIVE
 
@@ -87,8 +91,10 @@
             charges = [0.1, -0.1],
             c = 4.0,
             dt = 0.001,
-            regularization_enabled = true,
-            regularization_backend = :invalid_backend,
+            regularization = RegularizationOptions(
+                enabled = true,
+                backend = :invalid_backend,
+            ),
         )
 
         sys1 = WeberSystem(2, 1)
@@ -104,11 +110,13 @@
             charges = [0.2, -0.2],
             c = 4.0,
             dt = 0.001,
-            regularization_enabled = true,
-            regularization_backend = :lifted_pair,
-            regularization_warn_on_fallback = false,
-            regularization_r_on = 0.2,
-            regularization_r_off = 0.26,
+            regularization = RegularizationOptions(
+                enabled = true,
+                backend = :lifted_pair,
+                warn_on_fallback = false,
+                r_on = 0.2,
+                r_off = 0.26,
+            ),
         )
         int_fb = init(prob_fb)
         rb_fb = int_fb.buffers.regularization_buffers
@@ -129,11 +137,13 @@
             charges = [0.2, -0.2],
             c = 4.0,
             dt = 0.001,
-            regularization_enabled = true,
-            regularization_backend = :lifted_pair,
-            regularization_warn_on_fallback = true,
-            regularization_r_on = 0.2,
-            regularization_r_off = 0.26,
+            regularization = RegularizationOptions(
+                enabled = true,
+                backend = :lifted_pair,
+                warn_on_fallback = true,
+                r_on = 0.2,
+                r_off = 0.26,
+            ),
         )
         @test_logs (:warn, r"falling back to :adaptive_cartesian") init(prob_warn)
     end
@@ -154,11 +164,13 @@
             charges = [0.1, -0.1],
             c = 4.0,
             dt = 0.001,
-            regularization_enabled = true,
-            regularization_backend = :lifted_pair,
-            regularization_warn_on_fallback = false,
-            regularization_r_on = 0.2,
-            regularization_r_off = 0.3,
+            regularization = RegularizationOptions(
+                enabled = true,
+                backend = :lifted_pair,
+                warn_on_fallback = false,
+                r_on = 0.2,
+                r_off = 0.3,
+            ),
         )
         int_3d = init(prob_3d)
         rb_3d = int_3d.buffers.regularization_buffers
@@ -178,11 +190,13 @@
             charges = [0.1, -0.1],
             c = 4.0,
             dt = 0.001,
-            regularization_enabled = true,
-            regularization_backend = :lifted_pair,
-            regularization_warn_on_fallback = true,
-            regularization_r_on = 0.2,
-            regularization_r_off = 0.3,
+            regularization = RegularizationOptions(
+                enabled = true,
+                backend = :lifted_pair,
+                warn_on_fallback = true,
+                r_on = 0.2,
+                r_off = 0.3,
+            ),
         ))
     end
 
@@ -307,12 +321,14 @@
             charges = [0.1, -0.2, 0.1],
             c = 4.0,
             dt = 0.001,
-            regularization_enabled = true,
-            regularization_backend = :adaptive_cartesian,
-            regularization_warn_on_fallback = false,
-            regularization_r_on = 0.2,
-            regularization_r_off = 0.3,
-            regularization_chain_enabled = false,
+            regularization = RegularizationOptions(
+                enabled = true,
+                backend = :adaptive_cartesian,
+                warn_on_fallback = false,
+                r_on = 0.2,
+                r_off = 0.3,
+                chain_enabled = false,
+            ),
         )
         sol = solve(prob)
         @test sol.retcode == :Success
@@ -409,8 +425,10 @@
             charges = [q1, q2],
             c = c,
             dt = T_est / 2000,
-            regularization_enabled = false,
-            regularization_collision_bounce_radius = 0.01,
+            regularization = RegularizationOptions(
+                enabled = false,
+                collision_bounce_radius = 0.01,
+            ),
         )
 
         sol = solve(prob)
@@ -458,14 +476,16 @@
             charges = [q1, q2],
             c = c,
             dt = T_est / 1000,
-            regularization_enabled = true,
-            regularization_backend = :adaptive_cartesian,
-            regularization_warn_on_fallback = false,
-            # Set r_on below bounce_r so regularization stays idle;
-            # bounce handles the singularity and the two features coexist.
-            regularization_r_on = 0.005,
-            regularization_r_off = 0.015,
-            regularization_collision_bounce_radius = 0.01,
+            regularization = RegularizationOptions(
+                enabled = true,
+                backend = :adaptive_cartesian,
+                warn_on_fallback = false,
+                # Set r_on below bounce_r so regularization stays idle;
+                # bounce handles the singularity and the two features coexist.
+                r_on = 0.005,
+                r_off = 0.015,
+                collision_bounce_radius = 0.01,
+            ),
         )
 
         sol = solve(prob)
@@ -491,13 +511,15 @@
             charges = [0.1, -0.2, 0.1],
             c = 4.0,
             dt = 0.002,
-            regularization_enabled = true,
-            regularization_backend = :lifted_pair,
-            regularization_warn_on_fallback = false,
-            regularization_r_on = 0.28,
-            regularization_r_off = 0.39,
-            regularization_chain_enabled = true,
-            regularization_max_substeps = 256,
+            regularization = RegularizationOptions(
+                enabled = true,
+                backend = :lifted_pair,
+                warn_on_fallback = false,
+                r_on = 0.28,
+                r_off = 0.39,
+                chain_enabled = true,
+                max_substeps = 256,
+            ),
         )
 
         sol = solve(prob)
@@ -524,7 +546,7 @@
             q0,
             p0;
             kwargs...,
-            regularization_enabled = false,
+            regularization = RegularizationOptions(enabled = false),
         )
         prob_on = WeberProblem(
             sys,
@@ -532,11 +554,13 @@
             q0,
             p0;
             kwargs...,
-            regularization_enabled = true,
-            regularization_backend = :adaptive_cartesian,
-            regularization_warn_on_fallback = false,
-            regularization_r_on = 0.05,
-            regularization_r_off = 0.08,
+            regularization = RegularizationOptions(
+                enabled = true,
+                backend = :adaptive_cartesian,
+                warn_on_fallback = false,
+                r_on = 0.05,
+                r_off = 0.08,
+            ),
         )
 
         sol_off = solve(prob_off)
@@ -563,9 +587,11 @@
             charges = [0.0],
             c = 4.0,
             dt = 0.01,
-            regularization_enabled = true,
-            regularization_backend = :adaptive_cartesian,
-            regularization_warn_on_fallback = false,
+            regularization = RegularizationOptions(
+                enabled = true,
+                backend = :adaptive_cartesian,
+                warn_on_fallback = false,
+            ),
         )
         sol = solve(prob)
         @test sol.retcode == :Success
@@ -611,7 +637,7 @@
             charges = [0.1, -0.1],
             c = 4.0,
             dt = 0.001,
-            regularization_enabled = false,
+            regularization = RegularizationOptions(enabled = false),
         )
         int_unreg = init(prob_unreg)
         step!(int_unreg)
@@ -629,12 +655,14 @@
             charges = [0.1, -0.1],
             c = 4.0,
             dt = 0.001,
-            regularization_enabled = true,
-            regularization_backend = :lifted_pair,
-            regularization_warn_on_fallback = false,
-            regularization_r_on = 0.2,
-            regularization_r_off = 0.26,
-            regularization_max_substeps = 256,
+            regularization = RegularizationOptions(
+                enabled = true,
+                backend = :lifted_pair,
+                warn_on_fallback = false,
+                r_on = 0.2,
+                r_off = 0.26,
+                max_substeps = 256,
+            ),
         )
         int_lifted = init(prob_lifted)
         step!(int_lifted)
