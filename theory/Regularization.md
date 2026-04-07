@@ -134,7 +134,7 @@ Jacobian:
 
 $$
 J=\frac{\partial (x,y)}{\partial (u_1,u_2)}
-=2\begin{bmatrix}u_1&-u_2\\u_2&u_1\end{bmatrix},
+=2\begin{bmatrix}u_1&-u_2\\ u_2&u_1\end{bmatrix},
 \quad
 JJ^T=4r\,I_2.
 $$
