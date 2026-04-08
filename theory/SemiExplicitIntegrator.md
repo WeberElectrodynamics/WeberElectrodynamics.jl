@@ -204,6 +204,6 @@ with:
 
 ## Reference
 
-Jayawardana, B. & Ohsawa, T. (2021). *Variational Structures and Numerical Methods for Semi-Explicit Symplectic Integrators*. [arXiv:2111.10915](https://arxiv.org/abs/2111.10915)
+Jayawardana, B. & Ohsawa, T. (2021). *Semiexplicit Symplectic Integrators for Non-separable Hamiltonian Systems*. [arXiv:2111.10915](https://arxiv.org/abs/2111.10915)
 
 See also: [Regularization.md](Regularization.md), [RegularizedIntegrationDesign.md](RegularizedIntegrationDesign.md), [WeberElectrodynamics.md](WeberElectrodynamics.md).
