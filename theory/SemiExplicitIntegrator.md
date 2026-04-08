@@ -163,9 +163,9 @@ Therefore $Df_0 = 2 \cdot 2I_{2d} = 4I_{2d}$, giving the Newton step $(Df_0)^{-1
 
 **Stopping criterion:**
 
-$$\|\mu^{(N+1)} - \mu^{(N)}\| < \varepsilon \quad \text{and} \quad \|f(\mu^{(N+1)})\| < \varepsilon$$
+$$\left\|\mu^{(N+1)} - \mu^{(N)}\right\| < \varepsilon$$
 
-The first condition checks iteration stationarity; the second verifies the constraint is actually satisfied.
+and set $\mu = \mu^{(N)}$.
 
 ## Broyden's Method (Alternative)
 
@@ -183,7 +183,7 @@ This allows efficient computation of $J_k^{-1}$ from $J_{k-1}^{-1}$ in $O(n^2)$ 
 
 $$\mu^{(k+1)} = \mu^{(k)} - J_k^{-1} f(\mu^{(k)})$$
 
-where $J_0 = 4I_{2d}$ and $J_k$ is the rank-1 update:
+where $J_0 = 4I_{2d}$ and $J_k$ is maintained via the rank-1 update:
 
 $$J_k = J_{k-1} + \frac{(\Delta f^{(k)} - J_{k-1}\Delta\mu^{(k)})(\Delta\mu^{(k)})^T}{\|\Delta\mu^{(k)}\|^2}$$
 
@@ -193,6 +193,10 @@ with:
 - $(\Delta\mu^{(k)})^T \in \mathbb{R}^{1 \times 2d}$ (row vector)
 - The numerator is an **outer product** producing a $2d \times 2d$ matrix
 
+Applying the Sherman-Morrison formula to this rank-1 update yields the direct inverse update (maintained iteratively, never inverting $J_k$ explicitly):
+
+$$J_k^{-1} = J_{k-1}^{-1} + \frac{\Delta\mu^{(k)} - J_{k-1}^{-1}\Delta f^{(k)}}{(\Delta\mu^{(k)})^T J_{k-1}^{-1}\Delta f^{(k)}} \left(\Delta\mu^{(k)}\right)^T J_{k-1}^{-1}$$
+
 ## Key Properties
 
 - Symplectic in original phase space (preserves $dq \wedge dp$)
@@ -200,7 +204,7 @@ with:
 - Symmetric if $\hat{\Phi}$ is symmetric
 - Phase space defect $\|(q,p) - (x,y)\| \sim \varepsilon$ (tolerance)
 - Requires few iterations (typically 1-3) for small $\Delta t$
-- Computational cost scales as $O(d)$ per iteration for the projection step
+- Projection step overhead per Newton iteration is $O(d)$ (one $\hat{\Phi}$ evaluation plus sparse matrix-vector products with $A$, $A^T$)
 
 ## Reference
 
