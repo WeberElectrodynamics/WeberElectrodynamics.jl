@@ -443,7 +443,7 @@ end
         _build_adjacency!(rb, rb.r_off)
         _build_component_from_anchor!(rb, rb.active_anchor_i, rb.active_anchor_j)
         comp_max_r = _component_max_distance(rb)
-        if comp_max_r > rb.r_off || rb.active_count < 2
+        if comp_max_r > rb.r_off
             rb.is_active = false
             rb.active_mode = REG_MODE_NONE
             rb.active_count = 0

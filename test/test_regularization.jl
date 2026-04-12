@@ -569,6 +569,7 @@
         @test sol_on.regularization.pair_steps == 0
         @test sol_on.regularization.chain_steps == 0
         @test sol_on.regularization.unregularized_steps == length(sol_on) - 1
+        @test sol_on.regularization.used_backend == WeberElectrodynamics.REG_BACKEND_DISABLED
         @test sol_off.t == sol_on.t
         @test all(sol_off.q .== sol_on.q)
         @test all(sol_off.p .== sol_on.p)
