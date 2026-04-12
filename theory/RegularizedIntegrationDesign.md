@@ -44,6 +44,14 @@ Each outer step performs:
    - activate at `r_on`
    - remain active while active-component max distance `<= r_off`
    - deactivate otherwise
+
+   Note: the anchor pair `(i, j)` that triggered activation is held fixed for
+   the duration of the active period. During the deactivation check the
+   component is always rooted at the original anchor (using `r_off` adjacency),
+   not re-derived from the current global minimum-distance pair. This prevents
+   mode-hopping when two different pairs trade the minimum-distance position
+   across consecutive steps.
+
 5. Choose mode:
    - component size 2: pair mode
    - component size > 2 with chain enabled: chain mode
@@ -54,7 +62,7 @@ Each outer step performs:
 The adaptive Cartesian pair backend keeps the previous robust path:
 
 1. Detect active pair.
-2. Compute adaptive substep count from encounter scale.
+2. Compute adaptive substep count: `substeps = clamp(⌈r_on / max(r, g_floor)⌉, 1, max_substeps)`.
 3. For each substep, run the existing projected Cartesian kernel.
 4. In 3D, apply KS constraint projection in lifted diagnostics path.
 
@@ -88,6 +96,16 @@ Use explicit midpoint for perturbation over `dt/2`:
 2. build midpoint state
 3. re-evaluate at midpoint
 4. update physical `q,p`
+
+### Multi-substep composition
+
+Multiple A-B-A substeps are applied back-to-back within one macro-step. The
+substep size is adaptive: `dt_sub = min(r_current * dtau_target, t_remaining)`
+where `dtau_target = dt / (1.5 * r_on)`. Adjacent A half-steps between
+substeps are not merged, so the structure is
+`A(h₁/2)–B(h₁)–A(h₁/2)–A(h₂/2)–B(h₂)–A(h₂/2)–…`. If `max_substeps` is
+exhausted before `t_remaining` reaches zero, the remainder is taken as a
+single final substep.
 
 ### Lifted pair step (`B`)
 
@@ -128,6 +146,7 @@ True 3D lifted KS stepping is deferred to a future release.
 
 - `requested_backend`, `used_backend`
 - activation/deactivation counters
+- `active_steps`: steps taken while regularization was active (`pair_steps + chain_steps`)
 - `pair_steps`, `adaptive_pair_steps`, `lifted_pair_steps`, `chain_steps`, `unregularized_steps`
 - `backend_fallback_steps`
 - `total_substeps`, `max_substeps_used`
@@ -138,7 +157,17 @@ True 3D lifted KS stepping is deferred to a future release.
 
 - `:adaptive_cartesian` or `:lifted_pair` when only one regularized backend is used
 - `:mixed` when both are used in one run
-- `:disabled` when regularization is disabled
+- `:disabled` when regularization is disabled, or when regularization is enabled
+  but no encounter was detected during the run (zero regularized steps taken)
+
+## Collision Bounce
+
+`RegularizationOptions` accepts `collision_bounce_radius::Float64 = 0.0`
+(disabled by default). When positive, a pre-step reflection is applied to any
+pair closer than this radius: `q_rel → -q_rel` with momenta unchanged. This is
+the C⁰-continuation of a head-on (ℓ=0) collision and preserves energy exactly.
+The feature is independent of the regularization backend and may be used with
+`enabled = false`.
 
 ## Memory Model
 

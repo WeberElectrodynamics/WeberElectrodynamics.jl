@@ -922,14 +922,7 @@ end
     chain_count = rb.active_count
 
     @inbounds for _ = 1:substeps
-        if dims == 2
-            for idx = 1:(chain_count-1)
-                i = rb.chain_order[idx]
-                j = rb.chain_order[idx+1]
-                _extract_pair_relative_state!(rb, integrator.q, integrator.p, prob.masses, i, j)
-                _lc_lift!(rb)
-            end
-        elseif dims == 3
+        if dims == 3
             for idx = 1:(chain_count-1)
                 i = rb.chain_order[idx]
                 j = rb.chain_order[idx+1]
@@ -1065,7 +1058,7 @@ function CommonSolve.init(
     p_history[1] .= prob.p_initial
 
     requested_backend = prob.regularization.enabled ? prob.regularization.backend : REG_BACKEND_DISABLED
-    used_backend = prob.regularization.enabled ? rb.effective_backend : REG_BACKEND_DISABLED
+    used_backend = REG_BACKEND_DISABLED
     diagnostics =
         RegularizationDiagnostics(prob.regularization.enabled, n_steps, requested_backend, used_backend)
 
