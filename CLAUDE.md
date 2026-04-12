@@ -31,10 +31,11 @@ WeberElectrodynamics/
 ├── src/                    # Package source
 ├── ext/                    # Weak-dependency extensions (Plots, Makie)
 ├── test/                   # Test suite (20,297 tests)
-├── examples/               # Jupyter notebooks (run from default Julia env)
+├── examples/               # Canonical reference notebook (two_body_reference.ipynb)
 ├── docs/                   # Documenter.jl scaffold (make.jl, src/, build/)
 ├── theory/                 # Mathematical derivations and theory documents
 ├── research/
+│   ├── notebooks/          # Research notebooks (run from default Julia env)
 │   ├── exploratory/        # Research notes and lessons learned
 │   └── sub_critical_weber_research/  # Sub-critical Weber research
 ├── papers/
