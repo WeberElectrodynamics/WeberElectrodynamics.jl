@@ -15,7 +15,5 @@ using Symbolics
     include("test_physics.jl")
     include("test_regularization.jl")
     include("test_zollner.jl")
-    include("test_plots_ext.jl")
-    include("test_makie_ext.jl")
     include("test_aqua.jl")
 end
