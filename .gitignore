@@ -60,6 +60,7 @@ benchmark/tune.json
 tmp/
 temp/
 examples/gr-temp/
+examples/output/
 
 # Logs
 *.log
