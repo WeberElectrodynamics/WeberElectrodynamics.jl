@@ -101,18 +101,21 @@ enough for the integration to finish in a fraction of a second.
 
 These bounds characterise a "correct" integration of this specific problem
 and are the ones satisfied by the reference implementation in this repository
-with $dt = 10^{-3}$ over $5 T$:
+with $dt = 10^{-3}$, default (unregularized) symplectic integrator, over $5 T$:
 
-| Quantity                         | Bound                |
-|----------------------------------|----------------------|
-| Maximum relative energy drift    | $< 10^{-5}\,\%$      |
-| Maximum $|\mathbf{P}|$ drift     | machine precision    |
-| Maximum $|L_z - L_z(0)|$         | $< 10^{-10}$         |
-| Symbolic-Hamiltonian self-consistency | $< 10^{-15}$    |
+| Quantity                               | Bound                |
+|----------------------------------------|----------------------|
+| Maximum relative energy drift          | $< 10^{-2}\,\%$      |
+| Maximum $|\mathbf{P}|$ drift           | machine precision    |
+| Maximum $|L_z - L_z(0)|$               | $< 10^{-12}$         |
+| Symbolic-Hamiltonian self-consistency  | $< 10^{-15}$         |
 
-Any symplectic integrator with comparable step size and regularization policy
-should meet these. A non-symplectic integrator will typically violate the
-energy bound long before it violates angular momentum.
+The orbit is eccentric ($e = 3/4$) so the periapsis passage at $r \approx 0.286$
+dominates the local integration error. A symplectic integrator keeps this
+error *bounded* rather than growing — the relative energy drift oscillates
+within the stated envelope instead of accumulating. A non-symplectic method
+will typically violate the energy bound within a handful of orbits while
+still preserving angular momentum.
 
 ## Cross-references
 
