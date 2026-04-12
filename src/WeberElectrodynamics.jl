@@ -72,13 +72,17 @@ Plot particle trajectories in 1D, 2D, or 3D based on `data.dims`.
 - **2D**: x–y scatter with equal aspect ratio and start/end markers.
 - **3D**: x–y–z line plot with start/end markers.
 
-Requires `using Plots` to activate the Plots.jl extension.
+Requires `using Plots` (Plots.jl extension) or `using PythonPlot`
+(matplotlib extension) to activate a plotting backend. Only one backend
+should be loaded per session — load `PythonPlot` for publication-quality
+matplotlib figures, or `Plots` for pure-Julia rendering.
 
 # Arguments
 - `data::TrajectoryData`: Trajectory data from `compute_trajectory_data`.
 
 # Returns
-- A `Plots.Plot` object.
+- A figure object — `Plots.Plot` under the Plots.jl backend, or a
+  `matplotlib.Figure` (PythonCall `Py`) under the PythonPlot backend.
 """
 function plot_trajectories end
 
@@ -90,7 +94,10 @@ Plot total n-body energy timeseries with comprehensive error visualization.
 Two-panel layout: energy components (Total, Kinetic, Potential) and relative
 error on a log scale with max/avg reference lines.
 
-Requires `using Plots` to activate the Plots.jl extension.
+Requires `using Plots` (Plots.jl extension) or `using PythonPlot`
+(matplotlib extension) to activate a plotting backend. Only one backend
+should be loaded per session — load `PythonPlot` for publication-quality
+matplotlib figures, or `Plots` for pure-Julia rendering.
 """
 function plot_energy end
 
@@ -102,7 +109,10 @@ Plot the Weber potential decomposition for a single particle pair.
 Two-panel layout: Coulomb term, velocity correction, and total pair potential vs.
 time; and radial velocity ṙ with approach/separation shading.
 
-Requires `using Plots` to activate the Plots.jl extension.
+Requires `using Plots` (Plots.jl extension) or `using PythonPlot`
+(matplotlib extension) to activate a plotting backend. Only one backend
+should be loaded per session — load `PythonPlot` for publication-quality
+matplotlib figures, or `Plots` for pure-Julia rendering.
 
 # Arguments
 - `data::EnergyData`: Energy data from `compute_energy_timeseries`.
@@ -116,7 +126,10 @@ function plot_pair_energy end
 Plot comprehensive energy error analysis (local error, global drift, and
 Hamiltonian validation) in a three-panel log-scale layout.
 
-Requires `using Plots` to activate the Plots.jl extension.
+Requires `using Plots` (Plots.jl extension) or `using PythonPlot`
+(matplotlib extension) to activate a plotting backend. Only one backend
+should be loaded per session — load `PythonPlot` for publication-quality
+matplotlib figures, or `Plots` for pure-Julia rendering.
 """
 function plot_energy_errors end
 
@@ -127,7 +140,10 @@ Plot the Weber force decomposition for a particle pair in a four-panel layout:
 force magnitude, force components, vector form decomposition, and radial form
 decomposition.
 
-Requires `using Plots` to activate the Plots.jl extension.
+Requires `using Plots` (Plots.jl extension) or `using PythonPlot`
+(matplotlib extension) to activate a plotting backend. Only one backend
+should be loaded per session — load `PythonPlot` for publication-quality
+matplotlib figures, or `Plots` for pure-Julia rendering.
 """
 function plot_pair_forces end
 
@@ -137,7 +153,10 @@ function plot_pair_forces end
 Plot the (r, ṙ) phase-space portrait for a particle pair with marked initial
 and final states.
 
-Requires `using Plots` to activate the Plots.jl extension.
+Requires `using Plots` (Plots.jl extension) or `using PythonPlot`
+(matplotlib extension) to activate a plotting backend. Only one backend
+should be loaded per session — load `PythonPlot` for publication-quality
+matplotlib figures, or `Plots` for pure-Julia rendering.
 """
 function plot_phase_space end
 
@@ -148,7 +167,10 @@ Plot total linear and angular momentum timeseries. Two-panel layout: linear
 momentum components + magnitude, and angular momentum (Lz in 2D; L vector
 in 3D). 1D systems show only the linear momentum panel.
 
-Requires `using Plots` to activate the Plots.jl extension.
+Requires `using Plots` (Plots.jl extension) or `using PythonPlot`
+(matplotlib extension) to activate a plotting backend. Only one backend
+should be loaded per session — load `PythonPlot` for publication-quality
+matplotlib figures, or `Plots` for pure-Julia rendering.
 """
 function plot_momentum end
 
@@ -161,7 +183,10 @@ Two-panel layout: total potential with per-pair breakdown and Zöllner extra ter
 (κ values shown); Zöllner gravitational residual ΣΔV_Z compared to total energy.
 Only meaningful when `prob.zollner.enabled == true`.
 
-Requires `using Plots` to activate the Plots.jl extension.
+Requires `using Plots` (Plots.jl extension) or `using PythonPlot`
+(matplotlib extension) to activate a plotting backend. Only one backend
+should be loaded per session — load `PythonPlot` for publication-quality
+matplotlib figures, or `Plots` for pure-Julia rendering.
 """
 function plot_zollner_energy end
 
@@ -172,7 +197,10 @@ Two-panel visualization of the Zöllner extra force for one particle pair:
 total force magnitude alongside the Zöllner extra magnitude |(κ−1)·F_Coulomb|,
 and the ratio of extra Zöllner force to total force.
 
-Requires `using Plots` to activate the Plots.jl extension.
+Requires `using Plots` (Plots.jl extension) or `using PythonPlot`
+(matplotlib extension) to activate a plotting backend. Only one backend
+should be loaded per session — load `PythonPlot` for publication-quality
+matplotlib figures, or `Plots` for pure-Julia rendering.
 """
 function plot_zollner_force_residual end
 
@@ -183,7 +211,10 @@ Overlay trajectories from two solutions (same initial conditions, different κ)
 to visualise the orbital divergence introduced by the Zöllner mismatch.
 Solid lines = `sol1`, dashed lines = `sol2`. Requires 2D or 3D.
 
-Requires `using Plots` to activate the Plots.jl extension.
+Requires `using Plots` (Plots.jl extension) or `using PythonPlot`
+(matplotlib extension) to activate a plotting backend. Only one backend
+should be loaded per session — load `PythonPlot` for publication-quality
+matplotlib figures, or `Plots` for pure-Julia rendering.
 """
 function plot_weber_vs_zollner end
 
@@ -193,7 +224,10 @@ function plot_weber_vs_zollner end
 Overlay (r, ṙ) phase portraits for the same pair from two simulations, showing
 how the Zöllner mismatch shifts the phase-space orbit.
 
-Requires `using Plots` to activate the Plots.jl extension.
+Requires `using Plots` (Plots.jl extension) or `using PythonPlot`
+(matplotlib extension) to activate a plotting backend. Only one backend
+should be loaded per session — load `PythonPlot` for publication-quality
+matplotlib figures, or `Plots` for pure-Julia rendering.
 """
 function plot_zollner_phase_space end
 

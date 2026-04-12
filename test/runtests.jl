@@ -16,4 +16,5 @@ using Symbolics
     include("test_regularization.jl")
     include("test_zollner.jl")
     include("test_aqua.jl")
+    include("test_pythonplot.jl")
 end
