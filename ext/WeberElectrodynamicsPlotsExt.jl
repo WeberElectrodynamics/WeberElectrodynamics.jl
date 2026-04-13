@@ -372,6 +372,14 @@ function WeberElectrodynamics.plot_energy_errors(data::EnergyData)::Plots.Plot
         linewidth = 1,
         label = "max = $(_format_scientific(stats.global_error_percent_max))%",
     )
+    hline!(
+        p2,
+        [max(stats.global_error_percent_avg, eps(Float64))],
+        linestyle = :dot,
+        color = :gray,
+        linewidth = 1,
+        label = "avg = $(_format_scientific(stats.global_error_percent_avg))%",
+    )
 
     # Panel 3: Hamiltonian validation
     max_h_err = maximum(data.hamiltonian_validation_error)
@@ -597,139 +605,121 @@ function WeberElectrodynamics.plot_phase_space(data::PairForceData)::Plots.Plot
 end
 
 """
-    plot_momentum(data::MomentumData) -> Plot
+    plot_momentum_errors(data::MomentumData) -> Plot
 
-Plot total momentum timeseries with comprehensive visualization.
+Plot conservation errors for linear and angular momentum as two stacked
+log-scale panels.
 
-Two-panel layout:
-1. Linear momentum components (Px, Py, [Pz]) with magnitude |P|
-2. Angular momentum (2D: scalar Lz, 3D: components and magnitude)
-   For 1D systems, shows only the linear momentum panel.
+- **Top panel** — linear drift `‖P(t) − P(0)‖` (steelblue).
+- **Bottom panel** — angular drift `|L(t) − L(0)|` in 2D or `‖L − L₀‖` in
+  3D (firebrick).
 
-Conservation of momentum is indicated by horizontal lines staying constant.
+Each panel's legend reports the max absolute drift over the run, and —
+when the initial magnitude is nonzero — the max relative drift
+`max_t ‖Δ·‖ / ‖·₀‖`. Relative error is a scalar rescaling of the absolute
+curve (the initial magnitude is constant), so on a log plot it is simply
+a shifted copy; reporting it in the label avoids a redundant curve.
+
+1D systems show only the linear panel.
 """
-function WeberElectrodynamics.plot_momentum(data::MomentumData)::Plots.Plot
+function WeberElectrodynamics.plot_momentum_errors(data::MomentumData)::Plots.Plot
     dims = data.dims
+    nt = length(data.t)
 
-    # Color palette for momentum components
-    component_colors = [:steelblue, :firebrick, :forestgreen]
-    component_labels = ["Px", "Py", "Pz"]
+    # --- Linear momentum drift: ‖P(t) − P(0)‖ ---
+    P0 = data.linear_momentum_components[1, :]
+    P0_mag = data.linear_momentum_magnitude[1]
+    dP = Vector{Float64}(undef, nt)
+    @inbounds for i = 1:nt
+        s = 0.0
+        for d = 1:dims
+            s += (data.linear_momentum_components[i, d] - P0[d])^2
+        end
+        dP[i] = sqrt(s)
+    end
+    dP_max = maximum(dP)
 
-    # =========================================================================
-    # Panel 1: Linear Momentum Components + Magnitude
-    # =========================================================================
-    p1 = plot(;
-        title = "Total Linear Momentum",
-        xlabel = dims == 1 || isnothing(data.angular_momentum) ? "Time t" : "",
-        ylabel = "Momentum P",
-        legend = :outertopright,
+    has_L = !(dims == 1 || isnothing(data.angular_momentum))
+
+    linear_label = if P0_mag > 0
+        "abs max $(_format_scientific(dP_max)), rel max $(_format_scientific(dP_max / P0_mag))"
+    else
+        "abs max $(_format_scientific(dP_max))"
+    end
+
+    p_lin = plot(;
+        title = "Linear Momentum Drift ‖ΔP‖",
+        xlabel = has_L ? "" : "Time t",
+        ylabel = "‖P(t) − P(0)‖",
+        yscale = :log10,
+        legend = :topleft,
         PLOT_DEFAULTS...,
     )
-
-    # Plot each component
-    for d = 1:dims
-        plot!(
-            p1,
-            data.t,
-            data.linear_momentum_components[:, d],
-            label = component_labels[d],
-            linewidth = 1.5,
-            color = component_colors[d],
-        )
-    end
-
-    # Plot magnitude
     plot!(
-        p1,
-        data.t,
-        data.linear_momentum_magnitude,
-        label = "|P|",
-        linewidth = 2,
-        color = :black,
-        linestyle = :dash,
+        p_lin,
+        data.t[2:end],
+        max.(dP[2:end], eps(Float64)),
+        label = linear_label,
+        linewidth = 1.5,
+        color = :steelblue,
     )
 
-    # Zero reference line
-    hline!(p1, [0.0], linestyle = :dot, color = :gray, linewidth = 0.5, label = "")
-
-    # For 1D systems, return single panel
-    if dims == 1 || isnothing(data.angular_momentum)
-        return plot(p1, size = _single_panel_size())
+    if !has_L
+        plot!(p_lin, size = _single_panel_size())
+        return p_lin
     end
 
-    # =========================================================================
-    # Panel 2: Angular Momentum
-    # =========================================================================
+    # --- Angular momentum drift ---
+    L0 = data.angular_momentum[1]
     if dims == 2
-        # 2D: scalar angular momentum Lz
-        p2 = plot(;
-            title = "Total Angular Momentum (z-component)",
-            xlabel = "Time t",
-            ylabel = "Angular Momentum Lz",
-            legend = :outertopright,
-            PLOT_DEFAULTS...,
-        )
-
-        plot!(
-            p2,
-            data.t,
-            data.angular_momentum,
-            label = "Lz",
-            linewidth = 1.5,
-            color = :black,
-        )
-
-        # Zero reference line
-        hline!(p2, [0.0], linestyle = :dot, color = :gray, linewidth = 0.5, label = "")
-
+        dL = abs.(data.angular_momentum .- L0)
+        L0_mag = abs(L0)
+        L_sym = "|ΔLz|"
+        ylabel_L = "|Lz(t) − Lz(0)|"
     else  # dims == 3
-        # 3D: angular momentum vector components + magnitude
-        L_labels = ["Lx", "Ly", "Lz"]
-
-        p2 = plot(;
-            title = "Total Angular Momentum",
-            xlabel = "Time t",
-            ylabel = "Angular Momentum L",
-            legend = :outertopright,
-            PLOT_DEFAULTS...,
-        )
-
-        for d = 1:3
-            L_component = [data.angular_momentum[t][d] for t = 1:length(data.t)]
-            plot!(
-                p2,
-                data.t,
-                L_component,
-                label = L_labels[d],
-                linewidth = 1.5,
-                color = component_colors[d],
-            )
+        dL = Vector{Float64}(undef, nt)
+        @inbounds for i = 1:nt
+            s = 0.0
+            for d = 1:3
+                s += (data.angular_momentum[i][d] - L0[d])^2
+            end
+            dL[i] = sqrt(s)
         end
+        L0_mag = sqrt(L0[1]^2 + L0[2]^2 + L0[3]^2)
+        L_sym = "‖ΔL‖"
+        ylabel_L = "‖L(t) − L(0)‖"
+    end
+    dL_max = maximum(dL)
 
-        # Plot magnitude
-        plot!(
-            p2,
-            data.t,
-            data.angular_momentum_magnitude,
-            label = "|L|",
-            linewidth = 2,
-            color = :black,
-            linestyle = :dash,
-        )
-
-        # Zero reference line
-        hline!(p2, [0.0], linestyle = :dot, color = :gray, linewidth = 0.5, label = "")
+    angular_label = if L0_mag > 0
+        "abs max $(_format_scientific(dL_max)), rel max $(_format_scientific(dL_max / L0_mag))"
+    else
+        "abs max $(_format_scientific(dL_max))"
     end
 
-    # =========================================================================
-    # Combine into 2-panel layout
-    # =========================================================================
+    p_ang = plot(;
+        title = "Angular Momentum Drift $(L_sym)",
+        xlabel = "Time t",
+        ylabel = ylabel_L,
+        yscale = :log10,
+        legend = :topleft,
+        PLOT_DEFAULTS...,
+    )
+    plot!(
+        p_ang,
+        data.t[2:end],
+        max.(dL[2:end], eps(Float64)),
+        label = angular_label,
+        linewidth = 1.5,
+        color = :firebrick,
+    )
+
     plt = plot(
-        p1, p2,
+        p_lin,
+        p_ang,
         layout = grid(2, 1, heights = [0.5, 0.5]),
         size = _multi_panel_size(2),
     )
-
     return plt
 end
 
