@@ -6,13 +6,13 @@
 [![Coverage](https://codecov.io/gh/WeberElectrodynamics/WeberElectrodynamics.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/WeberElectrodynamics/WeberElectrodynamics.jl)
 [![Julia ≥1.9](https://img.shields.io/badge/julia-%E2%89%A51.9-9558B2?logo=julia&logoColor=white)](https://julialang.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19239678.svg)](https://doi.org/10.5281/zenodo.19239678)
+[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.19239678-blue)](https://doi.org/10.5281/zenodo.19239678)
 
 A Julia package for symplectic numerical integration of n-body Weber electrodynamics.
 
 ## Paper
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19337293.svg)](https://doi.org/10.5281/zenodo.19337293) [![Paper License: CC BY 4.0](https://img.shields.io/badge/Paper%20License-CC%20BY%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
+[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.19337293-blue)](https://doi.org/10.5281/zenodo.19337293) [![Paper License: CC BY 4.0](https://img.shields.io/badge/Paper%20License-CC%20BY%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
 
 **[Computational Weber electrodynamics: symplectic n-body integration](https://doi.org/10.5281/zenodo.19337293)**
 
