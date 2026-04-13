@@ -59,7 +59,4 @@ for (name, fig) in figures
 end
 
 @printf("\nenergy drift (max):  %.2e %%\n", energy.statistics.global_error_percent_max)
-@printf("angular momentum drift: %.2e\n",
-    maximum(abs.(mom.angular_momentum .- mom.angular_momentum[1])))
-@printf("linear momentum drift:  %.2e\n",
-    maximum(abs.(mom.linear_momentum_magnitude .- mom.linear_momentum_magnitude[1])))
+# Momentum drift is reported in the plot_momentum_errors legend; see momentum_errors.png.

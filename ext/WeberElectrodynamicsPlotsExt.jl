@@ -599,14 +599,20 @@ end
 """
     plot_momentum_errors(data::MomentumData) -> Plot
 
-Plot conservation errors for linear and angular momentum on a single
-log-scale panel.
+Plot conservation errors for linear and angular momentum as two stacked
+log-scale panels.
 
-Shows absolute drift `‖P(t) − P(0)‖` for linear momentum (steelblue) and
-`|L(t) − L(0)|` in 2D or `‖L − L₀‖` in 3D for angular momentum (firebrick).
-Max absolute drift is shown in the legend label, and — when the initial
-magnitude is nonzero — the max relative drift (Δ/‖·₀‖) is appended in
-parentheses. 1D systems show only the linear curve.
+- **Top panel** — linear drift `‖P(t) − P(0)‖` (steelblue).
+- **Bottom panel** — angular drift `|L(t) − L(0)|` in 2D or `‖L − L₀‖` in
+  3D (firebrick).
+
+Each panel's legend reports the max absolute drift over the run, and —
+when the initial magnitude is nonzero — the max relative drift
+`max_t ‖Δ·‖ / ‖·₀‖`. Relative error is a scalar rescaling of the absolute
+curve (the initial magnitude is constant), so on a log plot it is simply
+a shifted copy; reporting it in the label avoids a redundant curve.
+
+1D systems show only the linear panel.
 """
 function WeberElectrodynamics.plot_momentum_errors(data::MomentumData)::Plots.Plot
     dims = data.dims
@@ -623,75 +629,71 @@ function WeberElectrodynamics.plot_momentum_errors(data::MomentumData)::Plots.Pl
         end
         dP[i] = sqrt(s)
     end
+    dP_max = maximum(dP)
     dP_plot = max.(dP, eps(Float64))
 
-    # --- Angular momentum drift (if available) ---
     has_L = !(dims == 1 || isnothing(data.angular_momentum))
-    dL_plot = nothing
-    dL_max = 0.0
-    L0_mag = 0.0
-    if has_L
-        if dims == 2
-            L0 = data.angular_momentum[1]
-            dL = abs.(data.angular_momentum .- L0)
-            L0_mag = abs(L0)
-        else  # dims == 3
-            L0 = data.angular_momentum[1]
-            dL = [
-                sqrt(sum((data.angular_momentum[i][d] - L0[d])^2 for d = 1:3))
-                for i = 1:nt
-            ]
-            L0_mag = sqrt(sum(L0[d]^2 for d = 1:3))
-        end
-        dL_max = maximum(dL)
-        dL_plot = max.(dL, eps(Float64))
-    end
 
-    # Build legend labels: absolute max always, relative max only when defined.
-    dP_max = maximum(dP)
     linear_label = if P0_mag > 0
-        "‖ΔP‖ — abs $(_format_scientific(dP_max)), rel $(_format_scientific(dP_max / P0_mag))"
+        "abs max $(_format_scientific(dP_max)), rel max $(_format_scientific(dP_max / P0_mag))"
     else
-        "‖ΔP‖ — abs $(_format_scientific(dP_max))"
+        "abs max $(_format_scientific(dP_max))"
     end
 
-    p = plot(;
-        title = "Momentum Conservation Error",
-        xlabel = "Time t",
-        ylabel = "Absolute drift",
+    p_lin = plot(;
+        title = "Linear Momentum Drift ‖ΔP‖",
+        xlabel = has_L ? "" : "Time t",
+        ylabel = "‖P(t) − P(0)‖",
         yscale = :log10,
-        legend = :outerbottom,
+        legend = :bottomright,
         PLOT_DEFAULTS...,
     )
+    plot!(p_lin, data.t, dP_plot, label = linear_label, linewidth = 1.5, color = :steelblue)
 
-    plot!(
-        p,
-        data.t,
-        dP_plot,
-        label = linear_label,
-        linewidth = 1.5,
-        color = :steelblue,
-    )
-
-    if has_L
-        L_sym = dims == 2 ? "|ΔLz|" : "‖ΔL‖"
-        ang_label = if L0_mag > 0
-            "$(L_sym) — abs $(_format_scientific(dL_max)), rel $(_format_scientific(dL_max / L0_mag))"
-        else
-            "$(L_sym) — abs $(_format_scientific(dL_max))"
-        end
-        plot!(
-            p,
-            data.t,
-            dL_plot,
-            label = ang_label,
-            linewidth = 1.5,
-            color = :firebrick,
-        )
+    if !has_L
+        plot!(p_lin, size = _single_panel_size())
+        return p_lin
     end
 
-    plot!(p, size = _single_panel_size())
-    return p
+    # --- Angular momentum drift ---
+    L0 = data.angular_momentum[1]
+    if dims == 2
+        dL = abs.(data.angular_momentum .- L0)
+        L0_mag = abs(L0)
+        L_sym = "|ΔLz|"
+        ylabel_L = "|Lz(t) − Lz(0)|"
+    else  # dims == 3
+        dL = [sqrt(sum((data.angular_momentum[i][d] - L0[d])^2 for d = 1:3)) for i = 1:nt]
+        L0_mag = sqrt(sum(L0[d]^2 for d = 1:3))
+        L_sym = "‖ΔL‖"
+        ylabel_L = "‖L(t) − L(0)‖"
+    end
+    dL_max = maximum(dL)
+    dL_plot = max.(dL, eps(Float64))
+
+    angular_label = if L0_mag > 0
+        "abs max $(_format_scientific(dL_max)), rel max $(_format_scientific(dL_max / L0_mag))"
+    else
+        "abs max $(_format_scientific(dL_max))"
+    end
+
+    p_ang = plot(;
+        title = "Angular Momentum Drift $(L_sym)",
+        xlabel = "Time t",
+        ylabel = ylabel_L,
+        yscale = :log10,
+        legend = :bottomright,
+        PLOT_DEFAULTS...,
+    )
+    plot!(p_ang, data.t, dL_plot, label = angular_label, linewidth = 1.5, color = :firebrick)
+
+    plt = plot(
+        p_lin,
+        p_ang,
+        layout = grid(2, 1, heights = [0.5, 0.5]),
+        size = _multi_panel_size(2),
+    )
+    return plt
 end
 
 # =============================================================================

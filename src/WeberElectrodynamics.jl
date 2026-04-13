@@ -144,11 +144,11 @@ function plot_phase_space end
 """
     plot_momentum_errors(data::MomentumData) -> Plot
 
-Plot conservation errors for linear and angular momentum on a single
-log-scale panel. Shows absolute drift `‖P(t) − P(0)‖` and `|L(t) − L(0)|`
-(scalar Lz in 2D, `‖L − L₀‖` in 3D). Legend labels report max absolute drift
-and — when the initial magnitude is nonzero — max relative drift. 1D systems
-show only the linear curve.
+Plot conservation errors for linear and angular momentum as two stacked
+log-scale panels (top: linear drift `‖ΔP‖`, bottom: angular drift `|ΔLz|`
+in 2D or `‖ΔL‖` in 3D). Each legend reports max absolute drift and — when
+the initial magnitude is nonzero — max relative drift `max_t ‖Δ·‖ / ‖·₀‖`.
+1D systems show only the linear panel.
 
 Requires `using Plots` to activate the Plots.jl extension.
 """
