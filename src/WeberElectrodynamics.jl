@@ -142,15 +142,17 @@ Requires `using Plots` to activate the Plots.jl extension.
 function plot_phase_space end
 
 """
-    plot_momentum(data::MomentumData) -> Plot
+    plot_momentum_errors(data::MomentumData) -> Plot
 
-Plot total linear and angular momentum timeseries. Two-panel layout: linear
-momentum components + magnitude, and angular momentum (Lz in 2D; L vector
-in 3D). 1D systems show only the linear momentum panel.
+Plot conservation errors for linear and angular momentum on a single panel.
+Shows absolute drift `‖P(t) − P(0)‖` and `|L(t) − L(0)|` (scalar Lz in 2D,
+`‖L − L₀‖` in 3D) as solid curves on the primary y-axis. Where the initial
+magnitude is nonzero, the corresponding relative drift is overlaid as a
+dashed curve on a secondary y-axis. 1D systems show only the linear curve.
 
 Requires `using Plots` to activate the Plots.jl extension.
 """
-function plot_momentum end
+function plot_momentum_errors end
 
 """
     plot_zollner_energy(data::EnergyData) -> Plot
@@ -197,7 +199,7 @@ Requires `using Plots` to activate the Plots.jl extension.
 """
 function plot_zollner_phase_space end
 
-export plot_trajectories, plot_energy, plot_pair_energy, plot_energy_errors, plot_pair_forces, plot_phase_space, plot_momentum
+export plot_trajectories, plot_energy, plot_pair_energy, plot_energy_errors, plot_pair_forces, plot_phase_space, plot_momentum_errors
 export plot_zollner_energy, plot_zollner_force_residual, plot_weber_vs_zollner, plot_zollner_phase_space
 
 # =============================================================================

@@ -152,7 +152,7 @@ momentum = compute_momentum_timeseries(sol)
 
 plot_trajectories(traj)     # particle paths in configuration space
 plot_energy(energy)         # Hamiltonian drift over time
-plot_momentum(momentum)     # total linear momentum components
+plot_momentum_errors(momentum)  # drift of linear & angular momentum from initial
 ```
 
 ## Interactive animation (requires GLMakie)

@@ -47,7 +47,7 @@ figures = [
     ("energy_errors.png", plot_energy_errors(energy)),
     ("pair_forces.png",   plot_pair_forces(forces)),
     ("phase_space.png",   plot_phase_space(forces)),
-    ("momentum.png",      plot_momentum(mom)),
+    ("momentum_errors.png", plot_momentum_errors(mom)),
 ]
 
 const display_plots = get(ENV, "WEBER_DISPLAY", "") == "1"
