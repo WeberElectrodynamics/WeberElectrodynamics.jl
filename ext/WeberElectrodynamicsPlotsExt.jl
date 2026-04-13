@@ -372,6 +372,14 @@ function WeberElectrodynamics.plot_energy_errors(data::EnergyData)::Plots.Plot
         linewidth = 1,
         label = "max = $(_format_scientific(stats.global_error_percent_max))%",
     )
+    hline!(
+        p2,
+        [max(stats.global_error_percent_avg, eps(Float64))],
+        linestyle = :dot,
+        color = :gray,
+        linewidth = 1,
+        label = "avg = $(_format_scientific(stats.global_error_percent_avg))%",
+    )
 
     # Panel 3: Hamiltonian validation
     max_h_err = maximum(data.hamiltonian_validation_error)
@@ -630,7 +638,6 @@ function WeberElectrodynamics.plot_momentum_errors(data::MomentumData)::Plots.Pl
         dP[i] = sqrt(s)
     end
     dP_max = maximum(dP)
-    dP_plot = max.(dP, eps(Float64))
 
     has_L = !(dims == 1 || isnothing(data.angular_momentum))
 
@@ -645,10 +652,17 @@ function WeberElectrodynamics.plot_momentum_errors(data::MomentumData)::Plots.Pl
         xlabel = has_L ? "" : "Time t",
         ylabel = "‖P(t) − P(0)‖",
         yscale = :log10,
-        legend = :bottomright,
+        legend = :topleft,
         PLOT_DEFAULTS...,
     )
-    plot!(p_lin, data.t, dP_plot, label = linear_label, linewidth = 1.5, color = :steelblue)
+    plot!(
+        p_lin,
+        data.t[2:end],
+        max.(dP[2:end], eps(Float64)),
+        label = linear_label,
+        linewidth = 1.5,
+        color = :steelblue,
+    )
 
     if !has_L
         plot!(p_lin, size = _single_panel_size())
@@ -663,13 +677,19 @@ function WeberElectrodynamics.plot_momentum_errors(data::MomentumData)::Plots.Pl
         L_sym = "|ΔLz|"
         ylabel_L = "|Lz(t) − Lz(0)|"
     else  # dims == 3
-        dL = [sqrt(sum((data.angular_momentum[i][d] - L0[d])^2 for d = 1:3)) for i = 1:nt]
-        L0_mag = sqrt(sum(L0[d]^2 for d = 1:3))
+        dL = Vector{Float64}(undef, nt)
+        @inbounds for i = 1:nt
+            s = 0.0
+            for d = 1:3
+                s += (data.angular_momentum[i][d] - L0[d])^2
+            end
+            dL[i] = sqrt(s)
+        end
+        L0_mag = sqrt(L0[1]^2 + L0[2]^2 + L0[3]^2)
         L_sym = "‖ΔL‖"
         ylabel_L = "‖L(t) − L(0)‖"
     end
     dL_max = maximum(dL)
-    dL_plot = max.(dL, eps(Float64))
 
     angular_label = if L0_mag > 0
         "abs max $(_format_scientific(dL_max)), rel max $(_format_scientific(dL_max / L0_mag))"
@@ -682,10 +702,17 @@ function WeberElectrodynamics.plot_momentum_errors(data::MomentumData)::Plots.Pl
         xlabel = "Time t",
         ylabel = ylabel_L,
         yscale = :log10,
-        legend = :bottomright,
+        legend = :topleft,
         PLOT_DEFAULTS...,
     )
-    plot!(p_ang, data.t, dL_plot, label = angular_label, linewidth = 1.5, color = :firebrick)
+    plot!(
+        p_ang,
+        data.t[2:end],
+        max.(dL[2:end], eps(Float64)),
+        label = angular_label,
+        linewidth = 1.5,
+        color = :firebrick,
+    )
 
     plt = plot(
         p_lin,
