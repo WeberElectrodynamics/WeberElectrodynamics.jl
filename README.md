@@ -26,7 +26,7 @@ A Julia package for symplectic numerical integration of n-body Weber electrodyna
 
 ## Examples
 
-See the [examples/](examples/) directory for Jupyter notebooks demonstrating two-body, three-body and four-body simulations with regularization, critical radius dynamics and Zollner electrogravity.
+The [examples/](examples/) directory contains [`two_body_reference.ipynb`](examples/two_body_reference.ipynb) — the canonical annotated two-body tutorial with every diagnostic plot. Additional studies (regularization, critical radius dynamics, Zöllner electrogravity, three- and four-body cases) live under [research/notebooks/](research/notebooks/).
 
 ## Installation
 
