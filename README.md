@@ -14,7 +14,7 @@ A Julia package for symplectic numerical integration of n-body Weber electrodyna
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19337293.svg)](https://doi.org/10.5281/zenodo.19337293) [![Paper License: CC BY 4.0](https://img.shields.io/badge/Paper%20License-CC%20BY%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
 
-**Computational Weber electrodynamics: symplectic n-body integration**
+**[Computational Weber electrodynamics: symplectic n-body integration](https://doi.org/10.5281/zenodo.19337293)**
 
 ## Theory
 
