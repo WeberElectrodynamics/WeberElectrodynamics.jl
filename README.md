@@ -58,6 +58,9 @@ plot_trajectories(compute_trajectory_data(sol, 2, 2; stride = 10))
 plot_energy(compute_energy_timeseries(sol; stride = 10))
 ```
 
+![Two-body trajectories](examples/figures/two_body_trajectories.png)
+![Energy conservation](examples/figures/two_body_energy.png)
+
 See [`examples/two_body_reference.ipynb`](examples/two_body_reference.ipynb)
 for the full annotated tutorial with every diagnostic plot.
 
