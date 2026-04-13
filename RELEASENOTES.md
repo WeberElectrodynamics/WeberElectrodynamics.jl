@@ -3,12 +3,12 @@
 
 ### Breaking changes
 - `plot_momentum` removed. Replaced by `plot_momentum_errors(data::MomentumData)`,
-  which plots conservation errors on a single panel: absolute drift
-  `‖P(t) − P(0)‖` and `|L(t) − L(0)|` (log scale), with relative drift
-  overlaid on a secondary axis where the initial magnitude is nonzero. The
-  old raw-timeseries plot was visually flat for symplectic integrators in
-  the COM frame and conveyed no integrator-quality signal. Migration:
-  replace `plot_momentum(mom)` with `plot_momentum_errors(mom)`.
+  which plots conservation errors on a single log-scale panel: absolute drift
+  `‖P(t) − P(0)‖` and `|L(t) − L(0)|`. Legend labels report max absolute drift
+  and (where initial magnitude is nonzero) max relative drift. The old raw
+  timeseries plot was visually flat for symplectic integrators in the COM
+  frame and conveyed no integrator-quality signal. Migration: replace
+  `plot_momentum(mom)` with `plot_momentum_errors(mom)`.
 
 ### Added
 - Aqua.jl quality gate in the test suite — checks stale deps, unbound type

@@ -599,15 +599,14 @@ end
 """
     plot_momentum_errors(data::MomentumData) -> Plot
 
-Plot conservation errors for linear and angular momentum on a single panel.
+Plot conservation errors for linear and angular momentum on a single
+log-scale panel.
 
-Primary y-axis (log scale) shows absolute drift:
-- `‖P(t) − P(0)‖` for linear momentum (solid steelblue).
-- `|L(t) − L(0)|` in 2D or `‖L − L₀‖` in 3D for angular momentum (solid firebrick).
-
-Where the initial magnitude is nonzero, the corresponding relative drift
-(Δ/‖·₀‖) is overlaid as a dashed curve on a secondary y-axis. 1D systems show
-only the linear curve.
+Shows absolute drift `‖P(t) − P(0)‖` for linear momentum (steelblue) and
+`|L(t) − L(0)|` in 2D or `‖L − L₀‖` in 3D for angular momentum (firebrick).
+Max absolute drift is shown in the legend label, and — when the initial
+magnitude is nonzero — the max relative drift (Δ/‖·₀‖) is appended in
+parentheses. 1D systems show only the linear curve.
 """
 function WeberElectrodynamics.plot_momentum_errors(data::MomentumData)::Plots.Plot
     dims = data.dims
@@ -629,6 +628,7 @@ function WeberElectrodynamics.plot_momentum_errors(data::MomentumData)::Plots.Pl
     # --- Angular momentum drift (if available) ---
     has_L = !(dims == 1 || isnothing(data.angular_momentum))
     dL_plot = nothing
+    dL_max = 0.0
     L0_mag = 0.0
     if has_L
         if dims == 2
@@ -643,79 +643,51 @@ function WeberElectrodynamics.plot_momentum_errors(data::MomentumData)::Plots.Pl
             ]
             L0_mag = sqrt(sum(L0[d]^2 for d = 1:3))
         end
+        dL_max = maximum(dL)
         dL_plot = max.(dL, eps(Float64))
     end
 
-    # --- Primary panel: absolute drift (log scale) ---
+    # Build legend labels: absolute max always, relative max only when defined.
+    dP_max = maximum(dP)
+    linear_label = if P0_mag > 0
+        "‖ΔP‖ — abs $(_format_scientific(dP_max)), rel $(_format_scientific(dP_max / P0_mag))"
+    else
+        "‖ΔP‖ — abs $(_format_scientific(dP_max))"
+    end
+
     p = plot(;
         title = "Momentum Conservation Error",
         xlabel = "Time t",
         ylabel = "Absolute drift",
         yscale = :log10,
-        legend = :outertopright,
+        legend = :outerbottom,
         PLOT_DEFAULTS...,
     )
 
-    dP_max = maximum(dP)
     plot!(
         p,
         data.t,
         dP_plot,
-        label = "‖ΔP‖ (max = $(_format_scientific(dP_max)))",
+        label = linear_label,
         linewidth = 1.5,
         color = :steelblue,
     )
 
     if has_L
-        dL_max = maximum(dL_plot)
-        L_label = dims == 2 ? "|ΔLz|" : "‖ΔL‖"
+        L_sym = dims == 2 ? "|ΔLz|" : "‖ΔL‖"
+        ang_label = if L0_mag > 0
+            "$(L_sym) — abs $(_format_scientific(dL_max)), rel $(_format_scientific(dL_max / L0_mag))"
+        else
+            "$(L_sym) — abs $(_format_scientific(dL_max))"
+        end
         plot!(
             p,
             data.t,
             dL_plot,
-            label = "$(L_label) (max = $(_format_scientific(dL_max)))",
+            label = ang_label,
             linewidth = 1.5,
             color = :firebrick,
         )
-    end
-
-    # --- Secondary axis: relative drift where defined ---
-    rel_linear_defined = P0_mag > 0
-    rel_angular_defined = has_L && L0_mag > 0
-
-    if rel_linear_defined || rel_angular_defined
-        ptw = twinx(p)
-        plot!(
-            ptw;
-            ylabel = "Relative drift",
-            yscale = :log10,
-            legend = :outertopright,
-            PLOT_DEFAULTS...,
-        )
-        if rel_linear_defined
-            rel_P = max.(dP ./ P0_mag, eps(Float64))
-            plot!(
-                ptw,
-                data.t,
-                rel_P,
-                label = "‖ΔP‖/‖P₀‖",
-                linewidth = 1.2,
-                color = :steelblue,
-                linestyle = :dash,
-            )
-        end
-        if rel_angular_defined
-            rel_L = max.(dL_plot ./ L0_mag, eps(Float64))
-            plot!(
-                ptw,
-                data.t,
-                rel_L,
-                label = dims == 2 ? "|ΔLz|/|Lz₀|" : "‖ΔL‖/‖L₀‖",
-                linewidth = 1.2,
-                color = :firebrick,
-                linestyle = :dash,
-            )
-        end
     end
 
     plot!(p, size = _single_panel_size())
