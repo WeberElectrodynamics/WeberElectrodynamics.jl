@@ -35,6 +35,34 @@ using Pkg
 Pkg.add("WeberElectrodynamics")
 ```
 
+## Quick start
+
+The canonical two-body reference problem — symmetric whole-number initial
+conditions producing a precessing ellipse ($e = 3/4$) over five Kepler
+periods.
+
+```julia
+using WeberElectrodynamics, Plots
+
+system = WeberSystem(2, 2)
+prob = WeberProblem(system, (0.0, 27.14),
+    [-1.0, 0.0,  1.0, 0.0],        # q(0): particles at (±1, 0)
+    [ 0.0, -0.25, 0.0, 0.25];      # p(0): |p| = 1/4 tangential
+    masses = [1.0, 1.0], charges = [1.0, -1.0], c = 4.0, dt = 0.001,
+)
+sol = solve(prob)
+
+plot_trajectories(compute_trajectory_data(sol, 2, 2; stride = 10))
+plot_energy(compute_energy_timeseries(sol; stride = 10))
+```
+
+See [`examples/two_body_reference.md`](examples/two_body_reference.md) for
+the full (implementation-independent) specification,
+[`examples/two_body_reference.ipynb`](examples/two_body_reference.ipynb) for
+an annotated tutorial with every diagnostic plot, and
+[`examples/two_body_reference.jl`](examples/two_body_reference.jl) to
+regenerate every figure from the command line.
+
 ## License
 
 [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
