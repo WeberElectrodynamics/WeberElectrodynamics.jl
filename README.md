@@ -56,12 +56,8 @@ plot_trajectories(compute_trajectory_data(sol, 2, 2; stride = 10))
 plot_energy(compute_energy_timeseries(sol; stride = 10))
 ```
 
-See [`examples/two_body_reference.md`](examples/two_body_reference.md) for
-the full (implementation-independent) specification,
-[`examples/two_body_reference.ipynb`](examples/two_body_reference.ipynb) for
-an annotated tutorial with every diagnostic plot, and
-[`examples/two_body_reference.jl`](examples/two_body_reference.jl) to
-regenerate every figure from the command line.
+See [`examples/two_body_reference.ipynb`](examples/two_body_reference.ipynb)
+for the full annotated tutorial with every diagnostic plot.
 
 ## License
 
