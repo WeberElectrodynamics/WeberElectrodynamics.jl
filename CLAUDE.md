@@ -4,7 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-Julia package (v0.2.3) for n-body Weber electrodynamics simulation with Zöllner electrogravitational extension. Implements a symplectic Strang-splitting symmetric-projection integrator with Levi-Civita/KS regularization for close encounters and collision bounce for head-on singularities.
+Julia package for n-body Weber electrodynamics simulation with Zöllner electrogravitational extension. Version is tracked in `Project.toml` — do not duplicate it here.
+
+Implements a symplectic Strang-splitting symmetric-projection integrator. Levi-Civita/KS regularization handles close encounters; collision bounce handles head-on singularities.
 
 ## Commands
 
@@ -30,14 +32,11 @@ julia -e 'using JuliaFormatter; format(".")'
 WeberElectrodynamics/
 ├── src/                    # Package source
 ├── ext/                    # Weak-dependency extensions (Plots, Makie)
-├── test/                   # Test suite (20,297 tests)
+├── test/                   # Test suite
 ├── examples/               # Canonical reference notebook (two_body_reference.ipynb)
 ├── docs/                   # Documenter.jl scaffold (make.jl, src/, build/)
 ├── theory/                 # Mathematical derivations and theory documents
-├── research/
-│   ├── notebooks/          # Research notebooks (run from default Julia env)
-│   ├── exploratory/        # Research notes and lessons learned
-│   └── sub_critical_weber_research/  # Sub-critical Weber research
+├── research/               # Notebooks, exploratory notes, sub-studies (see internals.md)
 ├── papers/
 │   └── Computational-Weber-Electrodynamics/   # LaTeX paper with own Project.toml
 ├── CHANGELOG.md            # Versioned changelog (semver)
@@ -52,7 +51,7 @@ See [docs/src/internals.md](docs/src/internals.md) for per-file descriptions of 
 
 ## Critical Conventions
 
-See [docs/src/internals.md](docs/src/internals.md) for full details.
+Quick-reference mirror — source of truth: [docs/src/internals.md](docs/src/internals.md).
 
 ### Params vector layout
 
@@ -133,16 +132,15 @@ release: v0.2.3
 
 ## Releasing a New Version
 
-**Claude Code handles all CHANGELOG entries for this project.** See conventions below.
+**Claude Code writes `RELEASENOTES.md`; `release.sh` promotes it into `CHANGELOG.md`.** See conventions below.
 
 ### Pre-release checklist
 
 1. Commit all changed source/doc/test files
 2. Write release notes in `RELEASENOTES.md` (the developer-facing input point)
 3. If the paper changed, bump `papers/<name>/VERSION` (see [Paper versioning](#paper-versioning))
-4. Update the version number in the `CLAUDE.md` Project description
-5. Dry-run: `./release.sh patch` (or `minor`/`major`) — safe, no changes made
-6. Execute: `./release.sh patch --execute`
+4. Dry-run: `./release.sh patch` (or `minor`/`major`) — safe, no changes made
+5. Execute: `./release.sh patch --execute`
 
 `release.sh --execute` handles everything else: bumps `Project.toml`, moves notes from
 `RELEASENOTES.md` into `CHANGELOG.md`, resets `RELEASENOTES.md`, commits, pushes, and posts
