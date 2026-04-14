@@ -332,9 +332,9 @@ The open questions from §16 were partially prosecuted in an autonomous loop aft
 - [09_ftl_regime/FOLLOWUP_f2_closure.md](09_ftl_regime/FOLLOWUP_f2_closure.md) — §16 item 3
 - [08_sub_weber_radius/FOLLOWUP_sym_orbiter_3d.md](08_sub_weber_radius/FOLLOWUP_sym_orbiter_3d.md) — §16 item 7
 
-**Item 1 — rhombus KAM (partially resolved, positive).** An open basin of near-square rhombus ICs centered on $(a,b,\eta)=(1.5,1.45,0.75)$ yields weakly chaotic bound motion surviving $t^*\approx 420\text{–}457$ with drift $\lesssim 4\times 10^{-4}\%$ and MLE $\lambda_\max\approx 0.18$. A $t_\max=5000$ rerun confirms the escape horizon is a physical property of the basin, not a numerical-tolerance artefact.
+**Item 1 — rhombus KAM (partially resolved, positive).** An open basin of near-square rhombus ICs centered on $(a,b,\eta)=(1.5,1.45,0.75)$ yields weakly chaotic bound motion surviving $t^*\approx 420\text{–}457$ with drift $\lesssim 4\times 10^{-4}\%$ and MLE $\lambda_{\max}\approx 0.18$. A $t_{\max}=5000$ rerun confirms the escape horizon is a physical property of the basin, not a numerical-tolerance artefact.
 
-**Item 2 — symmetric double-orbiter (partially resolved, positive).** A new IC family — $(+,+)$ on the $x$-axis, $(−,−)$ symmetrically on the $y$-axis with counter-propagating tangential momenta — protected by a Klein-four reflection group gives **26 of 27** supercritical ICs surviving $t=100$. Best 2D horizon $t^*\approx 428$ at $(r_{pp},R,\text{orb})=(3,3,1.3)$ with drift below $10^{-4}\%$. 2D MLE $\lambda_\max\approx 0.098$ — half the rhombus value.
+**Item 2 — symmetric double-orbiter (partially resolved, positive).** A new IC family — $(+,+)$ on the $x$-axis, $(−,−)$ symmetrically on the $y$-axis with counter-propagating tangential momenta — protected by a Klein-four reflection group gives **26 of 27** supercritical ICs surviving $t=100$. Best 2D horizon $t^*\approx 428$ at $(r_{pp},R,\text{orb})=(3,3,1.3)$ with drift below $10^{-4}\%$. 2D MLE $\lambda_{\max}\approx 0.098$ — half the rhombus value.
 
 **Item 3 — Weber loop closure (resolved, negative).** Shooting sweep over Agent 9's IC-F2 shows $\dot r_{13}$ never crosses $\sqrt 2 c$: positive-$v$ runs fly apart monotonically, negative-$v$ runs hit unregularizable collisions in $t<0.04$. The $\dot r=\sqrt 2 c$ surface is a one-way membrane; no closed Weber loop exists in the fast-dimer family.
 
@@ -345,7 +345,7 @@ The open questions from §16 were partially prosecuted in an autonomous loop aft
 | configuration | $(3,3,1.3)$ planar | $(4,4,1.3)$, $z_\text{kick}=0.13$ |
 | escape horizon $t^*$ | 428 | **566** |
 | drift at failure | $\sim 10^{-4}\%$ | $\sim 10^{-6}\%$ |
-| $\lambda_\max$ | 0.098 | **$0.0205 \pm 0.0005$** |
+| $\lambda_{\max}$ | 0.098 | **$0.0205 \pm 0.0005$** |
 
 The 3D MLE is **independent of $\varepsilon$ across 4 decades** ($10^{-6}$ to $10^{-10}$) and **independent of seed** across 3 random perturbation directions, ruling out the noise-floor interpretation. This is the lowest genuinely-measured positive Lyapunov exponent in the entire 14-agent study — a factor of **60** below the chaotic baseline. The bound state sits in a *fast Arnold diffusion* regime: e-folding time $1/\lambda\approx 49$, total horizon $t^*\approx 566$, so the stochastic layer width accommodates $\sim 11$ e-foldings before the unstable manifold wins. Out-of-plane kicks up to $z_\text{kick}\approx 0.14$ keep the trajectory bound; $t^*(z_\text{kick})$ is a jagged resonance-structured function peaking at $z=0.13$.
 
@@ -354,7 +354,7 @@ The 3D MLE is **independent of $\varepsilon$ across 4 decades** ($10^{-6}$ to $1
 **Fine structure of the 3D optimum (Addenda 1–6 of [FOLLOWUP_sym_orbiter_3d.md](08_sub_weber_radius/FOLLOWUP_sym_orbiter_3d.md)).** Six parameter scans localized the global optimum to the intersection of (at least) four narrow resonance tongues:
 
 - **$z_\text{kick}$ scan** (Addendum 1): jagged $t^*(z)$ peaking at $z=0.13\to 566.5$; neighbors at $z=0.12, 0.14$ drop to $\sim 510$; above $z=0.14$ the trajectory clears the stochastic layer and escape accelerates. Drift decreases monotonically with $z$.
-- **High-precision MLE** (Addendum 3): 15 runs at $(\varepsilon, \text{seed})\in\{10^{-6},\dots,10^{-10}\}\times\{17,31,47\}$ all converge to $\lambda_\max=0.0205\pm 0.0005$ — $\varepsilon$-invariant across 4 decades, ruling out the noise-floor hypothesis.
+- **High-precision MLE** (Addendum 3): 15 runs at $(\varepsilon, \text{seed})\in\{10^{-6},\dots,10^{-10}\}\times\{17,31,47\}$ all converge to $\lambda_{\max}=0.0205\pm 0.0005$ — $\varepsilon$-invariant across 4 decades, ruling out the noise-floor hypothesis.
 - **orb scan** (Addendum 4): $t^*(\text{orb})$ spikes at $\text{orb}=1.30\to 566$; immediate neighbors $1.28, 1.32$ drop by $\sim 150\text{–}200$ time units. A narrow resonance tongue, not a smooth extremum.
 - **R scan and diagonal size scan $L=r_{pp}=R$** (Addendum 5): $L=4$ peak is isolated; $L=3.5, 4.5$ drop by $\sim 160\text{–}240$. Drift decreases as $L^{-2}$. A slow secondary rise at $L\gtrsim 5$ is explained by the natural period scaling $T\propto L^{3/2}$, not improved dimensionless stability.
 - **Breathing-velocity scan** (Addendum 6): even $|v_\text{br}|=0.05$ on the $(+,+)$ pair cuts $t^*$ from $566$ to $\sim 270\text{–}380$. The "$(+,+)$ at rest" condition is *as sharp* as the other resonance conditions. Asymmetry: contracting the $(+,+)$ pair hurts more than expanding, consistent with the Weber attractive-like-pair regime activating under contraction.
