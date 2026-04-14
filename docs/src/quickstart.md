@@ -151,7 +151,8 @@ energy   = compute_energy_timeseries(sol)
 momentum = compute_momentum_timeseries(sol)
 
 plot_trajectories(traj)     # particle paths in configuration space
-plot_energy(energy)         # Hamiltonian drift over time
+plot_energy(energy)         # T, U, H components over time
+plot_energy_errors(energy)  # local + relative energy error (log scale)
 plot_momentum_errors(momentum)  # drift of linear & angular momentum from initial
 ```
 

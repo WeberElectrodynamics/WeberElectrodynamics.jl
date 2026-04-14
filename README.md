@@ -55,11 +55,14 @@ prob = WeberProblem(system, (0.0, 27.14),
 sol = solve(prob)
 
 plot_trajectories(compute_trajectory_data(sol, 2, 2; stride = 10))
-plot_energy(compute_energy_timeseries(sol; stride = 10))
+energy = compute_energy_timeseries(sol; stride = 10)
+plot_energy(energy)
+plot_energy_errors(energy)
 ```
 
 ![Two-body trajectories](examples/figures/two_body_trajectories.png)
 ![Energy conservation](examples/figures/two_body_energy.png)
+![Energy error diagnostics](examples/figures/two_body_energy_errors.png)
 
 See [`examples/two_body_reference.ipynb`](examples/two_body_reference.ipynb)
 for the full annotated tutorial with every diagnostic plot.
