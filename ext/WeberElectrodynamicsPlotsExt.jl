@@ -288,7 +288,7 @@ function WeberElectrodynamics.plot_energy_errors(data::EnergyData)::Plots.Plot
     p1 = plot(;
         title = "Local Energy Error",
         xlabel = "",
-        ylabel = L"\left\lvert E_t - E_{t-1} \right\rvert",
+        ylabel = L"|E_t - E_{t-1}|",
         yscale = :log10,
         legend = :outertopright,
         PLOT_DEFAULTS...,
@@ -319,7 +319,7 @@ function WeberElectrodynamics.plot_energy_errors(data::EnergyData)::Plots.Plot
     p2 = plot(;
         title = "Relative Energy Error",
         xlabel = L"t",
-        ylabel = L"\left\lvert \Delta E / E_0 \right\rvert",
+        ylabel = L"|\Delta E / E_0|",
         yscale = :log10,
         legend = :outertopright,
         PLOT_DEFAULTS...,
