@@ -21,6 +21,9 @@
 \usepackage{subcaption}
 \usepackage{xcolor}
 \usepackage{tikz}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepgfplotslibrary{units}
 
 % Page layout
 \usepackage[margin=1in]{geometry}
@@ -370,6 +373,97 @@ where $k$ is the iteration index. We repeat this process until
 where $\epsilon$ is a small tolerance value.
 
 The full specification of this semi-explicit symplectic integrator can be found in \citep{Jayawardana2023}. We have implemented this integrator in the Julia programming language. For examples, ongoing work, and numerical validation including energy conservation benchmarks and convergence studies, see \citep{WeberElectrodynamics.jl}.
+
+\section{Two-body reference case}\label{sec:two-body-reference}
+
+We integrate the canonical two-body Weber problem as a reference validation of the symplectic scheme described above. Two equal masses $m_1 = m_2 = 1$ carry unlike unit charges $q_1 = -q_2 = 1$ with $c = 4$, started symmetrically about the origin at $\vec{r}_1 = (-1,0)$, $\vec{r}_2 = (1,0)$ with conjugate momenta $\vec{p}_1 = (0, -\tfrac{1}{4})$, $\vec{p}_2 = (0, \tfrac{1}{4})$. These are the apoapsis conditions of a Kepler ellipse with semi-major axis $a = 8/7$ and eccentricity $e = 3/4$, giving a period $T = 2\pi\sqrt{a^3 \mu / |q_1 q_2|} \approx 5.4282$, where $\mu = m_1 m_2/(m_1 + m_2)$ is the reduced mass. We integrate five full orbital periods with fixed step size $\Delta t = 10^{-3}$, a total of $27{,}142$ steps. The full simulation state is sampled every tenth step and the resulting arrays are stored alongside the paper source at \texttt{data/two\_body\_\{trajectories,energy,energy\_errors\}.dat} so that every figure in this section is reproducible from committed data.
+
+\pgfplotsset{
+    weberplot/.style={
+            width=0.9\linewidth,
+            height=0.55\linewidth,
+            grid=both,
+            grid style={line width=.1pt, draw=gray!20},
+            major grid style={line width=.2pt, draw=gray!40},
+            tick label style={font=\footnotesize},
+            label style={font=\small},
+            legend style={font=\footnotesize, draw=none, fill=white, fill opacity=0.85, text opacity=1, cells={anchor=west}},
+            every axis plot/.append style={line width=0.9pt},
+        },
+}
+
+Figure~\ref{fig:two-body-trajectories} shows the two particle trajectories in the orbital plane. Each curve closes back on itself after every Kepler period, with the two particles tracing mirror-image ellipses about the common centre of mass at the origin. Figure~\ref{fig:two-body-energy} plots the total Hamiltonian $H = T + U$ together with its kinetic and potential components; $T$ and $U$ exchange energy periodically while their sum $H$ stays essentially flat at the scale of the orbit energy. Figure~\ref{fig:two-body-energy-errors} resolves the residual on a logarithmic scale and separates it into the per-step local error $|H_t - H_{t-1}|$ and the cumulative global error $|(H_t - H_0)/H_0| \cdot 100\%$. The maximum local error is $2.82 \times 10^{-6}$ and the worst-case global drift over five periods is $4.28 \times 10^{-3}\%$, consistent with the symmetric-projection integrator's near-conservation of the Hamiltonian.
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}
+        \begin{axis}[
+                weberplot,
+                axis equal image,
+                xlabel={$x$}, ylabel={$y$},
+                legend pos=north east,
+            ]
+            \addplot[blue, mark=none]
+            table[col sep=tab, x=x1, y=y1]
+                {data/two_body_trajectories.dat};
+            \addlegendentry{particle 1 ($q_1 = +1$)}
+            \addplot[red!80!black, mark=none]
+            table[col sep=tab, x=x2, y=y2]
+                {data/two_body_trajectories.dat};
+            \addlegendentry{particle 2 ($q_2 = -1$)}
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Trajectories of the two-body reference case in the $(x, y)$ plane, integrated over five Kepler periods with step size $\Delta t = 10^{-3}$. The two particles follow mirror-image ellipses of eccentricity $e = 3/4$ about the origin. Source data: \texttt{data/two\_body\_trajectories.dat}.}
+    \label{fig:two-body-trajectories}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}
+        \begin{axis}[
+                weberplot,
+                xlabel={$t$}, ylabel={energy},
+                legend pos=outer north east,
+            ]
+            \addplot[black, mark=none, line width=1.1pt]
+            table[col sep=tab, x=t, y=H]
+                {data/two_body_energy.dat};
+            \addlegendentry{$H = T + U$}
+            \addplot[blue, mark=none]
+            table[col sep=tab, x=t, y=T]
+                {data/two_body_energy.dat};
+            \addlegendentry{$T$ (kinetic)}
+            \addplot[red!80!black, mark=none]
+            table[col sep=tab, x=t, y=U]
+                {data/two_body_energy.dat};
+            \addlegendentry{$U$ (potential)}
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Total Hamiltonian $H = T + U$ over five Kepler periods alongside its kinetic and potential components. The kinetic and potential energies exchange periodically as the particles sweep through peri- and apoapsis, while their sum $H$ remains conserved to within the residual shown in Fig.~\ref{fig:two-body-energy-errors}. Source data: \texttt{data/two\_body\_energy.dat}.}
+    \label{fig:two-body-energy}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}
+        \begin{semilogyaxis}[
+                weberplot,
+                xlabel={$t$}, ylabel={energy error},
+                legend pos=south east,
+            ]
+            \addplot[blue, mark=none]
+            table[col sep=tab, x=t, y=local_err]
+                {data/two_body_energy_errors.dat};
+            \addlegendentry{local $|H_t - H_{t-1}|$}
+            \addplot[red!80!black, mark=none]
+            table[col sep=tab, x=t, y=global_err_percent]
+                {data/two_body_energy_errors.dat};
+            \addlegendentry{global $|(H_t - H_0)/H_0|\,\%$}
+        \end{semilogyaxis}
+    \end{tikzpicture}
+    \caption{Local and global energy errors on a logarithmic scale. The local error $|H_t - H_{t-1}|$ stays bounded below $2.82 \times 10^{-6}$, and the cumulative global drift $|(H_t - H_0)/H_0|$ remains below $4.28 \times 10^{-3}\%$ over the full five-period integration. Source data: \texttt{data/two\_body\_energy\_errors.dat}.}
+    \label{fig:two-body-energy-errors}
+\end{figure}
 
 \section{Discussion}
 
