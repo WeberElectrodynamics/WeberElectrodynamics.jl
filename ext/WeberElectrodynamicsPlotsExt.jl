@@ -105,21 +105,12 @@ end
 """
     plot_energy(data::EnergyData) -> Plot
 
-Plot total n-body energy timeseries with comprehensive error visualization.
-
-Two-panel layout:
-1. Energy components (Total, Kinetic, Potential)
-2. Relative error on log scale with max/avg reference lines
+Plot total n-body energy timeseries showing Total, Kinetic, and Potential components.
 """
 function WeberElectrodynamics.plot_energy(data::EnergyData)::Plots.Plot
-    E0 = data.total_energy[1]
-    relative_error = abs.((data.total_energy .- E0) ./ E0)
-    relative_error = max.(relative_error, eps(Float64))
-
-    # Panel 1: Energy components
     p1 = plot(;
         title = "Energy Conservation",
-        xlabel = "",
+        xlabel = L"t",
         ylabel = L"E\ (\mathrm{energy})",
         legend = :outertopright,
         PLOT_DEFAULTS...,
@@ -142,41 +133,7 @@ function WeberElectrodynamics.plot_energy(data::EnergyData)::Plots.Plot
         color = :firebrick,
     )
 
-    # Panel 2: Relative error with enhanced annotations
-    max_err = maximum(relative_error)
-    avg_err = length(relative_error) > 1 ? sum(relative_error[2:end]) / (length(relative_error) - 1) : max_err
-    max_idx = argmax(relative_error)
-
-    p2 = plot(;
-        title = "Relative Energy Error",
-        xlabel = L"t",
-        ylabel = L"\left\lvert \Delta E / E_0 \right\rvert",
-        legend = :outertopright,
-        yscale = :log10,
-        PLOT_DEFAULTS...,
-    )
-    plot!(p2, data.t, relative_error, label = "", linewidth = 1.5, color = :black)
-    hline!(
-        p2,
-        [max_err],
-        linestyle = :dash,
-        linewidth = 1,
-        color = :firebrick,
-        label = latexstring("\\max = ", _format_scientific(max_err)),
-    )
-    hline!(
-        p2,
-        [avg_err],
-        linestyle = :dot,
-        linewidth = 1,
-        color = :gray,
-        label = latexstring("\\mathrm{avg} = ", _format_scientific(avg_err)),
-    )
-    # Vertical marker at max error time
-    vline!(p2, [data.t[max_idx]], linestyle = :dash, color = :gray, alpha = 0.5, label = "")
-
-    plt = plot(p1, p2, layout = grid(2, 1, heights = [0.6, 0.4]), size = _multi_panel_size(2))
-    return plt
+    return plot(p1; size = _multi_panel_size(1))
 end
 
 """
@@ -311,20 +268,19 @@ end
 """
     plot_energy_errors(data::EnergyData) -> Plot
 
-Comprehensive error analysis visualization.
+Energy error diagnostics.
 
-Three-panel layout:
+Two-panel layout:
 1. Local error timeseries |E_t - E_{t-1}| (log scale)
-2. Global error percentage over time (log scale)
-3. Hamiltonian validation error (log scale)
+2. Relative energy error |ΔE/E₀| (log scale)
 """
 function WeberElectrodynamics.plot_energy_errors(data::EnergyData)::Plots.Plot
-    # Compute derived quantities
     local_errors = _compute_local_errors(data.total_energy)
     local_errors_plot = max.(local_errors, eps(Float64))
-    global_percent = _compute_global_error_percent(data.total_energy)
-    global_percent_plot = max.(global_percent, eps(Float64))
-    h_error = max.(data.hamiltonian_validation_error, eps(Float64))
+
+    E0 = data.total_energy[1]
+    relative_error = abs.((data.total_energy .- E0) ./ E0)
+    relative_error_plot = max.(relative_error, eps(Float64))
 
     stats = data.statistics
 
@@ -332,7 +288,7 @@ function WeberElectrodynamics.plot_energy_errors(data::EnergyData)::Plots.Plot
     p1 = plot(;
         title = "Local Energy Error",
         xlabel = "",
-        ylabel = L"\lvert E_t - E_{t-1} \rvert",
+        ylabel = L"\left\lvert E_t - E_{t-1} \right\rvert",
         yscale = :log10,
         legend = :outertopright,
         PLOT_DEFAULTS...,
@@ -355,55 +311,38 @@ function WeberElectrodynamics.plot_energy_errors(data::EnergyData)::Plots.Plot
         label = latexstring("\\mathrm{avg} = ", _format_scientific(stats.local_error_avg)),
     )
 
-    # Panel 2: Global error percentage
+    # Panel 2: Relative energy error
+    max_rel_err = maximum(relative_error)
+    avg_rel_err = length(relative_error) > 1 ?
+        sum(relative_error[2:end]) / (length(relative_error) - 1) : max_rel_err
+
     p2 = plot(;
-        title = "Global Energy Drift",
-        xlabel = "",
-        ylabel = L"100 \cdot \lvert (E - E_0)/E_0 \rvert\ (\%)",
+        title = "Relative Energy Error",
+        xlabel = L"t",
+        ylabel = L"\left\lvert \Delta E / E_0 \right\rvert",
         yscale = :log10,
         legend = :outertopright,
         PLOT_DEFAULTS...,
     )
-    plot!(p2, data.t, global_percent_plot, label = "", linewidth = 1.5, color = :firebrick)
+    plot!(p2, data.t, relative_error_plot, label = "", linewidth = 1.5, color = :firebrick)
     hline!(
         p2,
-        [stats.global_error_percent_max],
+        [max(max_rel_err, eps(Float64))],
         linestyle = :dash,
         color = :black,
         linewidth = 1,
-        label = latexstring("\\max = ", _format_scientific(stats.global_error_percent_max), "\\,\\%"),
+        label = latexstring("\\max = ", _format_scientific(max_rel_err)),
     )
     hline!(
         p2,
-        [max(stats.global_error_percent_avg, eps(Float64))],
+        [max(avg_rel_err, eps(Float64))],
         linestyle = :dot,
         color = :gray,
         linewidth = 1,
-        label = latexstring("\\mathrm{avg} = ", _format_scientific(stats.global_error_percent_avg), "\\,\\%"),
+        label = latexstring("\\mathrm{avg} = ", _format_scientific(avg_rel_err)),
     )
 
-    # Panel 3: Hamiltonian validation
-    max_h_err = maximum(data.hamiltonian_validation_error)
-
-    p3 = plot(;
-        title = "Hamiltonian Validation",
-        xlabel = L"t",
-        ylabel = L"\lvert H_{\mathrm{computed}} - H_{\mathrm{compiled}} \rvert",
-        yscale = :log10,
-        legend = :outertopright,
-        PLOT_DEFAULTS...,
-    )
-    plot!(p3, data.t, h_error, label = "", linewidth = 1, color = :black)
-    hline!(
-        p3,
-        [max.(max_h_err, eps(Float64))],
-        linestyle = :dash,
-        color = :gray,
-        linewidth = 1,
-        label = latexstring("\\max = ", _format_scientific(max_h_err)),
-    )
-
-    plt = plot(p1, p2, p3, layout = grid(3, 1, heights = [0.35, 0.35, 0.30]), size = _multi_panel_size(3))
+    plt = plot(p1, p2, layout = grid(2, 1, heights = [0.5, 0.5]), size = _multi_panel_size(2))
     return plt
 end
 
