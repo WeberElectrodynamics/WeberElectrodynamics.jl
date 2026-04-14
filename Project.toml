@@ -11,17 +11,19 @@ Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 Symbolics = "0c5d862f-8b57-4792-8d23-62f2024744c7"
 
 [weakdeps]
+LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
 Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 
 [extensions]
 WeberElectrodynamicsMakieExt = "Makie"
-WeberElectrodynamicsPlotsExt = "Plots"
+WeberElectrodynamicsPlotsExt = ["Plots", "LaTeXStrings"]
 
 [compat]
 Aqua = "0.8"
 CommonSolve = "0.2"
 Latexify = "0.16"
+LaTeXStrings = "1"
 LinearAlgebra = "1"
 Makie = "0.21, 0.22, 0.23, 0.24"
 Plots = "1"
