@@ -377,7 +377,7 @@ function WeberElectrodynamics.plot_pair_forces(data::PairForceData)::Plots.Plot
     p1 = plot(;
         title = "Force Magnitude — Pair ($i,$j)",
         xlabel = "",
-        ylabel = L"\lVert \mathbf F_{ij} \rVert",
+        ylabel = L"||F_{ij}||",
         legend = :outertopright,
         PLOT_DEFAULTS...,
     )
@@ -591,9 +591,9 @@ function WeberElectrodynamics.plot_momentum_errors(data::MomentumData)::Plots.Pl
     end
 
     p_lin = plot(;
-        title = "Linear Momentum Drift ‖ΔP‖",
+        title = "Linear Momentum Drift",
         xlabel = has_L ? "" : L"t",
-        ylabel = L"\lVert \mathbf P(t) - \mathbf P(0) \rVert",
+        ylabel = L"||P(t) - P(0)||",
         yscale = :log10,
         legend = :topleft,
         PLOT_DEFAULTS...,
@@ -617,8 +617,7 @@ function WeberElectrodynamics.plot_momentum_errors(data::MomentumData)::Plots.Pl
     if dims == 2
         dL = abs.(data.angular_momentum .- L0)
         L0_mag = abs(L0)
-        L_sym = "|ΔLz|"
-        ylabel_L = L"\lvert L_z(t) - L_z(0) \rvert"
+        ylabel_L = L"|L_z(t) - L_z(0)|"
     else  # dims == 3
         dL = Vector{Float64}(undef, nt)
         @inbounds for i = 1:nt
@@ -629,8 +628,7 @@ function WeberElectrodynamics.plot_momentum_errors(data::MomentumData)::Plots.Pl
             dL[i] = sqrt(s)
         end
         L0_mag = sqrt(L0[1]^2 + L0[2]^2 + L0[3]^2)
-        L_sym = "‖ΔL‖"
-        ylabel_L = L"\lVert \mathbf L(t) - \mathbf L(0) \rVert"
+        ylabel_L = L"||L(t) - L(0)||"
     end
     dL_max = maximum(dL)
 
@@ -644,7 +642,7 @@ function WeberElectrodynamics.plot_momentum_errors(data::MomentumData)::Plots.Pl
     end
 
     p_ang = plot(;
-        title = "Angular Momentum Drift $(L_sym)",
+        title = "Angular Momentum Drift",
         xlabel = L"t",
         ylabel = ylabel_L,
         yscale = :log10,
@@ -901,18 +899,18 @@ function WeberElectrodynamics.plot_zollner_force_residual(data::PairForceData)::
     p1 = plot(;
         title = "Force Magnitude — Pair ($i,$j), κ=$kappa_str",
         xlabel = "",
-        ylabel = L"\lVert \mathbf F \rVert",
+        ylabel = L"||F||",
         legend = :outertopright,
         PLOT_DEFAULTS...,
     )
     plot!(
         p1, data.t, data.magnitude,
-        label = L"\lVert \mathbf F_{\mathrm{total}} \rVert",
+        label = L"||F_{\mathrm{total}}||",
         linewidth = 2, color = :steelblue,
     )
     plot!(
         p1, data.t, data.zollner_extra_magnitude,
-        label = L"\lVert (\kappa-1)\, \mathbf F_{\mathrm{C}} \rVert",
+        label = L"||(\kappa-1)\, F_{\mathrm{C}}||",
         linewidth = 1.5, color = :firebrick, linestyle = :dash,
     )
 
@@ -926,7 +924,7 @@ function WeberElectrodynamics.plot_zollner_force_residual(data::PairForceData)::
     p2 = plot(;
         title = "Relative Zöllner Contribution",
         xlabel = L"t",
-        ylabel = L"\lVert \Delta \mathbf F^{\mathrm Z} \rVert / \lVert \mathbf F_{\mathrm{total}} \rVert",
+        ylabel = L"||\Delta F^{\mathrm Z}|| / ||F_{\mathrm{total}}||",
         legend = :outertopright,
         PLOT_DEFAULTS...,
     )
