@@ -1,0 +1,15 @@
+id,action,grad_norm,period,energy_seed,converged,method
+circ_E-0.25,9.42983297,1.116e-03,12.566371,-0.2500,false,exact_seed
+circ_E-0.50,6.66789884,1.578e-03,4.442883,-0.5000,false,exact_seed
+circ_E-1.00,4.71491649,2.231e-03,1.570796,-1.0000,false,exact_seed
+pert_opt_E-0.25,9.72902572,-1.000e+00,12.566371,-0.2500,false,perturbed_minimized
+pert_opt_E-0.50,6.82921208,-1.000e+00,4.442883,-0.5000,false,perturbed_minimized
+bs_action_opt,11.74147436,3.201e+00,11.780000,NaN,false,bs_minimized
+Tscan_E-0.25_Tf0.5,9.41009780,1.169e+00,6.283185,-0.2500,false,period_scan
+Tscan_E-0.25_Tf1.5,11.55495201,6.602e-01,18.849556,-0.2500,false,period_scan
+Tscan_E-0.25_Tf2.0,18.89019819,8.919e-03,25.132741,-0.2500,false,period_scan
+Tscan_E-0.25_Tf3.0,28.33529729,1.092e-02,37.699112,-0.2500,false,period_scan
+Tscan_E-0.50_Tf0.5,6.64144262,1.646e+00,2.221441,-0.5000,false,period_scan
+Tscan_E-0.50_Tf1.5,8.16659846,9.293e-01,6.664324,-0.5000,false,period_scan
+Tscan_E-0.50_Tf2.0,13.35738651,1.257e-02,8.885766,-0.5000,false,period_scan
+Tscan_E-0.50_Tf3.0,20.03607977,1.539e-02,13.328649,-0.5000,false,period_scan

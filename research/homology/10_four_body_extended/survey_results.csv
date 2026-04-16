@@ -1,0 +1,67 @@
+category,label,kwargs,retcode,t_final,drift_pct,d_max_ratio,is_bound,dims,c
+3p1m,tri_R2_rotating_eta0.1,"R=2,eta=0.1,mode=rotating",Failure,7.625,21890.1,1.0,false,2,1.0
+3p1m,tri_R2_breathing_eta0.1,"R=2,eta=0.1,mode=breathing",Failure,5.048,893.673,1.0,false,2,1.0
+3p1m,tri_R2_rotating_eta0.25,"R=2,eta=0.25,mode=rotating",Failure,11.835,352.353,1.0592,false,2,1.0
+3p1m,tri_R2_breathing_eta0.25,"R=2,eta=0.25,mode=breathing",Failure,4.416,1050.43,1.0,false,2,1.0
+3p1m,tri_R2_rotating_eta0.5,"R=2,eta=0.5,mode=rotating",Success,100.0,3.45006,19.5192,false,2,1.0
+3p1m,tri_R2_breathing_eta0.5,"R=2,eta=0.5,mode=breathing",Failure,3.851,186.808,1.0,false,2,1.0
+3p1m,tri_R2_rotating_eta0.75,"R=2,eta=0.75,mode=rotating",Success,100.0,0.159001,3.0,true,2,1.0
+3p1m,tri_R2_breathing_eta0.75,"R=2,eta=0.75,mode=breathing",Failure,3.494,59.5231,1.0,false,2,1.0
+3p1m,tri_R1.5_rot_eta0.25,"R=1.5,eta=0.25",Failure,7.448,1228.88,1.474,false,2,1.0
+3p1m,tri_R3.0_rot_eta0.25,"R=3.0,eta=0.25",Failure,71.618,8.82831,10.5851,false,2,1.0
+3p1m,tri_R4.0_rot_eta0.25,"R=4.0,eta=0.25",Failure,50.268,772.867,1.1037,false,2,1.0
+3p1m,tri_R2.0_rot_eta0.75,"R=2.0,eta=0.75",Success,200.0,0.159001,31.7241,false,2,1.0
+3p1m,tri_R3.0_rot_eta0.75,"R=3.0,eta=0.75",Success,200.0,0.0940187,3.7807,true,2,1.0
+3p1m,tri_R4.0_rot_eta0.75,"R=4.0,eta=0.75",Success,200.0,1.34067e-7,3.0,true,2,1.0
+3p1m,linear_kick0.05,"spacing=1.5,kick=0.05",Failure,1.195,305.95,1.0,false,2,1.0
+3p1m,linear_kick0.1,"spacing=1.5,kick=0.1",Failure,2.307,107.284,1.0,false,2,1.0
+3p1m,linear_kick0.2,"spacing=1.5,kick=0.2",Failure,1.559,3.2632,1.0,false,2,1.0
+3p1m,linear_kick0.4,"spacing=1.5,kick=0.4",Failure,1.262,9557.58,1.0,false,2,1.0
+3p1m,tetra_R2_rot_eta0.25,"R=2,eta=0.25",Success,100.0,NaN,9.7081,false,3,1.0
+3p1m,tetra_R2_rot_eta0.5,"R=2,eta=0.5",Success,100.0,NaN,9.7081,false,3,1.0
+3p1m,tetra_R2_rot_eta0.75,"R=2,eta=0.75",Success,100.0,NaN,9.7081,false,3,1.0
+unequal_mass,heavy10_sq_rot_eta0.25,"m=[10,10,1,1],eta=0.25",Failure,3.572,71.7824,1.0,false,2,1.0
+unequal_mass,heavy10_sq_rot_eta0.5,"m=[10,10,1,1],eta=0.5",Failure,3.649,0.281532,1.016,false,2,1.0
+unequal_mass,heavy10_sq_rot_eta0.75,"m=[10,10,1,1],eta=0.75",Failure,3.827,107.833,1.1055,false,2,1.0
+unequal_mass,heavy100_sq_rot_eta0.25,"m=[100,100,1,1],eta=0.25",Failure,4.105,180.491,1.0,false,2,1.0
+unequal_mass,heavy100_sq_rot_eta0.5,"m=[100,100,1,1],eta=0.5",Failure,4.514,1480.59,1.0019,false,2,1.0
+unequal_mass,alt10_sq_rot_eta0.25,"m=[10,1,10,1],eta=0.25",Failure,3.032,33.1052,1.0,false,2,1.0
+unequal_mass,alt10_sq_rot_eta0.5,"m=[10,1,10,1],eta=0.5",Failure,5.487,0.762758,1.1873,false,2,1.0
+unequal_mass,alt10_sq_rot_eta0.75,"m=[10,1,10,1],eta=0.75",Failure,7.096,79.9562,1.7495,false,2,1.0
+unequal_mass,doublorb_mh10,"m=[10.0,10.0,1,1],rpp=4,R=4,orb=1.3",Success,200.0,3.93714e-7,23.2309,false,2,1.0
+unequal_mass,doublorb_mh100,"m=[100.0,100.0,1,1],rpp=4,R=4,orb=1.3",Success,200.0,3.71955e-7,24.6507,false,2,1.0
+unequal_mass,rhombus_mh10,"m=[10.0,10.0,1,1],a=1.5,b=1.45,eta=0.75",Failure,4.044,70.9191,1.0983,false,2,1.0
+unequal_mass,rhombus_mh100,"m=[100.0,100.0,1,1],a=1.5,b=1.45,eta=0.75",Failure,9.242,1091.49,1.6381,false,2,1.0
+unequal_charge,q2p_sq_eta0.25,"q=[2.0, 2.0, -1.0, -1.0],eta=0.25",Failure,1.547,24.4562,1.0,false,2,1.0
+unequal_charge,q2p_sq_eta0.5,"q=[2.0, 2.0, -1.0, -1.0],eta=0.5",Failure,1.241,400.131,1.0,false,2,1.0
+unequal_charge,q2p_sq_eta0.75,"q=[2.0, 2.0, -1.0, -1.0],eta=0.75",Failure,1.123,881.622,1.0789,false,2,1.0
+unequal_charge,q2n_sq_eta0.25,"q=[1.0, 1.0, -2.0, -2.0],eta=0.25",Failure,1.547,24.4562,1.0,false,2,1.0
+unequal_charge,q2n_sq_eta0.5,"q=[1.0, 1.0, -2.0, -2.0],eta=0.5",Failure,1.241,400.131,1.0,false,2,1.0
+unequal_charge,q2n_sq_eta0.75,"q=[1.0, 1.0, -2.0, -2.0],eta=0.75",Failure,1.123,881.622,1.0789,false,2,1.0
+unequal_charge,doublorb_q2p_rpp4,"q=[2.0, 2.0, -1.0, -1.0],rpp=4,R=4,orb=1.3",Failure,4.614,1621.15,1.2952,false,2,1.0
+unequal_charge,doublorb_q2n_rpp4,"q=[1.0, 1.0, -2.0, -2.0],rpp=4,R=4,orb=1.3",Failure,67.543,9.04742,7.9867,false,2,1.0
+unequal_charge,doublorb_q2p_rpp6,"q=[2.0, 2.0, -1.0, -1.0],rpp=6,R=6,orb=1.3",Success,200.0,0.0278021,12.6477,false,2,1.0
+unequal_charge,doublorb_q2n_rpp6,"q=[1.0, 1.0, -2.0, -2.0],rpp=6,R=6,orb=1.3",Success,200.0,0.000822502,13.1155,false,2,1.0
+c_variation,doublorb_2D_c1.0,"rpp=4,R=4,orb=1.3,c=1.0",Failure,457.674,1.14865e-6,56.7102,false,2,1.0
+c_variation,doublorb_2D_c2.0,"rpp=4,R=4,orb=1.3,c=2.0",Failure,249.711,8.31795e-7,32.649,false,2,2.0
+c_variation,doublorb_2D_c4.0,"rpp=4,R=4,orb=1.3,c=4.0",Failure,245.57,8.10915e-7,32.8659,false,2,4.0
+c_variation,doublorb_2D_c10.0,"rpp=4,R=4,orb=1.3,c=10.0",Failure,243.175,8.17679e-7,32.5382,false,2,10.0
+c_variation,doublorb_3D_c1.0,"rpp=4,R=4,orb=1.3,zk=0.13,c=1.0",Failure,539.993,9.84719e-7,68.9925,false,3,1.0
+c_variation,doublorb_3D_c2.0,"rpp=4,R=4,orb=1.3,zk=0.13,c=2.0",Failure,255.396,5.88648e-7,33.7028,false,3,2.0
+c_variation,doublorb_3D_c4.0,"rpp=4,R=4,orb=1.3,zk=0.13,c=4.0",Failure,249.053,5.43494e-7,33.1751,false,3,4.0
+c_variation,rhombus_c1.0,"a=1.5,b=1.45,eta=0.75,c=1.0",Failure,438.775,0.000272426,87.3625,false,2,1.0
+c_variation,rhombus_c2.0,"a=1.5,b=1.45,eta=0.75,c=2.0",Success,600.0,0.000550163,78.2599,false,2,2.0
+c_variation,rhombus_c4.0,"a=1.5,b=1.45,eta=0.75,c=4.0",Success,600.0,0.000372824,65.1862,false,2,4.0
+finetune,rpp3.5_R4.0_orb1.3_z0.13,"rpp=3.5,R=4.0,orb=1.3,zk=0.13",Failure,268.714,8.01427e-7,34.1575,false,3,1.0
+finetune,rpp3.8_R4.0_orb1.3_z0.13,"rpp=3.8,R=4.0,orb=1.3,zk=0.13",Failure,420.237,9.11828e-7,53.1878,false,3,1.0
+finetune,rpp4.0_R3.5_orb1.3_z0.13,"rpp=4.0,R=3.5,orb=1.3,zk=0.13",Failure,270.465,2.05215e-6,42.0501,false,3,1.0
+finetune,rpp4.0_R4.0_orb1.1_z0.13,"rpp=4.0,R=4.0,orb=1.1,zk=0.13",Failure,326.645,7.48558e-6,32.5642,false,3,1.0
+finetune,rpp4.0_R4.0_orb1.2_z0.13,"rpp=4.0,R=4.0,orb=1.2,zk=0.13",Failure,298.232,1.81747e-6,32.9186,false,3,1.0
+finetune,rpp4.0_R4.0_orb1.3_z0.13,"rpp=4.0,R=4.0,orb=1.3,zk=0.13",Failure,539.993,9.84719e-7,68.9925,false,3,1.0
+finetune,rpp4.0_R4.0_orb1.4_z0.13,"rpp=4.0,R=4.0,orb=1.4,zk=0.13",Failure,413.0,7.11484e-7,58.4274,false,3,1.0
+finetune,rpp4.0_R4.0_orb1.5_z0.13,"rpp=4.0,R=4.0,orb=1.5,zk=0.13",Failure,258.922,6.07744e-7,43.4772,false,3,1.0
+finetune,rpp4.0_R4.5_orb1.3_z0.13,"rpp=4.0,R=4.5,orb=1.3,zk=0.13",Failure,417.069,5.22929e-7,44.5125,false,3,1.0
+finetune,rpp4.2_R4.0_orb1.3_z0.13,"rpp=4.2,R=4.0,orb=1.3,zk=0.13",Failure,390.123,1.05718e-6,51.2901,false,3,1.0
+finetune,rpp4.5_R4.0_orb1.3_z0.13,"rpp=4.5,R=4.0,orb=1.3,zk=0.13",Failure,464.48,1.16476e-6,60.1901,false,3,1.0
+finetune,rpp4_R4_orb1.3_z0.1,"rpp=4,R=4,orb=1.3,zk=0.1",Failure,510.307,1.04496e-6,64.4274,false,3,1.0
+finetune,rpp4_R4_orb1.3_z0.16,"rpp=4,R=4,orb=1.3,zk=0.16",Failure,586.357,9.19444e-7,75.6627,false,3,1.0

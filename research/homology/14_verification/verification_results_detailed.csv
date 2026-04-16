@@ -1,0 +1,6 @@
+id,classification,period,period_quality,phase_return,energy_drift_base,energy_drift_extended,convergence_discrepancy,max_separation_ratio,lyapunov_separation,n_particles,dims,c,notes
+2body_circular,Periodic,12.56600000,0.999814,2.937994e-04,2.065015e-14,2.065015e-14,1.205252e-06,1.0000,1.462904e-03,2,2,4.00,
+2body_elliptical_e03,QuasiPeriodic,12.16199576,0.878241,4.071610e-01,9.391743e-08,9.391743e-08,3.371832e-06,1.8571,5.418258e-01,2,2,4.00,
+2body_circular_large_c,Periodic,12.56600000,0.999814,2.938242e-04,3.541611e-14,3.541611e-14,1.241770e-06,1.0000,6.337435e-03,2,2,100.00,
+4body_rhombus_chaotic,ChaoticBound,-1.00000000,0.000000,-1.000000e+00,5.107136e-06,5.107136e-06,4.225833e+00,505.3028,1.137642e+02,4,2,1.00,
+2body_escape,Escape,-1.00000000,0.000000,-1.000000e+00,9.560618e-09,-1.000000e+00,-1.000000e+00,42.1826,-1.000000e+00,2,2,4.00,max_r=84.365
