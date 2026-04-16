@@ -86,3 +86,5 @@ examples/output/
 
 # Generated PDFs in papers (regenerated from make paper)
 papers/**/*.pdf
+
+input/
