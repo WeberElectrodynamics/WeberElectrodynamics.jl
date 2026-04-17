@@ -39,16 +39,8 @@ mutable struct RollingBuffer
     # Per-particle positions: positions[particle][dim, slot]
     positions::Vector{Matrix{Float64}}
 
-    # Energy traces
+    # Energy trace (used for the live error display)
     total_energy::Vector{Float64}
-    kinetic_energy::Vector{Float64}
-    potential_energy::Vector{Float64}
-
-    # Linear momentum magnitude
-    linear_momentum_mag::Vector{Float64}
-
-    # Angular momentum (scalar for 2D)
-    angular_momentum::Vector{Float64}
 
     # Per-pair phase space
     pair_separation::Dict{Tuple{Int,Int},Vector{Float64}}
@@ -79,10 +71,6 @@ function RollingBuffer(capacity::Int, prob::WeberProblem)
         capacity, 0, 1,
         Vector{Float64}(undef, capacity),
         positions,
-        Vector{Float64}(undef, capacity),
-        Vector{Float64}(undef, capacity),
-        Vector{Float64}(undef, capacity),
-        Vector{Float64}(undef, capacity),
         Vector{Float64}(undef, capacity),
         pair_sep, pair_rdot,
         particle_q, particle_p,
@@ -116,28 +104,7 @@ function _compute_step_energy(q::AbstractVector{Float64}, p::AbstractVector{Floa
         )
         PE += coulomb + velocity
     end
-    return KE, PE, KE + PE
-end
-
-function _compute_step_linear_momentum(p::AbstractVector{Float64}, dims::Int, n::Int)
-    P = zeros(dims)
-    @inbounds for i in 1:n
-        base = (i - 1) * dims
-        for d in 1:dims
-            P[d] += p[base+d]
-        end
-    end
-    return norm(P)
-end
-
-function _compute_step_angular_momentum_2d(q::AbstractVector{Float64}, p::AbstractVector{Float64}, n::Int)
-    L = 0.0
-    @inbounds for i in 1:n
-        x_idx = (i - 1) * 2 + 1
-        y_idx = (i - 1) * 2 + 2
-        L += q[x_idx] * p[y_idx] - q[y_idx] * p[x_idx]
-    end
-    return L
+    return KE + PE
 end
 
 function _compute_step_pair_phase(
@@ -181,21 +148,8 @@ function push_step!(buf::RollingBuffer, t::Float64, q::AbstractVector{Float64},
         end
     end
 
-    # Energy
-    KE, PE, E = _compute_step_energy(q, p, prob)
-    buf.kinetic_energy[idx] = KE
-    buf.potential_energy[idx] = PE
-    buf.total_energy[idx] = E
-
-    # Linear momentum
-    buf.linear_momentum_mag[idx] = _compute_step_linear_momentum(p, dims, n)
-
-    # Angular momentum (2D)
-    if dims >= 2
-        buf.angular_momentum[idx] = _compute_step_angular_momentum_2d(q, p, n)
-    else
-        buf.angular_momentum[idx] = 0.0
-    end
+    # Total energy (only used for live error display)
+    buf.total_energy[idx] = _compute_step_energy(q, p, prob)
 
     # Pair phase space
     @inbounds for i in 1:n, j in (i+1):n
@@ -246,11 +200,6 @@ function _linearize_col(mat::Matrix{Float64}, row::Int, buf::RollingBuffer)
     return vcat(@view(mat[row, oldest:buf.capacity]), @view(mat[row, 1:oldest-1]))
 end
 
-function _trim_to_window(data::Vector{Float64}, window::Int)
-    n = length(data)
-    n <= window ? data : data[end-window+1:end]
-end
-
 # Log-linear speed range: 1,2,...,9, 10,20,...,90, 100,200,...,900, 1000
 function _log_linear_range(max_val::Int)
     values = Int[]
@@ -276,14 +225,11 @@ mutable struct AnimationState
     is_playing::Observable{Bool}
     timer::Union{Nothing,Timer}
     tail_length::Observable{Int}
-    display_window::Observable{Int}
     compute_batch::Observable{Int}
     buffer_size::Int
 
-    # Reference values for error computation
+    # Reference value for energy-error display
     E0::Float64
-    P0_mag::Float64
-    L0::Float64
 
     # Phase space selection
     phase_selection::Observable{String}
@@ -293,92 +239,95 @@ mutable struct AnimationState
     alg::SymmetricProjectionIntegrator
     extended_prob::Union{Nothing,WeberProblem}
 
-    # Axes for limit reset
-    axes::Vector{Axis}
+    # Axes for limit reset (mixed Axis / Axis3)
+    axes::Vector{Any}
 end
 
 # =============================================================================
-# Error Computation
+# Energy-Error Computation
 # =============================================================================
 
-function _compute_errors(state::AnimationState)
+function _format_energy_error(state::AnimationState)
     buf = state.buffer
     if buf.count < 2
-        return fill("--", 6)
+        return "ΔE/E₀ (max) = --"
     end
-
-    # Current and previous indices (in circular buffer)
-    curr_idx = buf.cursor == 1 ? buf.capacity : buf.cursor - 1
-    prev_idx = curr_idx == 1 ? buf.capacity : curr_idx - 1
-    if buf.count < buf.capacity && curr_idx <= 1
-        return fill("--", 6)
-    end
-
-    E_curr = buf.total_energy[curr_idx]
-    E_prev = buf.total_energy[prev_idx]
-    P_curr = buf.linear_momentum_mag[curr_idx]
-    P_prev = buf.linear_momentum_mag[prev_idx]
-    L_curr = buf.angular_momentum[curr_idx]
-    L_prev = buf.angular_momentum[prev_idx]
-
+    E_lin = _linearize(buf.total_energy, buf)
     E0 = state.E0
-    P0 = state.P0_mag
-    L0 = state.L0
-
-    e_local = @sprintf("%.2e", abs(E_curr - E_prev))
-    e_global = abs(E0) > eps() ? @sprintf("%.2e%%", abs((E_curr - E0) / E0) * 100) : @sprintf("%.2e", abs(E_curr - E0))
-    p_local = @sprintf("%.2e", abs(P_curr - P_prev))
-    p_global = @sprintf("%.2e", abs(P_curr - P0))
-    l_local = @sprintf("%.2e", abs(L_curr - L_prev))
-    l_global = abs(L0) > eps() ? @sprintf("%.2e%%", abs((L_curr - L0) / L0) * 100) : @sprintf("%.2e", abs(L_curr - L0))
-
-    return [e_local, e_global, p_local, p_global, l_local, l_global]
+    if abs(E0) < eps()
+        err = maximum(abs.(E_lin .- E0))
+        return @sprintf("|ΔE| (max) = %.3e", err)
+    end
+    err_pct = maximum(abs.(E_lin .- E0)) / abs(E0) * 100
+    return @sprintf("ΔE/E₀ (max) = %.3e %%", err_pct)
 end
 
 # =============================================================================
-# Observable Update
+# Plot Observables
 # =============================================================================
 
 struct PlotObservables
-    # Trajectory panel
+    # Trajectory (dims-aware)
     traj_x::Vector{Observable{Vector{Float64}}}
     traj_y::Vector{Observable{Vector{Float64}}}
-    marker_pos::Vector{Observable{Point2f}}
+    traj_z::Vector{Observable{Vector{Float64}}}     # empty when dims==2
+    marker_2d::Vector{Observable{Point2f}}           # populated when dims==2
+    marker_3d::Vector{Observable{Point3f}}           # populated when dims==3
 
-    # Energy panel (left axis)
-    energy_t::Observable{Vector{Float64}}
-    total_energy::Observable{Vector{Float64}}
-    kinetic_energy::Observable{Vector{Float64}}
-    potential_energy::Observable{Vector{Float64}}
-
-    # Momentum panel (right axis on energy panel)
-    momentum_mag::Observable{Vector{Float64}}
-
-    # Angular momentum panel
-    angular_t::Observable{Vector{Float64}}
-    angular_momentum::Observable{Vector{Float64}}
-
-    # Phase space panel
+    # Phase space
     phase_x::Observable{Vector{Float64}}
     phase_y::Observable{Vector{Float64}}
     phase_marker::Observable{Point2f}
 
-    # Error labels
-    error_texts::Vector{Observable{String}}
+    # Live error display
+    energy_error_text::Observable{String}
 
     # Info display
     time_text::Observable{String}
     step_text::Observable{String}
 end
 
+function _create_observables(prob::WeberProblem)
+    n = prob.system.n_particles
+    dims = prob.system.dims
+
+    traj_x = [Observable(Float64[]) for _ in 1:n]
+    traj_y = [Observable(Float64[]) for _ in 1:n]
+    traj_z = [Observable(Float64[]) for _ in 1:n]  # always allocated, used only when dims==3
+
+    if dims == 3
+        marker_2d = Observable{Point2f}[]
+        marker_3d = [Observable(Point3f(0, 0, 0)) for _ in 1:n]
+    else
+        marker_2d = [Observable(Point2f(0, 0)) for _ in 1:n]
+        marker_3d = Observable{Point3f}[]
+    end
+
+    phase_x = Observable(Float64[])
+    phase_y = Observable(Float64[])
+    phase_marker = Observable(Point2f(0, 0))
+
+    energy_error_text = Observable("ΔE/E₀ (max) = --")
+    time_text = Observable("t = 0.0000")
+    step_text = Observable("step = 0")
+
+    PlotObservables(
+        traj_x, traj_y, traj_z, marker_2d, marker_3d,
+        phase_x, phase_y, phase_marker,
+        energy_error_text,
+        time_text, step_text,
+    )
+end
+
+# =============================================================================
+# Observable Update
+# =============================================================================
+
 function _update_observables!(state::AnimationState, obs::PlotObservables)
     buf = state.buffer
     prob = state.prob
     n = prob.system.n_particles
-
-    # Linearize time
-    t_lin = _linearize(buf.t, buf)
-    dw = state.display_window[]
+    dims = prob.system.dims
 
     # Trajectory tails (last tail_length entries)
     tail_len = min(state.tail_length[], buf.count)
@@ -386,34 +335,30 @@ function _update_observables!(state::AnimationState, obs::PlotObservables)
         x_full = _linearize_col(buf.positions[particle], 1, buf)
         y_full = _linearize_col(buf.positions[particle], 2, buf)
         start_idx = max(1, length(x_full) - tail_len + 1)
-        obs.traj_x[particle][] = x_full[start_idx:end]
-        obs.traj_y[particle][] = y_full[start_idx:end]
-        if !isempty(x_full)
-            obs.marker_pos[particle][] = Point2f(x_full[end], y_full[end])
+        x_tail = x_full[start_idx:end]
+        y_tail = y_full[start_idx:end]
+        obs.traj_x[particle][] = x_tail
+        obs.traj_y[particle][] = y_tail
+
+        if dims == 3
+            z_full = _linearize_col(buf.positions[particle], 3, buf)
+            z_tail = z_full[start_idx:end]
+            obs.traj_z[particle][] = z_tail
+            if !isempty(x_full)
+                obs.marker_3d[particle][] = Point3f(x_full[end], y_full[end], z_full[end])
+            end
+        else
+            if !isempty(x_full)
+                obs.marker_2d[particle][] = Point2f(x_full[end], y_full[end])
+            end
         end
     end
-
-    # Energy (trimmed to display window)
-    obs.energy_t[] = _trim_to_window(t_lin, dw)
-    obs.total_energy[] = _trim_to_window(_linearize(buf.total_energy, buf), dw)
-    obs.kinetic_energy[] = _trim_to_window(_linearize(buf.kinetic_energy, buf), dw)
-    obs.potential_energy[] = _trim_to_window(_linearize(buf.potential_energy, buf), dw)
-
-    # Momentum (trimmed to display window)
-    obs.momentum_mag[] = _trim_to_window(_linearize(buf.linear_momentum_mag, buf), dw)
-
-    # Angular momentum (trimmed to display window)
-    obs.angular_t[] = _trim_to_window(t_lin, dw)
-    obs.angular_momentum[] = _trim_to_window(_linearize(buf.angular_momentum, buf), dw)
 
     # Phase space
     _update_phase_space!(state, obs, buf)
 
-    # Errors
-    errs = _compute_errors(state)
-    for i in 1:6
-        obs.error_texts[i][] = errs[i]
-    end
+    # Energy-error label
+    obs.energy_error_text[] = _format_energy_error(state)
 
     # Info
     if state.source isa StreamingSource
@@ -457,7 +402,6 @@ function _update_phase_space!(state::AnimationState, obs::PlotObservables, buf::
         end
     end
 
-    # Update marker to current point
     px = obs.phase_x[]
     py = obs.phase_y[]
     if !isempty(px) && !isempty(py)
@@ -504,13 +448,11 @@ function _autoscale!(ax::Axis, x_obs::Observable, y_obs::Observable;
         new_yt = ymax + padding * dy
 
         if !track_x
-            # One-way scaling for x: only expand, never shrink
             cur_xl, cur_xr = _get_xlims(ax)
             new_xl = min(new_xl, cur_xl)
             new_xr = max(new_xr, cur_xr)
         end
 
-        # One-way scaling for y: only expand, never shrink
         cur_yb, cur_yt = _get_ylims(ax)
         new_yb = min(new_yb, cur_yb)
         new_yt = max(new_yt, cur_yt)
@@ -521,67 +463,10 @@ function _autoscale!(ax::Axis, x_obs::Observable, y_obs::Observable;
     return nothing
 end
 
-function _autoscale_dual!(ax_left::Axis, ax_right::Axis, x_obs::Observable,
-                          y_left_obs::Observable, y_right_obs::Observable;
-                          padding::Float64 = 0.05, track_x::Bool = false)
-    on(y_left_obs) do yd
-        xd = x_obs[]
-        if isempty(xd) || isempty(yd) || length(xd) < 2
-            return
-        end
-        xmin, xmax = extrema(xd)
-        dx = xmax - xmin
-        if dx < eps(Float64)
-            dx = 1.0
-        end
-        new_xl = xmin - padding * dx
-        new_xr = xmax + padding * dx
-
-        if !track_x
-            # One-way x scaling (shared)
-            cur_xl, cur_xr = _get_xlims(ax_left)
-            new_xl = min(new_xl, cur_xl)
-            new_xr = max(new_xr, cur_xr)
-        end
-        xlims!(ax_left, new_xl, new_xr)
-
-        # Left y axis — one-way
-        ymin, ymax = extrema(yd)
-        dy = ymax - ymin
-        if dy < eps(Float64)
-            dy = max(abs(ymin) * 0.1, eps(Float64))
-        end
-        new_yb = ymin - padding * dy
-        new_yt = ymax + padding * dy
-
-        cur_yb, cur_yt = _get_ylims(ax_left)
-        new_yb = min(new_yb, cur_yb)
-        new_yt = max(new_yt, cur_yt)
-        ylims!(ax_left, new_yb, new_yt)
-
-        # Right axis — one-way
-        yr = y_right_obs[]
-        if !isempty(yr)
-            yrmin, yrmax = extrema(yr)
-            dyr = yrmax - yrmin
-            if dyr < eps(Float64)
-                dyr = max(abs(yrmin) * 0.1, eps(Float64))
-            end
-            new_rb = yrmin - padding * dyr
-            new_rt = yrmax + padding * dyr
-
-            cur_rb, cur_rt = _get_ylims(ax_right)
-            new_rb = min(new_rb, cur_rb)
-            new_rt = max(new_rt, cur_rt)
-            ylims!(ax_right, new_rb, new_rt)
-        end
-    end
-    return nothing
-end
-
-function _autoscale_trajectory!(ax::Axis, traj_xs::Vector{Observable{Vector{Float64}}},
-                                traj_ys::Vector{Observable{Vector{Float64}}};
-                                padding::Float64 = 0.05)
+function _autoscale_trajectory_2d!(ax::Axis,
+                                   traj_xs::Vector{Observable{Vector{Float64}}},
+                                   traj_ys::Vector{Observable{Vector{Float64}}};
+                                   padding::Float64 = 0.05)
     on(traj_xs[1]) do _
         all_x = Float64[]
         all_y = Float64[]
@@ -594,9 +479,7 @@ function _autoscale_trajectory!(ax::Axis, traj_xs::Vector{Observable{Vector{Floa
         end
         xmin, xmax = extrema(all_x)
         ymin, ymax = extrema(all_y)
-        dx = xmax - xmin
-        dy = ymax - ymin
-        span = max(dx, dy)
+        span = max(xmax - xmin, ymax - ymin)
         if span < eps(Float64)
             span = 1.0
         end
@@ -609,7 +492,6 @@ function _autoscale_trajectory!(ax::Axis, traj_xs::Vector{Observable{Vector{Floa
         new_yb = cy - half
         new_yt = cy + half
 
-        # One-way scaling: only expand, never shrink
         cur_xl, cur_xr = _get_xlims(ax)
         cur_yb, cur_yt = _get_ylims(ax)
         new_xl = min(new_xl, cur_xl)
@@ -623,200 +505,60 @@ function _autoscale_trajectory!(ax::Axis, traj_xs::Vector{Observable{Vector{Floa
     return nothing
 end
 
-# =============================================================================
-# Figure Construction
-# =============================================================================
+function _get_lims_3d(ax::Axis3)
+    fl = ax.finallimits[]
+    o = fl.origin
+    w = fl.widths
+    return (o[1], o[1] + w[1], o[2], o[2] + w[2], o[3], o[3] + w[3])
+end
 
-const PARTICLE_COLORS = [:steelblue, :firebrick, :forestgreen, :darkorange, :purple,
-                         :teal, :crimson, :darkgoldenrod]
-
-function _build_figure(state::AnimationState, obs::PlotObservables;
-                       figure_size::Tuple{Int,Int} = (1400, 900))
-    fig = Figure(; size = figure_size, backgroundcolor = :white,
-        fonts = Attributes(
-            regular = "TeX Gyre Heros Makie",
-            bold = "TeX Gyre Heros Makie Bold",
-            italic = "TeX Gyre Heros Makie Italic",
-            bold_italic = "TeX Gyre Heros Makie Bold Italic",
-            mono = "TeX Gyre Heros Makie",
-        ))
-
-    prob = state.prob
-    n = prob.system.n_particles
-
-    # =========================================================================
-    # Top-left: Trajectory panel (2D)
-    # =========================================================================
-    ax_traj = Axis(fig[1:2, 1];
-        title = "Particle Trajectories",
-        xlabel = "x", ylabel = "y",
-    )
-
-    for particle in 1:n
-        col = PARTICLE_COLORS[mod1(particle, length(PARTICLE_COLORS))]
-        lines!(ax_traj, obs.traj_x[particle], obs.traj_y[particle];
-            color = col, linewidth = 1.5, label = "P$particle")
-        scatter!(ax_traj, obs.marker_pos[particle];
-            color = col, markersize = 12)
-    end
-    axislegend(ax_traj; position = :rt, framevisible = false, labelsize = 10)
-
-    # =========================================================================
-    # Top-right: Energy (left axis) + |P| (right axis)
-    # =========================================================================
-    ax_energy = Axis(fig[1:2, 2];
-        title = "Energy",
-        xlabel = "t", ylabel = "Energy",
-    )
-
-    lines!(ax_energy, obs.energy_t, obs.total_energy;
-        color = :black, linewidth = 2, label = "Total E")
-    lines!(ax_energy, obs.energy_t, obs.kinetic_energy;
-        color = :steelblue, linewidth = 1.5, label = "Kinetic T")
-    lines!(ax_energy, obs.energy_t, obs.potential_energy;
-        color = :firebrick, linewidth = 1.5, label = "Potential U")
-
-    axislegend(ax_energy; position = :lt, framevisible = false, labelsize = 10)
-
-    # =========================================================================
-    # Bottom-left: Angular Momentum & Linear Momentum
-    # =========================================================================
-    ax_angular = Axis(fig[3:4, 1];
-        title = "Momentum",
-        xlabel = "t", ylabel = "Lz",
-    )
-    ax_momentum = Axis(fig[3:4, 1];
-        ylabel = "|P|",
-        yaxisposition = :right,
-        yticklabelcolor = :purple,
-        ylabelcolor = :purple,
-    )
-    hidespines!(ax_momentum)
-    hidexdecorations!(ax_momentum)
-    linkxaxes!(ax_angular, ax_momentum)
-
-    lines!(ax_angular, obs.angular_t, obs.angular_momentum;
-        color = :black, linewidth = 1.5, label = "Lz")
-    hlines!(ax_angular, [state.L0]; color = :gray, linestyle = :dash, linewidth = 0.5)
-
-    lines!(ax_momentum, obs.angular_t, obs.momentum_mag;
-        color = :purple, linewidth = 1.5, linestyle = :dash, label = "|P|")
-
-    axislegend(ax_angular; position = :lt, framevisible = false, labelsize = 10)
-
-    # =========================================================================
-    # Bottom-right: Phase Space
-    # =========================================================================
-    ax_phase = Axis(fig[3:4, 2];
-        title = _phase_title(state),
-        xlabel = _phase_xlabel(state),
-        ylabel = _phase_ylabel(state),
-    )
-
-    lines!(ax_phase, obs.phase_x, obs.phase_y;
-        color = :black, linewidth = 1.0)
-    scatter!(ax_phase, obs.phase_marker;
-        color = :firebrick, markersize = 8)
-
-    # Phase space selector options (menu placed in bottom row below)
-    pairs = [(i, j) for i in 1:n for j in (i+1):n]
-    pair_labels = ["Pair ($i,$j)" for (i, j) in pairs]
-    particle_labels = ["Particle $i" for i in 1:n]
-    all_labels = vcat(pair_labels, particle_labels)
-
-    # =========================================================================
-    # Bottom row: Controls + Sliders | Phase menu + Error display
-    # =========================================================================
-    controls_grid = fig[5, 1] = GridLayout()
-    info_grid = fig[5, 2] = GridLayout()
-    rowsize!(fig.layout, 5, Fixed(120))
-
-    # --- Left side: Playback controls (sub-row 1) + Sliders (sub-row 2) ---
-    play_label = @lift($(state.is_playing) ? "|| Pause" : "> Play")
-    play_btn = Button(controls_grid[1, 1]; label = play_label, width = 90)
-    reset_btn = Button(controls_grid[1, 2]; label = "Reset", width = 90)
-    Label(controls_grid[1, 3], obs.time_text; fontsize = 11)
-    Label(controls_grid[1, 4], obs.step_text; fontsize = 11)
-
-    on(play_btn.clicks) do _
-        state.is_playing[] = !state.is_playing[]
-    end
-
-    on(reset_btn.clicks) do _
-        _reset_animation!(state, obs)
-    end
-
-    # Sliders
-    Label(controls_grid[2, 1], "Trail:"; fontsize = 11, halign = :right)
-    trail_slider = Slider(controls_grid[2, 2]; range = 10:10:state.buffer_size,
-                          startvalue = state.tail_length[])
-    Label(controls_grid[2, 3], "Window:"; fontsize = 11, halign = :right)
-    window_slider = Slider(controls_grid[2, 4]; range = 50:10:state.buffer_size,
-                           startvalue = state.display_window[])
-    Label(controls_grid[2, 5], "Speed:"; fontsize = 11, halign = :right)
-    speed_range = _log_linear_range(1000)
-    speed_slider = Slider(controls_grid[2, 6]; range = speed_range,
-                          startvalue = state.compute_batch[])
-
-    on(trail_slider.value) do val
-        state.tail_length[] = val
-    end
-
-    on(window_slider.value) do val
-        state.display_window[] = val
-    end
-
-    on(speed_slider.value) do val
-        state.compute_batch[] = val
-    end
-
-    # --- Right side: Phase menu (sub-row 1) + Error display (2 rows) ---
-    # Phase space selector
-    phase_grid = info_grid[1, 1] = GridLayout()
-    Label(phase_grid[1, 1], "Phase:"; fontsize = 12, halign = :right)
-    menu = Menu(phase_grid[1, 2]; options = all_labels, default = state.phase_selection[],
-                width = 200)
-
-    on(menu.selection) do sel
-        state.phase_selection[] = sel
-        ax_phase.title[] = _phase_title(state)
-        ax_phase.xlabel[] = _phase_xlabel(state)
-        ax_phase.ylabel[] = _phase_ylabel(state)
-        _update_phase_space!(state, obs, state.buffer)
-    end
-
-    # Error display — 2 rows x 3 pairs, fontsize 12
-    error_grid = info_grid[1:2, 2] = GridLayout()
-    error_labels = ["E local:", "E global:", "|P| local:", "|P| global:", "Lz local:", "Lz global:"]
-    for idx in 1:6
-        row = idx <= 3 ? 1 : 2
-        col_in_row = idx <= 3 ? idx : idx - 3
-        col_base = (col_in_row - 1) * 2 + 1
-        Label(error_grid[row, col_base], error_labels[idx]; fontsize = 12, halign = :right)
-        Label(error_grid[row, col_base + 1], obs.error_texts[idx];
-              fontsize = 12, halign = :left, color = :firebrick)
-    end
-
-    # =========================================================================
-    # Auto-scaling setup
-    # =========================================================================
-    _autoscale_trajectory!(ax_traj, obs.traj_x, obs.traj_y)
-    _autoscale!(ax_energy, obs.energy_t, obs.total_energy; track_x = true)
-    _autoscale_dual!(ax_angular, ax_momentum, obs.angular_t, obs.angular_momentum, obs.momentum_mag;
-                     padding = 0.10, track_x = true)
-    _autoscale!(ax_phase, obs.phase_x, obs.phase_y)
-
-    # Reset y-axis one-way expansion when display window changes
-    on(state.display_window) do _
-        for ax in [ax_energy, ax_momentum, ax_angular]
-            autolimits!(ax)
+function _autoscale_trajectory_3d!(ax::Axis3,
+                                   traj_xs::Vector{Observable{Vector{Float64}}},
+                                   traj_ys::Vector{Observable{Vector{Float64}}},
+                                   traj_zs::Vector{Observable{Vector{Float64}}};
+                                   padding::Float64 = 0.05)
+    on(traj_xs[1]) do _
+        all_x = Float64[]
+        all_y = Float64[]
+        all_z = Float64[]
+        for (xo, yo, zo) in zip(traj_xs, traj_ys, traj_zs)
+            append!(all_x, xo[])
+            append!(all_y, yo[])
+            append!(all_z, zo[])
         end
+        if isempty(all_x) || isempty(all_y) || isempty(all_z)
+            return
+        end
+        xmin, xmax = extrema(all_x)
+        ymin, ymax = extrema(all_y)
+        zmin, zmax = extrema(all_z)
+        span = max(xmax - xmin, ymax - ymin, zmax - zmin)
+        if span < eps(Float64)
+            span = 1.0
+        end
+        cx = (xmin + xmax) / 2
+        cy = (ymin + ymax) / 2
+        cz = (zmin + zmax) / 2
+        half = span / 2 * (1 + padding)
+
+        new_xl = cx - half
+        new_xr = cx + half
+        new_yb = cy - half
+        new_yt = cy + half
+        new_zl = cz - half
+        new_zr = cz + half
+
+        cur_xl, cur_xr, cur_yb, cur_yt, cur_zl, cur_zr = _get_lims_3d(ax)
+        new_xl = min(new_xl, cur_xl)
+        new_xr = max(new_xr, cur_xr)
+        new_yb = min(new_yb, cur_yb)
+        new_yt = max(new_yt, cur_yt)
+        new_zl = min(new_zl, cur_zl)
+        new_zr = max(new_zr, cur_zr)
+
+        limits!(ax, new_xl, new_xr, new_yb, new_yt, new_zl, new_zr)
     end
-
-    # Store axes so _reset_animation! can clear one-way limits
-    state.axes = [ax_traj, ax_energy, ax_momentum, ax_angular, ax_phase]
-
-    return fig
+    return nothing
 end
 
 # =============================================================================
@@ -855,6 +597,159 @@ function _phase_ylabel(state::AnimationState)
 end
 
 # =============================================================================
+# Figure Construction
+# =============================================================================
+
+const PARTICLE_COLORS = [:steelblue, :firebrick, :forestgreen, :darkorange, :purple,
+                         :teal, :crimson, :darkgoldenrod]
+
+function _build_figure(state::AnimationState, obs::PlotObservables;
+                       figure_size::Tuple{Int,Int} = (1200, 800))
+    fig = Figure(; size = figure_size, backgroundcolor = :white,
+        fonts = Attributes(
+            regular = "TeX Gyre Heros Makie",
+            bold = "TeX Gyre Heros Makie Bold",
+            italic = "TeX Gyre Heros Makie Italic",
+            bold_italic = "TeX Gyre Heros Makie Bold Italic",
+            mono = "TeX Gyre Heros Makie",
+        ))
+
+    prob = state.prob
+    n = prob.system.n_particles
+    dims = prob.system.dims
+
+    # =========================================================================
+    # Big trajectory panel (Axis3 for 3D, Axis for 2D)
+    # =========================================================================
+    if dims == 3
+        ax_traj = Axis3(fig[1:3, 1:3];
+            title = "Particle Trajectories",
+            xlabel = "x", ylabel = "y", zlabel = "z",
+            aspect = :data,
+        )
+        for particle in 1:n
+            col = PARTICLE_COLORS[mod1(particle, length(PARTICLE_COLORS))]
+            xobs = obs.traj_x[particle]
+            yobs = obs.traj_y[particle]
+            zobs = obs.traj_z[particle]
+            pts = lift(xobs, yobs, zobs) do x, y, z
+                m = min(length(x), length(y), length(z))
+                Point3f[Point3f(x[k], y[k], z[k]) for k in 1:m]
+            end
+            lines!(ax_traj, pts; color = col, linewidth = 1.8, label = "P$particle")
+            scatter!(ax_traj, obs.marker_3d[particle];
+                color = col, markersize = 14)
+        end
+    else
+        ax_traj = Axis(fig[1:3, 1:3];
+            title = "Particle Trajectories",
+            xlabel = "x", ylabel = "y",
+            aspect = DataAspect(),
+        )
+        for particle in 1:n
+            col = PARTICLE_COLORS[mod1(particle, length(PARTICLE_COLORS))]
+            lines!(ax_traj, obs.traj_x[particle], obs.traj_y[particle];
+                color = col, linewidth = 1.8, label = "P$particle")
+            scatter!(ax_traj, obs.marker_2d[particle];
+                color = col, markersize = 12)
+        end
+        axislegend(ax_traj; position = :rt, framevisible = false, labelsize = 10)
+    end
+
+    # =========================================================================
+    # Right sidebar: phase menu, phase plot, info column
+    # =========================================================================
+    pairs = [(i, j) for i in 1:n for j in (i+1):n]
+    pair_labels = ["Pair ($i,$j)" for (i, j) in pairs]
+    particle_labels = ["Particle $i" for i in 1:n]
+    all_labels = vcat(pair_labels, particle_labels)
+
+    # Phase menu (top of sidebar)
+    menu_grid = fig[1, 4] = GridLayout()
+    Label(menu_grid[1, 1], "Phase:"; fontsize = 11, halign = :right)
+    menu = Menu(menu_grid[1, 2]; options = all_labels,
+                default = state.phase_selection[], width = 160)
+
+    # Phase space panel
+    ax_phase = Axis(fig[2, 4];
+        title = _phase_title(state),
+        xlabel = _phase_xlabel(state),
+        ylabel = _phase_ylabel(state),
+    )
+    lines!(ax_phase, obs.phase_x, obs.phase_y; color = :black, linewidth = 1.0)
+    scatter!(ax_phase, obs.phase_marker; color = :firebrick, markersize = 8)
+
+    # Info column: energy error + time + step
+    info_grid = fig[3, 4] = GridLayout()
+    Label(info_grid[1, 1], obs.energy_error_text;
+        fontsize = 13, halign = :left, color = :firebrick)
+    Label(info_grid[2, 1], obs.time_text;
+        fontsize = 12, halign = :left)
+    Label(info_grid[3, 1], obs.step_text;
+        fontsize = 12, halign = :left)
+
+    # Sidebar column width
+    colsize!(fig.layout, 4, Relative(0.25))
+
+    # =========================================================================
+    # Bottom controls row
+    # =========================================================================
+    controls_grid = fig[4, 1:4] = GridLayout()
+    rowsize!(fig.layout, 4, Fixed(60))
+
+    play_label = @lift($(state.is_playing) ? "|| Pause" : "> Play")
+    play_btn = Button(controls_grid[1, 1]; label = play_label, width = 90)
+    reset_btn = Button(controls_grid[1, 2]; label = "Reset", width = 70)
+
+    Label(controls_grid[1, 3], "Trail:"; fontsize = 11, halign = :right)
+    trail_slider = Slider(controls_grid[1, 4]; range = 10:10:state.buffer_size,
+                          startvalue = state.tail_length[])
+
+    Label(controls_grid[1, 5], "Speed:"; fontsize = 11, halign = :right)
+    speed_range = _log_linear_range(1000)
+    speed_slider = Slider(controls_grid[1, 6]; range = speed_range,
+                          startvalue = state.compute_batch[])
+
+    on(play_btn.clicks) do _
+        state.is_playing[] = !state.is_playing[]
+    end
+
+    on(reset_btn.clicks) do _
+        _reset_animation!(state, obs)
+    end
+
+    on(trail_slider.value) do val
+        state.tail_length[] = val
+    end
+
+    on(speed_slider.value) do val
+        state.compute_batch[] = val
+    end
+
+    on(menu.selection) do sel
+        state.phase_selection[] = sel
+        ax_phase.title[] = _phase_title(state)
+        ax_phase.xlabel[] = _phase_xlabel(state)
+        ax_phase.ylabel[] = _phase_ylabel(state)
+        _update_phase_space!(state, obs, state.buffer)
+    end
+
+    # =========================================================================
+    # Auto-scaling setup
+    # =========================================================================
+    if dims == 3
+        _autoscale_trajectory_3d!(ax_traj, obs.traj_x, obs.traj_y, obs.traj_z)
+    else
+        _autoscale_trajectory_2d!(ax_traj, obs.traj_x, obs.traj_y)
+    end
+    _autoscale!(ax_phase, obs.phase_x, obs.phase_y)
+
+    state.axes = Any[ax_traj, ax_phase]
+
+    return fig
+end
+
+# =============================================================================
 # Reset
 # =============================================================================
 
@@ -862,7 +757,6 @@ function _reset_animation!(state::AnimationState, obs::PlotObservables)
     state.is_playing[] = false
     reset!(state.buffer)
 
-    # Clear one-way axis limits so they re-expand from initial state
     for ax in state.axes
         autolimits!(ax)
     end
@@ -887,9 +781,6 @@ end
 # Integrator Recycling (Streaming)
 # =============================================================================
 
-# Reset the integrator so it can keep stepping, reusing its pre-allocated
-# history arrays.  Only the bookkeeping fields are touched — the physical
-# state (t, q, p) and regularization hysteresis are preserved.
 function _recycle_integrator!(integ::WeberIntegrator)
     span = integ.t_end - integ.t_history[1]
     integ.step_count = 0
@@ -983,20 +874,21 @@ end
 Launch an interactive real-time animation of a Weber simulation.
 
 Streams simulation data into a rolling buffer and displays a live dashboard
-with particle trajectories, energy, momentum, and phase-space panels.
-Requires a windowed Makie backend (GLMakie or WGLMakie recommended).
-Requires at least 2D (`prob.system.dims ≥ 2`).
+with one large trajectory panel (`Axis3` when `prob.system.dims == 3`,
+otherwise `Axis`), a phase-space panel with selector dropdown, and a
+live energy-error readout. Requires a windowed Makie backend (GLMakie or
+WGLMakie recommended). Requires at least 2D (`prob.system.dims ≥ 2`).
 
 # Keywords
-- `buffer_size=2000`: Maximum timesteps retained in the rolling display window.
+- `buffer_size=2000`: Maximum timesteps retained in the rolling buffer.
 - `tail_length=200`: Length of visible trajectory tail (must be ≤ `buffer_size`).
 - `compute_batch=1`: Integration steps computed per animation frame.
 - `initial_pair=(1,2)`: Default pair shown in the phase-space panel.
-- `phase_mode=:pair`: Phase-space mode; `:pair` for separation portrait,
+- `phase_mode=:pair`: Phase-space mode; `:pair` for pair separation portrait,
   `:particle` for single-particle phase space.
 - `initial_particle=1`: Particle index for `:particle` phase-space mode.
 - `initial_component=1`: Component index for particle phase-space mode.
-- `figure_size=(1400,900)`: Window size in pixels `(width, height)`.
+- `figure_size=(1200,800)`: Window size in pixels `(width, height)`.
 - `alg=SymmetricProjectionIntegrator()`: Integrator algorithm.
 
 # Returns
@@ -1011,7 +903,7 @@ function WeberElectrodynamics.animate_weber(
     phase_mode::Symbol = :pair,
     initial_particle::Int = 1,
     initial_component::Int = 1,
-    figure_size::Tuple{Int,Int} = (1400, 900),
+    figure_size::Tuple{Int,Int} = (1200, 800),
     alg::SymmetricProjectionIntegrator = SymmetricProjectionIntegrator(),
 )
     @assert prob.system.dims >= 2 "Animation viewer requires at least 2D (got $(prob.system.dims)D)"
@@ -1020,47 +912,38 @@ function WeberElectrodynamics.animate_weber(
     @assert compute_batch > 0 "compute_batch must be positive"
     @assert tail_length <= buffer_size "tail_length must be <= buffer_size"
 
-    # Create extended-time problem for streaming
     extended_prob = _make_extended_problem(prob)
     integrator = init(extended_prob, alg)
 
-    # Compute initial reference values
     q0, p0 = prob.q_initial, prob.p_initial
-    _, _, E0 = _compute_step_energy(q0, p0, prob)
-    P0_mag = _compute_step_linear_momentum(p0, prob.system.dims, prob.system.n_particles)
-    L0 = prob.system.dims >= 2 ? _compute_step_angular_momentum_2d(q0, p0, prob.system.n_particles) : 0.0
+    E0 = _compute_step_energy(q0, p0, prob)
 
-    # Phase selection
     phase_sel = phase_mode == :pair ?
         "Pair ($(initial_pair[1]),$(initial_pair[2]))" :
         "Particle $initial_particle"
 
-    # Create buffer and state
     buffer = RollingBuffer(buffer_size, prob)
     source = StreamingSource(integrator, 0)
 
     state = AnimationState(
         source, prob, buffer,
         Observable(false), nothing,
-        Observable(tail_length), Observable(buffer_size), Observable(compute_batch),
+        Observable(tail_length), Observable(compute_batch),
         buffer_size,
-        E0, P0_mag, L0,
+        E0,
         Observable(phase_sel), Observable(initial_component),
         alg, extended_prob,
-        Axis[],
+        Any[],
     )
 
-    # Push initial state
     push_step!(buffer, integrator.t, integrator.q, integrator.p, prob)
 
-    # Create observables and figure
     obs = _create_observables(prob)
     _update_observables!(state, obs)
 
     fig = _build_figure(state, obs; figure_size = figure_size)
     _start_animation!(state, obs)
 
-    # Force a native window — disable inline so the backend opens a real screen
     Makie.inline!(false)
     screen = display(fig)
 
@@ -1076,19 +959,20 @@ end
 
 Replay a completed `WeberSolution` as an interactive animated dashboard.
 
-Identical dashboard layout to the streaming form, but replays pre-computed
-trajectory data. Useful for post-hoc visual exploration of long simulations.
-Requires at least 2D (`sol.prob.system.dims ≥ 2`).
+Identical dashboard layout to the streaming form (single dominant trajectory
+panel, phase-space sidebar, live energy-error readout), but replays
+pre-computed trajectory data. Requires at least 2D
+(`sol.prob.system.dims ≥ 2`).
 
 # Keywords
-- `buffer_size=2000`: Rolling display window size.
+- `buffer_size=2000`: Rolling display buffer size.
 - `tail_length=200`: Visible trajectory tail length (must be ≤ `buffer_size`).
 - `compute_batch=1`: Replay steps advanced per animation frame.
 - `initial_pair=(1,2)`: Default pair for the phase-space panel.
 - `phase_mode=:pair`: `:pair` or `:particle` phase-space mode.
 - `initial_particle=1`, `initial_component=1`: Phase-space selection for
   `:particle` mode.
-- `figure_size=(1400,900)`: Window size in pixels `(width, height)`.
+- `figure_size=(1200,800)`: Window size in pixels `(width, height)`.
 - `stride=1`: Skip every `stride`-th stored timestep during replay.
 
 # Returns
@@ -1103,7 +987,7 @@ function WeberElectrodynamics.animate_weber(
     phase_mode::Symbol = :pair,
     initial_particle::Int = 1,
     initial_component::Int = 1,
-    figure_size::Tuple{Int,Int} = (1400, 900),
+    figure_size::Tuple{Int,Int} = (1200, 800),
     stride::Int = 1,
 )
     prob = sol.prob
@@ -1114,88 +998,39 @@ function WeberElectrodynamics.animate_weber(
     @assert tail_length <= buffer_size "tail_length must be <= buffer_size"
     @assert stride > 0 "stride must be positive"
 
-    # Compute initial reference values
     q0, p0 = sol.q[1], sol.p[1]
-    _, _, E0 = _compute_step_energy(q0, p0, prob)
-    P0_mag = _compute_step_linear_momentum(p0, prob.system.dims, prob.system.n_particles)
-    L0 = prob.system.dims >= 2 ? _compute_step_angular_momentum_2d(q0, p0, prob.system.n_particles) : 0.0
+    E0 = _compute_step_energy(q0, p0, prob)
 
-    # Phase selection
     phase_sel = phase_mode == :pair ?
         "Pair ($(initial_pair[1]),$(initial_pair[2]))" :
         "Particle $initial_particle"
 
-    # Create buffer and state
     buffer = RollingBuffer(buffer_size, prob)
     source = ReplaySource(sol, stride, 1)
 
     state = AnimationState(
         source, prob, buffer,
         Observable(false), nothing,
-        Observable(tail_length), Observable(buffer_size), Observable(compute_batch),
+        Observable(tail_length), Observable(compute_batch),
         buffer_size,
-        E0, P0_mag, L0,
+        E0,
         Observable(phase_sel), Observable(initial_component),
         SymmetricProjectionIntegrator(), nothing,
-        Axis[],
+        Any[],
     )
 
-    # Push initial state
     push_step!(buffer, sol.t[1], sol.q[1], sol.p[1], prob)
 
-    # Create observables and figure
     obs = _create_observables(prob)
     _update_observables!(state, obs)
 
     fig = _build_figure(state, obs; figure_size = figure_size)
     _start_animation!(state, obs)
 
-    # Force a native window — disable inline so the backend opens a real screen
     Makie.inline!(false)
     screen = display(fig)
 
     return screen
-end
-
-# =============================================================================
-# Observable Factory
-# =============================================================================
-
-function _create_observables(prob::WeberProblem)
-    n = prob.system.n_particles
-
-    traj_x = [Observable(Float64[]) for _ in 1:n]
-    traj_y = [Observable(Float64[]) for _ in 1:n]
-    marker_pos = [Observable(Point2f(0, 0)) for _ in 1:n]
-
-    energy_t = Observable(Float64[])
-    total_energy = Observable(Float64[])
-    kinetic_energy = Observable(Float64[])
-    potential_energy = Observable(Float64[])
-
-    momentum_mag = Observable(Float64[])
-
-    angular_t = Observable(Float64[])
-    angular_momentum = Observable(Float64[])
-
-    phase_x = Observable(Float64[])
-    phase_y = Observable(Float64[])
-    phase_marker = Observable(Point2f(0, 0))
-
-    error_texts = [Observable("--") for _ in 1:6]
-
-    time_text = Observable("t = 0.0000")
-    step_text = Observable("step = 0")
-
-    PlotObservables(
-        traj_x, traj_y, marker_pos,
-        energy_t, total_energy, kinetic_energy, potential_energy,
-        momentum_mag,
-        angular_t, angular_momentum,
-        phase_x, phase_y, phase_marker,
-        error_texts,
-        time_text, step_text,
-    )
 end
 
 end # module
