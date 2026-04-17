@@ -34,15 +34,15 @@ $$H \;=\; T + U \;=\; \tfrac{1}{2}\mu\!\left(\dot{r}^2 + \frac{L^2}{\mu^2 r^2}\r
 
 Collecting terms quadratic in $\dot{r}$ and solving:
 
-$$\boxed{\;\dot{r}^2 \;=\; \frac{E \;-\; k/r \;-\; L^2/(2\mu r^2)}{\mu \;-\; k/(2c^2 r)}\;} \qquad (\star)$$
+$$\boxed{\;\dot{r}^2 \;=\; \frac{2\bigl(E \;-\; k/r \;-\; L^2/(2\mu r^2)\bigr)}{\mu \;-\; k/(c^2 r)}\;} \qquad (\star)$$
 
-This is the **Weber radial energy equation**. The form $(\star)$ matches the equation given by Clemente & Assis (*Int. J. Theor. Phys.* **30**, 537 (1991), DOI [10.1007/BF00672899](https://doi.org/10.1007/BF00672899)) and is equivalent to eq. (2.3) of Frauenfelder & Weber (*Anal. Math. Phys.* **14**:31 (2024), DOI [10.1007/s13324-024-00891-5](https://doi.org/10.1007/s13324-024-00891-5)). The derivation and use for constructing ICs appears here in the combined form used by the integrator.
+This is the **Weber radial energy equation**. The form $(\star)$ matches the equation given by Clemente & Assis (*Int. J. Theor. Phys.* **30**, 537 (1991), DOI [10.1007/BF00672899](https://doi.org/10.1007/BF00672899)) and is equivalent to eq. (2.3) of Frauenfelder & Weber (*Anal. Math. Phys.* **14**:31 (2024), DOI [10.1007/s13324-024-00891-5](https://doi.org/10.1007/s13324-024-00891-5)). Sanity check: in the Kepler limit $c\to\infty$ the denominator $\to\mu$ and $(\star)$ reduces to the textbook $\dot{r}^2 = (2/\mu)[E - k/r - L^2/(2\mu r^2)]$. The specialization $L=0$ appears in §2.5.
 
 ### 2.2 Denominator sign
 
-For attractive $k < 0$, the denominator $\mu - k/(2c^2 r) > \mu$ for every $r > 0$; $(\star)$ is globally regular on the bound radial interval $[r_p, r_a]$.
+For attractive $k < 0$, the denominator $\mu - k/(c^2 r) > \mu$ for every $r > 0$; $(\star)$ is globally regular on the bound radial interval $[r_p, r_a]$.
 
-For repulsive $k > 0$ the denominator vanishes at $r_\star = k/(2\mu c^2) = \rho/2$, where $\rho = k/(\mu c^2)$ is the Method-D critical radius. **These two thresholds are distinct.** Method D uses $\rho$ for like-charge sub-critical oscillation; $r_\star$ is a pole of the energy-to-radial-velocity inversion that never arises in the attractive bound case considered here.
+For repulsive $k > 0$ the denominator vanishes at $r_\star = k/(\mu c^2) = \rho$, where $\rho = k/(\mu c^2)$ is the Method-D critical radius. **The pole of $(\star)$ coincides exactly with $\rho$.** This matches the physical intuition that like-charge sub-critical oscillation (Method D, $r < \rho$) lies in the regime where the energy-to-radial-velocity inversion is not analytic, and never arises in the attractive bound case considered here.
 
 ### 2.3 Turning points
 
@@ -59,7 +59,7 @@ $$E < 0 \qquad\text{and}\qquad L^2 < \frac{\mu k^2}{2|E|}.$$
 Given target energy $E < 0$, angular momentum $L \geq 0$ with $L^2 < \mu k^2/(2|E|)$, a radius $r \in [r_p, r_a]$, and a sign $s \in \{-1, +1\}$ (inbound / outbound):
 
 1. **Radial velocity.**
-$$\dot{r} \;=\; s\,\sqrt{\frac{E \;-\; k/r \;-\; L^2/(2\mu r^2)}{\mu \;-\; k/(2c^2 r)}}.$$
+$$\dot{r} \;=\; s\,\sqrt{\frac{2\bigl(E \;-\; k/r \;-\; L^2/(2\mu r^2)\bigr)}{\mu \;-\; k/(c^2 r)}}.$$
 
 2. **Tangential velocity.** $v_\perp = L/(\mu r)$.
 
@@ -196,7 +196,11 @@ Apply $(F)$ to particle $i$ with $\dot{r}_{ij} = d_k\dot{R}$, $r_{ij}^2 = R^2 d_
 
 $$\vec{p}_i \;=\; m\vec{v}_i \;-\; \frac{\dot{R}}{c^2 R}\sum_{j\ne i}\frac{\kappa_{ij}q_i q_j}{d_k}\,(\hat{r}_i - \hat{r}_j).$$
 
-Using $(\hat{r}_i - \hat{r}_j)\cdot \hat{r}_i = 1 - \cos(2\pi k/N)$ and the identity $(1 - \cos 2\theta)/(2\sin\theta) = \sin\theta$, so $(1 - \cos(2\pi k/N))/d_k = d_k/2$, the projection onto $\hat{r}_i$ collapses. The per-particle sum over the ring indices yields $\Sigma_N/N$ (each pair contributes once to each endpoint's sum):
+Using $(\hat{r}_i - \hat{r}_j)\cdot \hat{r}_i = 1 - \cos(2\pi k/N)$ and the identity $(1 - \cos 2\theta)/(2\sin\theta) = \sin\theta$, so $(1 - \cos(2\pi k/N))/d_k = d_k/2$. The projection onto $\hat{r}_i$ collapses by symmetry: the transverse components from ring-$k$ partners $j = i \pm k$ cancel. Counting per-particle multiplicities $m_k = 2$ for $k < N/2$ (two partners $j = i\pm k$) and $m_{N/2} = 1$, together with $n_k = N\,m_k/2$ (each pair belongs to one ring but is counted at both endpoints), the per-particle sum evaluates to
+
+$$\sum_{j\ne i}\frac{\kappa_{ij}q_i q_j}{d_k}\,(\hat{r}_i - \hat{r}_j)\cdot\hat{r}_i \;=\; \frac{Q^2}{2}\sum_{k=1}^{N/2} m_k\,s_k\,d_k \;=\; \frac{Q^2\,\Sigma_N}{N}.$$
+
+Therefore:
 
 $$\boxed{\;\vec{p}_i \;=\; m\,\vec{v}_i \;-\; \frac{\dot{R}\,Q^2}{c^2 R}\,\frac{\Sigma_N}{N}\,\hat{r}_i.\;}$$
 
@@ -266,17 +270,20 @@ with $\dot{r}_{ij}$ on the right-hand side depending on $\vec{v}_i - \vec{v}_j$.
 
 **Users do not need the inverse map for IC construction** — the forward map $(F)$ is explicit. The integrator handles the inverse internally.
 
-### 6.4 Canonical/physical Hamiltonian identity
+### 6.4 Canonical and physical Hamiltonians
 
-The "kinetic-like" Hamiltonian term $\sum_i|\vec{p}_i|^2/(2m_i)$ is **not** the physical kinetic energy when $\vec{p}$ includes the Weber correction. Expanding $(F)$:
+The "kinetic-like" term $\sum_i|\vec{p}_i|^2/(2m_i)$ is **not** the physical kinetic energy when $\vec{p}$ includes the Weber correction from $(F)$. Writing $\vec{A}_i \equiv \vec{p}_i - m_i\vec{v}_i$ (the pairwise correction in $(F)$), the double-sum
+$\sum_i \vec{v}_i\cdot\vec{A}_i = \sum_{i<j}(\kappa_{ij}q_iq_j/c^2)(\dot{r}_{ij}^2/r_{ij})$ follows from the pair-antisymmetry of $\vec{A}_i$ and from $\dot{r}_{ij} = (\vec{r}_i-\vec{r}_j)\cdot(\vec{v}_i-\vec{v}_j)/r_{ij}$. Expanding $|\vec{p}_i|^2 = m_i^2|\vec{v}_i|^2 - 2m_i\vec{v}_i\cdot\vec{A}_i + |\vec{A}_i|^2$ and dropping the $\mathcal{O}(c^{-4})$ tail $\sum_i |\vec{A}_i|^2/(2m_i)$:
 
-$$\sum_i \frac{|\vec{p}_i|^2}{2m_i} \;=\; T_{\mathrm{phys}} \;-\; \sum_{i<j}\frac{\kappa_{ij}q_i q_j\,\dot{r}_{ij}^2}{c^2\,r_{ij}} \;+\; \mathcal{O}(c^{-4}).$$
+$$\sum_i \frac{|\vec{p}_i|^2}{2m_i} \;=\; T_{\mathrm{phys}} \;-\; \sum_{i<j}\frac{\kappa_{ij}q_i q_j\,\dot{r}_{ij}^2}{c^2\,r_{ij}} \;+\; \mathcal{O}(c^{-4}).\qquad(H_1)$$
 
-Adding the Weber potential $U_{\mathrm{Weber}} = \sum_{i<j}(\kappa_{ij}q_i q_j/r_{ij})(1 - \dot{r}_{ij}^2/(2c^2))$ the $\dot{r}^2/c^2$ pieces combine:
+The Legendre-transform identity of [`WeberElectrodynamics.md`](WeberElectrodynamics.md) is $H = T_{\mathrm{phys}} + U_{\mathrm{Weber}}$, expressed as a function of $(\vec{r},\vec{v})$. Re-expressed in canonical coordinates $(\vec{q},\vec{p})$ via the implicit inverse map of §6.3, $H$ is **not** equal to $\sum|\vec{p}|^2/(2m) + U_{\mathrm{Weber}}$. Substituting $(H_1)$ into $H = T_{\mathrm{phys}} + U_{\mathrm{Weber}}$ gives, to $\mathcal{O}(c^{-2})$,
 
-$$\boxed{\;\sum_i\frac{|\vec{p}_i|^2}{2m_i} \;+\; U_{\mathrm{Weber}}(\vec{r}, \dot{r}) \;=\; T_{\mathrm{phys}}(\vec{v}) \;+\; U_{\mathrm{Weber}}(\vec{r}, \dot{r}).\;}$$
+$$\boxed{\;H(\vec{q},\vec{p}) \;=\; \sum_i \frac{|\vec{p}_i|^2}{2m_i} \;+\; \sum_{i<j}\frac{\kappa_{ij}q_i q_j}{r_{ij}}\!\left(1 + \frac{\dot{r}_{ij}^2}{2c^2}\right) \;+\; \mathcal{O}(c^{-4}),\;}$$
 
-This is the Legendre-transform identity $H = T + U$ of [`WeberElectrodynamics.md`](WeberElectrodynamics.md) made manifest — velocity-dependent pieces are merely redistributed between the "kinetic" and "potential" parts of the Hamiltonian. It is the primary cross-check in Section 7: compute both sides from the same $(\vec{r}, \vec{v})$ and require agreement to machine precision.
+with $\dot{r}_{ij}$ understood as $\dot{r}_{ij}(\vec{q},\vec{p})$ through §6.3. Observe the **sign flip** in the velocity correction relative to the physical potential: the canonical Hamiltonian carries $+\dot{r}^2/(2c^2)$ where $U_{\mathrm{Weber}}$ carries $-\dot{r}^2/(2c^2)$. The flip absorbs the $\sum_i\vec{v}_i\cdot\vec{A}_i$ cross-term produced by the Legendre transform.
+
+The primary numerical cross-check in Section 7 step 5 is $(H_1)$ itself: given $(\vec{r},\vec{v})$ and $\vec{p}$ from $(F)$, the residual $\sum_i|\vec{p}_i|^2/(2m_i) - T_{\mathrm{phys}} + \sum_{i<j}(\kappa_{ij}q_iq_j/c^2)(\dot{r}_{ij}^2/r_{ij})$ must vanish to the $\mathcal{O}(c^{-4})$ tail $\sum_i|\vec{A}_i|^2/(2m_i)$ — typically $\lesssim 10^{-10}$ in absolute units at sub-relativistic velocities.
 
 ### 6.5 Gotcha — stationary particles can carry canonical momentum
 
@@ -302,7 +309,7 @@ Confirm $E = T_{\mathrm{phys}} + U_{\mathrm{Weber}} < 0$ (bound).
 
 4. **Canonical momenta.** Apply $(F)$ to get $\{\vec{p}_i(0)\}$. Confirm $\sum_i \vec{p}_i(0) = \vec{0}$.
 
-5. **Canonical/physical Hamiltonian identity.** Compute $H_{\mathrm{canon}} = \sum_i|\vec{p}_i|^2/(2m_i) + U_{\mathrm{Weber}}$. Confirm $H_{\mathrm{canon}} = T_{\mathrm{phys}} + U_{\mathrm{Weber}}$ to machine precision. Any discrepancy indicates a sign or normalisation error in $(F)$.
+5. **Canonical-momentum consistency.** Compute the residual $X \;\equiv\; \sum_i\frac{|\vec{p}_i|^2}{2m_i} \;-\; T_{\mathrm{phys}} \;+\; \sum_{i<j}\frac{\kappa_{ij}q_i q_j\,\dot{r}_{ij}^2}{c^2\,r_{ij}}$. By $(H_1)$ of §6.4 this is the $\mathcal{O}(c^{-4})$ tail $\sum_i|\vec{A}_i|^2/(2m_i)$ with $\vec{A}_i = \vec{p}_i - m_i\vec{v}_i$; confirm $|X|/|E| \lesssim 10^{-10}$ at sub-relativistic velocities. Note the common pitfall of comparing $\sum|\vec{p}|^2/(2m) + U_{\mathrm{Weber}}$ against $T_{\mathrm{phys}} + U_{\mathrm{Weber}}$: these differ by $\sum(\kappa qq/c^2)(\dot r^2/r)$ whenever any pair has $\dot{r}_{ij}\neq 0$ and should **not** agree.
 
 6. **Forward integration.** Integrate for several natural timescales. Confirm $|H(t) - E|/|E|$ and $|\vec{L}(t) - \vec{L}(0)|/|\vec{L}(0)|$ are within the integrator's tolerance.
 
