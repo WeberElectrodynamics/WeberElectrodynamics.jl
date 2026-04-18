@@ -10,7 +10,8 @@ using WeberElectrodynamics:
     HamiltonianSystem,
     HamiltonianSolution,
     SymmetricProjectionIntegrator,
-    HamiltonianAlgorithm
+    HamiltonianAlgorithm,
+    compute_total_energy
 using CommonSolve: init, step!
 using Makie
 
@@ -97,15 +98,6 @@ end
 # Per-Step Computation
 # =============================================================================
 
-function _compute_step_energy(
-    t::Float64,
-    q::AbstractVector{Float64},
-    p::AbstractVector{Float64},
-    prob::HamiltonianProblem,
-)
-    return prob.system.hamiltonian_compiled(q, p, t, params(prob), kappas(prob))
-end
-
 function _compute_step_pair_phase(
     q::AbstractVector{Float64},
     p::AbstractVector{Float64},
@@ -157,7 +149,7 @@ function push_step!(
     end
 
     # Total energy (only used for live error display)
-    buf.total_energy[idx] = _compute_step_energy(t, q, p, prob)
+    buf.total_energy[idx] = compute_total_energy(q, p, prob)
 
     # Pair phase space
     @inbounds for i = 1:n, j = (i+1):n
@@ -1152,7 +1144,7 @@ function WeberElectrodynamics.animate_weber(
     integrator = init(extended_prob, alg)
 
     q0, p0 = prob.q_initial, prob.p_initial
-    E0 = _compute_step_energy(prob.tspan[1], q0, p0, prob)
+    E0 = compute_total_energy(q0, p0, prob)
 
     phase_sel =
         phase_mode == :pair ? "Pair ($(initial_pair[1]),$(initial_pair[2]))" :
@@ -1241,7 +1233,7 @@ function WeberElectrodynamics.animate_weber(
     @assert stride > 0 "stride must be positive"
 
     q0, p0 = sol.q[1], sol.p[1]
-    E0 = _compute_step_energy(sol.t[1], q0, p0, prob)
+    E0 = compute_total_energy(q0, p0, prob)
 
     phase_sel =
         phase_mode == :pair ? "Pair ($(initial_pair[1]),$(initial_pair[2]))" :

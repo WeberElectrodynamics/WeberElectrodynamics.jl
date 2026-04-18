@@ -160,6 +160,37 @@ function compute_pair_weber_components(
     return (coulomb_term, velocity_term, rdot, zollner_extra)
 end
 
+"""
+    compute_total_energy(q, p, prob::HamiltonianProblem) -> Float64
+
+Total n-body Weber energy (kinetic + pair Coulomb + velocity correction +
+Zöllner extra) at a single phase-space point `(q, p)`. Used by live viewers
+and energy-error diagnostics.
+"""
+function compute_total_energy(
+    q::AbstractVector{Float64},
+    p::AbstractVector{Float64},
+    prob::HamiltonianProblem,
+)::Float64
+    ms = masses(prob)
+    qs = charges(prob)
+    c = speed_of_light(prob)
+    d = dims(prob)
+    n = n_particles(prob)
+    ks = kappas(prob)
+
+    KE = compute_total_kinetic_energy(p, ms, d)
+    PE = 0.0
+    @inbounds for i = 1:n, j = (i+1):n
+        kappa_ij = ks[_pair_index(i, j, n)]
+        coulomb, velocity, _, _ = compute_pair_weber_components(
+            q, p, i, j, ms, qs, c, d, kappa_ij,
+        )
+        PE += coulomb + velocity
+    end
+    return KE + PE
+end
+
 function compute_energy_statistics(total_energy::Vector{Float64})::EnergyStatistics
     n = length(total_energy)
     E_initial = total_energy[1]
