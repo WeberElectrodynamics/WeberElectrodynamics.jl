@@ -600,19 +600,51 @@ end
 # Figure Construction
 # =============================================================================
 
-const PARTICLE_COLORS = [:steelblue, :firebrick, :forestgreen, :darkorange, :purple,
-                         :teal, :crimson, :darkgoldenrod]
+_particle_color(i::Integer) = (cs = Makie.wong_colors(); cs[mod1(i, length(cs))])
+
+function _alpha_gradient(col, n::Integer; min_alpha = 0.15)
+    n <= 0 && return RGBAf[]
+    base = Makie.to_color(col)
+    n == 1 && return [RGBAf(base.r, base.g, base.b, 1.0)]
+    return [RGBAf(base.r, base.g, base.b,
+                  min_alpha + (1.0 - min_alpha) * (k - 1) / (n - 1)) for k in 1:n]
+end
+
+function _weber_theme()
+    base = theme_latexfonts()
+    overlay = Theme(
+        fontsize = 14,
+        backgroundcolor = :white,
+        palette = (color = Makie.wong_colors(),),
+        Axis = (
+            xgridcolor = (:black, 0.08), ygridcolor = (:black, 0.08),
+            xminorgridvisible = false, yminorgridvisible = false,
+            topspinevisible = false, rightspinevisible = false,
+            xtickalign = 1, ytickalign = 1,
+            titlesize = 15, xlabelsize = 13, ylabelsize = 13,
+        ),
+        Axis3 = (
+            xgridcolor = (:black, 0.12),
+            ygridcolor = (:black, 0.12),
+            zgridcolor = (:black, 0.12),
+            titlesize = 15, xlabelsize = 13, ylabelsize = 13, zlabelsize = 13,
+            protrusions = 40,
+        ),
+        Label = (fontsize = 13,),
+    )
+    return merge(overlay, base)
+end
 
 function _build_figure(state::AnimationState, obs::PlotObservables;
                        figure_size::Tuple{Int,Int} = (1200, 800))
-    fig = Figure(; size = figure_size, backgroundcolor = :white,
-        fonts = Attributes(
-            regular = "TeX Gyre Heros Makie",
-            bold = "TeX Gyre Heros Makie Bold",
-            italic = "TeX Gyre Heros Makie Italic",
-            bold_italic = "TeX Gyre Heros Makie Bold Italic",
-            mono = "TeX Gyre Heros Makie",
-        ))
+    return with_theme(_weber_theme()) do
+        _build_figure_impl(state, obs, figure_size)
+    end
+end
+
+function _build_figure_impl(state::AnimationState, obs::PlotObservables,
+                            figure_size::Tuple{Int,Int})
+    fig = Figure(; size = figure_size, px_per_unit = 2)
 
     prob = state.prob
     n = prob.system.n_particles
@@ -621,14 +653,23 @@ function _build_figure(state::AnimationState, obs::PlotObservables;
     # =========================================================================
     # Big trajectory panel (Axis3 for 3D, Axis for 2D)
     # =========================================================================
+    particle_cols = [_particle_color(i) for i in 1:n]
+    legend_entries = [[LineElement(color = particle_cols[i], linewidth = 2.2),
+                       MarkerElement(marker = :circle, color = particle_cols[i],
+                                     markersize = 10, strokewidth = 0.6,
+                                     strokecolor = :black)] for i in 1:n]
+    legend_labels = ["P$i" for i in 1:n]
+
     if dims == 3
         ax_traj = Axis3(fig[1:3, 1:3];
             title = "Particle Trajectories",
             xlabel = "x", ylabel = "y", zlabel = "z",
             aspect = :data,
+            perspectiveness = 0.3,
+            viewmode = :fit,
         )
         for particle in 1:n
-            col = PARTICLE_COLORS[mod1(particle, length(PARTICLE_COLORS))]
+            col = particle_cols[particle]
             xobs = obs.traj_x[particle]
             yobs = obs.traj_y[particle]
             zobs = obs.traj_z[particle]
@@ -636,10 +677,18 @@ function _build_figure(state::AnimationState, obs::PlotObservables;
                 m = min(length(x), length(y), length(z))
                 Point3f[Point3f(x[k], y[k], z[k]) for k in 1:m]
             end
-            lines!(ax_traj, pts; color = col, linewidth = 1.8, label = "P$particle")
+            trail_colors = lift(pts) do p
+                _alpha_gradient(col, length(p))
+            end
+            lines!(ax_traj, pts; color = trail_colors, linewidth = 2.2,
+                linecap = :round, joinstyle = :round)
             scatter!(ax_traj, obs.marker_3d[particle];
-                color = col, markersize = 14)
+                color = col, markersize = 14,
+                strokewidth = 0.6, strokecolor = :black, fxaa = true)
         end
+        axislegend(ax_traj, legend_entries, legend_labels;
+            position = :rt, framevisible = true,
+            framecolor = (:black, 0.15), labelsize = 11)
     else
         ax_traj = Axis(fig[1:3, 1:3];
             title = "Particle Trajectories",
@@ -647,13 +696,21 @@ function _build_figure(state::AnimationState, obs::PlotObservables;
             aspect = DataAspect(),
         )
         for particle in 1:n
-            col = PARTICLE_COLORS[mod1(particle, length(PARTICLE_COLORS))]
-            lines!(ax_traj, obs.traj_x[particle], obs.traj_y[particle];
-                color = col, linewidth = 1.8, label = "P$particle")
+            col = particle_cols[particle]
+            xobs = obs.traj_x[particle]
+            yobs = obs.traj_y[particle]
+            trail_colors = lift(xobs, yobs) do x, y
+                _alpha_gradient(col, min(length(x), length(y)))
+            end
+            lines!(ax_traj, xobs, yobs; color = trail_colors, linewidth = 2.2,
+                linecap = :round, joinstyle = :round)
             scatter!(ax_traj, obs.marker_2d[particle];
-                color = col, markersize = 12)
+                color = col, markersize = 14,
+                strokewidth = 0.6, strokecolor = :black)
         end
-        axislegend(ax_traj; position = :rt, framevisible = false, labelsize = 10)
+        axislegend(ax_traj, legend_entries, legend_labels;
+            position = :rt, framevisible = true,
+            framecolor = (:black, 0.15), labelsize = 11)
     end
 
     # =========================================================================
@@ -676,17 +733,20 @@ function _build_figure(state::AnimationState, obs::PlotObservables;
         xlabel = _phase_xlabel(state),
         ylabel = _phase_ylabel(state),
     )
-    lines!(ax_phase, obs.phase_x, obs.phase_y; color = :black, linewidth = 1.0)
-    scatter!(ax_phase, obs.phase_marker; color = :firebrick, markersize = 8)
+    lines!(ax_phase, obs.phase_x, obs.phase_y;
+        color = (:black, 0.65), linewidth = 1.6, linecap = :round)
+    scatter!(ax_phase, obs.phase_marker;
+        color = :black, markersize = 11,
+        strokewidth = 0.6, strokecolor = :white)
 
     # Info column: energy error + time + step
     info_grid = fig[3, 4] = GridLayout()
     Label(info_grid[1, 1], obs.energy_error_text;
-        fontsize = 13, halign = :left, color = :firebrick)
+        fontsize = 14, halign = :left, font = :bold)
     Label(info_grid[2, 1], obs.time_text;
-        fontsize = 12, halign = :left)
+        fontsize = 13, halign = :left)
     Label(info_grid[3, 1], obs.step_text;
-        fontsize = 12, halign = :left)
+        fontsize = 13, halign = :left)
 
     # Sidebar column width
     colsize!(fig.layout, 4, Relative(0.25))
