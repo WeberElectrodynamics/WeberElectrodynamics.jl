@@ -32,6 +32,13 @@ LocalPreferences.toml
 /build/
 /builds/
 
+# Python frontend (weber-viewer)
+.venv-viewer/
+pyjuliapkg/
+**/__pycache__/
+**/*.egg-info/
+.pytest_cache/
+
 # Generated figures (kept in git for reproducibility)
 # examples/figures/
 
