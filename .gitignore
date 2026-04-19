@@ -95,3 +95,6 @@ examples/output/
 papers/**/*.pdf
 
 input/
+
+# Wolfram script outputs
+wolfram/out/
