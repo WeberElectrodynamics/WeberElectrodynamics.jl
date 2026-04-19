@@ -34,11 +34,21 @@ Jupyter notebooks run via IJulia from the default Julia environment (where this 
 
 Documenter.jl scaffold: `make.jl`, `Project.toml`, `src/` (page sources), `build/` (generated output).
 
-### Research (`research/`)
+### Research sandbox (`_research/`)
 
-- `theory/` — Weber electrodynamics, semi-explicit integrator, regularization, critical radius, initial conditions, Zöllner theory
-- `exploratory/` — Collision bounce lessons learned, three-body bound states
-- `sub_critical_weber_research/` — Sub-critical Weber exploration and literature searches
+> **Research sandbox — contents are exploratory, not definitive.**
+> Do not cite material in this folder as package behaviour or authoritative theory.
+> Reports, notes, and scripts here may be incomplete, superseded, or contradicted
+> by code and theory elsewhere in the repo. See [`_research/README.md`](https://github.com/WeberElectrodynamics/WeberElectrodynamics/blob/main/_research/README.md).
+
+- `FourBodyTwoPlusTwoMinus/` — 4-body (2+/2−) multi-agent investigation
+- `homology/` — Rabinowitz-Floer homology study
+- `exploratory/` — foundational lessons learned (collision bounce, three-body, …)
+- `hypergeometric_analysis/` — special-function analyses
+- `investigations/` — geometric/topological questions
+- `notebooks/` — Jupyter reference and scratch notebooks
+- `sub_critical_weber_research/` — sub-critical regime exploration + literature taxonomy
+- `topology/` — phase-space topology notebooks
 
 ---
 

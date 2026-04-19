@@ -220,7 +220,7 @@ $$-\frac{\dot{R}\,Q^2}{c^2 R}\,\frac{\Sigma_4}{4}\,\hat{r}_i \;\approx\; +0.0414
 
 ### 4.9 Periodicity warning
 
-Bound total energy ($E < 0$) does **not** imply a periodic trajectory. Numerical periodic breathing-square orbits exist but are highly unstable — Floquet spectral radius $|\lambda|_{\max} \approx 228$ per [`../research/FourBodyTwoPlusTwoMinus/05_periodic_orbits/NOTES.md`](../research/FourBodyTwoPlusTwoMinus/05_periodic_orbits/NOTES.md). This document supplies **bound initial conditions only**; long-time dynamics requires numerical integration and is generically aperiodic.
+Bound total energy ($E < 0$) does **not** imply a periodic trajectory. Numerical periodic breathing-square orbits exist but are highly unstable — Floquet spectral radius $|\lambda|_{\max} \approx 228$ per [`../_research/FourBodyTwoPlusTwoMinus/05_periodic_orbits/NOTES.md`](../_research/FourBodyTwoPlusTwoMinus/05_periodic_orbits/NOTES.md). This document supplies **bound initial conditions only**; long-time dynamics requires numerical integration and is generically aperiodic.
 
 ---
 

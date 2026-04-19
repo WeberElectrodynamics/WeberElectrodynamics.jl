@@ -471,7 +471,7 @@ $$v = \sqrt{\frac{2(E - U_0^{\mathrm{Z}})}{Nm}}$$
 
 ## Method D — Sub-Critical Like-Charge Pairs
 
-Methods A–C construct initial conditions for attractive ($k = q_1 q_2 < 0$) or mixed-sign systems. For two like charges ($k = q_1 q_2 > 0$), Weber's velocity-dependent force creates a fundamentally different regime: below a critical separation $\rho$, the pair forms a bound oscillatory state with *positive* total energy. This section gives closed-form initial conditions for such systems. For the underlying physics see [CriticalRadiusAndLikeChargeAttraction.md](../research/investigations/CriticalRadiusAndLikeChargeAttraction.md).
+Methods A–C construct initial conditions for attractive ($k = q_1 q_2 < 0$) or mixed-sign systems. For two like charges ($k = q_1 q_2 > 0$), Weber's velocity-dependent force creates a fundamentally different regime: below a critical separation $\rho$, the pair forms a bound oscillatory state with *positive* total energy. This section gives closed-form initial conditions for such systems. For the underlying physics see [CriticalRadiusAndLikeChargeAttraction.md](../_research/investigations/CriticalRadiusAndLikeChargeAttraction.md).
 
 ### The Critical Radius
 
@@ -599,7 +599,7 @@ Both $r - r_0 > 0$ and $r - \rho > 0$ (since $r > r_0 > \rho$), so $\dot{r}^2 > 
 
 ## Mixed Systems — Sub-Critical Nucleus with Orbiter
 
-Weber's "planetary model of the atom" combines a sub-critical like-charge pair with orbiting unlike charges (see [CriticalRadiusAndLikeChargeAttraction.md](../research/investigations/CriticalRadiusAndLikeChargeAttraction.md)). The simplest realisation is a three-body system.
+Weber's "planetary model of the atom" combines a sub-critical like-charge pair with orbiting unlike charges (see [CriticalRadiusAndLikeChargeAttraction.md](../_research/investigations/CriticalRadiusAndLikeChargeAttraction.md)). The simplest realisation is a three-body system.
 
 ### Three-Body Configuration
 
