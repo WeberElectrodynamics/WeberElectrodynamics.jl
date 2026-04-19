@@ -102,7 +102,6 @@ prob = WeberProblem(sys, tspan, q0, p0; ...
 
 Collision bounce works best **without** Levi-Civita regularization (the
 unregularized symplectic integrator keeps energy bounded across the bounce).
-See [CollisionBounceRegularization](https://github.com/WeberElectrodynamics/WeberElectrodynamics.jl/blob/main/research/exploratory/CollisionBounceRegularization.md) for details.
 
 ## Diagnostics
 

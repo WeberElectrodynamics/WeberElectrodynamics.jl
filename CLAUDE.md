@@ -36,7 +36,7 @@ WeberElectrodynamics/
 ├── examples/               # Canonical reference notebook (two_body_reference.ipynb)
 ├── docs/                   # Documenter.jl scaffold (make.jl, src/, build/)
 ├── theory/                 # Mathematical derivations and theory documents
-├── research/               # Notebooks, exploratory notes, sub-studies (see internals.md)
+├── _research/              # Research sandbox — exploratory, not definitive (see _research/README.md)
 ├── papers/
 │   └── Computational-Weber-Electrodynamics/   # LaTeX paper with own Project.toml
 ├── CHANGELOG.md            # Versioned changelog (semver)
@@ -47,7 +47,7 @@ WeberElectrodynamics/
 
 **Pipeline**: Symbolic Hamiltonian → compiled equations of motion → symplectic integration → statistics/plotting/animation
 
-See [docs/src/internals.md](docs/src/internals.md) for per-file descriptions of `src/`, extensions, tests, and research directories.
+See [docs/src/internals.md](docs/src/internals.md) for per-file descriptions of `src/`, extensions, tests, and the `_research/` sandbox.
 
 ## Critical Conventions
 
