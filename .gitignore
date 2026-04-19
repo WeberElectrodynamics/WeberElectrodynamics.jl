@@ -33,7 +33,6 @@ LocalPreferences.toml
 /builds/
 
 # Python frontend (weber-viewer)
-python-frontend/
 .venv-viewer/
 pyjuliapkg/
 **/__pycache__/
