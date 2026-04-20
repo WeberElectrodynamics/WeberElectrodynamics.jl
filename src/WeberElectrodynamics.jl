@@ -10,6 +10,7 @@ export @sprintf, norm, dot
 # =============================================================================
 include("hamiltonian_system.jl")
 export HamiltonianSystem, weber_term, zollner_term
+export NamedTerm, term_names, has_term, get_term
 
 # =============================================================================
 # Core Types (Problem, Solution, Integrator)

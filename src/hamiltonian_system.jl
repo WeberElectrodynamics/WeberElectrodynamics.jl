@@ -1,6 +1,8 @@
 using Symbolics
 using Latexify: latexify
 
+include("hamiltonian/terms.jl")
+
 """
     HamiltonianSystem
 
@@ -25,8 +27,12 @@ and code generation via Symbolics.jl; expect a few seconds for the first call.
   In-place compiled equations of motion. `t` is currently unused.
 - `hamiltonian_compiled(q, p, t, params)`: Compiled scalar Hamiltonian function.
 - `degrees_of_freedom::Int`: Total DOF = `n_particles × dims`.
+- `terms::Vector{NamedTerm}`: Named components of the Hamiltonian (e.g.
+  `:weber`, `:zollner`) preserving the decomposition for per-term statistics
+  and plotting. The generic constructor assigns a single `:hamiltonian` term
+  by default; specialized constructors populate richer decompositions.
 """
-struct HamiltonianSystem{H,QD,PD,QF,PF,HF,PS}
+struct HamiltonianSystem{H,QD,PD,QF,PF,HF,PS,TS<:AbstractVector{<:NamedTerm}}
     n_particles::Int
     dims::Int
 
@@ -44,6 +50,8 @@ struct HamiltonianSystem{H,QD,PD,QF,PF,HF,PS}
     hamiltonian_compiled::HF
 
     degrees_of_freedom::Int
+
+    terms::TS
 end
 
 function _generate_phase_space_symbols(n_particles::Int, dims::Int)
@@ -107,6 +115,9 @@ zollner_term(…)`). For the default pure Weber case, the convenience constructo
 - `param_symbols`: Symbolic parameter vector passed to `build_function`.
 - `t`: Symbolic time variable (reserved; may be unused).
 - `n_particles::Int`, `dims::Int`: Problem shape.
+- `terms`: Optional `Vector{NamedTerm}` naming the components of `H`. If
+  omitted, a single `NamedTerm(:hamiltonian, H)` is stored so queries like
+  `get_term(sys, :hamiltonian)` still work.
 """
 function HamiltonianSystem(
     H,
@@ -116,6 +127,7 @@ function HamiltonianSystem(
     t,
     n_particles::Int,
     dims::Int,
+    terms::Union{Nothing,AbstractVector{<:NamedTerm}} = nothing,
 )
     dq_dt_symbolic = [Symbolics.derivative(H, p_vars[i]) for i in eachindex(p_vars)]
     dp_dt_symbolic = [-Symbolics.derivative(H, q_vars[i]) for i in eachindex(q_vars)]
@@ -132,6 +144,8 @@ function HamiltonianSystem(
 
     degrees_of_freedom = n_particles * dims
 
+    resolved_terms = terms === nothing ? [NamedTerm(:hamiltonian, H)] : collect(terms)
+
     HamiltonianSystem(
         n_particles,
         dims,
@@ -146,6 +160,7 @@ function HamiltonianSystem(
         dp_dt_compiled,
         hamiltonian_compiled,
         degrees_of_freedom,
+        resolved_terms,
     )
 end
 
@@ -197,8 +212,20 @@ function HamiltonianSystem(n_particles::Int, dims::Int)
         t = t_var,
         n_particles = n_particles,
         dims = dims,
+        terms = [NamedTerm(:weber, H)],
     )
 end
+
+"""
+    term_names(sys::HamiltonianSystem) -> Vector{Symbol}
+    has_term(sys::HamiltonianSystem, name::Symbol) -> Bool
+    get_term(sys::HamiltonianSystem, name::Symbol) -> NamedTerm
+
+Query the named Hamiltonian components stored on `sys`.
+"""
+term_names(sys::HamiltonianSystem) = term_names(sys.terms)
+has_term(sys::HamiltonianSystem, name::Symbol) = has_term(sys.terms, name)
+get_term(sys::HamiltonianSystem, name::Symbol) = get_term(sys.terms, name)
 
 function Base.show(io::IO, sys::HamiltonianSystem)
     print(
