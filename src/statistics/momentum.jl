@@ -50,9 +50,8 @@ function compute_momentum_timeseries(solution::HamiltonianSolution; stride::Int=
 
     # Extract problem data
     prob = solution.prob
-    system = prob.system
-    n_particles = system.n_particles
-    dims = system.dims
+    n = n_particles(prob)
+    d = dims(prob)
 
     # Compute indices and allocate
     indices = 1:stride:length(solution.t)
@@ -60,22 +59,22 @@ function compute_momentum_timeseries(solution::HamiltonianSolution; stride::Int=
     t = solution.t[indices]
 
     # Pre-allocate arrays
-    linear_momentum = [Vector{Float64}(undef, dims) for _ = 1:n_points]
-    linear_momentum_components = Matrix{Float64}(undef, n_points, dims)
+    linear_momentum = [Vector{Float64}(undef, d) for _ = 1:n_points]
+    linear_momentum_components = Matrix{Float64}(undef, n_points, d)
     linear_momentum_magnitude = Vector{Float64}(undef, n_points)
 
     # Angular momentum: dimension-dependent allocation
-    if dims == 1
+    if d == 1
         angular_momentum = nothing
         angular_momentum_magnitude = nothing
-    elseif dims == 2
+    elseif d == 2
         angular_momentum = Vector{Float64}(undef, n_points)
         angular_momentum_magnitude = Vector{Float64}(undef, n_points)
-    else  # dims == 3
+    else  # d == 3
         angular_momentum = [Vector{Float64}(undef, 3) for _ = 1:n_points]
         angular_momentum_magnitude = Vector{Float64}(undef, n_points)
     end
-    P = Vector{Float64}(undef, dims)
+    P = Vector{Float64}(undef, d)
 
     # Main computation loop
     @inbounds for (pt_idx, sol_idx) in enumerate(indices)
@@ -84,39 +83,39 @@ function compute_momentum_timeseries(solution::HamiltonianSolution; stride::Int=
 
         # Linear momentum: P_total = sum_i p_i
         fill!(P, 0.0)
-        for i = 1:n_particles
-            for d = 1:dims
-                coord_idx = (i - 1) * dims + d
-                P[d] += p[coord_idx]
+        for i = 1:n
+            for k = 1:d
+                coord_idx = (i - 1) * d + k
+                P[k] += p[coord_idx]
             end
         end
         P_mag_sq = 0.0
-        for d = 1:dims
-            P_d = P[d]
-            linear_momentum[pt_idx][d] = P_d
-            linear_momentum_components[pt_idx, d] = P_d
-            P_mag_sq += P_d * P_d
+        for k = 1:d
+            P_k = P[k]
+            linear_momentum[pt_idx][k] = P_k
+            linear_momentum_components[pt_idx, k] = P_k
+            P_mag_sq += P_k * P_k
         end
         linear_momentum_magnitude[pt_idx] = sqrt(P_mag_sq)
 
         # Angular momentum: L_total = sum_i r_i x p_i
-        if dims == 2
+        if d == 2
             # 2D: L_z = sum_i (x_i * p_y_i - y_i * p_x_i)
             L_z = 0.0
-            for i = 1:n_particles
-                x_idx = (i - 1) * dims + 1
-                y_idx = (i - 1) * dims + 2
+            for i = 1:n
+                x_idx = (i - 1) * d + 1
+                y_idx = (i - 1) * d + 2
                 L_z += q[x_idx] * p[y_idx] - q[y_idx] * p[x_idx]
             end
             angular_momentum[pt_idx] = L_z
             angular_momentum_magnitude[pt_idx] = abs(L_z)
-        elseif dims == 3
+        elseif d == 3
             # 3D: L = sum_i r_i x p_i
             Lx, Ly, Lz = 0.0, 0.0, 0.0
-            for i = 1:n_particles
-                x_idx = (i - 1) * dims + 1
-                y_idx = (i - 1) * dims + 2
-                z_idx = (i - 1) * dims + 3
+            for i = 1:n
+                x_idx = (i - 1) * d + 1
+                y_idx = (i - 1) * d + 2
+                z_idx = (i - 1) * d + 3
                 # Cross product components: r x p
                 Lx += q[y_idx] * p[z_idx] - q[z_idx] * p[y_idx]
                 Ly += q[z_idx] * p[x_idx] - q[x_idx] * p[z_idx]
@@ -136,8 +135,8 @@ function compute_momentum_timeseries(solution::HamiltonianSolution; stride::Int=
         linear_momentum_magnitude,
         angular_momentum,
         angular_momentum_magnitude,
-        n_particles,
-        dims,
+        n,
+        d,
     )
 end
 
