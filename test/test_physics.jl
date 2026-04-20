@@ -226,8 +226,8 @@
         out_large_c = zeros(4)
         out_small_c = zeros(4)
 
-        sys.dp_dt_compiled(out_large_c, q, p, params_large_c)
-        sys.dp_dt_compiled(out_small_c, q, p, params_small_c)
+        sys.dp_dt_compiled(out_large_c, q, p, 0.0, params_large_c)
+        sys.dp_dt_compiled(out_small_c, q, p, 0.0, params_small_c)
 
         # Force magnitude should be similar but with small Weber correction for finite c
         @test norm(out_large_c) ≈ norm(out_small_c) rtol = 0.1

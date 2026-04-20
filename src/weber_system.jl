@@ -16,11 +16,14 @@ and code generation via Symbolics.jl; expect a few seconds for the first call.
 - `dims::Int`: Spatial dimension (1, 2, or 3).
 - `q_symbols::Vector{Num}`: Symbolic coordinate variables `[x1, y1, ..., xN, yN, ...]`.
 - `p_symbols::Vector{Num}`: Symbolic momentum variables `[px1, py1, ...]`.
+- `t_symbol::Num`: Symbolic time variable. Reserved for time-dependent terms;
+  the current Weber Hamiltonian is autonomous and does not use it.
 - `param_symbols`: Symbolic parameter vector `[m1…mN, q1…qN, c, κ12, κ13, …]`.
 - `hamiltonian_symbolic`: Full symbolic Weber Hamiltonian expression.
 - `dq_dt_symbolic`, `dp_dt_symbolic`: Symbolic Hamilton's equations.
-- `dq_dt_compiled`, `dp_dt_compiled`: In-place compiled equations of motion.
-- `hamiltonian_compiled`: Compiled scalar Hamiltonian function.
+- `dq_dt_compiled(out, q, p, t, params)`, `dp_dt_compiled(out, q, p, t, params)`:
+  In-place compiled equations of motion. `t` is currently unused.
+- `hamiltonian_compiled(q, p, t, params)`: Compiled scalar Hamiltonian function.
 - `degrees_of_freedom::Int`: Total DOF = `n_particles × dims`.
 """
 struct WeberSystem{H,QD,PD,QF,PF,HF,PS}
@@ -29,6 +32,7 @@ struct WeberSystem{H,QD,PD,QF,PF,HF,PS}
 
     q_symbols::Vector{Num}
     p_symbols::Vector{Num}
+    t_symbol::Num
     param_symbols::PS
 
     hamiltonian_symbolic::H
@@ -161,6 +165,8 @@ function WeberSystem(n_particles::Int, dims::Int)
     c_var = Symbolics.variable(c_symbol)
     kappa_vars = [Symbolics.variable(sym) for sym in kappa_syms]
 
+    t_var = Symbolics.variable(:t)
+
     param_symbols = vcat(m_vars, charge_vars, [c_var], kappa_vars)
 
     hamiltonian_symbolic = _build_weber_hamiltonian(
@@ -180,11 +186,11 @@ function WeberSystem(n_particles::Int, dims::Int)
         [-Symbolics.derivative(hamiltonian_symbolic, q_vars[i]) for i in eachindex(q_vars)]
 
     dq_dt_compiled =
-        Symbolics.build_function(dq_dt_symbolic, q_vars, p_vars, param_symbols, expression = Val{false})[2]
+        Symbolics.build_function(dq_dt_symbolic, q_vars, p_vars, t_var, param_symbols, expression = Val{false})[2]
     dp_dt_compiled =
-        Symbolics.build_function(dp_dt_symbolic, q_vars, p_vars, param_symbols, expression = Val{false})[2]
+        Symbolics.build_function(dp_dt_symbolic, q_vars, p_vars, t_var, param_symbols, expression = Val{false})[2]
     hamiltonian_compiled =
-        Symbolics.build_function(hamiltonian_symbolic, q_vars, p_vars, param_symbols, expression = Val{false})
+        Symbolics.build_function(hamiltonian_symbolic, q_vars, p_vars, t_var, param_symbols, expression = Val{false})
 
     degrees_of_freedom = n_particles * dims
 
@@ -193,6 +199,7 @@ function WeberSystem(n_particles::Int, dims::Int)
         dims,
         q_vars,
         p_vars,
+        t_var,
         param_symbols,
         hamiltonian_symbolic,
         dq_dt_symbolic,

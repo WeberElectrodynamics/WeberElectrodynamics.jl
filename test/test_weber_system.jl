@@ -30,8 +30,8 @@ using WeberElectrodynamics: _pair_index
 
         out_q = zeros(4)
         out_p = zeros(4)
-        system.dq_dt_compiled(out_q, q, p, params)
-        system.dp_dt_compiled(out_p, q, p, params)
+        system.dq_dt_compiled(out_q, q, p, 0.0, params)
+        system.dp_dt_compiled(out_p, q, p, 0.0, params)
 
         # dq/dt = ∂H/∂p ≈ p/m (Weber correction is small for large c)
         @test out_q[1] ≈ p[1] / m1 atol = 1e-6  # px1/m1
@@ -57,7 +57,7 @@ using WeberElectrodynamics: _pair_index
 
         params1d = [1.0, 1.0, 1.0, -1.0, 1.0, 1.0]  # m1, m2, q1, q2, c, κ₁₂
         out1 = zeros(2)
-        sys1d.dq_dt_compiled(out1, [1.0, -1.0], [0.5, -0.5], params1d)
+        sys1d.dq_dt_compiled(out1, [1.0, -1.0], [0.5, -0.5], 0.0, params1d)
         # Weber's velocity-dependent potential affects dq/dt, so we just verify
         # the function runs and produces finite output of correct dimension
         @test length(out1) == 2
@@ -89,8 +89,8 @@ using WeberElectrodynamics: _pair_index
         p = zeros(6)
 
         # Should run without error
-        sys3body.dq_dt_compiled(out_q, q, p, params3)
-        sys3body.dp_dt_compiled(out_p, q, p, params3)
+        sys3body.dq_dt_compiled(out_q, q, p, 0.0, params3)
+        sys3body.dp_dt_compiled(out_p, q, p, 0.0, params3)
     end
 
     @testset "Single particle system" begin
@@ -104,8 +104,8 @@ using WeberElectrodynamics: _pair_index
         q = [1.0, 2.0]
         p = [0.5, 1.0]
 
-        sys1.dq_dt_compiled(out_q, q, p, params1)
-        sys1.dp_dt_compiled(out_p, q, p, params1)
+        sys1.dq_dt_compiled(out_q, q, p, 0.0, params1)
+        sys1.dp_dt_compiled(out_p, q, p, 0.0, params1)
 
         # dq/dt = p/m (free particle)
         @test out_q[1] ≈ 0.5 / 2.0  # px/m = 0.25
