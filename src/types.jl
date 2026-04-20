@@ -540,6 +540,8 @@ end
     speed_of_light(prob::HamiltonianProblem) -> Float64
     kappas(prob::HamiltonianProblem) -> Vector{Float64}
     params(prob::HamiltonianProblem) -> Vector{Float64}
+    regularization(prob::HamiltonianProblem) -> RegularizationOptions
+    zollner(prob::HamiltonianProblem) -> ZollnerOptions
 
 Read-only accessors. Extensions and statistics should use these instead of
 direct field access so that later refactors (dropping `masses`/`charges`/etc.
@@ -552,6 +554,8 @@ charges(prob::HamiltonianProblem) = prob.charges
 speed_of_light(prob::HamiltonianProblem) = prob.c
 kappas(prob::HamiltonianProblem) = prob.kappas
 params(prob::HamiltonianProblem) = prob.params
+regularization(prob::HamiltonianProblem) = prob.regularization
+zollner(prob::HamiltonianProblem) = prob.zollner
 
 """
     HamiltonianSolution
