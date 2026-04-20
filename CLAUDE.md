@@ -58,10 +58,19 @@ Quick-reference mirror — source of truth: [docs/src/internals.md](docs/src/int
 `params = [m₁…mₙ, q₁…qₙ, c, κ₁₂…κ_{N-1,N}]` — length `2N + 1 + N*(N-1)/2`.
 Direct calls to `dq_dt_compiled`/`dp_dt_compiled` **must** include κ entries (all 1.0 when Zöllner disabled).
 
-### Regularization backends
+### Algorithms and callbacks
 
-Only `:adaptive_cartesian` (2D+3D) and `:lifted_pair` (2D only) are valid.
-Neither backend regularizes Weber's velocity-dependent force.
+Regularization and collision bounce are composed outside the problem:
+
+- **Algorithm wrapper**: `RegularizedIntegrator(SymmetricProjectionIntegrator(); backend=:lifted_pair|:adaptive_cartesian, r_on_factor=..., r_off_factor=..., max_substeps=..., ...)`.
+  Pass to `solve(prob, alg)`.
+- **Callback**: `CollisionBounce(radius)` passed via `solve(prob, alg; callbacks=CollisionBounce(r))`.
+- Regularization backends: `:adaptive_cartesian` (2D+3D) and `:lifted_pair` (2D only). Neither regularizes Weber's velocity-dependent force.
+
+### Accessor API
+
+`HamiltonianProblem` no longer stores `masses`, `charges`, `c`, `kappas`, `regularization`, or `zollner` as fields. Use exported accessors:
+`masses(prob)`, `charges(prob)`, `speed_of_light(prob)`, `kappas(prob)`, `regularization(prob)`, `zollner(prob)`, `params(prob)`, plus `n_particles(sys)`, `dims(sys)` on `HamiltonianSystem`.
 
 ### EnergyStatistics fields
 
