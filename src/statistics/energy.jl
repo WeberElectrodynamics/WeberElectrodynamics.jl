@@ -294,6 +294,7 @@ function compute_energy_timeseries(solution::WeberSolution; stride::Int = 1)::En
     @inbounds for (pt_idx, sol_idx) in enumerate(indices)
         q = solution.q[sol_idx]
         p = solution.p[sol_idx]
+        t_pt = solution.t[sol_idx]
 
         # Kinetic energy
         KE = compute_total_kinetic_energy(p, masses, dims)
@@ -322,7 +323,7 @@ function compute_energy_timeseries(solution::WeberSolution; stride::Int = 1)::En
         total_zollner_residual[pt_idx] = zollner_sum
 
         # Validate against compiled Hamiltonian
-        H_compiled = hamiltonian_compiled(q, p, params)
+        H_compiled = hamiltonian_compiled(q, p, t_pt, params)
         hamiltonian_validation[pt_idx] = abs(total_energy[pt_idx] - H_compiled)
     end
 

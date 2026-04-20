@@ -3,6 +3,7 @@ using LinearAlgebra: norm, mul!, Transpose
 
 @inline function strang_splitting_flow!(
     Z_vec::Vector{Float64},
+    t::Float64,
     dt::Float64,
     dq_dt_compiled,
     dp_dt_compiled,
@@ -28,20 +29,22 @@ using LinearAlgebra: norm, mul!, Transpose
         P_component = Z_vec[idx_P_start:idx_P_end]
         Y_component = Z_vec[idx_Y_start:idx_Y_end]
 
-        dq_dt_compiled(auxiliary_position_buffer, Q_component, Y_component, params)
-        dp_dt_compiled(momentum_buffer, Q_component, Y_component, params)
+        dq_dt_compiled(auxiliary_position_buffer, Q_component, Y_component, t, params)
+        dp_dt_compiled(momentum_buffer, Q_component, Y_component, t, params)
 
         @. X_component = X_component + auxiliary_position_buffer * (dt / 2)
         @. P_component = P_component + momentum_buffer * (dt / 2)
 
-        dq_dt_compiled(position_buffer, X_component, P_component, params)
-        dp_dt_compiled(auxiliary_momentum_buffer, X_component, P_component, params)
+        t_mid = t + dt / 2
+        dq_dt_compiled(position_buffer, X_component, P_component, t_mid, params)
+        dp_dt_compiled(auxiliary_momentum_buffer, X_component, P_component, t_mid, params)
 
         @. Q_component = Q_component + position_buffer * dt
         @. Y_component = Y_component + auxiliary_momentum_buffer * dt
 
-        dq_dt_compiled(auxiliary_position_buffer, Q_component, Y_component, params)
-        dp_dt_compiled(momentum_buffer, Q_component, Y_component, params)
+        t_end = t + dt
+        dq_dt_compiled(auxiliary_position_buffer, Q_component, Y_component, t_end, params)
+        dp_dt_compiled(momentum_buffer, Q_component, Y_component, t_end, params)
 
         @. X_component = X_component + auxiliary_position_buffer * (dt / 2)
         @. P_component = P_component + momentum_buffer * (dt / 2)
@@ -58,6 +61,7 @@ end
     Z::Vector{Float64},
     Ẑ::Vector{Float64},
     Z_result::Vector{Float64},
+    t::Float64,
     dt::Float64,
     dq_dt_compiled,
     dp_dt_compiled,
@@ -73,6 +77,7 @@ end
         @. Ẑ = Z + ATμ
         strang_splitting_flow!(
             Ẑ,
+            t,
             dt,
             dq_dt_compiled,
             dp_dt_compiled,
@@ -92,6 +97,7 @@ end
 @inline function _projected_cartesian_step!(
     q::Vector{Float64},
     p::Vector{Float64},
+    t::Float64,
     dt_step::Float64,
     prob::WeberProblem,
     alg::SymmetricProjectionIntegrator,
@@ -139,6 +145,7 @@ end
             Z,
             Ẑ,
             Z_result,
+            t,
             dt_step,
             dq_dt_compiled,
             dp_dt_compiled,
@@ -164,6 +171,7 @@ end
                 Z,
                 Ẑ,
                 Z_result,
+                t,
                 dt_step,
                 dq_dt_compiled,
                 dp_dt_compiled,
@@ -189,6 +197,7 @@ end
         Z,
         Ẑ,
         Z_result,
+        t,
         dt_step,
         dq_dt_compiled,
         dp_dt_compiled,
@@ -210,6 +219,7 @@ end
         @. Ẑ = Z + ATμ
         strang_splitting_flow!(
             Ẑ,
+            t,
             dt_step,
             dq_dt_compiled,
             dp_dt_compiled,
@@ -351,13 +361,14 @@ end
     rb::RegularizationBuffers,
     q_state::Vector{Float64},
     p_state::Vector{Float64},
+    t::Float64,
     prob::WeberProblem,
 )
     system = prob.system
-    system.dq_dt_compiled(rb.dq_full, q_state, p_state, prob.params)
-    system.dp_dt_compiled(rb.dp_full, q_state, p_state, prob.params)
-    system.dq_dt_compiled(rb.dq_pair, q_state, p_state, rb.params_pair)
-    system.dp_dt_compiled(rb.dp_pair, q_state, p_state, rb.params_pair)
+    system.dq_dt_compiled(rb.dq_full, q_state, p_state, t, prob.params)
+    system.dp_dt_compiled(rb.dp_full, q_state, p_state, t, prob.params)
+    system.dq_dt_compiled(rb.dq_pair, q_state, p_state, t, rb.params_pair)
+    system.dp_dt_compiled(rb.dp_pair, q_state, p_state, t, rb.params_pair)
 
     @inbounds @. rb.dq_ext = rb.dq_full - rb.dq_pair
     @inbounds @. rb.dp_ext = rb.dp_full - rb.dp_pair
@@ -368,6 +379,7 @@ end
 @inline function _external_half_step_midpoint!(
     q::Vector{Float64},
     p::Vector{Float64},
+    t::Float64,
     dt_half::Float64,
     prob::WeberProblem,
     rb::RegularizationBuffers,
@@ -376,13 +388,13 @@ end
         return nothing
     end
 
-    _compute_full_pair_external_derivatives!(rb, q, p, prob)
+    _compute_full_pair_external_derivatives!(rb, q, p, t, prob)
 
     midpoint_scale = dt_half * 0.5
     @inbounds @. rb.q_mid = q + midpoint_scale * rb.dq_ext
     @inbounds @. rb.p_mid = p + midpoint_scale * rb.dp_ext
 
-    _compute_full_pair_external_derivatives!(rb, rb.q_mid, rb.p_mid, prob)
+    _compute_full_pair_external_derivatives!(rb, rb.q_mid, rb.p_mid, t + dt_half * 0.5, prob)
 
     @inbounds @. q = q + dt_half * rb.dq_ext
     @inbounds @. p = p + dt_half * rb.dp_ext
@@ -618,6 +630,7 @@ end
 @inline function _lifted_pair_substep_2d!(
     q::Vector{Float64},
     p::Vector{Float64},
+    t::Float64,
     dt_sub::Float64,
     prob::WeberProblem,
     rb::RegularizationBuffers,
@@ -632,8 +645,8 @@ end
     prev_u2 = rb.lc_u[2]
     prev_u_norm2 = prev_u1 * prev_u1 + prev_u2 * prev_u2
 
-    system.dq_dt_compiled(rb.dq_pair, q, p, rb.params_pair)
-    system.dp_dt_compiled(rb.dp_pair, q, p, rb.params_pair)
+    system.dq_dt_compiled(rb.dq_pair, q, p, t, rb.params_pair)
+    system.dp_dt_compiled(rb.dp_pair, q, p, t, rb.params_pair)
 
     mi, mj, mu, M = _extract_pair_2d_state!(rb, q, p, masses, i, j)
     _extract_pair_2d_derivatives!(rb, rb.dq_pair, rb.dp_pair, i, j, mi, mj, mu, M)
@@ -692,8 +705,9 @@ end
         rb.temp_rel_p,
     )
 
-    system.dq_dt_compiled(rb.dq_pair, rb.q_mid, rb.p_mid, rb.params_pair)
-    system.dp_dt_compiled(rb.dp_pair, rb.q_mid, rb.p_mid, rb.params_pair)
+    t_mid = t + dt_sub * 0.5
+    system.dq_dt_compiled(rb.dq_pair, rb.q_mid, rb.p_mid, t_mid, rb.params_pair)
+    system.dp_dt_compiled(rb.dp_pair, rb.q_mid, rb.p_mid, t_mid, rb.params_pair)
     _extract_pair_2d_derivatives!(rb, rb.dq_pair, rb.dp_pair, i, j, mi, mj, mu, M)
 
     _compute_lc_tau_derivatives!(
@@ -740,6 +754,7 @@ end
     _projected_cartesian_step!(
         integrator.q,
         integrator.p,
+        integrator.t,
         dt_step,
         integrator.prob,
         integrator.alg,
@@ -778,6 +793,7 @@ end
 
     dt_sub = dt_step / substeps
     max_constraint = 0.0
+    t_sub = integrator.t
 
     @inbounds for _ = 1:substeps
         _extract_pair_relative_state!(rb, integrator.q, integrator.p, prob.masses, i, j)
@@ -815,11 +831,13 @@ end
         _projected_cartesian_step!(
             integrator.q,
             integrator.p,
+            t_sub,
             dt_sub,
             prob,
             integrator.alg,
             integrator.buffers,
         )
+        t_sub += dt_sub
     end
 
     _store_state!(integrator, dt_step)
@@ -858,6 +876,7 @@ end
 
     t_remaining = dt_step
     substeps = 0
+    t_sub = integrator.t
 
     @inbounds while t_remaining > 1e-14 && substeps < max_sub
         r_current = max(_current_pair_r_2d(integrator.q, i, j), g_floor)
@@ -869,20 +888,21 @@ end
 
         dt_half = 0.5 * dt_sub
 
-        _external_half_step_midpoint!(integrator.q, integrator.p, dt_half, prob, rb)
-        _lifted_pair_substep_2d!(integrator.q, integrator.p, dt_sub, prob, rb, i, j)
-        _external_half_step_midpoint!(integrator.q, integrator.p, dt_half, prob, rb)
+        _external_half_step_midpoint!(integrator.q, integrator.p, t_sub, dt_half, prob, rb)
+        _lifted_pair_substep_2d!(integrator.q, integrator.p, t_sub + dt_half, dt_sub, prob, rb, i, j)
+        _external_half_step_midpoint!(integrator.q, integrator.p, t_sub + dt_half + dt_sub, dt_half, prob, rb)
 
         t_remaining -= dt_sub
+        t_sub += dt_sub
         substeps += 1
     end
 
     # Fallback: if max_substeps exhausted, complete remaining time in one step.
     if t_remaining > 1e-14
         dt_half = 0.5 * t_remaining
-        _external_half_step_midpoint!(integrator.q, integrator.p, dt_half, prob, rb)
-        _lifted_pair_substep_2d!(integrator.q, integrator.p, t_remaining, prob, rb, i, j)
-        _external_half_step_midpoint!(integrator.q, integrator.p, dt_half, prob, rb)
+        _external_half_step_midpoint!(integrator.q, integrator.p, t_sub, dt_half, prob, rb)
+        _lifted_pair_substep_2d!(integrator.q, integrator.p, t_sub + dt_half, t_remaining, prob, rb, i, j)
+        _external_half_step_midpoint!(integrator.q, integrator.p, t_sub + dt_half + t_remaining, dt_half, prob, rb)
         substeps += 1
     end
 
@@ -920,6 +940,7 @@ end
 
     dims = rb.dims
     chain_count = rb.active_count
+    t_sub = integrator.t
 
     @inbounds for _ = 1:substeps
         if dims == 3
@@ -941,11 +962,13 @@ end
         _projected_cartesian_step!(
             integrator.q,
             integrator.p,
+            t_sub,
             dt_sub,
             prob,
             integrator.alg,
             integrator.buffers,
         )
+        t_sub += dt_sub
     end
 
     _store_state!(integrator, dt_step)
