@@ -28,17 +28,15 @@ p0 = vec(transpose(P))
 # Quick timing test
 t1 = time()
 prob = HamiltonianProblem(sys, (0.0, 50.0), q0, p0;
-    masses = masses, charges = charges, c = 1.0, dt = 5e-4,
-    regularization = RegularizationOptions(collision_bounce_radius = 0.02))
-sol = solve(prob, SymmetricProjectionIntegrator())
+    masses = masses, charges = charges, c = 1.0, dt = 5e-4)
+sol = solve(prob, SymmetricProjectionIntegrator(); callbacks = CollisionBounce(0.02))
 t2 = time()
 println("tmax=50, dt=5e-4: $(round(t2-t1, digits=2))s, retcode=$(sol.retcode), t_final=$(sol.t[end]), nsteps=$(length(sol.t))")
 
 # Test tmax=200
 t1 = time()
 prob2 = HamiltonianProblem(sys, (0.0, 200.0), q0, p0;
-    masses = masses, charges = charges, c = 1.0, dt = 5e-4,
-    regularization = RegularizationOptions(collision_bounce_radius = 0.02))
-sol2 = solve(prob2, SymmetricProjectionIntegrator())
+    masses = masses, charges = charges, c = 1.0, dt = 5e-4)
+sol2 = solve(prob2, SymmetricProjectionIntegrator(); callbacks = CollisionBounce(0.02))
 t2 = time()
 println("tmax=200, dt=5e-4: $(round(t2-t1, digits=2))s, retcode=$(sol2.retcode), t_final=$(sol2.t[end]), nsteps=$(length(sol2.t))")

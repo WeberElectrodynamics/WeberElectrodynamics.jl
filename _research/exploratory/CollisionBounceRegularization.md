@@ -28,8 +28,8 @@ The implicit midpoint fixed-point iteration diverges near r=0 due to the 1/r² f
 When pair separation r < bounce_radius, reflect the relative coordinate through the origin: q_rel → -q_rel (momenta unchanged). This analytically continues the C⁰ trajectory without integrating through the singularity.
 
 ### Implementation
-- `collision_bounce_radius` field on `RegularizationOptions` (types.jl); pass via
-  `HamiltonianProblem(...; regularization=RegularizationOptions(collision_bounce_radius=r))` (default 0.0 = disabled)
+- `CollisionBounce(r)` callback; pass via
+  `solve(prob, alg; callbacks=CollisionBounce(r))` (omit callback to disable)
 - `_apply_collision_bounces!` called at START of each `step!` in solve.jl
 - Works for any dimension via `_current_pair_r` and `_reflect_pair!` helpers
 - Energy is exactly preserved by the reflection (only positions change, not momenta)
@@ -43,7 +43,7 @@ The unregularized Strang splitting integrator preserves a modified Hamiltonian (
 |---|---|---|
 | dt | 1e-4 (fixed, absolute) | 1e-4 (fixed, absolute) |
 | bounce_r | 0.02 | 0.02 |
-| RegularizationOptions(enabled=...) | false | false |
+| Algorithm | SymmetricProjectionIntegrator | SymmetricProjectionIntegrator |
 | Energy error (100 periods) | 0.014% | 0.005% |
 | max |ṙ|/c | 1.20 | 1.38 |
 

@@ -37,12 +37,12 @@ function run_3body(q0, p0, masses, charges;
     tmax=50.0, dt=1e-3, c=1.0, dims=2, bounce_r=0.0,
     zollner_enabled=false, zollner_a=0.0)
     sys = _get_sys(3, dims)
-    reg = RegularizationOptions(collision_bounce_radius=bounce_r)
     zol = ZollnerOptions(enabled=zollner_enabled, a=zollner_a)
     prob = HamiltonianProblem(sys, (0.0, tmax), q0, p0;
-        masses=masses, charges=charges, c=c, dt=dt,
-        regularization=reg, zollner=zol)
-    sol = solve(prob, SymmetricProjectionIntegrator())
+        masses=masses, charges=charges, c=c, dt=dt, zollner=zol)
+    sol = bounce_r > 0 ?
+        solve(prob, SymmetricProjectionIntegrator(); callbacks=CollisionBounce(bounce_r)) :
+        solve(prob, SymmetricProjectionIntegrator())
     return sol
 end
 

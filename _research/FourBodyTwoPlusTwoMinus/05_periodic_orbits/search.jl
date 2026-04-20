@@ -44,13 +44,13 @@ const SYS  = HamiltonianSystem(N, D)
 # ----------------------------------------------------------------------------
 function integrate(q0, p0, masses, charges; tmax = 20.0, dt = 1e-3, c = 1.0,
                    bounce_r = 0.0)
-    reg = RegularizationOptions(collision_bounce_radius = bounce_r)
     prob = HamiltonianProblem(
         SYS, (0.0, tmax), q0, p0;
         masses = masses, charges = charges, c = c, dt = dt,
-        regularization = reg,
     )
-    return solve(prob, SymmetricProjectionIntegrator())
+    return bounce_r > 0 ?
+        solve(prob, SymmetricProjectionIntegrator(); callbacks = CollisionBounce(bounce_r)) :
+        solve(prob, SymmetricProjectionIntegrator())
 end
 
 # ----------------------------------------------------------------------------
