@@ -227,6 +227,18 @@ term_names(sys::HamiltonianSystem) = term_names(sys.terms)
 has_term(sys::HamiltonianSystem, name::Symbol) = has_term(sys.terms, name)
 get_term(sys::HamiltonianSystem, name::Symbol) = get_term(sys.terms, name)
 
+"""
+    n_particles(sys::HamiltonianSystem) -> Int
+    dims(sys::HamiltonianSystem) -> Int
+    degrees_of_freedom(sys::HamiltonianSystem) -> Int
+
+Read-only accessors for the problem shape. Prefer these over direct field
+access so extensions stay stable across future Hamiltonian shapes.
+"""
+n_particles(sys::HamiltonianSystem) = sys.n_particles
+dims(sys::HamiltonianSystem) = sys.dims
+degrees_of_freedom(sys::HamiltonianSystem) = sys.degrees_of_freedom
+
 function Base.show(io::IO, sys::HamiltonianSystem)
     print(
         io,

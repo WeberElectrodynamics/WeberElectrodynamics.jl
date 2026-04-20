@@ -533,6 +533,27 @@ struct HamiltonianProblem
 end
 
 """
+    n_particles(prob::HamiltonianProblem) -> Int
+    dims(prob::HamiltonianProblem) -> Int
+    masses(prob::HamiltonianProblem) -> Vector{Float64}
+    charges(prob::HamiltonianProblem) -> Vector{Float64}
+    speed_of_light(prob::HamiltonianProblem) -> Float64
+    kappas(prob::HamiltonianProblem) -> Vector{Float64}
+    params(prob::HamiltonianProblem) -> Vector{Float64}
+
+Read-only accessors. Extensions and statistics should use these instead of
+direct field access so that later refactors (dropping `masses`/`charges`/etc.
+from the struct in favor of a flat `params` vector) remain source-compatible.
+"""
+n_particles(prob::HamiltonianProblem) = n_particles(prob.system)
+dims(prob::HamiltonianProblem) = dims(prob.system)
+masses(prob::HamiltonianProblem) = prob.masses
+charges(prob::HamiltonianProblem) = prob.charges
+speed_of_light(prob::HamiltonianProblem) = prob.c
+kappas(prob::HamiltonianProblem) = prob.kappas
+params(prob::HamiltonianProblem) = prob.params
+
+"""
     HamiltonianSolution
 
 Result returned by `solve` or `solve!`.
