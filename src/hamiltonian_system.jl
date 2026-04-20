@@ -80,76 +80,84 @@ end
     return (i - 1) * (2n - i) ÷ 2 + (j - i)
 end
 
-function _build_weber_hamiltonian(
-    q_vars::Vector,
-    p_vars::Vector,
-    m_vars::Vector,
-    charge_vars::Vector,
-    c_var,
-    kappa_vars::Vector,
+include("hamiltonian/builders/weber.jl")
+
+"""
+    HamiltonianSystem(H, q_vars, p_vars;
+                      param_symbols, t, n_particles, dims) -> HamiltonianSystem
+
+Generic constructor from a pre-built symbolic Hamiltonian `H`.
+
+Derives Hamilton's equations analytically via `Symbolics.derivative`, then
+compiles them to in-place Julia functions with
+`Symbolics.build_function(…, q_vars, p_vars, t, param_symbols)`. The signature
+of the compiled EOMs is `(out, q, p, t, params)`; `t` is presently unused but
+reserved for time-dependent terms.
+
+Use this overload to build a custom Hamiltonian (e.g. `H = weber_term(…) +
+zollner_term(…)`). For the default pure Weber case, the convenience constructor
+`HamiltonianSystem(n_particles, dims)` wraps this path.
+
+# Arguments
+- `H`: Symbolic Hamiltonian expression.
+- `q_vars`, `p_vars`: Phase-space symbolic variables, each length `n_particles*dims`.
+
+# Keywords
+- `param_symbols`: Symbolic parameter vector passed to `build_function`.
+- `t`: Symbolic time variable (reserved; may be unused).
+- `n_particles::Int`, `dims::Int`: Problem shape.
+"""
+function HamiltonianSystem(
+    H,
+    q_vars::AbstractVector,
+    p_vars::AbstractVector;
+    param_symbols::AbstractVector,
+    t,
     n_particles::Int,
     dims::Int,
 )
-    H = zero(eltype(q_vars))
+    dq_dt_symbolic = [Symbolics.derivative(H, p_vars[i]) for i in eachindex(p_vars)]
+    dp_dt_symbolic = [-Symbolics.derivative(H, q_vars[i]) for i in eachindex(q_vars)]
 
-    @inbounds for i = 1:n_particles
-        p_start = (i - 1) * dims + 1
-        p_end = i * dims
-        p_squared = sum(p_vars[p_start:p_end] .^ 2)
-        H = H + p_squared / (2 * m_vars[i])
-    end
+    dq_dt_compiled = Symbolics.build_function(
+        dq_dt_symbolic, q_vars, p_vars, t, param_symbols, expression = Val{false},
+    )[2]
+    dp_dt_compiled = Symbolics.build_function(
+        dp_dt_symbolic, q_vars, p_vars, t, param_symbols, expression = Val{false},
+    )[2]
+    hamiltonian_compiled = Symbolics.build_function(
+        H, q_vars, p_vars, t, param_symbols, expression = Val{false},
+    )
 
-    c_squared = c_var^2
-    @inbounds for i = 1:n_particles
-        for j = (i+1):n_particles
-            qi_start = (i - 1) * dims + 1
-            qj_start = (j - 1) * dims + 1
+    degrees_of_freedom = n_particles * dims
 
-            pi_start = (i - 1) * dims + 1
-            pj_start = (j - 1) * dims + 1
-
-            r_squared = zero(eltype(q_vars))
-            for d = 1:dims
-                dq = q_vars[qi_start+d-1] - q_vars[qj_start+d-1]
-                r_squared = r_squared + dq^2
-            end
-            r = sqrt(r_squared)
-
-            r_dot_v = zero(eltype(q_vars))
-            for d = 1:dims
-                dq = q_vars[qi_start+d-1] - q_vars[qj_start+d-1]
-                dv = p_vars[pi_start+d-1] / m_vars[i] - p_vars[pj_start+d-1] / m_vars[j]
-                r_dot_v = r_dot_v + dq * dv
-            end
-            r_dot = r_dot_v / r
-
-            pair_idx = _pair_index(i, j, n_particles)
-            kappa = kappa_vars[pair_idx]
-            k = kappa * charge_vars[i] * charge_vars[j]
-            U_ij = k / r * (1 - r_dot^2 / (2 * c_squared))
-            H = H + U_ij
-        end
-    end
-
-    return H
+    HamiltonianSystem(
+        n_particles,
+        dims,
+        q_vars,
+        p_vars,
+        t,
+        param_symbols,
+        H,
+        dq_dt_symbolic,
+        dp_dt_symbolic,
+        dq_dt_compiled,
+        dp_dt_compiled,
+        hamiltonian_compiled,
+        degrees_of_freedom,
+    )
 end
 
 """
     HamiltonianSystem(n_particles::Int, dims::Int) -> HamiltonianSystem
 
-Build and compile the symbolic Weber Hamiltonian for `n_particles` particles in
-`dims` dimensions.
-
-Uses Symbolics.jl to derive Hamilton's equations analytically, then compiles
-them to efficient in-place Julia functions via `build_function`. The resulting
-`HamiltonianSystem` can be reused across multiple `HamiltonianProblem` instances.
+Convenience constructor for the default n-body Weber Hamiltonian in `dims`
+spatial dimensions. Equivalent to building `weber_term(…)` with all κ=1 symbols
+and passing it to the generic `HamiltonianSystem(H, q, p; …)` constructor.
 
 # Arguments
 - `n_particles`: Number of particles (≥ 1).
 - `dims`: Spatial dimension; must be 1, 2, or 3.
-
-# Returns
-- `HamiltonianSystem` with compiled equations of motion ready for `HamiltonianProblem`.
 """
 function HamiltonianSystem(n_particles::Int, dims::Int)
     @assert n_particles >= 1 "Must have at least 1 particle"
@@ -169,45 +177,25 @@ function HamiltonianSystem(n_particles::Int, dims::Int)
 
     param_symbols = vcat(m_vars, charge_vars, [c_var], kappa_vars)
 
-    hamiltonian_symbolic = _build_weber_hamiltonian(
+    H = weber_term(
         q_vars,
-        p_vars,
-        m_vars,
-        charge_vars,
-        c_var,
-        kappa_vars,
-        n_particles,
-        dims,
+        p_vars;
+        masses = m_vars,
+        charges = charge_vars,
+        c = c_var,
+        kappas = kappa_vars,
+        n_particles = n_particles,
+        dims = dims,
     )
 
-    dq_dt_symbolic =
-        [Symbolics.derivative(hamiltonian_symbolic, p_vars[i]) for i in eachindex(p_vars)]
-    dp_dt_symbolic =
-        [-Symbolics.derivative(hamiltonian_symbolic, q_vars[i]) for i in eachindex(q_vars)]
-
-    dq_dt_compiled =
-        Symbolics.build_function(dq_dt_symbolic, q_vars, p_vars, t_var, param_symbols, expression = Val{false})[2]
-    dp_dt_compiled =
-        Symbolics.build_function(dp_dt_symbolic, q_vars, p_vars, t_var, param_symbols, expression = Val{false})[2]
-    hamiltonian_compiled =
-        Symbolics.build_function(hamiltonian_symbolic, q_vars, p_vars, t_var, param_symbols, expression = Val{false})
-
-    degrees_of_freedom = n_particles * dims
-
-    HamiltonianSystem(
-        n_particles,
-        dims,
+    return HamiltonianSystem(
+        H,
         q_vars,
-        p_vars,
-        t_var,
-        param_symbols,
-        hamiltonian_symbolic,
-        dq_dt_symbolic,
-        dp_dt_symbolic,
-        dq_dt_compiled,
-        dp_dt_compiled,
-        hamiltonian_compiled,
-        degrees_of_freedom,
+        p_vars;
+        param_symbols = param_symbols,
+        t = t_var,
+        n_particles = n_particles,
+        dims = dims,
     )
 end
 

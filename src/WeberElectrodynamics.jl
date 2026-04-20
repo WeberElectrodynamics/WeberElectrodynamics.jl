@@ -6,10 +6,10 @@ using LinearAlgebra: norm, dot
 export @sprintf, norm, dot
 
 # =============================================================================
-# Weber System (n-body Hamiltonian)
+# Hamiltonian System (symbolic builder + compiled EOMs)
 # =============================================================================
 include("hamiltonian_system.jl")
-export HamiltonianSystem
+export HamiltonianSystem, weber_term
 
 # =============================================================================
 # Core Types (Problem, Solution, Integrator)
