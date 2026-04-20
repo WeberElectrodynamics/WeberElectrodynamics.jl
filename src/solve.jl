@@ -1080,8 +1080,29 @@ end
     return out
 end
 
+# -----------------------------------------------------------------------------
+# Cache allocation hook
+#
+# `_allocate_cache(prob, alg)` builds the algorithm-specific workspace used by
+# `_step_core!`. New algorithms plug in by adding a method here rather than
+# modifying `init`. The default method errors so that unsupported algorithms
+# fail during init rather than silently running with wrong buffers.
+# -----------------------------------------------------------------------------
+function _allocate_cache(::HamiltonianProblem, alg::HamiltonianAlgorithm)
+    throw(ArgumentError("init not implemented for algorithm $(typeof(alg))"))
+end
+
+function _allocate_cache(prob::HamiltonianProblem, ::SymmetricProjectionIntegrator)
+    buffers = SymmetricProjectionBuffers(prob)
+    rb = buffers.regularization_buffers
+    if prob.regularization.enabled && rb.backend_fallback && prob.regularization.warn_on_fallback
+        @warn "RegularizationOptions(backend=:lifted_pair) is currently supported only for 2D; falling back to :adaptive_cartesian for $(prob.system.dims)D"
+    end
+    return buffers
+end
+
 """
-    init(prob::HamiltonianProblem, alg::SymmetricProjectionIntegrator = SymmetricProjectionIntegrator()) -> HamiltonianIntegrator
+    init(prob::HamiltonianProblem, alg::HamiltonianAlgorithm = SymmetricProjectionIntegrator()) -> HamiltonianIntegrator
 
 Initialise a step-by-step integrator without running any steps.
 
@@ -1094,12 +1115,11 @@ or pass it directly to `solve!`.
 """
 function CommonSolve.init(
     prob::HamiltonianProblem,
-    alg::SymmetricProjectionIntegrator = SymmetricProjectionIntegrator(),
+    alg::HamiltonianAlgorithm = SymmetricProjectionIntegrator(),
 )
     degrees_of_freedom = prob.system.degrees_of_freedom
 
-    buffers = SymmetricProjectionBuffers(prob)
-    rb = buffers.regularization_buffers
+    buffers = _allocate_cache(prob, alg)
 
     n_steps = Int(ceil((prob.tspan[2] - prob.tspan[1]) / prob.dt))
     t_history = Vector{Float64}(undef, n_steps + 1)
@@ -1114,10 +1134,6 @@ function CommonSolve.init(
     used_backend = REG_BACKEND_DISABLED
     diagnostics =
         RegularizationDiagnostics(prob.regularization.enabled, n_steps, requested_backend, used_backend)
-
-    if prob.regularization.enabled && rb.backend_fallback && prob.regularization.warn_on_fallback
-        @warn "RegularizationOptions(backend=:lifted_pair) is currently supported only for 2D; falling back to :adaptive_cartesian for $(prob.system.dims)D"
-    end
 
     HamiltonianIntegrator(
         prob,

@@ -736,15 +736,15 @@ run to completion. The current state is accessible via `integrator.q`,
 - `q_history::Vector{Vector{Float64}}`: Pre-allocated position history.
 - `p_history::Vector{Vector{Float64}}`: Pre-allocated momentum history.
 """
-mutable struct HamiltonianIntegrator
+mutable struct HamiltonianIntegrator{A<:HamiltonianAlgorithm,C}
     prob::HamiltonianProblem
-    alg::SymmetricProjectionIntegrator
+    alg::A
     t::Float64
     t_end::Float64
     q::Vector{Float64}
     p::Vector{Float64}
     step_count::Int
-    buffers::SymmetricProjectionBuffers
+    buffers::C
     diagnostics::RegularizationDiagnostics
     t_history::Vector{Float64}
     q_history::Vector{Vector{Float64}}
