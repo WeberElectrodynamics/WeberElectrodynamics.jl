@@ -1,6 +1,6 @@
 """
 Diagnostic utilities for 4-body 2+/2− Weber runs.
-All functions take flat length-(N*d) vectors or a full `WeberSolution`.
+All functions take flat length-(N*d) vectors or a full `HamiltonianSolution`.
 """
 
 using LinearAlgebra

@@ -14,7 +14,7 @@ include(joinpath(@__DIR__, "..", "shared", "ic_generators.jl"))
 
 const N = 4
 const D = 2
-sys = WeberSystem(N, D)
+sys = HamiltonianSystem(N, D)
 
 q0, p0, masses, charges = alternating_square(side = 1.0, q = 1.0, m = 1.0,
                                               energy_fraction = 0.0,

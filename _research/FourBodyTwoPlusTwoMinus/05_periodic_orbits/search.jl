@@ -37,7 +37,7 @@ using .SharedSurvey
 const N    = 4
 const D    = 2
 const DOF  = N * D
-const SYS  = WeberSystem(N, D)
+const SYS  = HamiltonianSystem(N, D)
 
 # ----------------------------------------------------------------------------
 # Direct integration (without going through SharedSurvey, so we keep dt control)
@@ -45,7 +45,7 @@ const SYS  = WeberSystem(N, D)
 function integrate(q0, p0, masses, charges; tmax = 20.0, dt = 1e-3, c = 1.0,
                    bounce_r = 0.0)
     reg = RegularizationOptions(collision_bounce_radius = bounce_r)
-    prob = WeberProblem(
+    prob = HamiltonianProblem(
         SYS, (0.0, tmax), q0, p0;
         masses = masses, charges = charges, c = c, dt = dt,
         regularization = reg,

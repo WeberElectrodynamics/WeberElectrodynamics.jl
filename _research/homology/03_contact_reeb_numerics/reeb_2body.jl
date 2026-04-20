@@ -24,7 +24,7 @@ Build compiled Weber Hamiltonian for 2-body 2D, returning
 (sys, H, V, params, dof) where H(q,p) and V(q) are callables.
 """
 function build_2body(charges, masses, c)
-    sys = WeberSystem(2, 2)
+    sys = HamiltonianSystem(2, 2)
     kappas = [1.0]
     params = vcat(masses, charges, [c], kappas)
     dof = 4
@@ -62,7 +62,7 @@ function integrate_reeb_2body(charges, masses, c, q0, p0, E;
     @assert abs(H0 - E) < 1e-6 "Initial condition not on energy surface: H=$H0, E=$E"
 
     # Integrate with the Weber integrator
-    prob = WeberProblem(wb.sys, (0.0, tmax), q0, p0;
+    prob = HamiltonianProblem(wb.sys, (0.0, tmax), q0, p0;
                         masses=masses, charges=charges, c=c, dt=dt)
     sol = solve(prob, SymmetricProjectionIntegrator())
 
@@ -170,7 +170,7 @@ function estimate_stability(charges, masses, c, q0, p0, E, period;
     wb = build_2body(charges, masses, c)
 
     # Reference orbit
-    prob0 = WeberProblem(wb.sys, (0.0, period * 1.2), q0, p0;
+    prob0 = HamiltonianProblem(wb.sys, (0.0, period * 1.2), q0, p0;
                          masses=masses, charges=charges, c=c, dt=dt)
     sol0 = solve(prob0, SymmetricProjectionIntegrator())
 
@@ -192,7 +192,7 @@ function estimate_stability(charges, masses, c, q0, p0, E, period;
         end
     end
 
-    prob1 = WeberProblem(wb.sys, (0.0, period * 1.2), q0, p_pert;
+    prob1 = HamiltonianProblem(wb.sys, (0.0, period * 1.2), q0, p_pert;
                          masses=masses, charges=charges, c=c, dt=dt)
     sol1 = solve(prob1, SymmetricProjectionIntegrator())
 

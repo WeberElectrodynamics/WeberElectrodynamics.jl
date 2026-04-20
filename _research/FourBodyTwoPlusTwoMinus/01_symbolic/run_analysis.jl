@@ -5,7 +5,7 @@ using Random
 
 const OUTDIR = @__DIR__
 
-sys = WeberSystem(4, 2)
+sys = HamiltonianSystem(4, 2)
 H = sys.hamiltonian_symbolic
 q = sys.q_symbols
 p = sys.p_symbols

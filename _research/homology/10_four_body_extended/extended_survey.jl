@@ -16,7 +16,7 @@ const SYSTEMS = Dict{Tuple{Int,Int},Any}()
 function get_system(n, d)
     key = (n, d)
     haskey(SYSTEMS, key) && return SYSTEMS[key]
-    sys = WeberSystem(n, d)
+    sys = HamiltonianSystem(n, d)
     SYSTEMS[key] = sys
     return sys
 end
@@ -24,7 +24,7 @@ end
 function run_4body(q0, p0, masses, charges; tmax=50.0, dt=1e-3, c=1.0, dims=2, bounce_r=0.0)
     local sys = get_system(4, dims)
     local reg = RegularizationOptions(collision_bounce_radius=bounce_r)
-    local prob = WeberProblem(sys, (0.0, tmax), q0, p0;
+    local prob = HamiltonianProblem(sys, (0.0, tmax), q0, p0;
         masses=masses, charges=charges, c=c, dt=dt, regularization=reg)
     local sol = solve(prob, SymmetricProjectionIntegrator())
     return sol

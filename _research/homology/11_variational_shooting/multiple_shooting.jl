@@ -30,12 +30,12 @@ include(joinpath(@__DIR__, "..", "04_cz_index", "cz_index.jl"))
 # ============================================================================
 
 """
-Build a WeberSystem once per (n_particles, dims) pair and cache it.
+Build a HamiltonianSystem once per (n_particles, dims) pair and cache it.
 """
-const SYS_CACHE = Dict{Tuple{Int,Int}, WeberSystem}()
+const SYS_CACHE = Dict{Tuple{Int,Int}, HamiltonianSystem}()
 function get_system(n::Int, d::Int)
     get!(SYS_CACHE, (n, d)) do
-        WeberSystem(n, d)
+        HamiltonianSystem(n, d)
     end
 end
 
@@ -53,7 +53,7 @@ function flow(q0::Vector{Float64}, p0::Vector{Float64}, T::Float64;
     sys = get_system(n_particles, dims)
     nsteps = max(10, round(Int, T / dt))
     dt_use = T / nsteps
-    prob = WeberProblem(sys, (0.0, T), q0, p0;
+    prob = HamiltonianProblem(sys, (0.0, T), q0, p0;
         masses=masses, charges=charges, c=c, dt=dt_use)
     sol = solve(prob, SymmetricProjectionIntegrator())
     if sol.retcode != :Success
@@ -75,7 +75,7 @@ function flow_with_energy(q0::Vector{Float64}, p0::Vector{Float64}, T::Float64;
     sys = get_system(n_particles, dims)
     nsteps = max(10, round(Int, T / dt))
     dt_use = T / nsteps
-    prob = WeberProblem(sys, (0.0, T), q0, p0;
+    prob = HamiltonianProblem(sys, (0.0, T), q0, p0;
         masses=masses, charges=charges, c=c, dt=dt_use)
     sol = solve(prob, SymmetricProjectionIntegrator())
     if sol.retcode != :Success

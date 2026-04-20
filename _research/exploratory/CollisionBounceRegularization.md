@@ -29,7 +29,7 @@ When pair separation r < bounce_radius, reflect the relative coordinate through 
 
 ### Implementation
 - `collision_bounce_radius` field on `RegularizationOptions` (types.jl); pass via
-  `WeberProblem(...; regularization=RegularizationOptions(collision_bounce_radius=r))` (default 0.0 = disabled)
+  `HamiltonianProblem(...; regularization=RegularizationOptions(collision_bounce_radius=r))` (default 0.0 = disabled)
 - `_apply_collision_bounces!` called at START of each `step!` in solve.jl
 - Works for any dimension via `_current_pair_r` and `_reflect_pair!` helpers
 - Energy is exactly preserved by the reflection (only positions change, not momenta)

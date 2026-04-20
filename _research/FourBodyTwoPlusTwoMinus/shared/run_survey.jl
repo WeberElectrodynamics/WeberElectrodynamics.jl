@@ -1,5 +1,5 @@
 """
-Unified runner for 4-body 2+/2− Weber surveys. Builds a WeberProblem from
+Unified runner for 4-body 2+/2− Weber surveys. Builds a HamiltonianProblem from
 IC arrays, solves, and returns solution + basic statistics.
 
 Usage (from any agent subdir):
@@ -17,7 +17,7 @@ const _SYSTEMS = Dict{Tuple{Int,Int},Any}()
 function _system(n::Int, d::Int)
     key = (n, d)
     haskey(_SYSTEMS, key) && return _SYSTEMS[key]
-    sys = WeberSystem(n, d)
+    sys = HamiltonianSystem(n, d)
     _SYSTEMS[key] = sys
     return sys
 end
@@ -44,7 +44,7 @@ function run(
     sys = _system(n, dims)
     reg = RegularizationOptions(collision_bounce_radius = bounce_r)
     zol = ZollnerOptions(enabled = zollner_enabled, a = zollner_a)
-    prob = WeberProblem(
+    prob = HamiltonianProblem(
         sys,
         (0.0, tmax),
         q0,
