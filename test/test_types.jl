@@ -17,11 +17,11 @@
         @test_throws AssertionError SymmetricProjectionIntegrator(relaxation = 1.5)
     end
 
-    @testset "WeberSystem" begin
+    @testset "HamiltonianSystem" begin
         # Basic construction (now purely symbolic)
-        system = WeberSystem(2, 2)
+        system = HamiltonianSystem(2, 2)
 
-        @test system isa WeberSystem
+        @test system isa HamiltonianSystem
         @test system.n_particles == 2
         @test system.dims == 2
         @test system.degrees_of_freedom == 4
@@ -41,37 +41,37 @@
         @test length(system.p_symbols) == 4  # px1, py1, px2, py2
     end
 
-    @testset "WeberSystem validation" begin
+    @testset "HamiltonianSystem validation" begin
         # Valid cases
-        @test WeberSystem(1, 1) isa WeberSystem
-        @test WeberSystem(3, 3) isa WeberSystem
+        @test HamiltonianSystem(1, 1) isa HamiltonianSystem
+        @test HamiltonianSystem(3, 3) isa HamiltonianSystem
 
         # Invalid: dims must be 1, 2, or 3
-        @test_throws AssertionError WeberSystem(2, 0)
-        @test_throws AssertionError WeberSystem(2, 4)
+        @test_throws AssertionError HamiltonianSystem(2, 0)
+        @test_throws AssertionError HamiltonianSystem(2, 4)
     end
 
-    @testset "WeberSystem different configurations" begin
+    @testset "HamiltonianSystem different configurations" begin
         # 1D, 1 particle (minimal)
-        sys1 = WeberSystem(1, 1)
+        sys1 = HamiltonianSystem(1, 1)
         @test sys1.degrees_of_freedom == 1
 
         # 3D, 3 particles
-        sys2 = WeberSystem(3, 3)
+        sys2 = HamiltonianSystem(3, 3)
         @test sys2.degrees_of_freedom == 9
         @test length(sys2.dq_dt_symbolic) == 9
         @test length(sys2.dp_dt_symbolic) == 9
 
         # 2D, 2 particles (common case)
-        sys3 = WeberSystem(2, 2)
+        sys3 = HamiltonianSystem(2, 2)
         @test sys3.degrees_of_freedom == 4
     end
 
-    @testset "WeberProblem" begin
-        system = WeberSystem(2, 2)
+    @testset "HamiltonianProblem" begin
+        system = HamiltonianSystem(2, 2)
 
         # Valid construction
-        prob = WeberProblem(
+        prob = HamiltonianProblem(
             system,
             (0.0, 1.0),
             [1.0, 0.0, -1.0, 0.0],
@@ -101,7 +101,7 @@
         @test prob.regularization.max_substeps == 512
 
         # Custom convergence_tolerance and maximum_iterations
-        prob2 = WeberProblem(
+        prob2 = HamiltonianProblem(
             system,
             (0.0, 1.0),
             [1.0, 0.0, -1.0, 0.0],
@@ -127,7 +127,7 @@
         @test prob2.regularization.max_substeps == 64
 
         # Validation errors
-        @test_throws AssertionError WeberProblem(
+        @test_throws AssertionError HamiltonianProblem(
             system,
             (1.0, 0.0),
             [1.0, 0.0, -1.0, 0.0],
@@ -137,7 +137,7 @@
             c = 4.0,
             dt = 0.01,
         )  # tspan reversed
-        @test_throws AssertionError WeberProblem(
+        @test_throws AssertionError HamiltonianProblem(
             system,
             (0.0, 1.0),
             [1.0, 0.0, -1.0, 0.0],
@@ -147,7 +147,7 @@
             c = 4.0,
             dt = -0.01,
         )  # negative dt
-        @test_throws AssertionError WeberProblem(
+        @test_throws AssertionError HamiltonianProblem(
             system,
             (0.0, 1.0),
             [1.0, 2.0],
@@ -157,7 +157,7 @@
             c = 4.0,
             dt = 0.01,
         )  # q length mismatch
-        @test_throws AssertionError WeberProblem(
+        @test_throws AssertionError HamiltonianProblem(
             system,
             (0.0, 1.0),
             [1.0, 0.0, -1.0, 0.0],
@@ -167,7 +167,7 @@
             c = 4.0,
             dt = 0.01,
         )  # p length mismatch
-        @test_throws AssertionError WeberProblem(
+        @test_throws AssertionError HamiltonianProblem(
             system,
             (0.0, 1.0),
             [1.0, 0.0, -1.0, 0.0],
@@ -177,7 +177,7 @@
             c = 4.0,
             dt = 0.01,
         )
-        @test_throws AssertionError WeberProblem(
+        @test_throws AssertionError HamiltonianProblem(
             system,
             (0.0, 1.0),
             [1.0, 0.0, -1.0, 0.0],
@@ -187,7 +187,7 @@
             c = 4.0,
             dt = 0.01,
         )
-        @test_throws AssertionError WeberProblem(
+        @test_throws AssertionError HamiltonianProblem(
             system,
             (0.0, 1.0),
             [1.0, 0.0, -1.0, 0.0],
@@ -199,11 +199,11 @@
         )
     end
 
-    @testset "WeberSolution" begin
+    @testset "HamiltonianSolution" begin
         prob = make_weber_problem(tspan = (0.0, 0.1))
         sol = solve(prob)
 
-        @test sol isa WeberSolution
+        @test sol isa HamiltonianSolution
         @test sol.retcode == :Success
         @test length(sol) > 1
         @test length(sol.t) == length(sol.q) == length(sol.p)
@@ -232,20 +232,20 @@
         # show methods
         io = IOBuffer()
         show(io, sol)
-        @test occursin("WeberSolution", String(take!(io)))
+        @test occursin("HamiltonianSolution", String(take!(io)))
 
         io = IOBuffer()
         show(io, MIME"text/plain"(), sol)
         str = String(take!(io))
-        @test occursin("WeberSolution", str)
+        @test occursin("HamiltonianSolution", str)
         @test occursin("retcode", str)
     end
 
-    @testset "WeberIntegrator" begin
+    @testset "HamiltonianIntegrator" begin
         prob = make_weber_problem()
         integrator = init(prob)
 
-        @test integrator isa WeberIntegrator
+        @test integrator isa HamiltonianIntegrator
         @test integrator.t == prob.tspan[1]
         @test integrator.q == prob.q_initial
         @test integrator.p == prob.p_initial
@@ -254,17 +254,17 @@
         # show method
         io = IOBuffer()
         show(io, integrator)
-        @test occursin("WeberIntegrator", String(take!(io)))
+        @test occursin("HamiltonianIntegrator", String(take!(io)))
     end
 
-    @testset "WeberSystem display" begin
-        system = WeberSystem(2, 2)
+    @testset "HamiltonianSystem display" begin
+        system = HamiltonianSystem(2, 2)
 
         # show(io, system)
         io = IOBuffer()
         show(io, system)
         str = String(take!(io))
-        @test occursin("WeberSystem", str)
+        @test occursin("HamiltonianSystem", str)
         @test occursin("2 particles", str)
         @test occursin("2D", str)
         @test occursin("4 DOF", str)
@@ -273,7 +273,7 @@
         io = IOBuffer()
         show(io, MIME"text/plain"(), system)
         str = String(take!(io))
-        @test occursin("WeberSystem", str)
+        @test occursin("HamiltonianSystem", str)
         @test occursin("Particles: 2", str)
         @test occursin("Dimensions: 2", str)
     end

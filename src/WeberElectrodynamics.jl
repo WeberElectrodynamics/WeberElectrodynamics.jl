@@ -8,16 +8,16 @@ export @sprintf, norm, dot
 # =============================================================================
 # Weber System (n-body Hamiltonian)
 # =============================================================================
-include("weber_system.jl")
-export WeberSystem
+include("hamiltonian_system.jl")
+export HamiltonianSystem
 
 # =============================================================================
 # Core Types (Problem, Solution, Integrator)
 # =============================================================================
 include("types.jl")
-export WeberProblem
-export WeberSolution
-export WeberIntegrator
+export HamiltonianProblem
+export HamiltonianSolution
+export HamiltonianIntegrator
 export RegularizationOptions
 export RegularizationDiagnostics
 export ZollnerOptions
@@ -212,9 +212,9 @@ export plot_zollner_energy, plot_zollner_force_residual, plot_weber_vs_zollner, 
 Launch an interactive animated dashboard for a Weber simulation.
 
 Two modes:
-- `animate_weber(prob::WeberProblem; ...)` — **streaming**: runs the integrator
+- `animate_weber(prob::HamiltonianProblem; ...)` — **streaming**: runs the integrator
   live and displays data in real time. Requires a windowed backend (GLMakie or WGLMakie).
-- `animate_weber(sol::WeberSolution; ...)` — **replay**: replays a completed solution.
+- `animate_weber(sol::HamiltonianSolution; ...)` — **replay**: replays a completed solution.
 
 The dashboard shows particle trajectories, energy, momentum, and phase-space panels.
 Requires at least 2D (`dims ≥ 2`).

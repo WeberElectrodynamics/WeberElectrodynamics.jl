@@ -17,7 +17,7 @@ solve!
 ## Types
 
 ```@docs
-WeberIntegrator
-WeberSolution
+HamiltonianIntegrator
+HamiltonianSolution
 SymmetricProjectionIntegrator
 ```

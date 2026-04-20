@@ -6,13 +6,13 @@
 using WeberElectrodynamics
 
 # Build the system (symbolic differentiation happens here — takes a few seconds)
-sys = WeberSystem(2, 2)   # 2 particles, 2D
+sys = HamiltonianSystem(2, 2)   # 2 particles, 2D
 
 # Initial conditions: particles at (±1, 0) with transverse momenta
 q0 = [1.0, 0.0, -1.0, 0.0]
 p0 = [0.0, 0.5,  0.0, -0.5]
 
-prob = WeberProblem(
+prob = HamiltonianProblem(
     sys, (0.0, 10.0), q0, p0;
     masses  = [1.0, 1.0],
     charges = [1.0, -1.0],
@@ -22,7 +22,7 @@ prob = WeberProblem(
 
 sol = solve(prob, SymmetricProjectionIntegrator())
 println(sol)
-# WeberSolution with 1001 timesteps (retcode: Success)
+# HamiltonianSolution with 1001 timesteps (retcode: Success)
 ```
 
 ## Setting up initial conditions
@@ -171,7 +171,7 @@ extensions can be enabled explicitly:
 
 - **[Regularization](regularization.md)** — Levi-Civita / KS handling for
   close encounters. Pass `regularization = RegularizationOptions(enabled = true)`
-  to `WeberProblem`.
+  to `HamiltonianProblem`.
 - **[Zöllner Extension](zollner.md)** — research feature implementing Zöllner's
   electrogravitational mismatch hypothesis. Pass
-  `zollner = ZollnerOptions(enabled = true, a = <value>)` to `WeberProblem`.
+  `zollner = ZollnerOptions(enabled = true, a = <value>)` to `HamiltonianProblem`.

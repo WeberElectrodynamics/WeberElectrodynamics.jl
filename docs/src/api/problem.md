@@ -3,7 +3,7 @@
 ## Problem definition
 
 ```@docs
-WeberProblem
+HamiltonianProblem
 ```
 
 ## Optional features

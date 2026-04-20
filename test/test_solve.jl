@@ -142,11 +142,11 @@
     end
 
     @testset "Custom tolerance" begin
-        system = WeberSystem(2, 2)
+        system = HamiltonianSystem(2, 2)
         q0 = [1.0, 0.0, -1.0, 0.0]
         p0 = [0.0, 0.05, 0.0, -0.05]
 
-        prob_tight = WeberProblem(
+        prob_tight = HamiltonianProblem(
             system,
             (0.0, 0.1),
             q0,

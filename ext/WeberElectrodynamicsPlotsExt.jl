@@ -955,8 +955,8 @@ Both solutions must have the same number of particles and dimensions.
 Solid lines = `sol1`, dashed lines = `sol2`.
 """
 function WeberElectrodynamics.plot_weber_vs_zollner(
-    sol1::WeberSolution,
-    sol2::WeberSolution;
+    sol1::HamiltonianSolution,
+    sol2::HamiltonianSolution;
     labels::Vector{String} = ["Weber", "Zöllner"],
 )::Plots.Plot
     n1 = sol1.prob.system.n_particles

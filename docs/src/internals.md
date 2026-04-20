@@ -9,8 +9,8 @@ Reference for contributors, developers, and AI agents working with WeberElectrod
 ### Source files (`src/`)
 
 - `WeberElectrodynamics.jl` — Module definition, exports, extension stubs (`plot_*`, `animate_weber`)
-- `weber_system.jl` — `WeberSystem`: uses Symbolics.jl to build the Weber Hamiltonian symbolically, then compiles `dq_dt`, `dp_dt`, and `hamiltonian` functions via `build_function`
-- `types.jl` — All core structs: `WeberProblem`, `WeberSolution`, `WeberIntegrator`, `SymmetricProjectionIntegrator`, `RegularizationOptions`, `ZollnerOptions`, buffer/diagnostics types
+- `hamiltonian_system.jl` — `HamiltonianSystem`: uses Symbolics.jl to build the Weber Hamiltonian symbolically, then compiles `dq_dt`, `dp_dt`, and `hamiltonian` functions via `build_function`
+- `types.jl` — All core structs: `HamiltonianProblem`, `HamiltonianSolution`, `HamiltonianIntegrator`, `SymmetricProjectionIntegrator`, `RegularizationOptions`, `ZollnerOptions`, buffer/diagnostics types
 - `regularization.jl` — Internal helpers: pair distance detection, adjacency graph (BFS), Levi-Civita 2D projection, KS quaternion helpers
 - `solve.jl` — Main integrator: Strang splitting flow, symmetric projection via fixed-point iteration on Lagrange multipliers, regularization dispatch, collision bounce, CommonSolve interface (`init`/`step!`/`solve!`/`solve`)
 - `statistics/` — `energy.jl`, `forces.jl`, `momentum.jl`, `trajectories.jl` — post-solution analysis producing typed data structs
@@ -24,7 +24,7 @@ Reference for contributors, developers, and AI agents working with WeberElectrod
 
 - `test_utils.jl` — Problem builders (`make_weber_problem()`, `make_coulomb_like_problem()`) and reference energy functions; **must be included before other test files**
 - `runtests.jl` — Entry point, includes all test files in order
-- Test files: `test_types.jl`, `test_weber_system.jl`, `test_solve.jl`, `test_statistics.jl`, `test_integration.jl`, `test_physics.jl`, `test_regularization.jl`, `test_zollner.jl`
+- Test files: `test_types.jl`, `test_hamiltonian_system.jl`, `test_solve.jl`, `test_statistics.jl`, `test_integration.jl`, `test_physics.jl`, `test_regularization.jl`, `test_zollner.jl`
 
 ### Examples (`examples/`)
 
@@ -75,7 +75,7 @@ Neither backend regularizes Weber's velocity-dependent force — only the Coulom
 
 ### Collision bounce
 
-- Enabled via `RegularizationOptions(collision_bounce_radius = <r>)` passed to `WeberProblem` (default 0.0 = off)
+- Enabled via `RegularizationOptions(collision_bounce_radius = <r>)` passed to `HamiltonianProblem` (default 0.0 = off)
 - Only valid for ℓ=0 (head-on) collisions
 - Works best with the **unregularized** integrator (symplectic error stays bounded)
 
@@ -83,7 +83,7 @@ Neither backend regularizes Weber's velocity-dependent force — only the Coulom
 
 - `ZollnerOptions(enabled, a)` — mismatch parameter `a`
 - κ_ij = 1+a for unlike-sign charge pairs, 1.0 for like-sign
-- Stored in `WeberProblem.kappas` and appended to the params vector automatically
+- Stored in `HamiltonianProblem.kappas` and appended to the params vector automatically
 
 ### Makie animation extension
 
@@ -93,7 +93,7 @@ Neither backend regularizes Weber's velocity-dependent force — only the Coulom
 
 ### Immutable options pattern
 
-`RegularizationOptions`, `ZollnerOptions` are immutable structs created once per problem. Pass configuration through `WeberProblem` keyword arguments rather than mutating options.
+`RegularizationOptions`, `ZollnerOptions` are immutable structs created once per problem. Pass configuration through `HamiltonianProblem` keyword arguments rather than mutating options.
 
 ---
 

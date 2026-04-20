@@ -109,7 +109,7 @@ Both the vector form and the radial form of the Weber force are evaluated, toget
 with phase-space data (r, ṙ, θ, L).
 
 # Arguments
-- `sol::WeberSolution`: Completed simulation.
+- `sol::HamiltonianSolution`: Completed simulation.
 - `pair::Tuple{Int,Int}`: Particle pair indices (order does not matter; i ≠ j).
 - `n_particles::Int`, `dims::Int`: System geometry.
 - `masses`, `charges::Vector{Float64}`: Physical parameters.
@@ -122,7 +122,7 @@ with phase-space data (r, ṙ, θ, L).
 - `PairForceData` with force vectors, decompositions, statistics, and phase-space data.
 """
 function compute_pair_force_timeseries(
-    sol::WeberSolution,
+    sol::HamiltonianSolution,
     pair::Tuple{Int,Int},
     n_particles::Int,
     dims::Int,

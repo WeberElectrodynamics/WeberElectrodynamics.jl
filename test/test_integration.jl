@@ -6,7 +6,7 @@
         q2_charge = -sqrt(0.1)  # q1*q2 = -0.1 (attractive)
         c = 4.0
 
-        system = WeberSystem(2, 2)
+        system = HamiltonianSystem(2, 2)
 
         r0 = 2.0
         M = m1 + m2
@@ -15,7 +15,7 @@
         q0 = [-m2 / M * r0, 0.0, m1 / M * r0, 0.0]
         p0 = [0.0, m1 * (-m2 / M * v_circ * 0.9), 0.0, m2 * (m1 / M * v_circ * 0.9)]
 
-        prob = WeberProblem(system, (0.0, 1.0), q0, p0;
+        prob = HamiltonianProblem(system, (0.0, 1.0), q0, p0;
             masses = [m1, m2], charges = [q1_charge, q2_charge], c = c, dt = 0.001)
 
         # Solve
@@ -83,7 +83,7 @@
         c = 4.0
 
         for scale in [0.5, 1.0, 2.0]
-            system = WeberSystem(2, 2)
+            system = HamiltonianSystem(2, 2)
             r0 = 2.0 * scale
             M = m1 + m2
             k = q1_charge * q2_charge
@@ -91,7 +91,7 @@
             q0 = [-m2 / M * r0, 0.0, m1 / M * r0, 0.0]
             p0 = [0.0, m1 * (-m2 / M * v_circ * 0.9), 0.0, m2 * (m1 / M * v_circ * 0.9)]
 
-            prob = WeberProblem(system, (0.0, 1.0), q0, p0;
+            prob = HamiltonianProblem(system, (0.0, 1.0), q0, p0;
                 masses = [m1, m2], charges = [q1_charge, q2_charge], c = c, dt = 0.001)
             sol = solve(prob)
             @test sol.retcode == :Success

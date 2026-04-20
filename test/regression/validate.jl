@@ -60,7 +60,7 @@ function _rebuild_zollner_options(d::Dict{String,Any})
     ZollnerOptions(enabled = d["enabled"], a = d["a"])
 end
 
-# Rebuild the WeberProblem corresponding to a fixture.
+# Rebuild the HamiltonianProblem corresponding to a fixture.
 #
 # This function is the single point that must be updated each time the public
 # problem-building API changes (e.g. Phase 1 of the refactor will rewrite it
@@ -68,14 +68,14 @@ end
 function rebuild_problem(setup::Dict{String,Any})
     n_particles = setup["n_particles"]::Int
     dims = setup["dims"]::Int
-    system = WeberSystem(n_particles, dims)
+    system = HamiltonianSystem(n_particles, dims)
 
     reg = _rebuild_reg_options(setup["regularization"])
     zol = _rebuild_zollner_options(setup["zollner"])
 
     tspan = Tuple(setup["tspan"]::Vector{Float64})
 
-    return WeberProblem(
+    return HamiltonianProblem(
         system,
         tspan,
         setup["q_initial"]::Vector{Float64},

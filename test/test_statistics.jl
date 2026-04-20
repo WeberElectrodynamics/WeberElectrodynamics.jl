@@ -61,8 +61,8 @@ using WeberElectrodynamics: compute_total_kinetic_energy, compute_pair_weber_com
 
         @testset "1D system" begin
             # Create a 1D 2-body system for this test
-            sys1d = WeberSystem(2, 1)
-            prob1d = WeberProblem(
+            sys1d = HamiltonianSystem(2, 1)
+            prob1d = HamiltonianProblem(
                 sys1d,
                 (0.0, 0.5),
                 [1.0, -1.0],
@@ -123,7 +123,7 @@ using WeberElectrodynamics: compute_total_kinetic_energy, compute_pair_weber_com
         @testset "Hamiltonian validation" begin
             energy = compute_energy_timeseries(sol_weber)
 
-            # Our computed energy should match WeberSystem's compiled Hamiltonian
+            # Our computed energy should match HamiltonianSystem's compiled Hamiltonian
             @test all(energy.hamiltonian_validation_error .< 1e-12)
         end
 
@@ -155,8 +155,8 @@ using WeberElectrodynamics: compute_total_kinetic_energy, compute_pair_weber_com
 
         @testset "3-body system" begin
             # Create a 3-body system to test n_pairs = 3
-            sys3 = WeberSystem(3, 2)
-            prob3 = WeberProblem(
+            sys3 = HamiltonianSystem(3, 2)
+            prob3 = HamiltonianProblem(
                 sys3,
                 (0.0, 0.1),
                 [1.0, 0.0, -0.5, 0.866, -0.5, -0.866],  # Triangle
@@ -388,8 +388,8 @@ using WeberElectrodynamics: compute_total_kinetic_energy, compute_pair_weber_com
         end
 
         @testset "2D angular momentum magnitude is absolute value" begin
-            sys2d = WeberSystem(2, 2)
-            prob2d = WeberProblem(
+            sys2d = HamiltonianSystem(2, 2)
+            prob2d = HamiltonianProblem(
                 sys2d,
                 (0.0, 0.01),
                 [1.0, 0.0, -1.0, 0.0],
@@ -439,8 +439,8 @@ using WeberElectrodynamics: compute_total_kinetic_energy, compute_pair_weber_com
 
         @testset "1D system (no angular momentum)" begin
             # Create a 1D 2-body system
-            sys1d = WeberSystem(2, 1)
-            prob1d = WeberProblem(
+            sys1d = HamiltonianSystem(2, 1)
+            prob1d = HamiltonianProblem(
                 sys1d,
                 (0.0, 0.5),
                 [1.0, -1.0],
@@ -460,8 +460,8 @@ using WeberElectrodynamics: compute_total_kinetic_energy, compute_pair_weber_com
 
         @testset "3D system" begin
             # Create a 3D 2-body system
-            sys3d = WeberSystem(2, 3)
-            prob3d = WeberProblem(
+            sys3d = HamiltonianSystem(2, 3)
+            prob3d = HamiltonianProblem(
                 sys3d,
                 (0.0, 0.5),
                 [1.0, 0.0, 0.0, -1.0, 0.0, 0.0],

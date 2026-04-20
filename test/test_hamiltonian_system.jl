@@ -3,7 +3,7 @@ using WeberElectrodynamics: _pair_index
 @testset "Weber System" begin
     @testset "Weber Hamiltonian structure" begin
         # 2-body 2D Weber system
-        system = WeberSystem(2, 2)
+        system = HamiltonianSystem(2, 2)
 
         @test system.degrees_of_freedom == 4
         @test length(system.dq_dt_symbolic) == 4
@@ -20,7 +20,7 @@ using WeberElectrodynamics: _pair_index
         q1, q2 = 1.0, -1.0
         c = 1000.0  # Large c to make Weber ≈ Coulomb
 
-        system = WeberSystem(2, 2)
+        system = HamiltonianSystem(2, 2)
         # params = [m1, m2, q1, q2, c, κ₁₂]; κ=1 (Zöllner disabled)
         params = [m1, m2, q1, q2, c, 1.0]
 
@@ -51,7 +51,7 @@ using WeberElectrodynamics: _pair_index
 
     @testset "Different dimensions" begin
         # 1D system
-        sys1d = WeberSystem(2, 1)
+        sys1d = HamiltonianSystem(2, 1)
         @test sys1d.degrees_of_freedom == 2
         @test length(sys1d.dq_dt_symbolic) == 2
 
@@ -64,18 +64,18 @@ using WeberElectrodynamics: _pair_index
         @test all(isfinite.(out1))
 
         # 2D system
-        sys2d = WeberSystem(2, 2)
+        sys2d = HamiltonianSystem(2, 2)
         @test sys2d.degrees_of_freedom == 4
 
         # 3D system
-        sys3d = WeberSystem(2, 3)
+        sys3d = HamiltonianSystem(2, 3)
         @test sys3d.degrees_of_freedom == 6
         @test length(sys3d.dq_dt_symbolic) == 6
     end
 
     @testset "Multiple particles" begin
         # 3-body system
-        sys3body = WeberSystem(3, 2)
+        sys3body = HamiltonianSystem(3, 2)
         @test sys3body.degrees_of_freedom == 6
         @test sys3body.n_particles == 3
 
@@ -95,7 +95,7 @@ using WeberElectrodynamics: _pair_index
 
     @testset "Single particle system" begin
         # Single particle has no interactions, just kinetic energy
-        sys1 = WeberSystem(1, 2)
+        sys1 = HamiltonianSystem(1, 2)
         @test sys1.degrees_of_freedom == 2
 
         params1 = [2.0, 1.0, 1.0]  # m1, q1, c
@@ -122,7 +122,7 @@ using WeberElectrodynamics: _pair_index
         q1, q2 = 0.3, -0.3
         c = 4.0
 
-        system = WeberSystem(2, 2)
+        system = HamiltonianSystem(2, 2)
 
         # Test state
         q = [1.0, 0.0, -1.0, 0.0]
@@ -139,7 +139,7 @@ using WeberElectrodynamics: _pair_index
     end
 
     @testset "Symbolic parameters in Hamiltonian" begin
-        system = WeberSystem(2, 2)
+        system = HamiltonianSystem(2, 2)
         H_str = string(system.hamiltonian_symbolic)
 
         # Hamiltonian should contain symbolic parameters, not numerical values

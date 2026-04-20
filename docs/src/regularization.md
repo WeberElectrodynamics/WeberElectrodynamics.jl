@@ -21,7 +21,7 @@ apply to the conservative part of the force.
 ## Enabling regularization
 
 ```julia
-prob = WeberProblem(
+prob = HamiltonianProblem(
     sys, tspan, q0, p0;
     masses  = [1.0, 1.0],
     charges = [1.0, -1.0],
@@ -50,7 +50,7 @@ For 3D problems, `:lifted_pair` automatically falls back to `:adaptive_cartesian
 
 ```julia
 # Explicit 3D choice
-prob = WeberProblem(sys, tspan, q0, p0; ...
+prob = HamiltonianProblem(sys, tspan, q0, p0; ...
     regularization = RegularizationOptions(
         enabled = true,
         backend = :adaptive_cartesian,
@@ -72,7 +72,7 @@ r_off = r_off_factor × min_initial_separation   (default factor: 0.25)
 You can override them directly:
 
 ```julia
-prob = WeberProblem(sys, tspan, q0, p0; ...
+prob = HamiltonianProblem(sys, tspan, q0, p0; ...
     regularization = RegularizationOptions(
         enabled = true,
         r_on    = 0.05,
@@ -95,7 +95,7 @@ boundary can be applied before each macro-step. This avoids the non-regularizabl
 ℓ ≠ 0 singularity (where particles reach r = 0 at infinite speed).
 
 ```julia
-prob = WeberProblem(sys, tspan, q0, p0; ...
+prob = HamiltonianProblem(sys, tspan, q0, p0; ...
     regularization = RegularizationOptions(collision_bounce_radius = 0.02),  # reflect at r < 0.02
 )
 ```
@@ -105,7 +105,7 @@ unregularized symplectic integrator keeps energy bounded across the bounce).
 
 ## Diagnostics
 
-Every `WeberSolution` carries a `regularization::RegularizationDiagnostics`
+Every `HamiltonianSolution` carries a `regularization::RegularizationDiagnostics`
 field with step counts, backend used, minimum encounter distance, and more.
 
 ```julia

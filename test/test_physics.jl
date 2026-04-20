@@ -213,7 +213,7 @@
         q1, q2 = 1.0, -1.0
 
         # Single system, different params
-        sys = WeberSystem(2, 2)
+        sys = HamiltonianSystem(2, 2)
 
         # Test at specific point
         q = [1.0, 0.0, -1.0, 0.0]

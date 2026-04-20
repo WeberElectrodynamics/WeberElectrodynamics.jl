@@ -1,7 +1,7 @@
 """
     TrajectoryData
 
-Per-particle position trajectories extracted from a `WeberSolution`.
+Per-particle position trajectories extracted from a `HamiltonianSolution`.
 
 # Fields
 - `trajectories::Vector{Matrix{Float64}}`: One `(n_points, dims)` matrix per
@@ -24,10 +24,10 @@ end
 """
     compute_trajectory_data(sol, n_particles, dims; stride=1) -> TrajectoryData
 
-Extract per-particle position trajectories from a `WeberSolution`.
+Extract per-particle position trajectories from a `HamiltonianSolution`.
 
 # Arguments
-- `sol::WeberSolution`: Completed simulation result.
+- `sol::HamiltonianSolution`: Completed simulation result.
 - `n_particles::Int`: Number of particles encoded in `sol`.
 - `dims::Int`: Spatial dimension (must match `sol.prob.system.dims`).
 
@@ -38,7 +38,7 @@ Extract per-particle position trajectories from a `WeberSolution`.
 - `TrajectoryData` with one `(n_points, dims)` trajectory matrix per particle.
 """
 function compute_trajectory_data(
-    sol::WeberSolution,
+    sol::HamiltonianSolution,
     n_particles::Int,
     dims::Int;
     stride::Int = 1,
