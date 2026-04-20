@@ -22,6 +22,7 @@ WeberElectrodynamicsPlotsExt = ["Plots", "LaTeXStrings"]
 [compat]
 Aqua = "0.8"
 CommonSolve = "0.2"
+JLD2 = "0.4, 0.5"
 Latexify = "0.16"
 LaTeXStrings = "1"
 LinearAlgebra = "1"
@@ -35,8 +36,9 @@ julia = "1.9"
 
 [extras]
 Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
+JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Aqua", "Random", "Test"]
+test = ["Aqua", "JLD2", "Random", "Test"]
