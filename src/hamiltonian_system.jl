@@ -193,7 +193,25 @@ function HamiltonianSystem(n_particles::Int, dims::Int)
 
     param_symbols = vcat(m_vars, charge_vars, [c_var], kappa_vars)
 
-    H = weber_term(
+    # Decompose into additive terms:
+    #   H_weber  = pure Weber (κ ≡ 1) — kinetic + Σ q_i q_j / r · (1 − ṙ²/2c²)
+    #   H_zollner = (κ − 1) · U_weber correction, identically zero when κ ≡ 1
+    # Numerically H_weber + H_zollner ≡ weber_term(…; kappas = κ) up to
+    # Symbolics rewriting, so the compiled EOMs are unchanged, but queries
+    # like `has_term(sys, :zollner)` and the per-term `pair_decomposition`
+    # hooks now work by default without manual composition.
+    ones_kappas = [one(eltype(q_vars)) for _ in kappa_vars]
+    weber_H = weber_term(
+        q_vars,
+        p_vars;
+        masses = m_vars,
+        charges = charge_vars,
+        c = c_var,
+        kappas = ones_kappas,
+        n_particles = n_particles,
+        dims = dims,
+    )
+    zollner_H = zollner_term(
         q_vars,
         p_vars;
         masses = m_vars,
@@ -203,6 +221,7 @@ function HamiltonianSystem(n_particles::Int, dims::Int)
         n_particles = n_particles,
         dims = dims,
     )
+    H = weber_H + zollner_H
 
     return HamiltonianSystem(
         H,
@@ -212,7 +231,7 @@ function HamiltonianSystem(n_particles::Int, dims::Int)
         t = t_var,
         n_particles = n_particles,
         dims = dims,
-        terms = [NamedTerm(:weber, H)],
+        terms = [NamedTerm(:weber, weber_H), NamedTerm(:zollner, zollner_H)],
     )
 end
 
