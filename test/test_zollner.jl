@@ -23,8 +23,8 @@
     end
 
     @testset "Kappa computation — unlike charges" begin
-        sys = WeberSystem(2, 2)
-        prob = WeberProblem(
+        sys = HamiltonianSystem(2, 2)
+        prob = HamiltonianProblem(
             sys, (0.0, 1.0),
             [1.0, 0.0, -1.0, 0.0], [0.0, 0.0, 0.0, 0.0];
             masses = [1.0, 1.0], charges = [1.0, -1.0], c = 10.0, dt = 0.01,
@@ -37,8 +37,8 @@
     end
 
     @testset "Kappa computation — like charges" begin
-        sys = WeberSystem(2, 2)
-        prob = WeberProblem(
+        sys = HamiltonianSystem(2, 2)
+        prob = HamiltonianProblem(
             sys, (0.0, 1.0),
             [1.0, 0.0, -1.0, 0.0], [0.0, 0.0, 0.0, 0.0];
             masses = [1.0, 1.0], charges = [1.0, 1.0], c = 10.0, dt = 0.01,
@@ -53,9 +53,9 @@
         # Pair (1,2): unlike → κ = 1+a
         # Pair (1,3): like   → κ = 1
         # Pair (2,3): unlike → κ = 1+a
-        sys = WeberSystem(3, 2)
+        sys = HamiltonianSystem(3, 2)
         a = 0.05
-        prob = WeberProblem(
+        prob = HamiltonianProblem(
             sys, (0.0, 1.0),
             [1.0, 0.0, 0.0, 0.0, -1.0, 0.0], zeros(6);
             masses = [1.0, 1.0, 1.0], charges = [1.0, -1.0, 1.0],
@@ -70,12 +70,12 @@
     @testset "Params vector length" begin
         # For N particles: params length = 2N + 1 + N*(N-1)/2
         for N in [2, 3, 4]
-            sys = WeberSystem(N, 2)
+            sys = HamiltonianSystem(N, 2)
             q0 = zeros(N * 2)
             q0[1] = 1.0
             p0 = zeros(N * 2)
             charges = [(-1)^i * 1.0 for i in 1:N]
-            prob = WeberProblem(
+            prob = HamiltonianProblem(
                 sys, (0.0, 1.0), q0, p0;
                 masses = ones(N), charges = charges, c = 10.0, dt = 0.01,
             )
@@ -90,8 +90,8 @@
 
     @testset "Zöllner disabled ≡ κ=1 physics" begin
         # A disabled Zöllner with any a should give κ=1 for all pairs
-        sys = WeberSystem(2, 2)
-        prob_off = WeberProblem(
+        sys = HamiltonianSystem(2, 2)
+        prob_off = HamiltonianProblem(
             sys, (0.0, 1.0),
             [1.0, 0.0, -1.0, 0.0], [0.0, 0.1, 0.0, -0.1];
             masses = [1.0, 1.0], charges = [1.0, -1.0], c = 10.0, dt = 0.01,
@@ -104,8 +104,8 @@
 
     @testset "Integration runs with Zöllner enabled" begin
         # Smoke test: ensure the solver accepts and runs a Zöllner-modified problem
-        sys = WeberSystem(2, 2)
-        prob = WeberProblem(
+        sys = HamiltonianSystem(2, 2)
+        prob = HamiltonianProblem(
             sys, (0.0, 0.1),
             [1.0, 0.0, -1.0, 0.0], [0.0, 0.3, 0.0, -0.3];
             masses = [1.0, 1.0], charges = [1.0, -1.0], c = 10.0, dt = 0.005,
@@ -124,10 +124,10 @@
     end
 
     @testset "Zöllner energy statistics" begin
-        sys = WeberSystem(2, 2)
+        sys = HamiltonianSystem(2, 2)
 
         # Disabled: Zöllner residual should be zero everywhere
-        prob_off = WeberProblem(
+        prob_off = HamiltonianProblem(
             sys, (0.0, 0.1),
             [1.0, 0.0, -1.0, 0.0], [0.0, 0.3, 0.0, -0.3];
             masses = [1.0, 1.0], charges = [1.0, -1.0], c = 10.0, dt = 0.005,
@@ -140,7 +140,7 @@
         @test all(x -> x ≈ 0.0, pair_off.zollner_extra_potential)
 
         # Enabled with unlike charges: Zöllner residual should be nonzero
-        prob_on = WeberProblem(
+        prob_on = HamiltonianProblem(
             sys, (0.0, 0.1),
             [1.0, 0.0, -1.0, 0.0], [0.0, 0.3, 0.0, -0.3];
             masses = [1.0, 1.0], charges = [1.0, -1.0], c = 10.0, dt = 0.005,
@@ -159,8 +159,8 @@
         # Both features can be enabled simultaneously without errors.
         # Orbit is stable (no close encounter) so regularization stays idle,
         # but the infrastructure must accept both flags at once.
-        sys = WeberSystem(2, 2)
-        prob = WeberProblem(
+        sys = HamiltonianSystem(2, 2)
+        prob = HamiltonianProblem(
             sys, (0.0, 0.5),
             [1.0, 0.0, -1.0, 0.0], [0.0, 0.5, 0.0, -0.5];
             masses = [1.0, 1.0], charges = [1.0, -1.0], c = 10.0, dt = 0.005,
@@ -186,10 +186,10 @@
         M = m1 + m2
         v_circ = sqrt(abs(q1 * q2) * M / (m1 * m2 * r0))
 
-        sys = WeberSystem(2, 2)
+        sys = HamiltonianSystem(2, 2)
         q0 = [-m2 / M * r0, 0.0, m1 / M * r0, 0.0]
         p0 = [0.0, m1 * (-m2 / M) * v_circ, 0.0, m2 * (m1 / M) * v_circ]
-        prob = WeberProblem(
+        prob = HamiltonianProblem(
             sys, (0.0, 1.0), q0, p0;
             masses = [m1, m2], charges = [q1, q2], c = c, dt = 0.001,
             zollner = ZollnerOptions(enabled = true, a = a),

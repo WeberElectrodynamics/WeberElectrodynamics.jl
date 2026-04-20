@@ -2,7 +2,7 @@ module WeberElectrodynamicsMakieExt
 
 using WeberElectrodynamics
 using WeberElectrodynamics: @sprintf, norm, dot,
-    WeberProblem, WeberIntegrator, WeberSystem, WeberSolution,
+    HamiltonianProblem, HamiltonianIntegrator, HamiltonianSystem, HamiltonianSolution,
     SymmetricProjectionIntegrator, WeberAlgorithm,
     _pair_index, compute_total_kinetic_energy, compute_pair_weber_components
 using CommonSolve: init, step!
@@ -15,12 +15,12 @@ using Makie
 abstract type AnimationDataSource end
 
 mutable struct StreamingSource <: AnimationDataSource
-    integrator::WeberIntegrator
+    integrator::HamiltonianIntegrator
     total_steps::Int
 end
 
 mutable struct ReplaySource <: AnimationDataSource
-    sol::WeberSolution
+    sol::HamiltonianSolution
     stride::Int
     cursor::Int
 end
@@ -51,7 +51,7 @@ mutable struct RollingBuffer
     particle_p::Dict{Int,Matrix{Float64}}
 end
 
-function RollingBuffer(capacity::Int, prob::WeberProblem)
+function RollingBuffer(capacity::Int, prob::HamiltonianProblem)
     n = prob.system.n_particles
     dims = prob.system.dims
 
@@ -87,7 +87,7 @@ end
 # Per-Step Computation
 # =============================================================================
 
-function _compute_step_energy(q::AbstractVector{Float64}, p::AbstractVector{Float64}, prob::WeberProblem)
+function _compute_step_energy(q::AbstractVector{Float64}, p::AbstractVector{Float64}, prob::HamiltonianProblem)
     masses = prob.masses
     charges = prob.charges
     c = prob.c
@@ -133,7 +133,7 @@ end
 # =============================================================================
 
 function push_step!(buf::RollingBuffer, t::Float64, q::AbstractVector{Float64},
-                    p::AbstractVector{Float64}, prob::WeberProblem)
+                    p::AbstractVector{Float64}, prob::HamiltonianProblem)
     idx = buf.cursor
     dims = prob.system.dims
     n = prob.system.n_particles
@@ -220,7 +220,7 @@ end
 
 mutable struct AnimationState
     source::AnimationDataSource
-    prob::WeberProblem
+    prob::HamiltonianProblem
     buffer::RollingBuffer
     is_playing::Observable{Bool}
     timer::Union{Nothing,Timer}
@@ -237,7 +237,7 @@ mutable struct AnimationState
 
     # For streaming reset
     alg::SymmetricProjectionIntegrator
-    extended_prob::Union{Nothing,WeberProblem}
+    extended_prob::Union{Nothing,HamiltonianProblem}
 
     # Axes for limit reset (mixed Axis / Axis3)
     axes::Vector{Any}
@@ -287,7 +287,7 @@ struct PlotObservables
     step_text::Observable{String}
 end
 
-function _create_observables(prob::WeberProblem)
+function _create_observables(prob::HamiltonianProblem)
     n = prob.system.n_particles
     dims = prob.system.dims
 
@@ -841,7 +841,7 @@ end
 # Integrator Recycling (Streaming)
 # =============================================================================
 
-function _recycle_integrator!(integ::WeberIntegrator)
+function _recycle_integrator!(integ::HamiltonianIntegrator)
     span = integ.t_end - integ.t_history[1]
     integ.step_count = 0
     integ.t_end = integ.t + span
@@ -906,9 +906,9 @@ end
 # Extended Problem Construction (for Streaming)
 # =============================================================================
 
-function _make_extended_problem(prob::WeberProblem)
+function _make_extended_problem(prob::HamiltonianProblem)
     max_time = prob.tspan[1] + 1000 * prob.dt
-    return WeberProblem(
+    return HamiltonianProblem(
         prob.system,
         (prob.tspan[1], max_time),
         prob.q_initial,
@@ -929,7 +929,7 @@ end
 # =============================================================================
 
 """
-    animate_weber(prob::WeberProblem; kwargs...) -> screen
+    animate_weber(prob::HamiltonianProblem; kwargs...) -> screen
 
 Launch an interactive real-time animation of a Weber simulation.
 
@@ -955,7 +955,7 @@ WGLMakie recommended). Requires at least 2D (`prob.system.dims ≥ 2`).
 - A Makie screen handle; close the window to stop the simulation.
 """
 function WeberElectrodynamics.animate_weber(
-    prob::WeberProblem;
+    prob::HamiltonianProblem;
     buffer_size::Int = 2000,
     tail_length::Int = 200,
     compute_batch::Int = 1,
@@ -1015,9 +1015,9 @@ end
 # =============================================================================
 
 """
-    animate_weber(sol::WeberSolution; kwargs...) -> screen
+    animate_weber(sol::HamiltonianSolution; kwargs...) -> screen
 
-Replay a completed `WeberSolution` as an interactive animated dashboard.
+Replay a completed `HamiltonianSolution` as an interactive animated dashboard.
 
 Identical dashboard layout to the streaming form (single dominant trajectory
 panel, phase-space sidebar, live energy-error readout), but replays
@@ -1039,7 +1039,7 @@ pre-computed trajectory data. Requires at least 2D
 - A Makie screen handle; close the window to stop replay.
 """
 function WeberElectrodynamics.animate_weber(
-    sol::WeberSolution;
+    sol::HamiltonianSolution;
     buffer_size::Int = 2000,
     tail_length::Int = 200,
     compute_batch::Int = 1,

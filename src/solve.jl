@@ -99,7 +99,7 @@ end
     p::Vector{Float64},
     t::Float64,
     dt_step::Float64,
-    prob::WeberProblem,
+    prob::HamiltonianProblem,
     alg::SymmetricProjectionIntegrator,
     buffers::SymmetricProjectionBuffers,
 )
@@ -260,7 +260,7 @@ end
 end
 
 @inline function _update_diagnostics!(
-    integrator::WeberIntegrator,
+    integrator::HamiltonianIntegrator,
     mode::UInt8,
     substeps::Int,
     min_distance::Float64,
@@ -309,7 +309,7 @@ end
     return nothing
 end
 
-@inline function _store_state!(integrator::WeberIntegrator, dt_step::Float64)
+@inline function _store_state!(integrator::HamiltonianIntegrator, dt_step::Float64)
     integrator.step_count += 1
     integrator.t += dt_step
     if integrator.t > integrator.t_end
@@ -328,7 +328,7 @@ end
 
 @inline function _set_pair_params!(
     rb::RegularizationBuffers,
-    prob::WeberProblem,
+    prob::HamiltonianProblem,
     i::Int,
     j::Int,
 )
@@ -362,7 +362,7 @@ end
     q_state::Vector{Float64},
     p_state::Vector{Float64},
     t::Float64,
-    prob::WeberProblem,
+    prob::HamiltonianProblem,
 )
     system = prob.system
     system.dq_dt_compiled(rb.dq_full, q_state, p_state, t, prob.params)
@@ -381,7 +381,7 @@ end
     p::Vector{Float64},
     t::Float64,
     dt_half::Float64,
-    prob::WeberProblem,
+    prob::HamiltonianProblem,
     rb::RegularizationBuffers,
 )
     if dt_half <= 0
@@ -632,7 +632,7 @@ end
     p::Vector{Float64},
     t::Float64,
     dt_sub::Float64,
-    prob::WeberProblem,
+    prob::HamiltonianProblem,
     rb::RegularizationBuffers,
     i::Int,
     j::Int,
@@ -748,7 +748,7 @@ end
 end
 
 @inline function _step_unregularized!(
-    integrator::WeberIntegrator,
+    integrator::HamiltonianIntegrator,
     dt_step::Float64,
 )
     _projected_cartesian_step!(
@@ -775,7 +775,7 @@ end
 end
 
 @inline function _step_regularized_pair_adaptive!(
-    integrator::WeberIntegrator,
+    integrator::HamiltonianIntegrator,
     dt_step::Float64,
     min_distance::Float64,
 )
@@ -854,7 +854,7 @@ end
 end
 
 @inline function _step_regularized_pair_lifted_2d!(
-    integrator::WeberIntegrator,
+    integrator::HamiltonianIntegrator,
     dt_step::Float64,
     min_distance::Float64,
 )
@@ -920,7 +920,7 @@ end
 end
 
 @inline function _step_regularized_chain!(
-    integrator::WeberIntegrator,
+    integrator::HamiltonianIntegrator,
     dt_step::Float64,
     min_distance::Float64,
 )
@@ -985,7 +985,7 @@ end
 end
 
 @inline function _step_regularized_dispatch!(
-    integrator::WeberIntegrator,
+    integrator::HamiltonianIntegrator,
     dt_step::Float64,
 )
     prob = integrator.prob
@@ -1051,7 +1051,7 @@ end
 end
 
 """
-    init(prob::WeberProblem, alg::SymmetricProjectionIntegrator = SymmetricProjectionIntegrator()) -> WeberIntegrator
+    init(prob::HamiltonianProblem, alg::SymmetricProjectionIntegrator = SymmetricProjectionIntegrator()) -> HamiltonianIntegrator
 
 Initialise a step-by-step integrator without running any steps.
 
@@ -1060,10 +1060,10 @@ trajectory. Use the returned integrator with `step!` for fine-grained control,
 or pass it directly to `solve!`.
 
 # Returns
-- `WeberIntegrator` at `t = prob.tspan[1]` with `step_count = 0`.
+- `HamiltonianIntegrator` at `t = prob.tspan[1]` with `step_count = 0`.
 """
 function CommonSolve.init(
-    prob::WeberProblem,
+    prob::HamiltonianProblem,
     alg::SymmetricProjectionIntegrator = SymmetricProjectionIntegrator(),
 )
     degrees_of_freedom = prob.system.degrees_of_freedom
@@ -1089,7 +1089,7 @@ function CommonSolve.init(
         @warn "RegularizationOptions(backend=:lifted_pair) is currently supported only for 2D; falling back to :adaptive_cartesian for $(prob.system.dims)D"
     end
 
-    WeberIntegrator(
+    HamiltonianIntegrator(
         prob,
         alg,
         prob.tspan[1],
@@ -1127,7 +1127,7 @@ end
 end
 
 """
-    step!(integrator::WeberIntegrator) -> Bool
+    step!(integrator::HamiltonianIntegrator) -> Bool
 
 Advance the integrator by one macro time step `prob.dt`.
 
@@ -1138,7 +1138,7 @@ step is automatically shortened to land exactly on `prob.tspan[2]`.
 # Returns
 - `true` if more steps remain, `false` when integration is complete.
 """
-function CommonSolve.step!(integrator::WeberIntegrator)
+function CommonSolve.step!(integrator::HamiltonianIntegrator)
     max_steps = length(integrator.t_history) - 1
 
     if integrator.step_count >= max_steps || integrator.t >= integrator.t_end - eps(integrator.t_end)
@@ -1180,7 +1180,7 @@ function CommonSolve.step!(integrator::WeberIntegrator)
 end
 
 """
-    solve!(integrator::WeberIntegrator) -> WeberSolution
+    solve!(integrator::HamiltonianIntegrator) -> HamiltonianSolution
 
 Run the integrator to completion and return the full solution.
 
@@ -1188,9 +1188,9 @@ Repeatedly calls `step!` until `t ≥ t_end`. If the fixed-point projection
 fails to converge, `retcode` is set to `:Failure` rather than throwing.
 
 # Returns
-- `WeberSolution` containing the full time series and regularization diagnostics.
+- `HamiltonianSolution` containing the full time series and regularization diagnostics.
 """
-function CommonSolve.solve!(integrator::WeberIntegrator)
+function CommonSolve.solve!(integrator::HamiltonianIntegrator)
     retcode = :Success
     try
         while CommonSolve.step!(integrator)
@@ -1206,7 +1206,7 @@ function CommonSolve.solve!(integrator::WeberIntegrator)
     n = integrator.step_count + 1
     diagnostics = _clone_diagnostics(integrator.diagnostics, integrator.step_count)
 
-    WeberSolution(
+    HamiltonianSolution(
         integrator.t_history[1:n],
         integrator.q_history[1:n],
         integrator.p_history[1:n],
@@ -1217,17 +1217,17 @@ function CommonSolve.solve!(integrator::WeberIntegrator)
 end
 
 """
-    solve(prob::WeberProblem, alg::WeberAlgorithm = SymmetricProjectionIntegrator()) -> WeberSolution
+    solve(prob::HamiltonianProblem, alg::WeberAlgorithm = SymmetricProjectionIntegrator()) -> HamiltonianSolution
 
 Initialise and run the integrator in a single call.
 
 Convenience wrapper equivalent to `solve!(init(prob, alg))`.
 
 # Returns
-- `WeberSolution` with `retcode ∈ {:Success, :Failure}`.
+- `HamiltonianSolution` with `retcode ∈ {:Success, :Failure}`.
 """
 function CommonSolve.solve(
-    prob::WeberProblem,
+    prob::HamiltonianProblem,
     alg::WeberAlgorithm = SymmetricProjectionIntegrator(),
 )
     integrator = CommonSolve.init(prob, alg)

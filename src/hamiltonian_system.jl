@@ -2,12 +2,12 @@ using Symbolics
 using Latexify: latexify
 
 """
-    WeberSystem
+    HamiltonianSystem
 
 Symbolic and compiled representation of the n-body Weber Hamiltonian.
 
-Constructed once for a given `(n_particles, dims)` pair via `WeberSystem(n_particles, dims)`.
-The compiled equations of motion are reused across many `WeberProblem` instances
+Constructed once for a given `(n_particles, dims)` pair via `HamiltonianSystem(n_particles, dims)`.
+The compiled equations of motion are reused across many `HamiltonianProblem` instances
 with different physical parameters. Construction involves symbolic differentiation
 and code generation via Symbolics.jl; expect a few seconds for the first call.
 
@@ -26,7 +26,7 @@ and code generation via Symbolics.jl; expect a few seconds for the first call.
 - `hamiltonian_compiled(q, p, t, params)`: Compiled scalar Hamiltonian function.
 - `degrees_of_freedom::Int`: Total DOF = `n_particles × dims`.
 """
-struct WeberSystem{H,QD,PD,QF,PF,HF,PS}
+struct HamiltonianSystem{H,QD,PD,QF,PF,HF,PS}
     n_particles::Int
     dims::Int
 
@@ -135,23 +135,23 @@ function _build_weber_hamiltonian(
 end
 
 """
-    WeberSystem(n_particles::Int, dims::Int) -> WeberSystem
+    HamiltonianSystem(n_particles::Int, dims::Int) -> HamiltonianSystem
 
 Build and compile the symbolic Weber Hamiltonian for `n_particles` particles in
 `dims` dimensions.
 
 Uses Symbolics.jl to derive Hamilton's equations analytically, then compiles
 them to efficient in-place Julia functions via `build_function`. The resulting
-`WeberSystem` can be reused across multiple `WeberProblem` instances.
+`HamiltonianSystem` can be reused across multiple `HamiltonianProblem` instances.
 
 # Arguments
 - `n_particles`: Number of particles (≥ 1).
 - `dims`: Spatial dimension; must be 1, 2, or 3.
 
 # Returns
-- `WeberSystem` with compiled equations of motion ready for `WeberProblem`.
+- `HamiltonianSystem` with compiled equations of motion ready for `HamiltonianProblem`.
 """
-function WeberSystem(n_particles::Int, dims::Int)
+function HamiltonianSystem(n_particles::Int, dims::Int)
     @assert n_particles >= 1 "Must have at least 1 particle"
     @assert dims in (1, 2, 3) "Dimensions must be 1, 2, or 3, got $dims"
 
@@ -194,7 +194,7 @@ function WeberSystem(n_particles::Int, dims::Int)
 
     degrees_of_freedom = n_particles * dims
 
-    WeberSystem(
+    HamiltonianSystem(
         n_particles,
         dims,
         q_vars,
@@ -211,21 +211,21 @@ function WeberSystem(n_particles::Int, dims::Int)
     )
 end
 
-function Base.show(io::IO, sys::WeberSystem)
+function Base.show(io::IO, sys::HamiltonianSystem)
     print(
         io,
-        "WeberSystem($(sys.n_particles) particles, $(sys.dims)D, $(sys.degrees_of_freedom) DOF)",
+        "HamiltonianSystem($(sys.n_particles) particles, $(sys.dims)D, $(sys.degrees_of_freedom) DOF)",
     )
 end
 
-function Base.show(io::IO, ::MIME"text/plain", sys::WeberSystem)
-    println(io, "WeberSystem")
+function Base.show(io::IO, ::MIME"text/plain", sys::HamiltonianSystem)
+    println(io, "HamiltonianSystem")
     println(io, "  Particles: $(sys.n_particles)")
     println(io, "  Dimensions: $(sys.dims)")
     println(io, "  DOF: $(sys.degrees_of_freedom)")
     println(io, "  H = $(sys.hamiltonian_symbolic)")
 end
 
-function Base.show(io::IO, ::MIME"text/latex", sys::WeberSystem)
+function Base.show(io::IO, ::MIME"text/latex", sys::HamiltonianSystem)
     print(io, latexify(sys.hamiltonian_symbolic))
 end

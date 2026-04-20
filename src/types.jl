@@ -199,7 +199,7 @@ end
 
 Diagnostics collected during a `solve!` call describing regularization usage.
 
-Returned as `WeberSolution.regularization`. All step counts refer to macro-steps
+Returned as `HamiltonianSolution.regularization`. All step counts refer to macro-steps
 of the outer `SymmetricProjectionIntegrator`.
 
 # Fields
@@ -424,15 +424,15 @@ mutable struct RegularizationBuffers
 end
 
 """
-    WeberProblem(system, tspan, q_initial, p_initial; kwargs...)
+    HamiltonianProblem(system, tspan, q_initial, p_initial; kwargs...)
 
 Fully specified n-body Weber electrodynamics problem ready for integration.
 
-Packages the compiled `WeberSystem`, initial conditions, physical parameters,
+Packages the compiled `HamiltonianSystem`, initial conditions, physical parameters,
 and solver/regularization options into a single immutable structure.
 
 # Arguments
-- `system::WeberSystem`: Pre-built symbolic + compiled Hamiltonian system.
+- `system::HamiltonianSystem`: Pre-built symbolic + compiled Hamiltonian system.
 - `tspan::Tuple{Real,Real}`: Integration interval `(t_start, t_end)`.
 - `q_initial::AbstractVector`: Flattened initial positions, length = `n_particles × dims`.
 - `p_initial::AbstractVector`: Flattened initial momenta, length = `n_particles × dims`.
@@ -450,7 +450,7 @@ and solver/regularization options into a single immutable structure.
   See `ZollnerOptions` for all available fields.
 
 # Fields
-- `system::WeberSystem`: Compiled Hamiltonian system.
+- `system::HamiltonianSystem`: Compiled Hamiltonian system.
 - `tspan::Tuple{Float64,Float64}`: Integration interval.
 - `q_initial`, `p_initial::Vector{Float64}`: Initial phase-space point.
 - `masses`, `charges::Vector{Float64}`: Physical parameters.
@@ -463,8 +463,8 @@ and solver/regularization options into a single immutable structure.
 - `regularization::RegularizationOptions`: Regularization configuration.
 - `zollner::ZollnerOptions`: Zöllner extension configuration.
 """
-struct WeberProblem
-    system::WeberSystem
+struct HamiltonianProblem
+    system::HamiltonianSystem
     tspan::Tuple{Float64,Float64}
     q_initial::Vector{Float64}
     p_initial::Vector{Float64}
@@ -479,8 +479,8 @@ struct WeberProblem
     regularization::RegularizationOptions
     zollner::ZollnerOptions
 
-    function WeberProblem(
-        system::WeberSystem,
+    function HamiltonianProblem(
+        system::HamiltonianSystem,
         tspan::Tuple{Real,Real},
         q_initial::AbstractVector,
         p_initial::AbstractVector;
@@ -533,7 +533,7 @@ struct WeberProblem
 end
 
 """
-    WeberSolution
+    HamiltonianSolution
 
 Result returned by `solve` or `solve!`.
 
@@ -544,36 +544,36 @@ and `length(sol)`. Each index returns a `(t, q, p)` tuple.
 - `t::Vector{Float64}`: Time points.
 - `q::Vector{Vector{Float64}}`: Flattened position snapshots, one per time point.
 - `p::Vector{Vector{Float64}}`: Flattened momentum snapshots, one per time point.
-- `prob::WeberProblem`: The originating problem definition.
+- `prob::HamiltonianProblem`: The originating problem definition.
 - `retcode::Symbol`: `:Success` on normal completion, `:Failure` if the
   projection fixed-point failed to converge.
 - `regularization::RegularizationDiagnostics`: Regularization usage statistics.
 """
-struct WeberSolution
+struct HamiltonianSolution
     t::Vector{Float64}
     q::Vector{Vector{Float64}}
     p::Vector{Vector{Float64}}
-    prob::WeberProblem
+    prob::HamiltonianProblem
     retcode::Symbol
     regularization::RegularizationDiagnostics
 end
 
-Base.length(sol::WeberSolution) = length(sol.t)
-Base.getindex(sol::WeberSolution, i::Int) = (sol.t[i], sol.q[i], sol.p[i])
-Base.firstindex(sol::WeberSolution) = 1
-Base.lastindex(sol::WeberSolution) = length(sol)
+Base.length(sol::HamiltonianSolution) = length(sol.t)
+Base.getindex(sol::HamiltonianSolution, i::Int) = (sol.t[i], sol.q[i], sol.p[i])
+Base.firstindex(sol::HamiltonianSolution) = 1
+Base.lastindex(sol::HamiltonianSolution) = length(sol)
 
-function Base.iterate(sol::WeberSolution, state = 1)
+function Base.iterate(sol::HamiltonianSolution, state = 1)
     state > length(sol) && return nothing
     return (sol[state], state + 1)
 end
 
-function Base.show(io::IO, sol::WeberSolution)
-    print(io, "WeberSolution with $(length(sol)) timesteps (retcode: $(sol.retcode))")
+function Base.show(io::IO, sol::HamiltonianSolution)
+    print(io, "HamiltonianSolution with $(length(sol)) timesteps (retcode: $(sol.retcode))")
 end
 
-function Base.show(io::IO, ::MIME"text/plain", sol::WeberSolution)
-    println(io, "WeberSolution")
+function Base.show(io::IO, ::MIME"text/plain", sol::HamiltonianSolution)
+    println(io, "HamiltonianSolution")
     println(io, "  retcode: $(sol.retcode)")
     println(io, "  t: $(sol.t[1]) → $(sol.t[end]) ($(length(sol)) points)")
     println(io, "  DOF: $(length(sol.q[1]))")
@@ -636,7 +636,7 @@ mutable struct SymmetricProjectionBuffers
     diff_buffer::Vector{Float64}
     regularization_buffers::RegularizationBuffers
 
-    function SymmetricProjectionBuffers(prob::WeberProblem)
+    function SymmetricProjectionBuffers(prob::HamiltonianProblem)
         d = prob.system.degrees_of_freedom
         n_particles = prob.system.n_particles
         dims = prob.system.dims
@@ -693,7 +693,7 @@ mutable struct SymmetricProjectionBuffers
 end
 
 """
-    WeberIntegrator
+    HamiltonianIntegrator
 
 Mutable step-by-step integrator returned by `init`.
 
@@ -702,7 +702,7 @@ run to completion. The current state is accessible via `integrator.q`,
 `integrator.p`, and `integrator.t`.
 
 # Fields
-- `prob::WeberProblem`: Problem definition.
+- `prob::HamiltonianProblem`: Problem definition.
 - `alg::SymmetricProjectionIntegrator`: Algorithm parameters.
 - `t::Float64`: Current time.
 - `t_end::Float64`: Final time (`prob.tspan[2]`).
@@ -715,8 +715,8 @@ run to completion. The current state is accessible via `integrator.q`,
 - `q_history::Vector{Vector{Float64}}`: Pre-allocated position history.
 - `p_history::Vector{Vector{Float64}}`: Pre-allocated momentum history.
 """
-mutable struct WeberIntegrator
-    prob::WeberProblem
+mutable struct HamiltonianIntegrator
+    prob::HamiltonianProblem
     alg::SymmetricProjectionIntegrator
     t::Float64
     t_end::Float64
@@ -730,6 +730,6 @@ mutable struct WeberIntegrator
     p_history::Vector{Vector{Float64}}
 end
 
-function Base.show(io::IO, int::WeberIntegrator)
-    print(io, "WeberIntegrator at t=$(int.t) (step $(int.step_count))")
+function Base.show(io::IO, int::HamiltonianIntegrator)
+    print(io, "HamiltonianIntegrator at t=$(int.t) (step $(int.step_count))")
 end

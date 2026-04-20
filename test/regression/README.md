@@ -49,7 +49,7 @@ julia test/regression/validate.jl              # standalone
 
 `validate.jl` reads only the fixture setup dict and calls the current public
 API in `rebuild_problem`. When the API shape changes (e.g. Phase 1 of the
-refactor renames `WeberProblem` → `HamiltonianProblem`), update
+refactor renames `HamiltonianProblem` → `HamiltonianProblem`), update
 `rebuild_problem` to use the new constructors while keeping the fixtures
 themselves untouched. If the refactor genuinely changes numerical behaviour,
 document the reason and regenerate the fixtures in the same PR.

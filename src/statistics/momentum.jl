@@ -32,7 +32,7 @@ end
 """
     compute_momentum_timeseries(solution; stride=1) -> MomentumData
 
-Compute total linear and angular momentum timeseries from a `WeberSolution`.
+Compute total linear and angular momentum timeseries from a `HamiltonianSolution`.
 
 # Keywords
 - `stride=1`: Downsample factor; every `stride`-th timestep is included.
@@ -40,7 +40,7 @@ Compute total linear and angular momentum timeseries from a `WeberSolution`.
 # Returns
 - `MomentumData` with linear and angular momentum at each selected timestep.
 """
-function compute_momentum_timeseries(solution::WeberSolution; stride::Int=1)::MomentumData
+function compute_momentum_timeseries(solution::HamiltonianSolution; stride::Int=1)::MomentumData
     if stride <= 0
         throw(ArgumentError("stride must be positive, got $stride"))
     end

@@ -1,10 +1,10 @@
 # System
 
-The `WeberSystem` encapsulates the symbolic and compiled Weber Hamiltonian for
+The `HamiltonianSystem` encapsulates the symbolic and compiled Weber Hamiltonian for
 a given `(n_particles, dims)` configuration. Construct it once and reuse it
-across many `WeberProblem` instances.
+across many `HamiltonianProblem` instances.
 
 ```@docs
-WeberSystem
-WeberSystem(::Int, ::Int)
+HamiltonianSystem
+HamiltonianSystem(::Int, ::Int)
 ```

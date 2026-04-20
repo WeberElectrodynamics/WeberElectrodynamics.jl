@@ -226,7 +226,7 @@ end
 """
     compute_energy_timeseries(sol; stride=1) -> EnergyData
 
-Compute the full energy decomposition timeseries from a `WeberSolution`.
+Compute the full energy decomposition timeseries from a `HamiltonianSolution`.
 
 Evaluates kinetic energy, per-pair Weber potentials, and the compiled Hamiltonian
 at each selected timestep. The `hamiltonian_validation_error` field cross-checks
@@ -238,7 +238,7 @@ the manual decomposition against the Symbolics-compiled function.
 # Returns
 - `EnergyData` with all energy components and conservation statistics.
 """
-function compute_energy_timeseries(solution::WeberSolution; stride::Int = 1)::EnergyData
+function compute_energy_timeseries(solution::HamiltonianSolution; stride::Int = 1)::EnergyData
     if stride <= 0
         throw(ArgumentError("stride must be positive, got $stride"))
     end

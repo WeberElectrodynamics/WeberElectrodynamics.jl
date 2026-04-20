@@ -36,8 +36,8 @@
             charges = [q1, q2]
         end
 
-        system = WeberSystem(2, dims)
-        return WeberProblem(
+        system = HamiltonianSystem(2, dims)
+        return HamiltonianProblem(
             system,
             (0.0, t_end),
             q0,
@@ -57,15 +57,15 @@
         )
     end
 
-    state_error(sol_a::WeberSolution, sol_b::WeberSolution) =
+    state_error(sol_a::HamiltonianSolution, sol_b::HamiltonianSolution) =
         norm(sol_a.q[end] - sol_b.q[end]) + norm(sol_a.p[end] - sol_b.p[end])
 
     @testset "API and fallback" begin
-        sys2 = WeberSystem(2, 2)
+        sys2 = HamiltonianSystem(2, 2)
         q0_2d = [-1.0, 0.0, 1.0, 0.0]
         p0_2d = [0.0, -0.05, 0.0, 0.05]
 
-        prob_valid = WeberProblem(
+        prob_valid = HamiltonianProblem(
             sys2,
             (0.0, 0.1),
             q0_2d,
@@ -82,7 +82,7 @@
         )
         @test prob_valid.regularization.backend == WeberElectrodynamics.REG_BACKEND_ADAPTIVE
 
-        @test_throws AssertionError WeberProblem(
+        @test_throws AssertionError HamiltonianProblem(
             sys2,
             (0.0, 0.1),
             q0_2d,
@@ -97,11 +97,11 @@
             ),
         )
 
-        sys1 = WeberSystem(2, 1)
+        sys1 = HamiltonianSystem(2, 1)
         q0_1d = [-0.08, 0.08]
         p0_1d = [0.0, 0.0]
 
-        prob_fb = WeberProblem(
+        prob_fb = HamiltonianProblem(
             sys1,
             (0.0, 0.01),
             q0_1d,
@@ -128,7 +128,7 @@
         @test int_fb.diagnostics.lifted_pair_steps == 0
         @test int_fb.diagnostics.backend_fallback_steps == 1
 
-        prob_warn = WeberProblem(
+        prob_warn = HamiltonianProblem(
             sys1,
             (0.0, 0.01),
             q0_1d,
@@ -149,13 +149,13 @@
     end
 
     @testset "3D lifted pair fallback to adaptive_cartesian" begin
-        sys3 = WeberSystem(2, 3)
+        sys3 = HamiltonianSystem(2, 3)
         # Start within r_on (separation 0.16 < r_on 0.2) so regularization fires
         # on the first step and backend_fallback_steps is immediately exercised.
         q0_3d = [-0.08, 0.0, 0.0, 0.08, 0.0, 0.0]
         p0_3d = [0.0, -0.05, 0.0, 0.0, 0.05, 0.0]
 
-        prob_3d = WeberProblem(
+        prob_3d = HamiltonianProblem(
             sys3,
             (0.0, 0.01),
             q0_3d,
@@ -181,7 +181,7 @@
         @test int_3d.diagnostics.backend_fallback_steps == 1
         @test int_3d.diagnostics.lifted_pair_steps == 0
 
-        @test_logs (:warn, r"falling back to :adaptive_cartesian") init(WeberProblem(
+        @test_logs (:warn, r"falling back to :adaptive_cartesian") init(HamiltonianProblem(
             sys3,
             (0.0, 0.01),
             q0_3d,
@@ -309,10 +309,10 @@
         @test rb.active_count > 2
         @test mode == WeberElectrodynamics.REG_MODE_NONE
 
-        sys = WeberSystem(3, 2)
+        sys = HamiltonianSystem(3, 2)
         q0 = [-0.09, 0.0, 0.09, 0.0, 0.2, 0.0]
         p0 = [0.0, 0.02, 0.0, 0.0, 0.0, -0.02]
-        prob = WeberProblem(
+        prob = HamiltonianProblem(
             sys,
             (0.0, 0.1),
             q0,
@@ -412,11 +412,11 @@
         rho = q1 * q2 / (mu * c^2)
         T_est = (2π / c) * rho
 
-        sys = WeberSystem(2, 2)
+        sys = HamiltonianSystem(2, 2)
         q_init = [r0 / 2, 0.0, -r0 / 2, 0.0]
         p_init = [0.0, 0.0, 0.0, 0.0]
 
-        prob = WeberProblem(
+        prob = HamiltonianProblem(
             sys,
             (0.0, 10 * T_est),
             q_init,
@@ -463,11 +463,11 @@
         rho = q1 * q2 / (mu * c^2)
         T_est = (2π / c) * rho
 
-        sys = WeberSystem(2, 2)
+        sys = HamiltonianSystem(2, 2)
         q_init = [r0 / 2, 0.0, -r0 / 2, 0.0]
         p_init = [0.0, 0.0, 0.0, 0.0]
 
-        prob = WeberProblem(
+        prob = HamiltonianProblem(
             sys,
             (0.0, 5 * T_est),
             q_init,
@@ -498,11 +498,11 @@
     end
 
     @testset "Chain mode correctness" begin
-        sys = WeberSystem(3, 2)
+        sys = HamiltonianSystem(3, 2)
         q0 = [-0.12, 0.0, 0.0, 0.0, 0.12, 0.0]
         p0 = [0.0, 0.02, 0.0, 0.0, 0.0, -0.02]
 
-        prob = WeberProblem(
+        prob = HamiltonianProblem(
             sys,
             (0.0, 0.2),
             q0,
@@ -529,7 +529,7 @@
     end
 
     @testset "Backward mode parity" begin
-        sys = WeberSystem(2, 2)
+        sys = HamiltonianSystem(2, 2)
         q0 = [-1.0, 0.0, 1.0, 0.0]
         p0 = [0.0, -0.05, 0.0, 0.05]
 
@@ -540,7 +540,7 @@
             dt = 0.001,
         )
 
-        prob_off = WeberProblem(
+        prob_off = HamiltonianProblem(
             sys,
             (0.0, 0.2),
             q0,
@@ -548,7 +548,7 @@
             kwargs...,
             regularization = RegularizationOptions(enabled = false),
         )
-        prob_on = WeberProblem(
+        prob_on = HamiltonianProblem(
             sys,
             (0.0, 0.2),
             q0,
@@ -576,10 +576,10 @@
     end
 
     @testset "Single-particle regularization safety" begin
-        sys = WeberSystem(1, 2)
+        sys = HamiltonianSystem(1, 2)
         q0 = [0.0, 0.0]
         p0 = [0.0, 0.0]
-        prob = WeberProblem(
+        prob = HamiltonianProblem(
             sys,
             (0.0, 0.1),
             q0,
@@ -625,11 +625,11 @@
     end
 
     @testset "Allocation checks" begin
-        sys = WeberSystem(2, 2)
+        sys = HamiltonianSystem(2, 2)
 
         q0 = [-1.0, 0.0, 1.0, 0.0]
         p0 = [0.0, -0.05, 0.0, 0.05]
-        prob_unreg = WeberProblem(
+        prob_unreg = HamiltonianProblem(
             sys,
             (0.0, 0.02),
             q0,
@@ -647,7 +647,7 @@
 
         q1 = [-0.08, 0.01, 0.08, -0.01]
         p1 = [0.0, -0.02, 0.0, 0.02]
-        prob_lifted = WeberProblem(
+        prob_lifted = HamiltonianProblem(
             sys,
             (0.0, 0.02),
             q1,

@@ -32,7 +32,7 @@ for the full theoretical derivation.
 ## Enabling Zöllner
 
 ```julia
-prob = WeberProblem(
+prob = HamiltonianProblem(
     sys, tspan, q0, p0;
     masses  = [1.0, 1.0],
     charges = [1.0, -1.0],
@@ -49,7 +49,7 @@ prob = WeberProblem(
 Zöllner is fully compatible with regularization:
 
 ```julia
-prob = WeberProblem(sys, tspan, q0, p0; ...
+prob = HamiltonianProblem(sys, tspan, q0, p0; ...
     zollner        = ZollnerOptions(enabled = true, a = 0.01),
     regularization = RegularizationOptions(enabled = true),
 )

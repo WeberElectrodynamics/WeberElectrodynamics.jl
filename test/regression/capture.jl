@@ -131,8 +131,8 @@ function fixture_twobody_ellipse()
     tspan = (0.0, 2.0)
     dt = 5e-4
 
-    system = WeberSystem(2, 2)
-    prob = WeberProblem(
+    system = HamiltonianSystem(2, 2)
+    prob = HamiltonianProblem(
         system, tspan, q_initial, p_initial;
         masses = [m1, m2], charges = [q1, q2], c = c, dt = dt,
     )
@@ -144,7 +144,7 @@ end
 function fixture_threebody_mixed()
     # 3-body mixed-charge, unregularized. Starts from rest; well-separated so no
     # close encounters trigger. Weber velocity corrections are small.
-    system = WeberSystem(3, 2)
+    system = HamiltonianSystem(3, 2)
     q_initial = [1.0, 0.0, -0.5, 0.0, 0.2, 1.5]
     p_initial = zeros(6)
     masses = [1.0, 1.0, 0.5]
@@ -152,7 +152,7 @@ function fixture_threebody_mixed()
     c = 10.0
     tspan = (0.0, 0.5)
     dt = 5e-4
-    prob = WeberProblem(
+    prob = HamiltonianProblem(
         system, tspan, q_initial, p_initial;
         masses = masses, charges = charges, c = c, dt = dt,
     )
@@ -190,8 +190,8 @@ function fixture_close_approach_lifted()
         warn_on_fallback = false,
     )
 
-    system = WeberSystem(2, 2)
-    prob = WeberProblem(
+    system = HamiltonianSystem(2, 2)
+    prob = HamiltonianProblem(
         system, tspan, q_initial, p_initial;
         masses = [m1, m2], charges = [q1, q2], c = c, dt = dt,
         regularization = reg,
@@ -231,8 +231,8 @@ function fixture_zollner_offmatch()
     )
     zol = ZollnerOptions(enabled = true, a = 0.05)
 
-    system = WeberSystem(2, 2)
-    prob = WeberProblem(
+    system = HamiltonianSystem(2, 2)
+    prob = HamiltonianProblem(
         system, tspan, q_initial, p_initial;
         masses = [m1, m2], charges = [q1, q2], c = c, dt = dt,
         regularization = reg,
@@ -247,7 +247,7 @@ end
 # Write JLD2 fixture file
 # ---------------------------------------------------------------------------
 
-function save_fixture(prob::WeberProblem, sol::WeberSolution, name::String, desc::String)
+function save_fixture(prob::HamiltonianProblem, sol::HamiltonianSolution, name::String, desc::String)
     setup = Dict{String,Any}(
         "n_particles" => prob.system.n_particles,
         "dims" => prob.system.dims,
