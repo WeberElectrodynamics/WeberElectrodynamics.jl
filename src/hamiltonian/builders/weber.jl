@@ -23,55 +23,6 @@ directly lets a user compose a custom Hamiltonian, e.g.
   ordered by `i<j` and indexed via `_pair_index`).
 - `n_particles::Int`, `dims::Int`: Problem shape.
 """
-# Concrete per-pair numeric decomposition of the Weber pair potential, matching
-# the symbolic `weber_term` body. The closure is attached to the `:weber`
-# NamedTerm by `HamiltonianSystem(n, dims)` and queried by statistics.
-#
-# Returns a NamedTuple `(coulomb, velocity, rdot, r)` where
-#   coulomb  = κ·q_i·q_j / r                                    (Coulomb part)
-#   velocity = −coulomb · ṙ² / (2c²)                            (Weber velocity part)
-#   rdot     = ṙ = (q_i − q_j)·(v_i − v_j) / r                  (radial velocity)
-#   r        = |q_i − q_j|                                      (pair distance)
-# `coulomb + velocity` is the full Weber-pair contribution to H (κ-scaled).
-function _weber_pair_decomposition(
-    i::Int,
-    j::Int,
-    q::AbstractVector{Float64},
-    p::AbstractVector{Float64},
-    params::AbstractVector{Float64},
-    n_particles::Int,
-    dims::Int,
-)
-    @inbounds mi = params[i]
-    @inbounds mj = params[j]
-    @inbounds qi = params[n_particles+i]
-    @inbounds qj = params[n_particles+j]
-    @inbounds c = params[2*n_particles+1]
-    @inbounds κ = params[2*n_particles+1+_pair_index(i, j, n_particles)]
-
-    qi_start = (i - 1) * dims + 1
-    qj_start = (j - 1) * dims + 1
-
-    r_squared = 0.0
-    @inbounds for d = 0:(dims-1)
-        dq = q[qi_start+d] - q[qj_start+d]
-        r_squared += dq * dq
-    end
-    r = sqrt(r_squared)
-
-    r_dot_v = 0.0
-    @inbounds for d = 0:(dims-1)
-        dq = q[qi_start+d] - q[qj_start+d]
-        dv = p[qi_start+d] / mi - p[qj_start+d] / mj
-        r_dot_v += dq * dv
-    end
-    rdot = r_dot_v / r
-
-    coulomb = κ * qi * qj / r
-    velocity = -coulomb * rdot^2 / (2 * c^2)
-    return (coulomb = coulomb, velocity = velocity, rdot = rdot, r = r)
-end
-
 function weber_term(
     q_vars::AbstractVector,
     p_vars::AbstractVector;
@@ -124,4 +75,53 @@ function weber_term(
     end
 
     return H
+end
+
+# Concrete per-pair numeric decomposition of the Weber pair potential, matching
+# the symbolic `weber_term` body. The closure is attached to the `:weber`
+# NamedTerm by `HamiltonianSystem(n, dims)` and queried by statistics.
+#
+# Returns a NamedTuple `(coulomb, velocity, rdot, r)` where
+#   coulomb  = κ·q_i·q_j / r                                    (Coulomb part)
+#   velocity = −coulomb · ṙ² / (2c²)                            (Weber velocity part)
+#   rdot     = ṙ = (q_i − q_j)·(v_i − v_j) / r                  (radial velocity)
+#   r        = |q_i − q_j|                                      (pair distance)
+# `coulomb + velocity` is the full Weber-pair contribution to H (κ-scaled).
+function _weber_pair_decomposition(
+    i::Int,
+    j::Int,
+    q::AbstractVector{Float64},
+    p::AbstractVector{Float64},
+    params::AbstractVector{Float64},
+    n_particles::Int,
+    dims::Int,
+)
+    @inbounds mi = params[i]
+    @inbounds mj = params[j]
+    @inbounds qi = params[n_particles+i]
+    @inbounds qj = params[n_particles+j]
+    @inbounds c = params[2*n_particles+1]
+    @inbounds κ = params[2*n_particles+1+_pair_index(i, j, n_particles)]
+
+    qi_start = (i - 1) * dims + 1
+    qj_start = (j - 1) * dims + 1
+
+    r_squared = 0.0
+    @inbounds for d = 0:(dims-1)
+        dq = q[qi_start+d] - q[qj_start+d]
+        r_squared += dq * dq
+    end
+    r = sqrt(r_squared)
+
+    r_dot_v = 0.0
+    @inbounds for d = 0:(dims-1)
+        dq = q[qi_start+d] - q[qj_start+d]
+        dv = p[qi_start+d] / mi - p[qj_start+d] / mj
+        r_dot_v += dq * dv
+    end
+    rdot = r_dot_v / r
+
+    coulomb = κ * qi * qj / r
+    velocity = -coulomb * rdot^2 / (2 * c^2)
+    return (coulomb = coulomb, velocity = velocity, rdot = rdot, r = r)
 end
