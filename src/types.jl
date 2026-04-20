@@ -449,7 +449,9 @@ and solver/regularization options into a single immutable structure.
 - `convergence_tolerance=1e-13`: Fixed-point convergence threshold for projection.
 - `maximum_iterations=100`: Maximum projection iterations per step.
 - `zollner=ZollnerOptions()`: Zöllner electrogravitational extension options.
-  See `ZollnerOptions` for all available fields.
+  See `ZollnerOptions` for all available fields. The options are used at
+  construction time to compute the per-pair `κ` values packed into `params`
+  and are **not** retained on the problem; inspect κ via `kappas(prob)`.
 
 Regularization options moved to [`RegularizedIntegrator`](@ref); pass them via
 `solve(prob, RegularizedIntegrator(SymmetricProjectionIntegrator(); ...))`.
@@ -463,7 +465,6 @@ Regularization options moved to [`RegularizedIntegrator`](@ref); pass them via
 - `dt::Float64`: Fixed step size.
 - `convergence_tolerance::Float64`: Projection convergence threshold.
 - `maximum_iterations::Int`: Maximum projection iterations per step.
-- `zollner::ZollnerOptions`: Zöllner extension configuration.
 """
 struct HamiltonianProblem
     system::HamiltonianSystem
@@ -474,7 +475,6 @@ struct HamiltonianProblem
     dt::Float64
     convergence_tolerance::Float64
     maximum_iterations::Int
-    zollner::ZollnerOptions
 
     function HamiltonianProblem(
         system::HamiltonianSystem,
@@ -518,7 +518,6 @@ struct HamiltonianProblem
             Float64(dt),
             Float64(convergence_tolerance),
             Int(maximum_iterations),
-            zollner,
         )
     end
 end
@@ -531,7 +530,6 @@ end
     speed_of_light(prob::HamiltonianProblem) -> Float64
     kappas(prob::HamiltonianProblem) -> AbstractVector{Float64}
     params(prob::HamiltonianProblem) -> Vector{Float64}
-    zollner(prob::HamiltonianProblem) -> ZollnerOptions
 
 Read-only accessors. `masses`, `charges`, and `kappas` return views into the
 backing `params` vector (layout `[m₁…mₙ, q₁…qₙ, c, κ…]`), so they are O(1)
@@ -545,7 +543,24 @@ charges(prob::HamiltonianProblem) =
 speed_of_light(prob::HamiltonianProblem) = prob.params[2*n_particles(prob)+1]
 kappas(prob::HamiltonianProblem) = @view prob.params[2*n_particles(prob)+2:end]
 params(prob::HamiltonianProblem) = prob.params
-zollner(prob::HamiltonianProblem) = prob.zollner
+
+# Internal: clone a problem with an overridden tspan while preserving the
+# compiled system, initial conditions, and packed params (including any
+# Zöllner-derived κ values). Used by the Makie streaming animation to extend
+# the integration horizon without needing to re-derive the construction inputs.
+function _with_tspan(prob::HamiltonianProblem, tspan::Tuple{Real,Real})
+    return HamiltonianProblem(
+        prob.system,
+        prob.tspan,
+        prob.q_initial,
+        prob.p_initial,
+        copy(prob.params),
+        prob.dt,
+        prob.convergence_tolerance,
+        prob.maximum_iterations,
+        (Float64(tspan[1]), Float64(tspan[2])),
+    )
+end
 
 """
     HamiltonianSolution

@@ -908,20 +908,7 @@ end
 
 function _make_extended_problem(prob::HamiltonianProblem)
     max_time = prob.tspan[1] + 1000 * prob.dt
-    return HamiltonianProblem(
-        prob.system,
-        (prob.tspan[1], max_time),
-        prob.q_initial,
-        prob.p_initial;
-        masses = masses(prob),
-        charges = charges(prob),
-        c = speed_of_light(prob),
-        dt = prob.dt,
-        convergence_tolerance = prob.convergence_tolerance,
-        maximum_iterations = prob.maximum_iterations,
-        regularization = regularization(prob),
-        zollner = zollner(prob),
-    )
+    return WeberElectrodynamics._with_tspan(prob, (prob.tspan[1], max_time))
 end
 
 # =============================================================================

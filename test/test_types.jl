@@ -93,8 +93,6 @@
         # params = [m1, m2, q1, q2, c, κ₁₂]; charges +1/-1 are unlike so κ=1 (Zöllner disabled)
         @test params(prob) == [1.0, 0.5, 1.0, -1.0, 4.0, 1.0]
         @test kappas(prob) == [1.0]  # unlike charges but Zöllner disabled → κ=1
-        @test prob.zollner.enabled == false
-        @test prob.zollner.a == 0.0
 
         # Custom convergence_tolerance and maximum_iterations
         prob2 = HamiltonianProblem(

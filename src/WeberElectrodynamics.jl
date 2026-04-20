@@ -24,7 +24,7 @@ export RegularizationOptions
 export RegularizationDiagnostics
 export ZollnerOptions
 export SymmetricProjectionIntegrator
-export masses, charges, speed_of_light, kappas, params, zollner
+export masses, charges, speed_of_light, kappas, params
 
 # =============================================================================
 # Regularization Helpers
@@ -177,7 +177,8 @@ Visualise Zöllner potential contributions against standard Weber energies.
 
 Two-panel layout: total potential with per-pair breakdown and Zöllner extra terms
 (κ values shown); Zöllner gravitational residual ΣΔV_Z compared to total energy.
-Only meaningful when `prob.zollner.enabled == true`.
+Only meaningful when the problem was constructed with Zöllner enabled
+(non-trivial `kappas(prob)`).
 
 Requires `using Plots` to activate the Plots.jl extension.
 """
