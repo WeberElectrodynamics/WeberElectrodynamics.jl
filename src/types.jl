@@ -731,12 +731,13 @@ run to completion. The current state is accessible via `integrator.q`,
 - `p::Vector{Float64}`: Current flattened momenta.
 - `step_count::Int`: Number of macro-steps completed so far.
 - `buffers::SymmetricProjectionBuffers`: Pre-allocated workspace (internal).
+- `callbacks::Tuple`: Per-step callbacks (pre-/post-step hooks).
 - `diagnostics::RegularizationDiagnostics`: Live regularization statistics.
 - `t_history::Vector{Float64}`: Pre-allocated time history array.
 - `q_history::Vector{Vector{Float64}}`: Pre-allocated position history.
 - `p_history::Vector{Vector{Float64}}`: Pre-allocated momentum history.
 """
-mutable struct HamiltonianIntegrator{A<:HamiltonianAlgorithm,C}
+mutable struct HamiltonianIntegrator{A<:HamiltonianAlgorithm,C,CB<:Tuple}
     prob::HamiltonianProblem
     alg::A
     t::Float64
@@ -745,6 +746,7 @@ mutable struct HamiltonianIntegrator{A<:HamiltonianAlgorithm,C}
     p::Vector{Float64}
     step_count::Int
     buffers::C
+    callbacks::CB
     diagnostics::RegularizationDiagnostics
     t_history::Vector{Float64}
     q_history::Vector{Vector{Float64}}

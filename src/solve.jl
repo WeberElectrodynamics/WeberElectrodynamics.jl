@@ -1102,7 +1102,9 @@ function _allocate_cache(prob::HamiltonianProblem, ::SymmetricProjectionIntegrat
 end
 
 """
-    init(prob::HamiltonianProblem, alg::HamiltonianAlgorithm = SymmetricProjectionIntegrator()) -> HamiltonianIntegrator
+    init(prob::HamiltonianProblem,
+         alg::HamiltonianAlgorithm = SymmetricProjectionIntegrator();
+         callbacks = ()) -> HamiltonianIntegrator
 
 Initialise a step-by-step integrator without running any steps.
 
@@ -1110,16 +1112,26 @@ Pre-allocates all workspace buffers and history arrays sized to hold the full
 trajectory. Use the returned integrator with `step!` for fine-grained control,
 or pass it directly to `solve!`.
 
+# Keyword arguments
+- `callbacks`: a single [`HamiltonianCallback`](@ref) or an iterable of them.
+  Invoked pre-/post-step around each macro-step.
+
+If `prob.regularization.collision_bounce_radius > 0` and no `CollisionBounce`
+is present in `callbacks`, a matching one is synthesised automatically so
+the legacy problem-level kwarg keeps working.
+
 # Returns
 - `HamiltonianIntegrator` at `t = prob.tspan[1]` with `step_count = 0`.
 """
 function CommonSolve.init(
     prob::HamiltonianProblem,
-    alg::HamiltonianAlgorithm = SymmetricProjectionIntegrator(),
+    alg::HamiltonianAlgorithm = SymmetricProjectionIntegrator();
+    callbacks = (),
 )
     degrees_of_freedom = prob.system.degrees_of_freedom
 
     buffers = _allocate_cache(prob, alg)
+    cb_tuple = _resolve_callbacks(prob, callbacks)
 
     n_steps = Int(ceil((prob.tspan[2] - prob.tspan[1]) / prob.dt))
     t_history = Vector{Float64}(undef, n_steps + 1)
@@ -1144,11 +1156,26 @@ function CommonSolve.init(
         copy(prob.p_initial),
         0,
         buffers,
+        cb_tuple,
         diagnostics,
         t_history,
         q_history,
         p_history,
     )
+end
+
+# Merge user-supplied callbacks with the legacy bridge derived from
+# `prob.regularization.collision_bounce_radius`. When the radius is > 0 and
+# no `CollisionBounce` was supplied explicitly, synthesise one so existing
+# code that sets the radius on RegularizationOptions continues to fire the
+# bounce.
+function _resolve_callbacks(prob::HamiltonianProblem, cbs)
+    user = _normalise_callbacks(cbs)
+    bounce_r = prob.regularization.collision_bounce_radius
+    if bounce_r > 0 && !any(c -> c isa CollisionBounce, user)
+        return (CollisionBounce(bounce_r), user...)
+    end
+    return user
 end
 
 # Pre-step collision bounce: for each pair closer than bounce_r,
@@ -1201,22 +1228,9 @@ function CommonSolve.step!(integrator::HamiltonianIntegrator)
         return false
     end
 
-    # Pre-step collision bounce: reflect pairs that are closer than
-    # the bounce radius.  This prevents the integrator from entering
-    # the region where the implicit midpoint iteration diverges due
-    # to the 1/r² force singularity.
-    bounce_r = prob.regularization.collision_bounce_radius
-    if bounce_r > 0
-        _apply_collision_bounces!(
-            integrator.q,
-            prob.masses,
-            prob.system.dims,
-            prob.system.n_particles,
-            bounce_r,
-        )
-    end
-
+    _run_pre_step!(integrator.callbacks, integrator, dt_step)
     _step_core!(integrator, integrator.alg, dt_step)
+    _run_post_step!(integrator.callbacks, integrator, dt_step)
 
     return integrator.step_count < max_steps
 end
@@ -1270,8 +1284,9 @@ Convenience wrapper equivalent to `solve!(init(prob, alg))`.
 """
 function CommonSolve.solve(
     prob::HamiltonianProblem,
-    alg::HamiltonianAlgorithm = SymmetricProjectionIntegrator(),
+    alg::HamiltonianAlgorithm = SymmetricProjectionIntegrator();
+    callbacks = (),
 )
-    integrator = CommonSolve.init(prob, alg)
+    integrator = CommonSolve.init(prob, alg; callbacks = callbacks)
     CommonSolve.solve!(integrator)
 end

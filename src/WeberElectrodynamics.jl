@@ -46,6 +46,13 @@ include("integrators/regularized.jl")
 export RegularizedIntegrator
 
 # =============================================================================
+# Callbacks
+# =============================================================================
+include("callbacks.jl")
+export HamiltonianCallback, CollisionBounce
+export apply_pre_step!, apply_post_step!
+
+# =============================================================================
 # Statistics & Analysis
 # =============================================================================
 include("statistics/trajectories.jl")
