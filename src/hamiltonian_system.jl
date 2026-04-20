@@ -81,6 +81,7 @@ end
 end
 
 include("hamiltonian/builders/weber.jl")
+include("hamiltonian/builders/zollner.jl")
 
 """
     HamiltonianSystem(H, q_vars, p_vars;

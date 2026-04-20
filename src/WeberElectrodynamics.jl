@@ -9,7 +9,7 @@ export @sprintf, norm, dot
 # Hamiltonian System (symbolic builder + compiled EOMs)
 # =============================================================================
 include("hamiltonian_system.jl")
-export HamiltonianSystem, weber_term
+export HamiltonianSystem, weber_term, zollner_term
 
 # =============================================================================
 # Core Types (Problem, Solution, Integrator)
