@@ -30,8 +30,8 @@
             masses = [1.0, 1.0], charges = [1.0, -1.0], c = 10.0, dt = 0.01,
             zollner = ZollnerOptions(enabled = true, a = 0.1),
         )
-        @test length(prob.kappas) == 1
-        @test prob.kappas[1] ≈ 1.1  # 1 + a for unlike charges
+        @test length(kappas(prob)) == 1
+        @test kappas(prob)[1] ≈ 1.1  # 1 + a for unlike charges
         @test prob.zollner.enabled == true
         @test prob.zollner.a == 0.1
     end
@@ -44,8 +44,8 @@
             masses = [1.0, 1.0], charges = [1.0, 1.0], c = 10.0, dt = 0.01,
             zollner = ZollnerOptions(enabled = true, a = 0.1),
         )
-        @test length(prob.kappas) == 1
-        @test prob.kappas[1] ≈ 1.0  # like charges: κ = 1 regardless of a
+        @test length(kappas(prob)) == 1
+        @test kappas(prob)[1] ≈ 1.0  # like charges: κ = 1 regardless of a
     end
 
     @testset "Kappa computation — 3-particle mixed" begin
@@ -61,10 +61,10 @@
             masses = [1.0, 1.0, 1.0], charges = [1.0, -1.0, 1.0],
             c = 10.0, dt = 0.01, zollner = ZollnerOptions(enabled = true, a = a),
         )
-        @test length(prob.kappas) == 3
-        @test prob.kappas[1] ≈ 1.0 + a   # pair (1,2): unlike
-        @test prob.kappas[2] ≈ 1.0        # pair (1,3): like
-        @test prob.kappas[3] ≈ 1.0 + a   # pair (2,3): unlike
+        @test length(kappas(prob)) == 3
+        @test kappas(prob)[1] ≈ 1.0 + a   # pair (1,2): unlike
+        @test kappas(prob)[2] ≈ 1.0        # pair (1,3): like
+        @test kappas(prob)[3] ≈ 1.0 + a   # pair (2,3): unlike
     end
 
     @testset "Params vector length" begin
@@ -80,11 +80,11 @@
                 masses = ones(N), charges = charges, c = 10.0, dt = 0.01,
             )
             expected_len = 2N + 1 + N * (N - 1) ÷ 2
-            @test length(prob.params) == expected_len
-            @test length(prob.kappas) == N * (N - 1) ÷ 2
+            @test length(params(prob)) == expected_len
+            @test length(kappas(prob)) == N * (N - 1) ÷ 2
             # params must literally end with the kappas values
             n_pairs = N * (N - 1) ÷ 2
-            @test prob.params[end-n_pairs+1:end] == prob.kappas
+            @test params(prob)[end-n_pairs+1:end] == kappas(prob)
         end
     end
 
@@ -97,9 +97,9 @@
             masses = [1.0, 1.0], charges = [1.0, -1.0], c = 10.0, dt = 0.01,
             zollner = ZollnerOptions(enabled = false, a = 0.5),
         )
-        @test all(k -> k ≈ 1.0, prob_off.kappas)
+        @test all(k -> k ≈ 1.0, kappas(prob_off))
         # params tail should be all 1.0
-        @test prob_off.params[end] ≈ 1.0
+        @test params(prob_off)[end] ≈ 1.0
     end
 
     @testset "Integration runs with Zöllner enabled" begin
@@ -213,7 +213,7 @@
             @test max_drift < 1e-3
         end
         # κ for this unlike-charge pair should be 1+a.
-        @test sol.prob.kappas[1] ≈ 1.0 + a
+        @test kappas(sol.prob)[1] ≈ 1.0 + a
     end
 
 end

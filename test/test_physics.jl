@@ -2,10 +2,10 @@
     @testset "Energy conservation - Coulomb-like" begin
         prob = make_coulomb_like_problem(tspan = (0.0, 5.0), dt = 0.001)
         sol = solve(prob)
-        masses = prob.masses
-        charges = prob.charges
+        ms = masses(prob)
+        qs = charges(prob)
 
-        E(q, p) = coulomb_like_energy_2body_2d(q, p, masses, charges)
+        E(q, p) = coulomb_like_energy_2body_2d(q, p, ms, qs)
         E0 = E(sol.q[1], sol.p[1])
 
         max_error = 0.0
@@ -21,11 +21,11 @@
     @testset "Energy conservation - Weber" begin
         prob = make_weber_problem(tspan = (0.0, 2.0), dt = 0.0005)
         sol = solve(prob)
-        masses = prob.masses
-        charges = prob.charges
-        c = prob.c
+        ms = masses(prob)
+        qs = charges(prob)
+        c_val = speed_of_light(prob)
 
-        E(q, p) = weber_energy_2body_2d(q, p, masses, charges, c)
+        E(q, p) = weber_energy_2body_2d(q, p, ms, qs, c_val)
         E0 = E(sol.q[1], sol.p[1])
 
         max_error = 0.0
@@ -47,9 +47,9 @@
             (1, 2),
             2,
             2,
-            prob.masses,
-            prob.charges,
-            prob.c,
+            masses(prob),
+            charges(prob),
+            speed_of_light(prob),
         )
 
         # For large c (Coulomb limit), Weber correction terms should be small
@@ -76,9 +76,9 @@
             (1, 2),
             2,
             2,
-            prob.masses,
-            prob.charges,
-            prob.c,
+            masses(prob),
+            charges(prob),
+            speed_of_light(prob),
         )
 
         # Vector form and radial form should give same total force
@@ -97,7 +97,7 @@
         prob = make_coulomb_like_problem(tspan = (0.0, 2.0), dt = 0.01)
         sol = solve(prob)
 
-        m1, m2 = prob.masses
+        m1, m2 = masses(prob)
         M = m1 + m2
 
         # Initial center of mass position and momentum
@@ -147,9 +147,9 @@
         sol = solve(prob)
 
         # Energy at beginning, middle, and end
-        masses = prob.masses
-        charges = prob.charges
-        E(q, p) = coulomb_like_energy_2body_2d(q, p, masses, charges)
+        ms = masses(prob)
+        qs = charges(prob)
+        E(q, p) = coulomb_like_energy_2body_2d(q, p, ms, qs)
         E_start = E(sol.q[1], sol.p[1])
         E_mid = E(sol.q[length(sol)÷2], sol.p[length(sol)÷2])
         E_end = E(sol.q[end], sol.p[end])
@@ -191,9 +191,9 @@
         prob_bound = make_coulomb_like_problem(tspan = (0.0, 2.0), dt = 0.01)
         sol_bound = solve(prob_bound)
 
-        masses = prob_bound.masses
-        charges = prob_bound.charges
-        E0 = coulomb_like_energy_2body_2d(sol_bound.q[1], sol_bound.p[1], masses, charges)
+        ms = masses(prob_bound)
+        qs = charges(prob_bound)
+        E0 = coulomb_like_energy_2body_2d(sol_bound.q[1], sol_bound.p[1], ms, qs)
         @test E0 < 0  # Bound orbit has negative energy
 
         # Separation should remain bounded

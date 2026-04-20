@@ -453,10 +453,8 @@ and solver/regularization options into a single immutable structure.
 - `system::HamiltonianSystem`: Compiled Hamiltonian system.
 - `tspan::Tuple{Float64,Float64}`: Integration interval.
 - `q_initial`, `p_initial::Vector{Float64}`: Initial phase-space point.
-- `masses`, `charges::Vector{Float64}`: Physical parameters.
-- `c::Float64`: Speed of light.
-- `kappas::Vector{Float64}`: Per-pair Zöllner coupling factors κ_ij.
 - `params::Vector{Float64}`: Packed parameter vector `[masses; charges; c; kappas]`.
+  Access slices via the `masses`, `charges`, `speed_of_light`, `kappas` accessors.
 - `dt::Float64`: Fixed step size.
 - `convergence_tolerance::Float64`: Projection convergence threshold.
 - `maximum_iterations::Int`: Maximum projection iterations per step.
@@ -468,10 +466,6 @@ struct HamiltonianProblem
     tspan::Tuple{Float64,Float64}
     q_initial::Vector{Float64}
     p_initial::Vector{Float64}
-    masses::Vector{Float64}
-    charges::Vector{Float64}
-    c::Float64
-    kappas::Vector{Float64}
     params::Vector{Float64}
     dt::Float64
     convergence_tolerance::Float64
@@ -518,10 +512,6 @@ struct HamiltonianProblem
             (Float64(tspan[1]), Float64(tspan[2])),
             Vector{Float64}(q_initial),
             Vector{Float64}(p_initial),
-            masses_f64,
-            charges_f64,
-            c_f64,
-            kappas,
             params,
             Float64(dt),
             Float64(convergence_tolerance),
@@ -535,24 +525,25 @@ end
 """
     n_particles(prob::HamiltonianProblem) -> Int
     dims(prob::HamiltonianProblem) -> Int
-    masses(prob::HamiltonianProblem) -> Vector{Float64}
-    charges(prob::HamiltonianProblem) -> Vector{Float64}
+    masses(prob::HamiltonianProblem) -> AbstractVector{Float64}
+    charges(prob::HamiltonianProblem) -> AbstractVector{Float64}
     speed_of_light(prob::HamiltonianProblem) -> Float64
-    kappas(prob::HamiltonianProblem) -> Vector{Float64}
+    kappas(prob::HamiltonianProblem) -> AbstractVector{Float64}
     params(prob::HamiltonianProblem) -> Vector{Float64}
     regularization(prob::HamiltonianProblem) -> RegularizationOptions
     zollner(prob::HamiltonianProblem) -> ZollnerOptions
 
-Read-only accessors. Extensions and statistics should use these instead of
-direct field access so that later refactors (dropping `masses`/`charges`/etc.
-from the struct in favor of a flat `params` vector) remain source-compatible.
+Read-only accessors. `masses`, `charges`, and `kappas` return views into the
+backing `params` vector (layout `[m₁…mₙ, q₁…qₙ, c, κ…]`), so they are O(1)
+and allocation-free but must be treated as read-only.
 """
 n_particles(prob::HamiltonianProblem) = n_particles(prob.system)
 dims(prob::HamiltonianProblem) = dims(prob.system)
-masses(prob::HamiltonianProblem) = prob.masses
-charges(prob::HamiltonianProblem) = prob.charges
-speed_of_light(prob::HamiltonianProblem) = prob.c
-kappas(prob::HamiltonianProblem) = prob.kappas
+masses(prob::HamiltonianProblem) = @view prob.params[1:n_particles(prob)]
+charges(prob::HamiltonianProblem) =
+    @view prob.params[n_particles(prob)+1:2*n_particles(prob)]
+speed_of_light(prob::HamiltonianProblem) = prob.params[2*n_particles(prob)+1]
+kappas(prob::HamiltonianProblem) = @view prob.params[2*n_particles(prob)+2:end]
 params(prob::HamiltonianProblem) = prob.params
 regularization(prob::HamiltonianProblem) = prob.regularization
 zollner(prob::HamiltonianProblem) = prob.zollner

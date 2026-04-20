@@ -222,7 +222,7 @@ end
     rb::RegularizationBuffers,
     q::Vector{Float64},
     p::Vector{Float64},
-    masses::Vector{Float64},
+    masses::AbstractVector{Float64},
     i::Int,
     j::Int,
 )

@@ -55,7 +55,7 @@ function apply_pre_step!(cb::CollisionBounce, integrator, ::Float64)
     prob = integrator.prob
     _apply_collision_bounces!(
         integrator.q,
-        prob.masses,
+        masses(prob),
         prob.system.dims,
         prob.system.n_particles,
         cb.radius,

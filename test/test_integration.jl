@@ -106,9 +106,9 @@
         @test sol.retcode == :Success
 
         # Energy should be conserved
-        masses = prob.masses
-        charges = prob.charges
-        E(q, p) = coulomb_like_energy_2body_2d(q, p, masses, charges)
+        ms = masses(prob)
+        qs = charges(prob)
+        E(q, p) = coulomb_like_energy_2body_2d(q, p, ms, qs)
         E0 = E(sol.q[1], sol.p[1])
         E_final = E(sol.q[end], sol.p[end])
         @test abs(E_final - E0) / abs(E0) < 1e-6
@@ -145,8 +145,8 @@
     @testset "Statistics on same solution" begin
         prob = make_coulomb_like_problem(tspan = (0.0, 1.0), dt = 0.01)
         sol = solve(prob)
-        masses = prob.masses
-        charges = prob.charges
+        ms = masses(prob)
+        qs = charges(prob)
 
         # All statistics should work on the same solution
         traj = compute_trajectory_data(sol, 2, 2)
@@ -155,7 +155,7 @@
         energy = compute_energy_timeseries(sol)
         @test energy isa EnergyData
 
-        forces = compute_pair_force_timeseries(sol, (1, 2), 2, 2, masses, charges, 1e10)
+        forces = compute_pair_force_timeseries(sol, (1, 2), 2, 2, ms, qs, 1e10)
         @test forces isa PairForceData
         @test forces.phase_space isa PhaseSpaceData
 
