@@ -32,6 +32,51 @@ see `_compute_zollner_kappas`.
   `_pair_index`).
 - `n_particles::Int`, `dims::Int`: Problem shape.
 """
+# Concrete per-pair numeric decomposition of the Zöllner correction, attached
+# to the `:zollner` NamedTerm by `HamiltonianSystem(n, dims)`.
+#
+# Returns a NamedTuple `(zollner_extra, r, rdot)` where
+#   zollner_extra = (κ − 1)·q_i·q_j/r · (1 − ṙ²/(2c²))
+# This is the residual of the Zöllner-modified pair potential relative to
+# pure Weber (κ ≡ 1).
+function _zollner_pair_decomposition(
+    i::Int,
+    j::Int,
+    q::AbstractVector{Float64},
+    p::AbstractVector{Float64},
+    params::AbstractVector{Float64},
+    n_particles::Int,
+    dims::Int,
+)
+    @inbounds mi = params[i]
+    @inbounds mj = params[j]
+    @inbounds qi = params[n_particles+i]
+    @inbounds qj = params[n_particles+j]
+    @inbounds c = params[2*n_particles+1]
+    @inbounds κ = params[2*n_particles+1+_pair_index(i, j, n_particles)]
+
+    qi_start = (i - 1) * dims + 1
+    qj_start = (j - 1) * dims + 1
+
+    r_squared = 0.0
+    @inbounds for d = 0:(dims-1)
+        dq = q[qi_start+d] - q[qj_start+d]
+        r_squared += dq * dq
+    end
+    r = sqrt(r_squared)
+
+    r_dot_v = 0.0
+    @inbounds for d = 0:(dims-1)
+        dq = q[qi_start+d] - q[qj_start+d]
+        dv = p[qi_start+d] / mi - p[qj_start+d] / mj
+        r_dot_v += dq * dv
+    end
+    rdot = r_dot_v / r
+
+    zollner_extra = (κ - 1.0) * qi * qj / r * (1.0 - rdot^2 / (2 * c^2))
+    return (zollner_extra = zollner_extra, r = r, rdot = rdot)
+end
+
 function zollner_term(
     q_vars::AbstractVector,
     p_vars::AbstractVector;

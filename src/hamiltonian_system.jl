@@ -223,6 +223,13 @@ function HamiltonianSystem(n_particles::Int, dims::Int)
     )
     H = weber_H + zollner_H
 
+    weber_decomp =
+        (i, j, q, p, params) ->
+            _weber_pair_decomposition(i, j, q, p, params, n_particles, dims)
+    zollner_decomp =
+        (i, j, q, p, params) ->
+            _zollner_pair_decomposition(i, j, q, p, params, n_particles, dims)
+
     return HamiltonianSystem(
         H,
         q_vars,
@@ -231,7 +238,10 @@ function HamiltonianSystem(n_particles::Int, dims::Int)
         t = t_var,
         n_particles = n_particles,
         dims = dims,
-        terms = [NamedTerm(:weber, weber_H), NamedTerm(:zollner, zollner_H)],
+        terms = [
+            NamedTerm(:weber, weber_H; pair_decomposition = weber_decomp),
+            NamedTerm(:zollner, zollner_H; pair_decomposition = zollner_decomp),
+        ],
     )
 end
 
