@@ -29,7 +29,7 @@ Extract per-particle position trajectories from a `HamiltonianSolution`.
 # Arguments
 - `sol::HamiltonianSolution`: Completed simulation result.
 - `n_particles::Int`: Number of particles encoded in `sol`.
-- `dims::Int`: Spatial dimension (must match `sol.prob.system.dims`).
+- `dims::Int`: Spatial dimension (must match `dims(sol.prob)`).
 
 # Keywords
 - `stride=1`: Downsample factor; every `stride`-th timestep is included.
