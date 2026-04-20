@@ -334,23 +334,23 @@ end
 )
     n = rb.n_particles
     params_pair = rb.params_pair
-    masses = prob.masses
-    charges = prob.charges
-    kappas = prob.kappas
+    ms = masses(prob)
+    qs = charges(prob)
+    κs = kappas(prob)
 
     @inbounds begin
         for k = 1:n
-            params_pair[k] = masses[k]
+            params_pair[k] = ms[k]
             params_pair[n+k] = 0.0
         end
-        params_pair[n+i] = charges[i]
-        params_pair[n+j] = charges[j]
-        params_pair[2n+1] = prob.c
+        params_pair[n+i] = qs[i]
+        params_pair[n+j] = qs[j]
+        params_pair[2n+1] = speed_of_light(prob)
         # Copy kappas; charges for non-(i,j) pairs are zero so their κ values
         # do not affect the force, but the buffer must have the right length.
         n_pairs = rb.n_pairs
         for k = 1:n_pairs
-            params_pair[2n+1+k] = kappas[k]
+            params_pair[2n+1+k] = κs[k]
         end
     end
 
@@ -406,7 +406,7 @@ end
     rb::RegularizationBuffers,
     q_state::Vector{Float64},
     p_state::Vector{Float64},
-    masses::Vector{Float64},
+    masses::AbstractVector{Float64},
     i::Int,
     j::Int,
 )
@@ -517,7 +517,7 @@ end
 @inline function _reflect_pair_2d!(
     q::Vector{Float64},
     p::Vector{Float64},
-    masses::Vector{Float64},
+    masses::AbstractVector{Float64},
     i::Int,
     j::Int,
 )
@@ -569,7 +569,7 @@ end
 # Preserves COM, negates q_rel, leaves p unchanged.
 @inline function _reflect_pair!(
     q::Vector{Float64},
-    masses::Vector{Float64},
+    masses::AbstractVector{Float64},
     dims::Int,
     i::Int,
     j::Int,
@@ -638,7 +638,7 @@ end
     j::Int,
 )
     system = prob.system
-    masses = prob.masses
+    ms = masses(prob)
     g_floor = prob.regularization.g_floor
 
     prev_u1 = rb.lc_u[1]
@@ -648,7 +648,7 @@ end
     system.dq_dt_compiled(rb.dq_pair, q, p, t, rb.params_pair)
     system.dp_dt_compiled(rb.dp_pair, q, p, t, rb.params_pair)
 
-    mi, mj, mu, M = _extract_pair_2d_state!(rb, q, p, masses, i, j)
+    mi, mj, mu, M = _extract_pair_2d_state!(rb, q, p, ms, i, j)
     _extract_pair_2d_derivatives!(rb, rb.dq_pair, rb.dp_pair, i, j, mi, mj, mu, M)
 
     _lc_lift!(rb)
@@ -824,9 +824,10 @@ end
     dt_sub = dt_step / substeps
     max_constraint = 0.0
     t_sub = integrator.t
+    ms = masses(prob)
 
     @inbounds for _ = 1:substeps
-        _extract_pair_relative_state!(rb, integrator.q, integrator.p, prob.masses, i, j)
+        _extract_pair_relative_state!(rb, integrator.q, integrator.p, ms, i, j)
 
         if dims == 1
             x = rb.rel_q[1]
@@ -971,13 +972,14 @@ end
     dims = rb.dims
     chain_count = rb.active_count
     t_sub = integrator.t
+    ms = masses(prob)
 
     @inbounds for _ = 1:substeps
         if dims == 3
             for idx = 1:(chain_count-1)
                 i = rb.chain_order[idx]
                 j = rb.chain_order[idx+1]
-                _extract_pair_relative_state!(rb, integrator.q, integrator.p, prob.masses, i, j)
+                _extract_pair_relative_state!(rb, integrator.q, integrator.p, ms, i, j)
                 _ks_lift!(rb)
                 c_err = _ks_project_constraint!(rb.ks_U, rb.ks_u, rb.ks_n)
                 if c_err <= constraint_tolerance
@@ -1183,7 +1185,7 @@ end
 # Used for like-charge sub-critical oscillation (ℓ=0, C⁰-continuable).
 @inline function _apply_collision_bounces!(
     q::Vector{Float64},
-    masses::Vector{Float64},
+    masses::AbstractVector{Float64},
     dims::Int,
     n_particles::Int,
     bounce_r::Float64,

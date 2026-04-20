@@ -84,15 +84,15 @@
         @test prob.tspan == (0.0, 1.0)
         @test prob.q_initial == [1.0, 0.0, -1.0, 0.0]
         @test prob.p_initial == [0.0, 0.1, 0.0, -0.1]
-        @test prob.masses == [1.0, 0.5]
-        @test prob.charges == [1.0, -1.0]
-        @test prob.c == 4.0
+        @test masses(prob) == [1.0, 0.5]
+        @test charges(prob) == [1.0, -1.0]
+        @test speed_of_light(prob) == 4.0
         @test prob.dt == 0.01
         @test prob.convergence_tolerance == 1e-13  # default
         @test prob.maximum_iterations == 100  # default
         # params = [m1, m2, q1, q2, c, κ₁₂]; charges +1/-1 are unlike so κ=1 (Zöllner disabled)
-        @test prob.params == [1.0, 0.5, 1.0, -1.0, 4.0, 1.0]
-        @test prob.kappas == [1.0]  # unlike charges but Zöllner disabled → κ=1
+        @test params(prob) == [1.0, 0.5, 1.0, -1.0, 4.0, 1.0]
+        @test kappas(prob) == [1.0]  # unlike charges but Zöllner disabled → κ=1
         @test prob.zollner.enabled == false
         @test prob.zollner.a == 0.0
         @test prob.regularization.enabled == false

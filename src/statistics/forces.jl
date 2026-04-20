@@ -126,8 +126,8 @@ function compute_pair_force_timeseries(
     pair::Tuple{Int,Int},
     n_particles::Int,
     dims::Int,
-    masses::Vector{Float64},
-    charges::Vector{Float64},
+    masses::AbstractVector{Float64},
+    charges::AbstractVector{Float64},
     c::Float64;
     stride::Int = 1,
 )::PairForceData

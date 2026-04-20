@@ -72,9 +72,9 @@ function _with_regularization(prob::HamiltonianProblem, reg::RegularizationOptio
         prob.tspan,
         prob.q_initial,
         prob.p_initial;
-        masses = prob.masses,
-        charges = prob.charges,
-        c = prob.c,
+        masses = masses(prob),
+        charges = charges(prob),
+        c = speed_of_light(prob),
         dt = prob.dt,
         convergence_tolerance = prob.convergence_tolerance,
         maximum_iterations = prob.maximum_iterations,
