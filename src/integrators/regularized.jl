@@ -83,7 +83,11 @@ function _with_regularization(prob::HamiltonianProblem, reg::RegularizationOptio
     )
 end
 
-function CommonSolve.init(prob::HamiltonianProblem, alg::RegularizedIntegrator)
+function CommonSolve.init(
+    prob::HamiltonianProblem,
+    alg::RegularizedIntegrator;
+    callbacks = (),
+)
     effective_prob = _with_regularization(prob, alg.options)
-    return CommonSolve.init(effective_prob, alg.base_alg)
+    return CommonSolve.init(effective_prob, alg.base_alg; callbacks = callbacks)
 end
