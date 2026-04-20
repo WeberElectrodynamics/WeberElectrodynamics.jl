@@ -252,8 +252,6 @@ function compute_energy_timeseries(solution::HamiltonianSolution; stride::Int = 
     n = n_particles(prob)
     d = dims(prob)
     ms = masses(prob)
-    qs = charges(prob)
-    c_val = speed_of_light(prob)
     params_vec = params(prob)
     κs = kappas(prob)
     hamiltonian_compiled = system.hamiltonian_compiled
@@ -290,6 +288,9 @@ function compute_energy_timeseries(solution::HamiltonianSolution; stride::Int = 
 
     total_zollner_residual = zeros(Float64, n_points)
 
+    weber_decomp = get_term(system, :weber).pair_decomposition
+    zollner_decomp = get_term(system, :zollner).pair_decomposition
+
     # Main computation loop
     @inbounds for (pt_idx, sol_idx) in enumerate(indices)
         q = solution.q[sol_idx]
@@ -305,9 +306,12 @@ function compute_energy_timeseries(solution::HamiltonianSolution; stride::Int = 
         zollner_sum = 0.0
         for i = 1:n
             for j = (i+1):n
-                kappa_ij = κs[_pair_index(i, j, n)]
-                coulomb, velocity, rdot, zollner_extra =
-                    compute_pair_weber_components(q, p, i, j, ms, qs, c_val, d, kappa_ij)
+                wc = weber_decomp(i, j, q, p, params_vec)
+                zc = zollner_decomp(i, j, q, p, params_vec)
+                coulomb = wc.coulomb
+                velocity = wc.velocity
+                rdot = wc.rdot
+                zollner_extra = zc.zollner_extra
                 pair_data = pair_energies[(i, j)]
                 pair_data.coulomb_term[pt_idx] = coulomb
                 pair_data.velocity_term[pt_idx] = velocity
