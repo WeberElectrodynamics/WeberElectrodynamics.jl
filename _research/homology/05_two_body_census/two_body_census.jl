@@ -14,7 +14,7 @@ using Printf
 using Dates
 
 # Cache compiled systems
-const SYS2D = WeberSystem(2, 2)
+const SYS2D = HamiltonianSystem(2, 2)
 
 # ---------------------------------------------------------------------------
 # Initial condition constructors
@@ -113,7 +113,7 @@ function run_and_analyze(q0, p0, q1_charge, q2_charge, m1, m2, c;
         RegularizationOptions()
     end
 
-    prob = WeberProblem(
+    prob = HamiltonianProblem(
         SYS2D, (0.0, tmax), q0, p0;
         masses=[m1, m2], charges=[q1_charge, q2_charge], c=c, dt=dt,
         regularization=reg

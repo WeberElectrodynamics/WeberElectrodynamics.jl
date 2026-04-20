@@ -2,7 +2,7 @@ using WeberElectrodynamics
 using WeberElectrodynamics: SymmetricProjectionIntegrator
 using LinearAlgebra
 
-sys = WeberSystem(4, 2)
+sys = HamiltonianSystem(4, 2)
 a = 1.5; b = 1.45; eta = 0.75
 X = [a 0.0; -a 0.0; 0.0 b; 0.0 -b]
 masses = [1.0, 1.0, 1.0, 1.0]
@@ -27,7 +27,7 @@ p0 = vec(transpose(P))
 
 # Quick timing test
 t1 = time()
-prob = WeberProblem(sys, (0.0, 50.0), q0, p0;
+prob = HamiltonianProblem(sys, (0.0, 50.0), q0, p0;
     masses = masses, charges = charges, c = 1.0, dt = 5e-4,
     regularization = RegularizationOptions(collision_bounce_radius = 0.02))
 sol = solve(prob, SymmetricProjectionIntegrator())
@@ -36,7 +36,7 @@ println("tmax=50, dt=5e-4: $(round(t2-t1, digits=2))s, retcode=$(sol.retcode), t
 
 # Test tmax=200
 t1 = time()
-prob2 = WeberProblem(sys, (0.0, 200.0), q0, p0;
+prob2 = HamiltonianProblem(sys, (0.0, 200.0), q0, p0;
     masses = masses, charges = charges, c = 1.0, dt = 5e-4,
     regularization = RegularizationOptions(collision_bounce_radius = 0.02))
 sol2 = solve(prob2, SymmetricProjectionIntegrator())

@@ -55,7 +55,7 @@ with charges $(q_1,q_2,q_3,q_4) = (+1,+1,-1,-1)$, along 14 parallel research thr
 
 Output: [01_symbolic/](01_symbolic/)
 
-Built `sys = WeberSystem(4,2)`, substituted $(q_1,q_2,q_3,q_4)=(+1,+1,-1,-1)$, $m_i=1$, $c=1$, $\kappa_{ij}=1$. Verified decomposition $H = T + U_C + U_W$ at machine precision. Critical-radius table (μ=1/2, c=1): $\rho_{12}=\rho_{34}=+2$ real; unlike pairs have $\rho = -2$ (no real locus).
+Built `sys = HamiltonianSystem(4,2)`, substituted $(q_1,q_2,q_3,q_4)=(+1,+1,-1,-1)$, $m_i=1$, $c=1$, $\kappa_{ij}=1$. Verified decomposition $H = T + U_C + U_W$ at machine precision. Critical-radius table (μ=1/2, c=1): $\rho_{12}=\rho_{34}=+2$ real; unlike pairs have $\rho = -2$ (no real locus).
 
 Poisson-bracket certificates (all residuals $< 10^{-15}$):
 

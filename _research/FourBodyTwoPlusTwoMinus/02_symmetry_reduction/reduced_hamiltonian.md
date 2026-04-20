@@ -104,7 +104,7 @@ H_Weber = P²/(2m) + P₊²/m + P₋²/m
               + (1/r₃₄)(1 − (2P₋/m)·r̂₃₄)²/(2c²)  ]
         − q² Σ_{cross} (1/r_ij)(1 − (ṙ_ij)²/(2c²)).
 ```
-Expanding fully would produce a long expression with `O(20)` rational+square-root terms — the symbolic version is available directly from `WeberSystem(4,2).hamiltonian_symbolic` and a follow-up Jacobi substitution; the algebraic simplification was found to be expensive (Symbolics `simplify` did not converge in 15 min on this input). For analytic work it is most useful to keep `H_Weber` in the schematic form above and substitute Jacobi expressions only in the specific submanifold being studied.
+Expanding fully would produce a long expression with `O(20)` rational+square-root terms — the symbolic version is available directly from `HamiltonianSystem(4,2).hamiltonian_symbolic` and a follow-up Jacobi substitution; the algebraic simplification was found to be expensive (Symbolics `simplify` did not converge in 15 min on this input). For analytic work it is most useful to keep `H_Weber` in the schematic form above and substitute Jacobi expressions only in the specific submanifold being studied.
 
 ## Symmetry-restricted simplifications
 

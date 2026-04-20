@@ -22,7 +22,7 @@ finite differences (`ε = 10⁻⁵`) and Floquet multipliers `= eig(M)`. An
 orbit is "found" iff it stays inside `10×` its initial diameter for at
 least one detected period and the energy drift is `< 5%`.
 
-Helpers from `research/FourBodyTwoPlusTwoMinus/shared/`; `WeberSystem(4,2)`
+Helpers from `research/FourBodyTwoPlusTwoMinus/shared/`; `HamiltonianSystem(4,2)`
 is built once and cached.
 
 ## 2. Family 1 — Breathing alternating square (L = 0)

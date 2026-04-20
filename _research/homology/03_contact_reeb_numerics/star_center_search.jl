@@ -116,7 +116,7 @@ end
 # ============================================================================
 
 function make_2body_V(charges, masses, c)
-    sys = WeberSystem(2, 2)
+    sys = HamiltonianSystem(2, 2)
     kappas = [1.0]
     params = vcat(masses, charges, [c], kappas)
     zero_p = zeros(4)
@@ -205,7 +205,7 @@ function run_4body_test()
     println("="^60)
 
     # Build system
-    sys = WeberSystem(4, 2)
+    sys = HamiltonianSystem(4, 2)
 
     # Alternating square configuration
     s = 0.5  # side/2 = 0.5

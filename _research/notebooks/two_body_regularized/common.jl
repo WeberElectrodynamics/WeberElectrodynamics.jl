@@ -38,11 +38,11 @@ function canonical_2d_problem(;
     regularization::RegularizationOptions = RegularizationOptions(),
     zollner::ZollnerOptions = ZollnerOptions(),
 )
-    system = WeberSystem(2, 2)
+    system = HamiltonianSystem(2, 2)
     q0 = [-1.0, 0.0, 1.0, 0.0]
     p0 = [ 0.0, -0.25, 0.0, 0.25]
     tspan = (0.0, n_orbits * T_ORBIT_CANON)
-    return WeberProblem(system, tspan, q0, p0;
+    return HamiltonianProblem(system, tspan, q0, p0;
         masses        = collect(M_CANON),
         charges       = collect(Q_CANON_UNLIKE),
         c             = C_CANON,
@@ -69,7 +69,7 @@ end
 Pretty-print every field of `sol.regularization` plus the retcode. Used by
 every notebook in the tour to show what the backend actually did.
 """
-function print_reg_diagnostics(sol::WeberSolution; label::AbstractString = "")
+function print_reg_diagnostics(sol::HamiltonianSolution; label::AbstractString = "")
     d = sol.regularization
     prefix = isempty(label) ? "" : "[$label] "
     @printf("%sretcode                  = %s\n", prefix, sol.retcode)
@@ -105,7 +105,7 @@ L2 norm of the position difference at the final step between two solutions
 that started from identical initial conditions. Used to quantify how close
 two regularized integrations track each other.
 """
-function final_position_delta(sol_a::WeberSolution, sol_b::WeberSolution)
+function final_position_delta(sol_a::HamiltonianSolution, sol_b::HamiltonianSolution)
     return norm(sol_a.q[end] .- sol_b.q[end])
 end
 

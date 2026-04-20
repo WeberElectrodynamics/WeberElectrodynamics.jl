@@ -64,7 +64,7 @@ unregularized symplectic integrator with collision bounce.
 
 ### 1D Experiments (Forced Collinearity)
 
-**Setup**: `WeberSystem(3, 1)`, three particles at positions [-s, 0, s], zero
+**Setup**: `HamiltonianSystem(3, 1)`, three particles at positions [-s, 0, s], zero
 momenta. Tests whether the radial dynamics alone can sustain a bound state.
 
 #### Equal mass/charge baseline
@@ -130,7 +130,7 @@ also failed (15955% energy error at t=0.8).
 
 ### 2D Transverse Stability Tests
 
-**Setup**: `WeberSystem(3, 2)`, collinear initial positions along x-axis with
+**Setup**: `HamiltonianSystem(3, 2)`, collinear initial positions along x-axis with
 bounce_r=0.045 (the best 1D case). Small perturbation added in y-direction.
 
 #### Position perturbation (middle particle nudged in y)

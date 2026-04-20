@@ -54,7 +54,7 @@ end
 """Integrate a 2-body system for a given time span."""
 function integrate_2body(sys, q0, p0, T, masses, charges, c; dt_hint=1e-3)
     dt = min(dt_hint, T/200)
-    prob = WeberProblem(sys, (0.0, T), q0, p0;
+    prob = HamiltonianProblem(sys, (0.0, T), q0, p0;
         masses=masses, charges=charges, c=c, dt=dt)
     sol = solve(prob, SymmetricProjectionIntegrator())
     return sol
@@ -111,7 +111,7 @@ println("="^70)
 println("PART 1: 2-Body c-Continuation (Unlike Charges)")
 println("="^70)
 
-sys2 = WeberSystem(2, 2)
+sys2 = HamiltonianSystem(2, 2)
 masses = [1.0, 1.0]
 charges = [1.0, -1.0]
 
@@ -278,7 +278,7 @@ println("\n" * "="^70)
 println("PART 2: 4-Body c-Continuation")
 println("="^70)
 
-sys4 = WeberSystem(4, 2)
+sys4 = HamiltonianSystem(4, 2)
 masses4 = fill(1.0, 4)
 charges4 = [1.0, 1.0, -1.0, -1.0]
 
@@ -324,7 +324,7 @@ for vrad in (0.3, 0.5, 0.7)
         q0, p0 = breathing_square_ic(1.0, vrad)
         dt = 5e-4
         tmax = 15.0
-        prob = WeberProblem(sys4, (0.0, tmax), q0, p0;
+        prob = HamiltonianProblem(sys4, (0.0, tmax), q0, p0;
             masses=masses4, charges=charges4, c=c, dt=dt)
         sol = solve(prob, SymmetricProjectionIntegrator())
 
@@ -367,7 +367,7 @@ for c in [1.0, 2.0, 4.0, 10.0]
     q0, p0 = double_orbiter_ic(3.0, 0.1)
     tmax = min(200.0, 50.0 * c^2)  # test t* ~ c^2 prediction
     dt = min(2e-4, 0.01)
-    prob = WeberProblem(sys4, (0.0, tmax), q0, p0;
+    prob = HamiltonianProblem(sys4, (0.0, tmax), q0, p0;
         masses=masses4, charges=charges4, c=c, dt=dt)
     sol = solve(prob, SymmetricProjectionIntegrator())
 

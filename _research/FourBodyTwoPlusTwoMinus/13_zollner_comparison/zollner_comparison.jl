@@ -81,7 +81,7 @@ function ic_nucleus_orbiters()
     ]
     masses = fill(1.0, 4)
     charges = [1.0, 1.0, -1.0, -1.0]
-    # COM / total-p not exactly zero but fine; WeberProblem does not require it.
+    # COM / total-p not exactly zero but fine; HamiltonianProblem does not require it.
     q0 = vec(permutedims(X))
     p0 = vec(permutedims(P))
     return (q=q0, p=p0, m=masses, q_=charges, label="nucleus_plus_orbiters_A")

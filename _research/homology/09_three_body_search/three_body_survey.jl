@@ -28,7 +28,7 @@ const _SYS_CACHE = Dict{Tuple{Int,Int},Any}()
 function _get_sys(n, d)
     key = (n, d)
     haskey(_SYS_CACHE, key) && return _SYS_CACHE[key]
-    sys = WeberSystem(n, d)
+    sys = HamiltonianSystem(n, d)
     _SYS_CACHE[key] = sys
     return sys
 end
@@ -39,7 +39,7 @@ function run_3body(q0, p0, masses, charges;
     sys = _get_sys(3, dims)
     reg = RegularizationOptions(collision_bounce_radius=bounce_r)
     zol = ZollnerOptions(enabled=zollner_enabled, a=zollner_a)
-    prob = WeberProblem(sys, (0.0, tmax), q0, p0;
+    prob = HamiltonianProblem(sys, (0.0, tmax), q0, p0;
         masses=masses, charges=charges, c=c, dt=dt,
         regularization=reg, zollner=zol)
     sol = solve(prob, SymmetricProjectionIntegrator())

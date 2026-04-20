@@ -330,9 +330,9 @@ function breathing_square_loop(; n_nodes::Int=64, side::Float64=2.0,
     end
 
     # Integrate to get the trajectory
-    sys = WeberSystem(4, 2)
+    sys = HamiltonianSystem(4, 2)
     dt_int = T_approx / (n_nodes * 4)
-    prob = WeberProblem(sys, (0.0, T_approx), q0, p0;
+    prob = HamiltonianProblem(sys, (0.0, T_approx), q0, p0;
         masses=masses, charges=charges, c=c, dt=dt_int)
     sol = solve(prob, SymmetricProjectionIntegrator())
 

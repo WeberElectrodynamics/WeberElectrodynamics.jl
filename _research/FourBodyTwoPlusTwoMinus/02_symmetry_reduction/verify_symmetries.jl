@@ -13,7 +13,7 @@ using Random
 
 const N    = 4
 const dims = 2
-sys = WeberSystem(N, dims)
+sys = HamiltonianSystem(N, dims)
 
 # Equal-mass 2+/2- params, kappas all 1.
 const params = Float64[1, 1, 1, 1,        # m1..m4

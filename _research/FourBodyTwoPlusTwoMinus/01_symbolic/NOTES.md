@@ -160,6 +160,6 @@ Comments:
 julia --project=. research/FourBodyTwoPlusTwoMinus/01_symbolic/run_analysis.jl
 ```
 
-The script rebuilds `WeberSystem(4,2)`, performs the substitutions, dumps the
+The script rebuilds `HamiltonianSystem(4,2)`, performs the substitutions, dumps the
 expanded H, computes all Poisson brackets symbolically, and verifies each
 identity numerically (6 samples). Total wall clock: ~90 s on a warm Julia.
