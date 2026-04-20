@@ -26,6 +26,7 @@ makedocs(
             "System"        => "api/system.md",
             "Problem"       => "api/problem.md",
             "Solver"        => "api/solver.md",
+            "Callbacks"     => "api/callbacks.md",
             "Statistics"    => "api/statistics.md",
             "Visualization" => "api/visualization.md",
         ],

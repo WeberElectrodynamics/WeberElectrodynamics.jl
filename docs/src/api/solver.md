@@ -20,4 +20,5 @@ solve!
 HamiltonianIntegrator
 HamiltonianSolution
 SymmetricProjectionIntegrator
+RegularizedIntegrator
 ```

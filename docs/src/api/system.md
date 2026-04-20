@@ -8,3 +8,25 @@ across many `HamiltonianProblem` instances.
 HamiltonianSystem
 HamiltonianSystem(::Int, ::Int)
 ```
+
+## Term builders
+
+```@docs
+weber_term
+zollner_term
+```
+
+## Term introspection
+
+```@docs
+NamedTerm
+term_names
+has_term
+get_term
+```
+
+## Metadata accessors
+
+```@docs
+n_particles
+```
