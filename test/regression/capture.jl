@@ -138,7 +138,7 @@ function fixture_twobody_ellipse()
     )
     alg = SymmetricProjectionIntegrator()
     sol = solve(prob, alg)
-    return prob, alg, sol, "twobody_ellipse",
+    return prob, alg, sol, ZollnerOptions(), "twobody_ellipse",
         "2-body unregularized bound elliptic orbit (finite c, mild eccentricity)"
 end
 
@@ -159,7 +159,7 @@ function fixture_threebody_mixed()
     )
     alg = SymmetricProjectionIntegrator()
     sol = solve(prob, alg)
-    return prob, alg, sol, "threebody_mixed",
+    return prob, alg, sol, ZollnerOptions(), "threebody_mixed",
         "3-body unregularized mixed-charge system starting from rest"
 end
 
@@ -197,7 +197,7 @@ function fixture_close_approach_lifted()
         warn_on_fallback = false,
     )
     sol = solve(prob, alg)
-    return prob, alg, sol, "close_approach_lifted",
+    return prob, alg, sol, ZollnerOptions(), "close_approach_lifted",
         "2-body close approach with :lifted_pair Levi-Civita regularization"
 end
 
@@ -238,7 +238,7 @@ function fixture_zollner_offmatch()
         warn_on_fallback = false,
     )
     sol = solve(prob, alg)
-    return prob, alg, sol, "zollner_offmatch",
+    return prob, alg, sol, zol, "zollner_offmatch",
         "2-body Zöllner off-match (a≠0) with adaptive-Cartesian regularization"
 end
 
@@ -257,6 +257,7 @@ function save_fixture(
     prob::HamiltonianProblem,
     alg,
     sol::HamiltonianSolution,
+    zol::ZollnerOptions,
     name::String,
     desc::String,
 )
@@ -275,7 +276,7 @@ function save_fixture(
         "convergence_tolerance" => prob.convergence_tolerance,
         "maximum_iterations" => prob.maximum_iterations,
         "regularization" => reg_opts_to_dict(_alg_reg_opts(alg)),
-        "zollner" => zollner_opts_to_dict(prob.zollner),
+        "zollner" => zollner_opts_to_dict(zol),
     )
 
     fixture = Dict{String,Any}(
@@ -316,10 +317,10 @@ function main()
         name_guess = string(nameof(builder))
         print("Building $name_guess ... ")
         t0 = time()
-        prob, alg, sol, name, desc = builder()
+        prob, alg, sol, zol, name, desc = builder()
         elapsed = time() - t0
         println("solve=$(round(elapsed; digits=2))s")
-        save_fixture(prob, alg, sol, name, desc)
+        save_fixture(prob, alg, sol, zol, name, desc)
         if sol.retcode != :Success
             error("Fixture $name produced retcode=$(sol.retcode); aborting.")
         end

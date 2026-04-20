@@ -32,8 +32,6 @@
         )
         @test length(kappas(prob)) == 1
         @test kappas(prob)[1] ≈ 1.1  # 1 + a for unlike charges
-        @test prob.zollner.enabled == true
-        @test prob.zollner.a == 0.1
     end
 
     @testset "Kappa computation — like charges" begin
