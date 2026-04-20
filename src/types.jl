@@ -1,6 +1,6 @@
 using LinearAlgebra
 
-abstract type WeberAlgorithm end
+abstract type HamiltonianAlgorithm end
 
 const REG_MODE_NONE = UInt8(0)
 const REG_MODE_PAIR = UInt8(1)
@@ -28,7 +28,7 @@ iteration whose convergence is controlled by `relaxation`.
 # Fields
 - `relaxation::Float64`: Stored relaxation factor.
 """
-struct SymmetricProjectionIntegrator <: WeberAlgorithm
+struct SymmetricProjectionIntegrator <: HamiltonianAlgorithm
     relaxation::Float64
 
     function SymmetricProjectionIntegrator(; relaxation::Real = 0.25)

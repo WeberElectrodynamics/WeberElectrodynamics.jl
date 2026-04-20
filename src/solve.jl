@@ -774,6 +774,36 @@ end
     return nothing
 end
 
+# -----------------------------------------------------------------------------
+# Algorithm dispatch hook
+#
+# `_step_core!(integrator, alg, dt_step)` advances the integrator by one
+# macro-step under the requested algorithm. New algorithms plug into the
+# integrator by adding a method to this function — no edits needed in the
+# outer `step!` loop. The default method errors so that unsupported
+# algorithms fail loudly rather than silently falling back.
+# -----------------------------------------------------------------------------
+function _step_core!(
+    ::HamiltonianIntegrator,
+    alg::HamiltonianAlgorithm,
+    ::Float64,
+)
+    throw(ArgumentError("step! not implemented for algorithm $(typeof(alg))"))
+end
+
+@inline function _step_core!(
+    integrator::HamiltonianIntegrator,
+    ::SymmetricProjectionIntegrator,
+    dt_step::Float64,
+)
+    if integrator.prob.regularization.enabled
+        _step_regularized_dispatch!(integrator, dt_step)
+    else
+        _step_unregularized!(integrator, dt_step)
+    end
+    return nothing
+end
+
 @inline function _step_regularized_pair_adaptive!(
     integrator::HamiltonianIntegrator,
     dt_step::Float64,
@@ -1170,11 +1200,7 @@ function CommonSolve.step!(integrator::HamiltonianIntegrator)
         )
     end
 
-    if prob.regularization.enabled
-        _step_regularized_dispatch!(integrator, dt_step)
-    else
-        _step_unregularized!(integrator, dt_step)
-    end
+    _step_core!(integrator, integrator.alg, dt_step)
 
     return integrator.step_count < max_steps
 end
@@ -1217,7 +1243,7 @@ function CommonSolve.solve!(integrator::HamiltonianIntegrator)
 end
 
 """
-    solve(prob::HamiltonianProblem, alg::WeberAlgorithm = SymmetricProjectionIntegrator()) -> HamiltonianSolution
+    solve(prob::HamiltonianProblem, alg::HamiltonianAlgorithm = SymmetricProjectionIntegrator()) -> HamiltonianSolution
 
 Initialise and run the integrator in a single call.
 
@@ -1228,7 +1254,7 @@ Convenience wrapper equivalent to `solve!(init(prob, alg))`.
 """
 function CommonSolve.solve(
     prob::HamiltonianProblem,
-    alg::WeberAlgorithm = SymmetricProjectionIntegrator(),
+    alg::HamiltonianAlgorithm = SymmetricProjectionIntegrator(),
 )
     integrator = CommonSolve.init(prob, alg)
     CommonSolve.solve!(integrator)
