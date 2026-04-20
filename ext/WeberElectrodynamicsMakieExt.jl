@@ -3,7 +3,7 @@ module WeberElectrodynamicsMakieExt
 using WeberElectrodynamics
 using WeberElectrodynamics: @sprintf, norm, dot,
     HamiltonianProblem, HamiltonianIntegrator, HamiltonianSystem, HamiltonianSolution,
-    SymmetricProjectionIntegrator, WeberAlgorithm,
+    SymmetricProjectionIntegrator, HamiltonianAlgorithm,
     _pair_index, compute_total_kinetic_energy, compute_pair_weber_components
 using CommonSolve: init, step!
 using Makie
