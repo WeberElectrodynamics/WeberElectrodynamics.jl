@@ -959,15 +959,15 @@ function WeberElectrodynamics.plot_weber_vs_zollner(
     sol2::HamiltonianSolution;
     labels::Vector{String} = ["Weber", "Zöllner"],
 )::Plots.Plot
-    n1 = sol1.prob.system.n_particles
-    n2 = sol2.prob.system.n_particles
-    dims = sol1.prob.system.dims
+    n1 = n_particles(sol1.prob)
+    n2 = n_particles(sol2.prob)
+    d = dims(sol1.prob)
     @assert n1 == n2 "Both solutions must have the same number of particles"
-    @assert dims == sol2.prob.system.dims "Both solutions must have the same dimensions"
-    @assert dims in (2, 3) "Trajectory comparison only supported for 2D and 3D"
+    @assert d == dims(sol2.prob) "Both solutions must have the same dimensions"
+    @assert d in (2, 3) "Trajectory comparison only supported for 2D and 3D"
 
-    traj1 = compute_trajectory_data(sol1, n1, dims)
-    traj2 = compute_trajectory_data(sol2, n2, dims)
+    traj1 = compute_trajectory_data(sol1, n1, d)
+    traj2 = compute_trajectory_data(sol2, n2, d)
 
     colors = [:steelblue, :firebrick, :forestgreen, :darkorchid, :darkorange]
 
@@ -981,7 +981,7 @@ function WeberElectrodynamics.plot_weber_vs_zollner(
         size = _square_size(),
     )
 
-    if dims == 2
+    if d == 2
         for particle = 1:n1
             c = colors[mod1(particle, length(colors))]
             plot!(
