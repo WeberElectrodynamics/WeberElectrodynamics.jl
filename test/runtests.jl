@@ -11,6 +11,7 @@ using Symbolics
     include("test_hamiltonian_system.jl")
     include("test_builders.jl")
     include("test_named_term.jl")
+    include("test_accessors.jl")
     include("test_solve.jl")
     include("test_statistics.jl")
     include("test_integration.jl")

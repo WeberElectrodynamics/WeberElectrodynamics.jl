@@ -11,6 +11,7 @@ export @sprintf, norm, dot
 include("hamiltonian_system.jl")
 export HamiltonianSystem, weber_term, zollner_term
 export NamedTerm, term_names, has_term, get_term
+export n_particles, dims, degrees_of_freedom
 
 # =============================================================================
 # Core Types (Problem, Solution, Integrator)
@@ -23,6 +24,7 @@ export RegularizationOptions
 export RegularizationDiagnostics
 export ZollnerOptions
 export SymmetricProjectionIntegrator
+export masses, charges, speed_of_light, kappas, params
 
 # =============================================================================
 # Regularization Helpers
