@@ -52,10 +52,10 @@ mutable struct RollingBuffer
 end
 
 function RollingBuffer(capacity::Int, prob::HamiltonianProblem)
-    n = prob.system.n_particles
-    dims = prob.system.dims
+    n = n_particles(prob)
+    d = dims(prob)
 
-    positions = [Matrix{Float64}(undef, dims, capacity) for _ in 1:n]
+    positions = [Matrix{Float64}(undef, d, capacity) for _ in 1:n]
 
     pair_sep = Dict{Tuple{Int,Int},Vector{Float64}}()
     pair_rdot = Dict{Tuple{Int,Int},Vector{Float64}}()
@@ -64,8 +64,8 @@ function RollingBuffer(capacity::Int, prob::HamiltonianProblem)
         pair_rdot[(i, j)] = Vector{Float64}(undef, capacity)
     end
 
-    particle_q = Dict(i => Matrix{Float64}(undef, dims, capacity) for i in 1:n)
-    particle_p = Dict(i => Matrix{Float64}(undef, dims, capacity) for i in 1:n)
+    particle_q = Dict(i => Matrix{Float64}(undef, d, capacity) for i in 1:n)
+    particle_p = Dict(i => Matrix{Float64}(undef, d, capacity) for i in 1:n)
 
     RollingBuffer(
         capacity, 0, 1,
@@ -91,16 +91,16 @@ function _compute_step_energy(q::AbstractVector{Float64}, p::AbstractVector{Floa
     ms = masses(prob)
     qs = charges(prob)
     c_val = speed_of_light(prob)
-    dims = prob.system.dims
-    n = prob.system.n_particles
+    d = dims(prob)
+    n = n_particles(prob)
     κs = kappas(prob)
 
-    KE = compute_total_kinetic_energy(p, ms, dims)
+    KE = compute_total_kinetic_energy(p, ms, d)
     PE = 0.0
     for i in 1:n, j in (i+1):n
         kappa_ij = κs[_pair_index(i, j, n)]
         coulomb, velocity, _, _ = compute_pair_weber_components(
-            q, p, i, j, ms, qs, c_val, dims, kappa_ij,
+            q, p, i, j, ms, qs, c_val, d, kappa_ij,
         )
         PE += coulomb + velocity
     end
@@ -135,15 +135,15 @@ end
 function push_step!(buf::RollingBuffer, t::Float64, q::AbstractVector{Float64},
                     p::AbstractVector{Float64}, prob::HamiltonianProblem)
     idx = buf.cursor
-    dims = prob.system.dims
-    n = prob.system.n_particles
+    D = dims(prob)
+    n = n_particles(prob)
 
     buf.t[idx] = t
 
     # Positions per particle
     @inbounds for particle in 1:n
-        base = (particle - 1) * dims
-        for d in 1:dims
+        base = (particle - 1) * D
+        for d in 1:D
             buf.positions[particle][d, idx] = q[base+d]
         end
     end
@@ -153,15 +153,15 @@ function push_step!(buf::RollingBuffer, t::Float64, q::AbstractVector{Float64},
 
     # Pair phase space
     @inbounds for i in 1:n, j in (i+1):n
-        r, rdot = _compute_step_pair_phase(q, p, i, j, masses(prob), dims)
+        r, rdot = _compute_step_pair_phase(q, p, i, j, masses(prob), D)
         buf.pair_separation[(i, j)][idx] = r
         buf.pair_radial_velocity[(i, j)][idx] = rdot
     end
 
     # Per-particle phase space
     @inbounds for particle in 1:n
-        base = (particle - 1) * dims
-        for d in 1:dims
+        base = (particle - 1) * D
+        for d in 1:D
             buf.particle_q[particle][d, idx] = q[base+d]
             buf.particle_p[particle][d, idx] = p[base+d]
         end
@@ -288,14 +288,14 @@ struct PlotObservables
 end
 
 function _create_observables(prob::HamiltonianProblem)
-    n = prob.system.n_particles
-    dims = prob.system.dims
+    n = n_particles(prob)
+    d = dims(prob)
 
     traj_x = [Observable(Float64[]) for _ in 1:n]
     traj_y = [Observable(Float64[]) for _ in 1:n]
-    traj_z = [Observable(Float64[]) for _ in 1:n]  # always allocated, used only when dims==3
+    traj_z = [Observable(Float64[]) for _ in 1:n]  # always allocated, used only when d==3
 
-    if dims == 3
+    if d == 3
         marker_2d = Observable{Point2f}[]
         marker_3d = [Observable(Point3f(0, 0, 0)) for _ in 1:n]
     else
@@ -326,8 +326,8 @@ end
 function _update_observables!(state::AnimationState, obs::PlotObservables)
     buf = state.buffer
     prob = state.prob
-    n = prob.system.n_particles
-    dims = prob.system.dims
+    n = n_particles(prob)
+    d = dims(prob)
 
     # Trajectory tails (last tail_length entries)
     tail_len = min(state.tail_length[], buf.count)
@@ -340,7 +340,7 @@ function _update_observables!(state::AnimationState, obs::PlotObservables)
         obs.traj_x[particle][] = x_tail
         obs.traj_y[particle][] = y_tail
 
-        if dims == 3
+        if d == 3
             z_full = _linearize_col(buf.positions[particle], 3, buf)
             z_tail = z_full[start_idx:end]
             obs.traj_z[particle][] = z_tail
@@ -647,8 +647,8 @@ function _build_figure_impl(state::AnimationState, obs::PlotObservables,
     fig = Figure(; size = figure_size, px_per_unit = 2)
 
     prob = state.prob
-    n = prob.system.n_particles
-    dims = prob.system.dims
+    n = n_particles(prob)
+    d = dims(prob)
 
     # =========================================================================
     # Big trajectory panel (Axis3 for 3D, Axis for 2D)
@@ -660,7 +660,7 @@ function _build_figure_impl(state::AnimationState, obs::PlotObservables,
                                      strokecolor = :black)] for i in 1:n]
     legend_labels = ["P$i" for i in 1:n]
 
-    if dims == 3
+    if d == 3
         ax_traj = Axis3(fig[1:3, 1:3];
             title = "Particle Trajectories",
             xlabel = "x", ylabel = "y", zlabel = "z",
@@ -797,7 +797,7 @@ function _build_figure_impl(state::AnimationState, obs::PlotObservables,
     # =========================================================================
     # Auto-scaling setup
     # =========================================================================
-    if dims == 3
+    if d == 3
         _autoscale_trajectory_3d!(ax_traj, obs.traj_x, obs.traj_y, obs.traj_z)
     else
         _autoscale_trajectory_2d!(ax_traj, obs.traj_x, obs.traj_y)
@@ -921,10 +921,10 @@ end
 Launch an interactive real-time animation of a Weber simulation.
 
 Streams simulation data into a rolling buffer and displays a live dashboard
-with one large trajectory panel (`Axis3` when `prob.system.dims == 3`,
+with one large trajectory panel (`Axis3` when `dims(prob) == 3`,
 otherwise `Axis`), a phase-space panel with selector dropdown, and a
 live energy-error readout. Requires a windowed Makie backend (GLMakie or
-WGLMakie recommended). Requires at least 2D (`prob.system.dims ≥ 2`).
+WGLMakie recommended). Requires at least 2D (`dims(prob) ≥ 2`).
 
 # Keywords
 - `buffer_size=2000`: Maximum timesteps retained in the rolling buffer.
@@ -946,14 +946,14 @@ function WeberElectrodynamics.animate_weber(
     buffer_size::Int = 2000,
     tail_length::Int = 200,
     compute_batch::Int = 1,
-    initial_pair::Tuple{Int,Int} = (1, min(2, prob.system.n_particles)),
+    initial_pair::Tuple{Int,Int} = (1, min(2, n_particles(prob))),
     phase_mode::Symbol = :pair,
     initial_particle::Int = 1,
     initial_component::Int = 1,
     figure_size::Tuple{Int,Int} = (1200, 800),
     alg::SymmetricProjectionIntegrator = SymmetricProjectionIntegrator(),
 )
-    @assert prob.system.dims >= 2 "Animation viewer requires at least 2D (got $(prob.system.dims)D)"
+    @assert dims(prob) >= 2 "Animation viewer requires at least 2D (got $(dims(prob))D)"
     @assert buffer_size > 0 "buffer_size must be positive"
     @assert tail_length > 0 "tail_length must be positive"
     @assert compute_batch > 0 "compute_batch must be positive"
@@ -1009,7 +1009,7 @@ Replay a completed `HamiltonianSolution` as an interactive animated dashboard.
 Identical dashboard layout to the streaming form (single dominant trajectory
 panel, phase-space sidebar, live energy-error readout), but replays
 pre-computed trajectory data. Requires at least 2D
-(`sol.prob.system.dims ≥ 2`).
+(`dims(sol.prob) ≥ 2`).
 
 # Keywords
 - `buffer_size=2000`: Rolling display buffer size.
@@ -1030,7 +1030,7 @@ function WeberElectrodynamics.animate_weber(
     buffer_size::Int = 2000,
     tail_length::Int = 200,
     compute_batch::Int = 1,
-    initial_pair::Tuple{Int,Int} = (1, min(2, sol.prob.system.n_particles)),
+    initial_pair::Tuple{Int,Int} = (1, min(2, n_particles(sol.prob))),
     phase_mode::Symbol = :pair,
     initial_particle::Int = 1,
     initial_component::Int = 1,
@@ -1038,7 +1038,7 @@ function WeberElectrodynamics.animate_weber(
     stride::Int = 1,
 )
     prob = sol.prob
-    @assert prob.system.dims >= 2 "Animation viewer requires at least 2D (got $(prob.system.dims)D)"
+    @assert dims(prob) >= 2 "Animation viewer requires at least 2D (got $(dims(prob))D)"
     @assert buffer_size > 0 "buffer_size must be positive"
     @assert tail_length > 0 "tail_length must be positive"
     @assert compute_batch > 0 "compute_batch must be positive"
