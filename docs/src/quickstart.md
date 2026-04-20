@@ -170,8 +170,8 @@ The integrator above runs the core unregularized symplectic method. Two optional
 extensions can be enabled explicitly:
 
 - **[Regularization](regularization.md)** — Levi-Civita / KS handling for
-  close encounters. Pass `regularization = RegularizationOptions(enabled = true)`
-  to `HamiltonianProblem`.
+  close encounters. Wrap the base algorithm:
+  `solve(prob, RegularizedIntegrator(SymmetricProjectionIntegrator()))`.
 - **[Zöllner Extension](zollner.md)** — research feature implementing Zöllner's
   electrogravitational mismatch hypothesis. Pass
   `zollner = ZollnerOptions(enabled = true, a = <value>)` to `HamiltonianProblem`.

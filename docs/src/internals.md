@@ -75,7 +75,8 @@ Neither backend regularizes Weber's velocity-dependent force — only the Coulom
 
 ### Collision bounce
 
-- Enabled via `RegularizationOptions(collision_bounce_radius = <r>)` passed to `HamiltonianProblem` (default 0.0 = off)
+- Implemented as the `CollisionBounce(radius)` callback; pass it to `solve` (or `init`) via the `callbacks` kwarg
+- `RegularizedIntegrator` also accepts a `collision_bounce_radius` kwarg and synthesises a matching callback automatically when no `CollisionBounce` is supplied
 - Only valid for ℓ=0 (head-on) collisions
 - Works best with the **unregularized** integrator (symplectic error stays bounded)
 
@@ -83,7 +84,7 @@ Neither backend regularizes Weber's velocity-dependent force — only the Coulom
 
 - `ZollnerOptions(enabled, a)` — mismatch parameter `a`
 - κ_ij = 1+a for unlike-sign charge pairs, 1.0 for like-sign
-- Stored in `HamiltonianProblem.kappas` and appended to the params vector automatically
+- Computed at `HamiltonianProblem` construction and packed into `params`; read via the `kappas(prob)` accessor
 
 ### Makie animation extension
 
@@ -93,7 +94,10 @@ Neither backend regularizes Weber's velocity-dependent force — only the Coulom
 
 ### Immutable options pattern
 
-`RegularizationOptions`, `ZollnerOptions` are immutable structs created once per problem. Pass configuration through `HamiltonianProblem` keyword arguments rather than mutating options.
+`RegularizationOptions` and `ZollnerOptions` are immutable structs — create them once, never mutate. They sit at different layers:
+
+- `ZollnerOptions` is problem-level: pass it via the `zollner = …` kwarg of `HamiltonianProblem`. It is used at construction to compute per-pair κ values and is not retained on the problem.
+- `RegularizationOptions` is algorithm-level: it lives inside `RegularizedIntegrator`. Use the `RegularizedIntegrator(base_alg; kwargs...)` constructor (its kwargs mirror `RegularizationOptions`) rather than building the options struct by hand.
 
 ---
 
