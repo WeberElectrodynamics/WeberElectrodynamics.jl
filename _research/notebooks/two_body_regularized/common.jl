@@ -23,19 +23,19 @@ const MU_CANON           = 0.5
 const T_ORBIT_CANON      = 2π * sqrt(A_SEMI_CANON^3 * MU_CANON / 1.0)  # ≈ 5.4282
 
 """
-    canonical_2d_problem(; n_orbits=5, dt=DT_CANON,
-                           regularization=RegularizationOptions(),
-                           zollner=ZollnerOptions())
+    canonical_2d_problem(; n_orbits=5, dt=DT_CANON, zollner=ZollnerOptions())
 
 Build the canonical 2D two-body Kepler-like Weber problem from
 `examples/two_body_reference.ipynb`: equal unit masses, unlike unit charges,
 `c = 4`, apoapsis initial conditions giving `e = 3/4`, `a = 8/7`, period
 `T ≈ 5.4282`.
+
+Regularization is no longer a problem-level option; see
+[`canonical_2d_algorithm`](@ref) for the matching algorithm wrapper.
 """
 function canonical_2d_problem(;
     n_orbits::Real = 5,
     dt::Real = DT_CANON,
-    regularization::RegularizationOptions = RegularizationOptions(),
     zollner::ZollnerOptions = ZollnerOptions(),
 )
     system = HamiltonianSystem(2, 2)
@@ -43,12 +43,40 @@ function canonical_2d_problem(;
     p0 = [ 0.0, -0.25, 0.0, 0.25]
     tspan = (0.0, n_orbits * T_ORBIT_CANON)
     return HamiltonianProblem(system, tspan, q0, p0;
-        masses        = collect(M_CANON),
-        charges       = collect(Q_CANON_UNLIKE),
-        c             = C_CANON,
-        dt            = dt,
-        regularization = regularization,
-        zollner       = zollner,
+        masses  = collect(M_CANON),
+        charges = collect(Q_CANON_UNLIKE),
+        c       = C_CANON,
+        dt      = dt,
+        zollner = zollner,
+    )
+end
+
+"""
+    canonical_2d_algorithm(; regularization=nothing, collision_bounce_radius=0.0)
+
+Build the canonical algorithm for the two-body regularized tour.
+
+- `regularization = nothing` and `collision_bounce_radius = 0.0` →
+  bare `SymmetricProjectionIntegrator()`.
+- `regularization::NamedTuple` → wraps the base algorithm in
+  `RegularizedIntegrator(...; regularization..., collision_bounce_radius=...)`.
+  NamedTuple kwargs are forwarded verbatim (`backend`, `r_on`, `r_off`,
+  `r_on_factor`, `r_off_factor`, `chain_enabled`, …).
+
+Pass the result as the second argument to `solve(prob, alg)`.
+"""
+function canonical_2d_algorithm(;
+    regularization::Union{Nothing,NamedTuple} = nothing,
+    collision_bounce_radius::Real = 0.0,
+)
+    if regularization === nothing && collision_bounce_radius == 0.0
+        return SymmetricProjectionIntegrator()
+    end
+    reg_kwargs = regularization === nothing ? NamedTuple() : regularization
+    return RegularizedIntegrator(
+        SymmetricProjectionIntegrator();
+        reg_kwargs...,
+        collision_bounce_radius = collision_bounce_radius,
     )
 end
 
