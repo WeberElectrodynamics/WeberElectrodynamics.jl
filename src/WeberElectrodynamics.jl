@@ -40,6 +40,12 @@ using CommonSolve: solve, init, step!, solve!
 export solve, init, step!, solve!
 
 # =============================================================================
+# Algorithm wrappers
+# =============================================================================
+include("integrators/regularized.jl")
+export RegularizedIntegrator
+
+# =============================================================================
 # Statistics & Analysis
 # =============================================================================
 include("statistics/trajectories.jl")

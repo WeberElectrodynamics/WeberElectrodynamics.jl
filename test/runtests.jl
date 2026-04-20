@@ -13,6 +13,7 @@ using Symbolics
     include("test_named_term.jl")
     include("test_accessors.jl")
     include("test_algorithm_dispatch.jl")
+    include("test_regularized_integrator.jl")
     include("test_solve.jl")
     include("test_statistics.jl")
     include("test_integration.jl")
