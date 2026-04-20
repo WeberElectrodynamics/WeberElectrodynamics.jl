@@ -22,7 +22,7 @@
 # fixtures during `Pkg.test()` without polluting the package's runtime deps.
 
 using WeberElectrodynamics
-using WeberElectrodynamics: SymmetricProjectionIntegrator
+using WeberElectrodynamics: SymmetricProjectionIntegrator, RegularizedIntegrator
 using JLD2
 using Dates
 using Symbolics: pkgversion
@@ -136,8 +136,9 @@ function fixture_twobody_ellipse()
         system, tspan, q_initial, p_initial;
         masses = [m1, m2], charges = [q1, q2], c = c, dt = dt,
     )
-    sol = solve(prob, SymmetricProjectionIntegrator())
-    return prob, sol, "twobody_ellipse",
+    alg = SymmetricProjectionIntegrator()
+    sol = solve(prob, alg)
+    return prob, alg, sol, "twobody_ellipse",
         "2-body unregularized bound elliptic orbit (finite c, mild eccentricity)"
 end
 
@@ -156,8 +157,9 @@ function fixture_threebody_mixed()
         system, tspan, q_initial, p_initial;
         masses = masses, charges = charges, c = c, dt = dt,
     )
-    sol = solve(prob, SymmetricProjectionIntegrator())
-    return prob, sol, "threebody_mixed",
+    alg = SymmetricProjectionIntegrator()
+    sol = solve(prob, alg)
+    return prob, alg, sol, "threebody_mixed",
         "3-body unregularized mixed-charge system starting from rest"
 end
 
@@ -180,8 +182,13 @@ function fixture_close_approach_lifted()
     tspan = (0.0, 8.0)
     dt = 2e-3
 
-    reg = RegularizationOptions(
-        enabled = true,
+    system = HamiltonianSystem(2, 2)
+    prob = HamiltonianProblem(
+        system, tspan, q_initial, p_initial;
+        masses = [m1, m2], charges = [q1, q2], c = c, dt = dt,
+    )
+    alg = RegularizedIntegrator(
+        SymmetricProjectionIntegrator();
         backend = :lifted_pair,
         r_on_factor = 0.3,
         r_off_factor = 0.45,
@@ -189,15 +196,8 @@ function fixture_close_approach_lifted()
         constraint_tolerance = 1e-12,
         warn_on_fallback = false,
     )
-
-    system = HamiltonianSystem(2, 2)
-    prob = HamiltonianProblem(
-        system, tspan, q_initial, p_initial;
-        masses = [m1, m2], charges = [q1, q2], c = c, dt = dt,
-        regularization = reg,
-    )
-    sol = solve(prob, SymmetricProjectionIntegrator())
-    return prob, sol, "close_approach_lifted",
+    sol = solve(prob, alg)
+    return prob, alg, sol, "close_approach_lifted",
         "2-body close approach with :lifted_pair Levi-Civita regularization"
 end
 
@@ -221,25 +221,24 @@ function fixture_zollner_offmatch()
     tspan = (0.0, 5.0)
     dt = 1e-3
 
-    reg = RegularizationOptions(
-        enabled = true,
-        backend = :adaptive_cartesian,
-        r_on_factor = 0.4,
-        r_off_factor = 0.6,
-        max_substeps = 512,
-        warn_on_fallback = false,
-    )
     zol = ZollnerOptions(enabled = true, a = 0.05)
 
     system = HamiltonianSystem(2, 2)
     prob = HamiltonianProblem(
         system, tspan, q_initial, p_initial;
         masses = [m1, m2], charges = [q1, q2], c = c, dt = dt,
-        regularization = reg,
         zollner = zol,
     )
-    sol = solve(prob, SymmetricProjectionIntegrator())
-    return prob, sol, "zollner_offmatch",
+    alg = RegularizedIntegrator(
+        SymmetricProjectionIntegrator();
+        backend = :adaptive_cartesian,
+        r_on_factor = 0.4,
+        r_off_factor = 0.6,
+        max_substeps = 512,
+        warn_on_fallback = false,
+    )
+    sol = solve(prob, alg)
+    return prob, alg, sol, "zollner_offmatch",
         "2-body Zöllner off-match (a≠0) with adaptive-Cartesian regularization"
 end
 
@@ -247,7 +246,20 @@ end
 # Write JLD2 fixture file
 # ---------------------------------------------------------------------------
 
-function save_fixture(prob::HamiltonianProblem, sol::HamiltonianSolution, name::String, desc::String)
+function _alg_reg_opts(::SymmetricProjectionIntegrator)
+    RegularizationOptions()
+end
+function _alg_reg_opts(alg::RegularizedIntegrator)
+    alg.options
+end
+
+function save_fixture(
+    prob::HamiltonianProblem,
+    alg,
+    sol::HamiltonianSolution,
+    name::String,
+    desc::String,
+)
     setup = Dict{String,Any}(
         "n_particles" => prob.system.n_particles,
         "dims" => prob.system.dims,
@@ -262,7 +274,7 @@ function save_fixture(prob::HamiltonianProblem, sol::HamiltonianSolution, name::
         "dt" => prob.dt,
         "convergence_tolerance" => prob.convergence_tolerance,
         "maximum_iterations" => prob.maximum_iterations,
-        "regularization" => reg_opts_to_dict(prob.regularization),
+        "regularization" => reg_opts_to_dict(_alg_reg_opts(alg)),
         "zollner" => zollner_opts_to_dict(prob.zollner),
     )
 
@@ -304,10 +316,10 @@ function main()
         name_guess = string(nameof(builder))
         print("Building $name_guess ... ")
         t0 = time()
-        prob, sol, name, desc = builder()
+        prob, alg, sol, name, desc = builder()
         elapsed = time() - t0
         println("solve=$(round(elapsed; digits=2))s")
-        save_fixture(prob, sol, name, desc)
+        save_fixture(prob, alg, sol, name, desc)
         if sol.retcode != :Success
             error("Fixture $name produced retcode=$(sol.retcode); aborting.")
         end

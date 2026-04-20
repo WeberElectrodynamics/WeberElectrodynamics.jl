@@ -95,10 +95,6 @@
         @test kappas(prob) == [1.0]  # unlike charges but Zöllner disabled → κ=1
         @test prob.zollner.enabled == false
         @test prob.zollner.a == 0.0
-        @test prob.regularization.enabled == false
-        @test prob.regularization.r_on === nothing
-        @test prob.regularization.r_off === nothing
-        @test prob.regularization.max_substeps == 512
 
         # Custom convergence_tolerance and maximum_iterations
         prob2 = HamiltonianProblem(
@@ -112,19 +108,9 @@
             dt = 0.01,
             convergence_tolerance = 1e-10,
             maximum_iterations = 50,
-            regularization = RegularizationOptions(
-                enabled = false,
-                r_on = 0.2,
-                r_off = 0.3,
-                max_substeps = 64,
-            ),
         )
         @test prob2.convergence_tolerance == 1e-10
         @test prob2.maximum_iterations == 50
-        @test prob2.regularization.enabled == false
-        @test prob2.regularization.r_on == 0.2
-        @test prob2.regularization.r_off == 0.3
-        @test prob2.regularization.max_substeps == 64
 
         # Validation errors
         @test_throws AssertionError HamiltonianProblem(

@@ -20,7 +20,7 @@
 #   include("test/regression/validate.jl"); validate_all()
 
 using WeberElectrodynamics
-using WeberElectrodynamics: SymmetricProjectionIntegrator
+using WeberElectrodynamics: SymmetricProjectionIntegrator, RegularizedIntegrator
 using JLD2
 using Printf
 
@@ -37,11 +37,12 @@ const FIXTURES = [
 # bug, not a tolerance issue.
 const TOLERANCE = 1e-12
 
-# Reconstruct RegularizationOptions from a fixture setup dict.
-function _rebuild_reg_options(d::Dict{String,Any})
-    backend_sym = Symbol(d["backend"])
-    RegularizationOptions(
-        enabled = d["enabled"],
+# Build a RegularizedIntegrator wrapper from a fixture's regularization dict.
+# Returns `nothing` when the fixture was unregularized.
+function _rebuild_algorithm(d::Dict{String,Any})
+    d["enabled"] || return SymmetricProjectionIntegrator()
+    return RegularizedIntegrator(
+        SymmetricProjectionIntegrator();
         r_on = d["r_on"],
         r_off = d["r_off"],
         r_on_factor = d["r_on_factor"],
@@ -50,7 +51,7 @@ function _rebuild_reg_options(d::Dict{String,Any})
         constraint_tolerance = d["constraint_tolerance"],
         g_floor = d["g_floor"],
         chain_enabled = d["chain_enabled"],
-        backend = backend_sym,
+        backend = Symbol(d["backend"]),
         warn_on_fallback = d["warn_on_fallback"],
         collision_bounce_radius = d["collision_bounce_radius"],
     )
@@ -60,22 +61,21 @@ function _rebuild_zollner_options(d::Dict{String,Any})
     ZollnerOptions(enabled = d["enabled"], a = d["a"])
 end
 
-# Rebuild the HamiltonianProblem corresponding to a fixture.
+# Rebuild the HamiltonianProblem + algorithm corresponding to a fixture.
 #
 # This function is the single point that must be updated each time the public
-# problem-building API changes (e.g. Phase 1 of the refactor will rewrite it
-# to use HamiltonianSystem + weber_term + HamiltonianProblem).
+# problem-building API changes.
 function rebuild_problem(setup::Dict{String,Any})
     n_particles = setup["n_particles"]::Int
     dims = setup["dims"]::Int
     system = HamiltonianSystem(n_particles, dims)
 
-    reg = _rebuild_reg_options(setup["regularization"])
+    alg = _rebuild_algorithm(setup["regularization"])
     zol = _rebuild_zollner_options(setup["zollner"])
 
     tspan = Tuple(setup["tspan"]::Vector{Float64})
 
-    return HamiltonianProblem(
+    prob = HamiltonianProblem(
         system,
         tspan,
         setup["q_initial"]::Vector{Float64},
@@ -86,9 +86,9 @@ function rebuild_problem(setup::Dict{String,Any})
         dt = setup["dt"]::Float64,
         convergence_tolerance = setup["convergence_tolerance"]::Float64,
         maximum_iterations = setup["maximum_iterations"]::Int,
-        regularization = reg,
         zollner = zol,
     )
+    return prob, alg
 end
 
 # Compare a fresh solution against a captured trajectory.
@@ -128,8 +128,8 @@ function validate_fixture(name::String)
         )
     end
 
-    prob = rebuild_problem(fixture["setup"])
-    sol = solve(prob, SymmetricProjectionIntegrator())
+    prob, alg = rebuild_problem(fixture["setup"])
+    sol = solve(prob, alg)
     max_t, max_q, max_p, ok_ret = compare_trajectory(sol, fixture["trajectory"])
 
     pass = max_q ≤ TOLERANCE && max_p ≤ TOLERANCE && max_t ≤ TOLERANCE && ok_ret

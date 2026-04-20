@@ -13,8 +13,7 @@ alg = RegularizedIntegrator(SymmetricProjectionIntegrator();
 sol = solve(prob, alg)
 ```
 
-The wrapper's options override `prob.regularization`; the base algorithm's
-settings (e.g. `relaxation`) are preserved.
+The base algorithm's settings (e.g. `relaxation`) are preserved.
 """
 struct RegularizedIntegrator{A<:HamiltonianAlgorithm} <: HamiltonianAlgorithm
     base_alg::A
@@ -61,33 +60,33 @@ Unwrap an algorithm one level. For bare algorithms this is the identity; for
 base_algorithm(alg::HamiltonianAlgorithm) = alg
 base_algorithm(alg::RegularizedIntegrator) = alg.base_alg
 
-# Rewrite a HamiltonianProblem with a new `regularization` field. This is the
-# Phase 3c.1 shim that lets `RegularizedIntegrator` delegate to the existing
-# regularization dispatch code without refactoring hot-path option reads.
-# Phase 3d will drop `prob.regularization` entirely, at which point this
-# helper disappears and the dispatch reads options from the algorithm instead.
-function _with_regularization(prob::HamiltonianProblem, reg::RegularizationOptions)
-    return HamiltonianProblem(
-        prob.system,
-        prob.tspan,
-        prob.q_initial,
-        prob.p_initial;
-        masses = masses(prob),
-        charges = charges(prob),
-        c = speed_of_light(prob),
-        dt = prob.dt,
-        convergence_tolerance = prob.convergence_tolerance,
-        maximum_iterations = prob.maximum_iterations,
-        regularization = reg,
-        zollner = prob.zollner,
-    )
+@inline function _step_core!(
+    integrator::HamiltonianIntegrator,
+    ::RegularizedIntegrator,
+    dt_step::Float64,
+)
+    _step_regularized_dispatch!(integrator, dt_step)
+    return nothing
 end
 
-function CommonSolve.init(
-    prob::HamiltonianProblem,
-    alg::RegularizedIntegrator;
-    callbacks = (),
+function _allocate_cache(prob::HamiltonianProblem, alg::RegularizedIntegrator)
+    buffers = SymmetricProjectionBuffers(prob, alg.options)
+    rb = buffers.regularization_buffers
+    if rb.backend_fallback && alg.options.warn_on_fallback
+        @warn "RegularizationOptions(backend=:lifted_pair) is currently supported only for 2D; falling back to :adaptive_cartesian for $(prob.system.dims)D"
+    end
+    return buffers
+end
+
+function _resolve_callbacks(
+    ::HamiltonianProblem,
+    alg::RegularizedIntegrator,
+    cbs,
 )
-    effective_prob = _with_regularization(prob, alg.options)
-    return CommonSolve.init(effective_prob, alg.base_alg; callbacks = callbacks)
+    user = _normalise_callbacks(cbs)
+    bounce_r = alg.options.collision_bounce_radius
+    if bounce_r > 0 && !any(c -> c isa CollisionBounce, user)
+        return (CollisionBounce(bounce_r), user...)
+    end
+    return user
 end
