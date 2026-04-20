@@ -46,13 +46,17 @@ prob = HamiltonianProblem(
 
 ## Combining with regularization
 
-Zöllner is fully compatible with regularization:
+Zöllner is fully compatible with regularization. Zöllner is a problem-level
+option; regularization is an algorithm wrapper. Combine them by setting
+`zollner` on the problem and wrapping the algorithm:
 
 ```julia
 prob = HamiltonianProblem(sys, tspan, q0, p0; ...
-    zollner        = ZollnerOptions(enabled = true, a = 0.01),
-    regularization = RegularizationOptions(enabled = true),
+    zollner = ZollnerOptions(enabled = true, a = 0.01),
 )
+
+alg = RegularizedIntegrator(SymmetricProjectionIntegrator())
+sol = solve(prob, alg)
 ```
 
 κ values are automatically included in the parameter vector passed to regularization

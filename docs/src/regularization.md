@@ -1,8 +1,8 @@
 # Regularization
 
 Regularization is an **optional, advanced** feature. The core integrator runs
-unregularized by default; pass `regularization = RegularizationOptions(enabled = true)`
-to opt in.
+unregularized by default; opt in by wrapping the base algorithm in a
+[`RegularizedIntegrator`](@ref) and passing it to `solve`.
 
 ## When to use it
 
@@ -27,9 +27,15 @@ prob = HamiltonianProblem(
     charges = [1.0, -1.0],
     c       = 10.0,
     dt      = 0.01,
-    regularization = RegularizationOptions(enabled = true),   # opt in
 )
+
+alg = RegularizedIntegrator(SymmetricProjectionIntegrator())   # opt in
+sol = solve(prob, alg)
 ```
+
+All keyword arguments below go on the `RegularizedIntegrator(...)` constructor
+itself. Its kwargs mirror [`RegularizationOptions`](@ref) (with `enabled = true`
+set implicitly).
 
 ## Backends
 
@@ -50,12 +56,11 @@ For 3D problems, `:lifted_pair` automatically falls back to `:adaptive_cartesian
 
 ```julia
 # Explicit 3D choice
-prob = HamiltonianProblem(sys, tspan, q0, p0; ...
-    regularization = RegularizationOptions(
-        enabled = true,
-        backend = :adaptive_cartesian,
-    ),
+alg = RegularizedIntegrator(
+    SymmetricProjectionIntegrator();
+    backend = :adaptive_cartesian,
 )
+sol = solve(prob, alg)
 ```
 
 ## Activation hysteresis
@@ -72,13 +77,12 @@ r_off = r_off_factor × min_initial_separation   (default factor: 0.25)
 You can override them directly:
 
 ```julia
-prob = HamiltonianProblem(sys, tspan, q0, p0; ...
-    regularization = RegularizationOptions(
-        enabled = true,
-        r_on    = 0.05,
-        r_off   = 0.10,
-    ),
+alg = RegularizedIntegrator(
+    SymmetricProjectionIntegrator();
+    r_on  = 0.05,
+    r_off = 0.10,
 )
+sol = solve(prob, alg)
 ```
 
 ## Chain mode
@@ -86,7 +90,7 @@ prob = HamiltonianProblem(sys, tspan, q0, p0; ...
 When three or more particles form a connected close-encounter cluster,
 regularization falls back to chain mode (adaptive Cartesian substeps for the
 whole cluster). Chain mode is enabled by default; disable with
-`RegularizationOptions(chain_enabled = false)`.
+`RegularizedIntegrator(...; chain_enabled = false)`.
 
 ## Collision bounce
 
@@ -94,10 +98,21 @@ For head-on (ℓ = 0) collisions between like-charge pairs, a reflection
 boundary can be applied before each macro-step. This avoids the non-regularizable
 ℓ ≠ 0 singularity (where particles reach r = 0 at infinite speed).
 
+Collision bounce is a [`CollisionBounce`](@ref) callback; pass it through the
+`callbacks` kwarg of `solve` (or `init`):
+
 ```julia
-prob = HamiltonianProblem(sys, tspan, q0, p0; ...
-    regularization = RegularizationOptions(collision_bounce_radius = 0.02),  # reflect at r < 0.02
-)
+sol = solve(prob, SymmetricProjectionIntegrator();
+            callbacks = CollisionBounce(0.02))   # reflect at r < 0.02
+```
+
+As a convenience, `RegularizedIntegrator` also accepts a `collision_bounce_radius`
+kwarg and synthesises a matching callback automatically:
+
+```julia
+alg = RegularizedIntegrator(SymmetricProjectionIntegrator();
+                            collision_bounce_radius = 0.02)
+sol = solve(prob, alg)
 ```
 
 Collision bounce works best **without** Levi-Civita regularization (the
