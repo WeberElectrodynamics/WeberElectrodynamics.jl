@@ -105,20 +105,15 @@ end
 function run_and_analyze(q0, p0, q1_charge, q2_charge, m1, m2, c;
     tmax=100.0, dt=1e-3, bounce_r=0.0, use_reg=false)
 
-    reg = if use_reg
-        RegularizationOptions(enabled=true, collision_bounce_radius=bounce_r)
-    elseif bounce_r > 0
-        RegularizationOptions(collision_bounce_radius=bounce_r)
-    else
-        RegularizationOptions()
-    end
-
     prob = HamiltonianProblem(
         SYS2D, (0.0, tmax), q0, p0;
         masses=[m1, m2], charges=[q1_charge, q2_charge], c=c, dt=dt,
-        regularization=reg
     )
-    sol = solve(prob, SymmetricProjectionIntegrator())
+    alg = use_reg ?
+        RegularizedIntegrator(SymmetricProjectionIntegrator(); collision_bounce_radius=bounce_r) :
+        SymmetricProjectionIntegrator()
+    cbs = (!use_reg && bounce_r > 0) ? CollisionBounce(bounce_r) : nothing
+    sol = cbs === nothing ? solve(prob, alg) : solve(prob, alg; callbacks=cbs)
 
     success = sol.retcode == :Success
 

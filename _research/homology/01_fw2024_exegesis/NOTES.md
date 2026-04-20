@@ -412,8 +412,8 @@ FW2024 explicitly states (page 7): "it has yet not been studied if there
 is a geometric regularization at the origin r = 0."
 
 **[obs]** The codebase has answered this question affirmatively for practical
-purposes: the collision bounce (`regularization_collision_bounce_radius` in
-`types.jl`) implements a `C^0` continuation. The `AngularMomentumRegularization.md`
+purposes: the collision bounce (`CollisionBounce(r)` callback passed to
+`solve`) implements a `C^0` continuation. The `AngularMomentumRegularization.md`
 confirms that standard Sundman/Levi-Civita regularization works for `ell = 0`
 (Experiment 3 in that document).
 

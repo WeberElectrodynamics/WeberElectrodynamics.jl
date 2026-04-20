@@ -42,7 +42,6 @@ function run(
 )
     n = length(masses)
     sys = _system(n, dims)
-    reg = RegularizationOptions(collision_bounce_radius = bounce_r)
     zol = ZollnerOptions(enabled = zollner_enabled, a = zollner_a)
     prob = HamiltonianProblem(
         sys,
@@ -53,10 +52,11 @@ function run(
         charges = charges,
         c = c,
         dt = dt,
-        regularization = reg,
         zollner = zol,
     )
-    sol = solve(prob, SymmetricProjectionIntegrator())
+    sol = bounce_r > 0 ?
+        solve(prob, SymmetricProjectionIntegrator(); callbacks = CollisionBounce(bounce_r)) :
+        solve(prob, SymmetricProjectionIntegrator())
     return sol
 end
 

@@ -43,13 +43,13 @@ end
 # ============================================================================
 function integrate(sys, q0, p0, masses, charges, c, tmax, dt;
                    bounce_r=0.0, dims=nothing)
-    reg = RegularizationOptions(collision_bounce_radius=bounce_r)
     prob = HamiltonianProblem(
         sys, (0.0, tmax), q0, p0;
         masses=masses, charges=charges, c=c, dt=dt,
-        regularization=reg,
     )
-    return solve(prob, SymmetricProjectionIntegrator())
+    return bounce_r > 0 ?
+        solve(prob, SymmetricProjectionIntegrator(); callbacks=CollisionBounce(bounce_r)) :
+        solve(prob, SymmetricProjectionIntegrator())
 end
 
 # ============================================================================

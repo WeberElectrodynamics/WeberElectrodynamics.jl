@@ -67,8 +67,8 @@ Status key:
 | Non-regularizability theorem (topological: infinite winding number invariant) | `AngularMomentumRegularization.md` | Formalizes what FW state informally. Uses FW's Theorem 2.1 as foundation. |
 | Tethering impossibility (external charges cannot stabilize ell!=0 sub-critical pairs) | `TetheringImpossibility.md` | 3 theorems extending FW's 2-body result to the perturbed case. Uses FW energy eq. (2.3). |
 | Collision bounce implementation | `solve.jl`, `types.jl` | Practical answer to FW's open question on geometric regularization at r=0. |
-| n-body Weber Hamiltonian (symbolic) | `src/weber_system.jl` | FW treats 2-body only; codebase generalizes to arbitrary n. |
-| Zollner electrogravitational extension | `src/types.jl` (ZollnerOptions), `src/weber_system.jl` (kappa params) | Not mentioned in FW2024. Adds per-pair coupling constants. |
+| n-body Weber Hamiltonian (symbolic) | `src/hamiltonian_system.jl` | FW treats 2-body only; codebase generalizes to arbitrary n. |
+| Zollner electrogravitational extension | `src/types.jl` (ZollnerOptions), `src/hamiltonian_system.jl` (kappa params) | Not mentioned in FW2024. Adds per-pair coupling constants. |
 | 4-body 2+/2- periodic orbit search | `research/FourBodyTwoPlusTwoMinus/` | Far beyond FW2024 scope. Only 1 orbit found (breathing square, super-critical, unstable). |
 | Floer homology framing for periodic orbit existence | `10_floer_symplectic/NOTES.md` | Uses FW's critical-radius obstruction as the key barrier in Floer theory. |
 | Morse/Conley analysis of effective potential | `12_homology_morse/NOTES.md` | Alternating square is index-2 saddle. FW does not discuss effective potential topology. |
