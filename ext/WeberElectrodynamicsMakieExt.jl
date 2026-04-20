@@ -88,19 +88,19 @@ end
 # =============================================================================
 
 function _compute_step_energy(q::AbstractVector{Float64}, p::AbstractVector{Float64}, prob::HamiltonianProblem)
-    masses = prob.masses
-    charges = prob.charges
-    c = prob.c
+    ms = masses(prob)
+    qs = charges(prob)
+    c_val = speed_of_light(prob)
     dims = prob.system.dims
     n = prob.system.n_particles
-    kappas = prob.kappas
+    κs = kappas(prob)
 
-    KE = compute_total_kinetic_energy(p, masses, dims)
+    KE = compute_total_kinetic_energy(p, ms, dims)
     PE = 0.0
     for i in 1:n, j in (i+1):n
-        kappa_ij = kappas[_pair_index(i, j, n)]
+        kappa_ij = κs[_pair_index(i, j, n)]
         coulomb, velocity, _, _ = compute_pair_weber_components(
-            q, p, i, j, masses, charges, c, dims, kappa_ij,
+            q, p, i, j, ms, qs, c_val, dims, kappa_ij,
         )
         PE += coulomb + velocity
     end
@@ -153,7 +153,7 @@ function push_step!(buf::RollingBuffer, t::Float64, q::AbstractVector{Float64},
 
     # Pair phase space
     @inbounds for i in 1:n, j in (i+1):n
-        r, rdot = _compute_step_pair_phase(q, p, i, j, prob.masses, dims)
+        r, rdot = _compute_step_pair_phase(q, p, i, j, masses(prob), dims)
         buf.pair_separation[(i, j)][idx] = r
         buf.pair_radial_velocity[(i, j)][idx] = rdot
     end
@@ -913,14 +913,14 @@ function _make_extended_problem(prob::HamiltonianProblem)
         (prob.tspan[1], max_time),
         prob.q_initial,
         prob.p_initial;
-        masses = prob.masses,
-        charges = prob.charges,
-        c = prob.c,
+        masses = masses(prob),
+        charges = charges(prob),
+        c = speed_of_light(prob),
         dt = prob.dt,
         convergence_tolerance = prob.convergence_tolerance,
         maximum_iterations = prob.maximum_iterations,
-        regularization = prob.regularization,
-        zollner = prob.zollner,
+        regularization = regularization(prob),
+        zollner = zollner(prob),
     )
 end
 

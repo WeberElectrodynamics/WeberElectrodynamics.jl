@@ -249,7 +249,7 @@ function compute_pair_force_timeseries(
     k = charges[i] * charges[j]
 
     # Zöllner coupling for this pair (1.0 = standard Weber)
-    kappa_ij = sol.prob.kappas[_pair_index(i, j, n_particles)]
+    kappa_ij = kappas(sol.prob)[_pair_index(i, j, n_particles)]
 
     zollner_extra_magnitude = Vector{Float64}(undef, n_force_steps)
 

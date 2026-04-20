@@ -44,4 +44,20 @@
         κ = kappas(prob)
         @test κ ≈ [1.1, 1.0, 1.1]
     end
+
+    @testset "regularization/zollner options accessors" begin
+        reg = RegularizationOptions(enabled = true, r_on_factor = 0.2, r_off_factor = 0.3)
+        zopts = ZollnerOptions(enabled = true, a = 0.05)
+        prob = HamiltonianProblem(
+            sys, (0.0, 1.0), zeros(6), zeros(6);
+            masses = [1.0, 1.0, 1.0],
+            charges = [1.0, -1.0, 1.0],
+            c = 10.0,
+            dt = 0.01,
+            regularization = reg,
+            zollner = zopts,
+        )
+        @test regularization(prob) === reg
+        @test zollner(prob) === zopts
+    end
 end

@@ -249,12 +249,13 @@ function compute_energy_timeseries(solution::HamiltonianSolution; stride::Int = 
     # Extract problem data
     prob = solution.prob
     system = prob.system
-    n_particles = system.n_particles
-    dims = system.dims
-    masses = prob.masses
-    charges = prob.charges
-    c = prob.c
-    params = prob.params
+    n = n_particles(prob)
+    d = dims(prob)
+    ms = masses(prob)
+    qs = charges(prob)
+    c_val = speed_of_light(prob)
+    params_vec = params(prob)
+    κs = kappas(prob)
     hamiltonian_compiled = system.hamiltonian_compiled
 
     # Compute indices and allocate
@@ -268,14 +269,13 @@ function compute_energy_timeseries(solution::HamiltonianSolution; stride::Int = 
     hamiltonian_validation = Vector{Float64}(undef, n_points)
 
     # Compute n_pairs without allocating pairs vector
-    n_pairs = n_particles * (n_particles - 1) ÷ 2
+    n_pairs = n * (n - 1) ÷ 2
 
     # Initialize pair energy storage with pre-sized Dict
-    kappas = prob.kappas
     pair_energies = sizehint!(Dict{Tuple{Int,Int},PairEnergyData}(), n_pairs)
-    for i = 1:n_particles
-        for j = (i+1):n_particles
-            kappa_ij = kappas[_pair_index(i, j, n_particles)]
+    for i = 1:n
+        for j = (i+1):n
+            kappa_ij = κs[_pair_index(i, j, n)]
             pair_energies[(i, j)] = PairEnergyData(
                 (i, j),
                 kappa_ij,
@@ -297,17 +297,17 @@ function compute_energy_timeseries(solution::HamiltonianSolution; stride::Int = 
         t_pt = solution.t[sol_idx]
 
         # Kinetic energy
-        KE = compute_total_kinetic_energy(p, masses, dims)
+        KE = compute_total_kinetic_energy(p, ms, d)
         kinetic_energy[pt_idx] = KE
 
         # Pair-wise potential energies
         PE_total = 0.0
         zollner_sum = 0.0
-        for i = 1:n_particles
-            for j = (i+1):n_particles
-                kappa_ij = kappas[_pair_index(i, j, n_particles)]
+        for i = 1:n
+            for j = (i+1):n
+                kappa_ij = κs[_pair_index(i, j, n)]
                 coulomb, velocity, rdot, zollner_extra =
-                    compute_pair_weber_components(q, p, i, j, masses, charges, c, dims, kappa_ij)
+                    compute_pair_weber_components(q, p, i, j, ms, qs, c_val, d, kappa_ij)
                 pair_data = pair_energies[(i, j)]
                 pair_data.coulomb_term[pt_idx] = coulomb
                 pair_data.velocity_term[pt_idx] = velocity
@@ -323,7 +323,7 @@ function compute_energy_timeseries(solution::HamiltonianSolution; stride::Int = 
         total_zollner_residual[pt_idx] = zollner_sum
 
         # Validate against compiled Hamiltonian
-        H_compiled = hamiltonian_compiled(q, p, t_pt, params)
+        H_compiled = hamiltonian_compiled(q, p, t_pt, params_vec)
         hamiltonian_validation[pt_idx] = abs(total_energy[pt_idx] - H_compiled)
     end
 
@@ -339,7 +339,7 @@ function compute_energy_timeseries(solution::HamiltonianSolution; stride::Int = 
         pair_energies,
         statistics,
         hamiltonian_validation,
-        n_particles,
+        n,
         n_pairs,
     )
 end
