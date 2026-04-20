@@ -165,9 +165,9 @@
             [1.0, 0.0, -1.0, 0.0], [0.0, 0.5, 0.0, -0.5];
             masses = [1.0, 1.0], charges = [1.0, -1.0], c = 10.0, dt = 0.005,
             zollner = ZollnerOptions(enabled = true, a = 0.01),
-            regularization = RegularizationOptions(enabled = true),
         )
-        sol = solve(prob, SymmetricProjectionIntegrator())
+        alg = RegularizedIntegrator(SymmetricProjectionIntegrator())
+        sol = solve(prob, alg)
         @test sol.retcode == :Success
         @test length(sol.t) > 1
     end
@@ -193,15 +193,15 @@
             sys, (0.0, 1.0), q0, p0;
             masses = [m1, m2], charges = [q1, q2], c = c, dt = 0.001,
             zollner = ZollnerOptions(enabled = true, a = a),
-            regularization = RegularizationOptions(
-                enabled = true,
-                backend = :adaptive_cartesian,
-                warn_on_fallback = false,
-                r_on = 0.15,
-                r_off = 0.25,
-            ),
         )
-        sol = solve(prob, SymmetricProjectionIntegrator())
+        alg = RegularizedIntegrator(
+            SymmetricProjectionIntegrator();
+            backend = :adaptive_cartesian,
+            warn_on_fallback = false,
+            r_on = 0.15,
+            r_off = 0.25,
+        )
+        sol = solve(prob, alg)
         @test sol.retcode == :Success
         # r0 < r_on so regularization fires on every step.
         @test sol.regularization.pair_steps > 0

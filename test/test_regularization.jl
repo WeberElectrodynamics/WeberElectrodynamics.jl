@@ -37,7 +37,7 @@
         end
 
         system = HamiltonianSystem(2, dims)
-        return HamiltonianProblem(
+        prob = HamiltonianProblem(
             system,
             (0.0, t_end),
             q0,
@@ -46,15 +46,20 @@
             charges = charges,
             c = c,
             dt = dt,
-            regularization = RegularizationOptions(
-                enabled = regularization_enabled,
+        )
+        alg = if regularization_enabled
+            RegularizedIntegrator(
+                SymmetricProjectionIntegrator();
                 backend = backend,
                 warn_on_fallback = warn_on_fallback,
                 r_on = r_on,
                 r_off = r_off,
                 max_substeps = max_substeps,
-            ),
-        )
+            )
+        else
+            SymmetricProjectionIntegrator()
+        end
+        return prob, alg
     end
 
     state_error(sol_a::HamiltonianSolution, sol_b::HamiltonianSolution) =
@@ -65,36 +70,16 @@
         q0_2d = [-1.0, 0.0, 1.0, 0.0]
         p0_2d = [0.0, -0.05, 0.0, 0.05]
 
-        prob_valid = HamiltonianProblem(
-            sys2,
-            (0.0, 0.1),
-            q0_2d,
-            p0_2d;
-            masses = [1.0, 0.5],
-            charges = [0.1, -0.1],
-            c = 4.0,
-            dt = 0.001,
-            regularization = RegularizationOptions(
-                enabled = true,
-                backend = :adaptive_cartesian,
-                warn_on_fallback = false,
-            ),
+        alg_valid = RegularizedIntegrator(
+            SymmetricProjectionIntegrator();
+            backend = :adaptive_cartesian,
+            warn_on_fallback = false,
         )
-        @test prob_valid.regularization.backend == WeberElectrodynamics.REG_BACKEND_ADAPTIVE
+        @test alg_valid.options.backend == WeberElectrodynamics.REG_BACKEND_ADAPTIVE
 
-        @test_throws AssertionError HamiltonianProblem(
-            sys2,
-            (0.0, 0.1),
-            q0_2d,
-            p0_2d;
-            masses = [1.0, 0.5],
-            charges = [0.1, -0.1],
-            c = 4.0,
-            dt = 0.001,
-            regularization = RegularizationOptions(
-                enabled = true,
-                backend = :invalid_backend,
-            ),
+        @test_throws AssertionError RegularizedIntegrator(
+            SymmetricProjectionIntegrator();
+            backend = :invalid_backend,
         )
 
         sys1 = HamiltonianSystem(2, 1)
@@ -110,15 +95,15 @@
             charges = [0.2, -0.2],
             c = 4.0,
             dt = 0.001,
-            regularization = RegularizationOptions(
-                enabled = true,
-                backend = :lifted_pair,
-                warn_on_fallback = false,
-                r_on = 0.2,
-                r_off = 0.26,
-            ),
         )
-        int_fb = init(prob_fb)
+        alg_fb = RegularizedIntegrator(
+            SymmetricProjectionIntegrator();
+            backend = :lifted_pair,
+            warn_on_fallback = false,
+            r_on = 0.2,
+            r_off = 0.26,
+        )
+        int_fb = init(prob_fb, alg_fb)
         rb_fb = int_fb.buffers.regularization_buffers
         @test rb_fb.effective_backend == WeberElectrodynamics.REG_BACKEND_ADAPTIVE
         @test rb_fb.backend_fallback
@@ -128,24 +113,14 @@
         @test int_fb.diagnostics.lifted_pair_steps == 0
         @test int_fb.diagnostics.backend_fallback_steps == 1
 
-        prob_warn = HamiltonianProblem(
-            sys1,
-            (0.0, 0.01),
-            q0_1d,
-            p0_1d;
-            masses = [1.0, 1.0],
-            charges = [0.2, -0.2],
-            c = 4.0,
-            dt = 0.001,
-            regularization = RegularizationOptions(
-                enabled = true,
-                backend = :lifted_pair,
-                warn_on_fallback = true,
-                r_on = 0.2,
-                r_off = 0.26,
-            ),
+        alg_warn = RegularizedIntegrator(
+            SymmetricProjectionIntegrator();
+            backend = :lifted_pair,
+            warn_on_fallback = true,
+            r_on = 0.2,
+            r_off = 0.26,
         )
-        @test_logs (:warn, r"falling back to :adaptive_cartesian") init(prob_warn)
+        @test_logs (:warn, r"falling back to :adaptive_cartesian") init(prob_fb, alg_warn)
     end
 
     @testset "3D lifted pair fallback to adaptive_cartesian" begin
@@ -164,15 +139,15 @@
             charges = [0.1, -0.1],
             c = 4.0,
             dt = 0.001,
-            regularization = RegularizationOptions(
-                enabled = true,
-                backend = :lifted_pair,
-                warn_on_fallback = false,
-                r_on = 0.2,
-                r_off = 0.3,
-            ),
         )
-        int_3d = init(prob_3d)
+        alg_3d = RegularizedIntegrator(
+            SymmetricProjectionIntegrator();
+            backend = :lifted_pair,
+            warn_on_fallback = false,
+            r_on = 0.2,
+            r_off = 0.3,
+        )
+        int_3d = init(prob_3d, alg_3d)
         rb_3d = int_3d.buffers.regularization_buffers
         @test rb_3d.effective_backend == WeberElectrodynamics.REG_BACKEND_ADAPTIVE
         @test rb_3d.backend_fallback
@@ -181,29 +156,20 @@
         @test int_3d.diagnostics.backend_fallback_steps == 1
         @test int_3d.diagnostics.lifted_pair_steps == 0
 
-        @test_logs (:warn, r"falling back to :adaptive_cartesian") init(HamiltonianProblem(
-            sys3,
-            (0.0, 0.01),
-            q0_3d,
-            p0_3d;
-            masses = [1.0, 0.5],
-            charges = [0.1, -0.1],
-            c = 4.0,
-            dt = 0.001,
-            regularization = RegularizationOptions(
-                enabled = true,
-                backend = :lifted_pair,
-                warn_on_fallback = true,
-                r_on = 0.2,
-                r_off = 0.3,
-            ),
-        ))
+        alg_3d_warn = RegularizedIntegrator(
+            SymmetricProjectionIntegrator();
+            backend = :lifted_pair,
+            warn_on_fallback = true,
+            r_on = 0.2,
+            r_off = 0.3,
+        )
+        @test_logs (:warn, r"falling back to :adaptive_cartesian") init(prob_3d, alg_3d_warn)
     end
 
     @testset "Transform identities" begin
         @testset "Levi-Civita" begin
             Random.seed!(42)
-            rb = WeberElectrodynamics.RegularizationBuffers(2, 2, 4, 0.1, 0.2, :lifted_pair, false)
+            rb = WeberElectrodynamics.RegularizationBuffers(2, 2, 4, 0.1, 0.2, :lifted_pair, false, RegularizationOptions())
             q_rel = zeros(2)
             p_rel = zeros(2)
 
@@ -233,7 +199,7 @@
         end
 
         @testset "KS" begin
-            rb = WeberElectrodynamics.RegularizationBuffers(2, 3, 6, 0.1, 0.2, :adaptive_cartesian, false)
+            rb = WeberElectrodynamics.RegularizationBuffers(2, 3, 6, 0.1, 0.2, :adaptive_cartesian, false, RegularizationOptions())
             J = rb.ks_J
 
             for _ = 1:32
@@ -266,7 +232,7 @@
     end
 
     @testset "Switching and hysteresis" begin
-        rb = WeberElectrodynamics.RegularizationBuffers(3, 2, 6, 0.2, 0.3, :adaptive_cartesian, false)
+        rb = WeberElectrodynamics.RegularizationBuffers(3, 2, 6, 0.2, 0.3, :adaptive_cartesian, false, RegularizationOptions())
 
         q_activate = [-0.09, 0.0, 0.09, 0.0, 0.8, 0.0]
         active, mode, _ = WeberElectrodynamics._detect_regularization_component!(rb, q_activate, true)
@@ -302,7 +268,7 @@
     end
 
     @testset "Chain-disabled overlap fallback" begin
-        rb = WeberElectrodynamics.RegularizationBuffers(3, 2, 6, 0.2, 0.3, :adaptive_cartesian, false)
+        rb = WeberElectrodynamics.RegularizationBuffers(3, 2, 6, 0.2, 0.3, :adaptive_cartesian, false, RegularizationOptions())
         q_overlap = [-0.09, 0.0, 0.09, 0.0, 0.2, 0.0]
         active, mode, _ = WeberElectrodynamics._detect_regularization_component!(rb, q_overlap, false)
         @test active
@@ -321,16 +287,16 @@
             charges = [0.1, -0.2, 0.1],
             c = 4.0,
             dt = 0.001,
-            regularization = RegularizationOptions(
-                enabled = true,
-                backend = :adaptive_cartesian,
-                warn_on_fallback = false,
-                r_on = 0.2,
-                r_off = 0.3,
-                chain_enabled = false,
-            ),
         )
-        sol = solve(prob)
+        alg = RegularizedIntegrator(
+            SymmetricProjectionIntegrator();
+            backend = :adaptive_cartesian,
+            warn_on_fallback = false,
+            r_on = 0.2,
+            r_off = 0.3,
+            chain_enabled = false,
+        )
+        sol = solve(prob, alg)
         @test sol.retcode == :Success
         @test sol.regularization.pair_steps == 0
         @test sol.regularization.chain_steps == 0
@@ -338,7 +304,7 @@
     end
 
     @testset "Pair mode correctness (2D lifted)" begin
-        coarse_cart = make_orbit_problem(2;
+        prob_cart, alg_cart = make_orbit_problem(2;
             dt = 0.004,
             t_end = 3.0,
             v_scale = 0.2,
@@ -347,7 +313,7 @@
             r_on = 0.6,
             r_off = 0.9,
         )
-        coarse_adaptive = make_orbit_problem(2;
+        prob_adaptive, alg_adaptive = make_orbit_problem(2;
             dt = 0.004,
             t_end = 3.0,
             v_scale = 0.2,
@@ -356,7 +322,7 @@
             r_on = 0.6,
             r_off = 0.9,
         )
-        coarse_lifted = make_orbit_problem(2;
+        prob_lifted, alg_lifted = make_orbit_problem(2;
             dt = 0.004,
             t_end = 3.0,
             v_scale = 0.2,
@@ -365,7 +331,7 @@
             r_on = 0.6,
             r_off = 0.9,
         )
-        fine_ref = make_orbit_problem(2;
+        prob_ref, alg_ref = make_orbit_problem(2;
             dt = 0.001,
             t_end = 3.0,
             v_scale = 0.2,
@@ -375,10 +341,10 @@
             r_off = 0.9,
         )
 
-        sol_cart = solve(coarse_cart)
-        sol_adaptive = solve(coarse_adaptive)
-        sol_lifted = solve(coarse_lifted)
-        sol_ref = solve(fine_ref)
+        sol_cart = solve(prob_cart, alg_cart)
+        sol_adaptive = solve(prob_adaptive, alg_adaptive)
+        sol_lifted = solve(prob_lifted, alg_lifted)
+        sol_ref = solve(prob_ref, alg_ref)
 
         @test sol_cart.retcode == :Success
         @test sol_adaptive.retcode == :Success
@@ -425,13 +391,13 @@
             charges = [q1, q2],
             c = c,
             dt = T_est / 2000,
-            regularization = RegularizationOptions(
-                enabled = false,
-                collision_bounce_radius = 0.01,
-            ),
         )
 
-        sol = solve(prob)
+        sol = solve(
+            prob,
+            SymmetricProjectionIntegrator();
+            callbacks = CollisionBounce(0.01),
+        )
         @test sol.retcode == :Success
 
         # All states finite.
@@ -476,19 +442,19 @@
             charges = [q1, q2],
             c = c,
             dt = T_est / 1000,
-            regularization = RegularizationOptions(
-                enabled = true,
-                backend = :adaptive_cartesian,
-                warn_on_fallback = false,
-                # Set r_on below bounce_r so regularization stays idle;
-                # bounce handles the singularity and the two features coexist.
-                r_on = 0.005,
-                r_off = 0.015,
-                collision_bounce_radius = 0.01,
-            ),
+        )
+        alg = RegularizedIntegrator(
+            SymmetricProjectionIntegrator();
+            backend = :adaptive_cartesian,
+            warn_on_fallback = false,
+            # Set r_on below bounce_r so regularization stays idle;
+            # bounce handles the singularity and the two features coexist.
+            r_on = 0.005,
+            r_off = 0.015,
+            collision_bounce_radius = 0.01,
         )
 
-        sol = solve(prob)
+        sol = solve(prob, alg)
         @test sol.retcode == :Success
         @test all(isfinite, sol.q[end])
         @test all(isfinite, sol.p[end])
@@ -511,18 +477,18 @@
             charges = [0.1, -0.2, 0.1],
             c = 4.0,
             dt = 0.002,
-            regularization = RegularizationOptions(
-                enabled = true,
-                backend = :lifted_pair,
-                warn_on_fallback = false,
-                r_on = 0.28,
-                r_off = 0.39,
-                chain_enabled = true,
-                max_substeps = 256,
-            ),
+        )
+        alg = RegularizedIntegrator(
+            SymmetricProjectionIntegrator();
+            backend = :lifted_pair,
+            warn_on_fallback = false,
+            r_on = 0.28,
+            r_off = 0.39,
+            chain_enabled = true,
+            max_substeps = 256,
         )
 
-        sol = solve(prob)
+        sol = solve(prob, alg)
         @test sol.retcode == :Success
         @test sol.regularization.chain_steps > 0
         @test sol.regularization.lifted_pair_steps == 0
@@ -540,31 +506,23 @@
             dt = 0.001,
         )
 
-        prob_off = HamiltonianProblem(
+        prob_shared = HamiltonianProblem(
             sys,
             (0.0, 0.2),
             q0,
             p0;
             kwargs...,
-            regularization = RegularizationOptions(enabled = false),
         )
-        prob_on = HamiltonianProblem(
-            sys,
-            (0.0, 0.2),
-            q0,
-            p0;
-            kwargs...,
-            regularization = RegularizationOptions(
-                enabled = true,
-                backend = :adaptive_cartesian,
-                warn_on_fallback = false,
-                r_on = 0.05,
-                r_off = 0.08,
-            ),
+        alg_on = RegularizedIntegrator(
+            SymmetricProjectionIntegrator();
+            backend = :adaptive_cartesian,
+            warn_on_fallback = false,
+            r_on = 0.05,
+            r_off = 0.08,
         )
 
-        sol_off = solve(prob_off)
-        sol_on = solve(prob_on)
+        sol_off = solve(prob_shared, SymmetricProjectionIntegrator())
+        sol_on = solve(prob_shared, alg_on)
 
         @test sol_on.regularization.pair_steps == 0
         @test sol_on.regularization.chain_steps == 0
@@ -588,13 +546,13 @@
             charges = [0.0],
             c = 4.0,
             dt = 0.01,
-            regularization = RegularizationOptions(
-                enabled = true,
-                backend = :adaptive_cartesian,
-                warn_on_fallback = false,
-            ),
         )
-        sol = solve(prob)
+        alg = RegularizedIntegrator(
+            SymmetricProjectionIntegrator();
+            backend = :adaptive_cartesian,
+            warn_on_fallback = false,
+        )
+        sol = solve(prob, alg)
         @test sol.retcode == :Success
         @test sol.regularization.pair_steps == 0
         @test sol.regularization.chain_steps == 0
@@ -602,7 +560,7 @@
     end
 
     @testset "Diagnostics validity" begin
-        prob = make_orbit_problem(2;
+        prob, alg = make_orbit_problem(2;
             dt = 0.004,
             t_end = 3.0,
             v_scale = 0.2,
@@ -611,7 +569,7 @@
             r_on = 0.6,
             r_off = 0.9,
         )
-        sol = solve(prob)
+        sol = solve(prob, alg)
         d = sol.regularization
 
         @test d.pair_steps + d.chain_steps + d.unregularized_steps == length(sol) - 1
@@ -638,7 +596,6 @@
             charges = [0.1, -0.1],
             c = 4.0,
             dt = 0.001,
-            regularization = RegularizationOptions(enabled = false),
         )
         int_unreg = init(prob_unreg)
         step!(int_unreg)
@@ -656,16 +613,16 @@
             charges = [0.1, -0.1],
             c = 4.0,
             dt = 0.001,
-            regularization = RegularizationOptions(
-                enabled = true,
-                backend = :lifted_pair,
-                warn_on_fallback = false,
-                r_on = 0.2,
-                r_off = 0.26,
-                max_substeps = 256,
-            ),
         )
-        int_lifted = init(prob_lifted)
+        alg_lifted = RegularizedIntegrator(
+            SymmetricProjectionIntegrator();
+            backend = :lifted_pair,
+            warn_on_fallback = false,
+            r_on = 0.2,
+            r_off = 0.26,
+            max_substeps = 256,
+        )
+        int_lifted = init(prob_lifted, alg_lifted)
         step!(int_lifted)
         @test int_lifted.diagnostics.mode_history[1] == WeberElectrodynamics.REG_MODE_PAIR
         alloc_lifted = @allocated step!(int_lifted)

@@ -24,7 +24,7 @@ export RegularizationOptions
 export RegularizationDiagnostics
 export ZollnerOptions
 export SymmetricProjectionIntegrator
-export masses, charges, speed_of_light, kappas, params, regularization, zollner
+export masses, charges, speed_of_light, kappas, params, zollner
 
 # =============================================================================
 # Regularization Helpers

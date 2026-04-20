@@ -639,7 +639,7 @@ end
 )
     system = prob.system
     ms = masses(prob)
-    g_floor = prob.regularization.g_floor
+    g_floor = rb.options.g_floor
 
     prev_u1 = rb.lc_u[1]
     prev_u2 = rb.lc_u[2]
@@ -757,7 +757,7 @@ end
         integrator.t,
         dt_step,
         integrator.prob,
-        integrator.alg,
+        base_algorithm(integrator.alg),
         integrator.buffers,
     )
 
@@ -796,13 +796,11 @@ end
     ::SymmetricProjectionIntegrator,
     dt_step::Float64,
 )
-    if integrator.prob.regularization.enabled
-        _step_regularized_dispatch!(integrator, dt_step)
-    else
-        _step_unregularized!(integrator, dt_step)
-    end
+    _step_unregularized!(integrator, dt_step)
     return nothing
 end
+# `_step_core!(::RegularizedIntegrator, ...)` lives in integrators/regularized.jl
+# because the type is defined there.
 
 @inline function _step_regularized_pair_adaptive!(
     integrator::HamiltonianIntegrator,
@@ -816,7 +814,7 @@ end
     i = rb.active_anchor_i
     j = rb.active_anchor_j
 
-    reg = prob.regularization
+    reg = rb.options
     constraint_tolerance = reg.constraint_tolerance
     substeps = Int(ceil(rb.r_on / max(min_distance, reg.g_floor)))
     substeps = clamp(substeps, 1, reg.max_substeps)
@@ -865,7 +863,7 @@ end
             t_sub,
             dt_sub,
             prob,
-            integrator.alg,
+            base_algorithm(integrator.alg),
             integrator.buffers,
         )
         t_sub += dt_sub
@@ -897,7 +895,7 @@ end
 
     _set_pair_params!(rb, prob, i, j)
 
-    reg = prob.regularization
+    reg = rb.options
     g_floor = reg.g_floor
     max_sub = reg.max_substeps
 
@@ -957,7 +955,7 @@ end
 )
     prob = integrator.prob
     rb = integrator.buffers.regularization_buffers
-    reg = prob.regularization
+    reg = rb.options
     constraint_tolerance = reg.constraint_tolerance
 
     omega = _component_omega(rb)
@@ -997,7 +995,7 @@ end
             t_sub,
             dt_sub,
             prob,
-            integrator.alg,
+            base_algorithm(integrator.alg),
             integrator.buffers,
         )
         t_sub += dt_sub
@@ -1020,9 +1018,8 @@ end
     integrator::HamiltonianIntegrator,
     dt_step::Float64,
 )
-    prob = integrator.prob
-    reg = prob.regularization
     rb = integrator.buffers.regularization_buffers
+    reg = rb.options
     diagnostics = integrator.diagnostics
 
     was_active = rb.is_active
@@ -1095,13 +1092,10 @@ function _allocate_cache(::HamiltonianProblem, alg::HamiltonianAlgorithm)
 end
 
 function _allocate_cache(prob::HamiltonianProblem, ::SymmetricProjectionIntegrator)
-    buffers = SymmetricProjectionBuffers(prob)
-    rb = buffers.regularization_buffers
-    if prob.regularization.enabled && rb.backend_fallback && prob.regularization.warn_on_fallback
-        @warn "RegularizationOptions(backend=:lifted_pair) is currently supported only for 2D; falling back to :adaptive_cartesian for $(prob.system.dims)D"
-    end
-    return buffers
+    return SymmetricProjectionBuffers(prob, RegularizationOptions())
 end
+# `_allocate_cache(::HamiltonianProblem, ::RegularizedIntegrator)` lives in
+# integrators/regularized.jl because the type is defined there.
 
 """
     init(prob::HamiltonianProblem,
@@ -1118,9 +1112,9 @@ or pass it directly to `solve!`.
 - `callbacks`: a single [`HamiltonianCallback`](@ref) or an iterable of them.
   Invoked pre-/post-step around each macro-step.
 
-If `prob.regularization.collision_bounce_radius > 0` and no `CollisionBounce`
-is present in `callbacks`, a matching one is synthesised automatically so
-the legacy problem-level kwarg keeps working.
+If `alg` is a `RegularizedIntegrator` with `collision_bounce_radius > 0` and
+no `CollisionBounce` is present in `callbacks`, a matching one is synthesised
+automatically so the legacy kwarg keeps working.
 
 # Returns
 - `HamiltonianIntegrator` at `t = prob.tspan[1]` with `step_count = 0`.
@@ -1133,7 +1127,7 @@ function CommonSolve.init(
     degrees_of_freedom = prob.system.degrees_of_freedom
 
     buffers = _allocate_cache(prob, alg)
-    cb_tuple = _resolve_callbacks(prob, callbacks)
+    cb_tuple = _resolve_callbacks(prob, alg, callbacks)
 
     n_steps = Int(ceil((prob.tspan[2] - prob.tspan[1]) / prob.dt))
     t_history = Vector{Float64}(undef, n_steps + 1)
@@ -1144,10 +1138,11 @@ function CommonSolve.init(
     q_history[1] .= prob.q_initial
     p_history[1] .= prob.p_initial
 
-    requested_backend = prob.regularization.enabled ? prob.regularization.backend : REG_BACKEND_DISABLED
+    reg_opts = buffers.regularization_buffers.options
+    requested_backend = reg_opts.enabled ? reg_opts.backend : REG_BACKEND_DISABLED
     used_backend = REG_BACKEND_DISABLED
     diagnostics =
-        RegularizationDiagnostics(prob.regularization.enabled, n_steps, requested_backend, used_backend)
+        RegularizationDiagnostics(reg_opts.enabled, n_steps, requested_backend, used_backend)
 
     HamiltonianIntegrator(
         prob,
@@ -1166,18 +1161,16 @@ function CommonSolve.init(
     )
 end
 
-# Merge user-supplied callbacks with the legacy bridge derived from
-# `prob.regularization.collision_bounce_radius`. When the radius is > 0 and
-# no `CollisionBounce` was supplied explicitly, synthesise one so existing
-# code that sets the radius on RegularizationOptions continues to fire the
-# bounce.
-function _resolve_callbacks(prob::HamiltonianProblem, cbs)
-    user = _normalise_callbacks(cbs)
-    bounce_r = prob.regularization.collision_bounce_radius
-    if bounce_r > 0 && !any(c -> c isa CollisionBounce, user)
-        return (CollisionBounce(bounce_r), user...)
-    end
-    return user
+# Merge user-supplied callbacks with algorithm-synthesised ones. Base version
+# just normalises; the `RegularizedIntegrator` method in
+# integrators/regularized.jl adds a `CollisionBounce` when
+# `collision_bounce_radius > 0` and none was supplied explicitly.
+function _resolve_callbacks(
+    ::HamiltonianProblem,
+    ::HamiltonianAlgorithm,
+    cbs,
+)
+    return _normalise_callbacks(cbs)
 end
 
 # Pre-step collision bounce: for each pair closer than bounce_r,
@@ -1207,8 +1200,9 @@ end
 Advance the integrator by one macro time step `prob.dt`.
 
 Dispatches to the regularized or plain Cartesian integration path based on
-current particle separations and `prob.regularization` settings. The final
-step is automatically shortened to land exactly on `prob.tspan[2]`.
+the algorithm type (`RegularizedIntegrator` vs `SymmetricProjectionIntegrator`)
+and current particle separations. The final step is automatically shortened
+to land exactly on `prob.tspan[2]`.
 
 # Returns
 - `true` if more steps remain, `false` when integration is complete.

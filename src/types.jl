@@ -298,6 +298,8 @@ mutable struct RegularizationBuffers
     effective_backend::Symbol
     backend_fallback::Bool
 
+    options::RegularizationOptions
+
     chain_order::Vector{Int}
     chain_used::Vector{Bool}
 
@@ -348,6 +350,7 @@ mutable struct RegularizationBuffers
         r_off::Float64,
         effective_backend::Symbol,
         backend_fallback::Bool,
+        options::RegularizationOptions,
     )
         n_pairs = n_particles * (n_particles - 1) ÷ 2
         pair_i = Vector{Int}(undef, n_pairs)
@@ -384,6 +387,7 @@ mutable struct RegularizationBuffers
             r_off,
             effective_backend,
             backend_fallback,
+            options,
             Vector{Int}(undef, n_particles),
             Vector{Bool}(undef, n_particles),
             Vector{Float64}(undef, max(dims, 3)),
@@ -444,10 +448,11 @@ and solver/regularization options into a single immutable structure.
 - `dt`: Fixed macro time step (positive).
 - `convergence_tolerance=1e-13`: Fixed-point convergence threshold for projection.
 - `maximum_iterations=100`: Maximum projection iterations per step.
-- `regularization=RegularizationOptions()`: Close-encounter regularization options.
-  See `RegularizationOptions` for all available fields.
 - `zollner=ZollnerOptions()`: Zöllner electrogravitational extension options.
   See `ZollnerOptions` for all available fields.
+
+Regularization options moved to [`RegularizedIntegrator`](@ref); pass them via
+`solve(prob, RegularizedIntegrator(SymmetricProjectionIntegrator(); ...))`.
 
 # Fields
 - `system::HamiltonianSystem`: Compiled Hamiltonian system.
@@ -458,7 +463,6 @@ and solver/regularization options into a single immutable structure.
 - `dt::Float64`: Fixed step size.
 - `convergence_tolerance::Float64`: Projection convergence threshold.
 - `maximum_iterations::Int`: Maximum projection iterations per step.
-- `regularization::RegularizationOptions`: Regularization configuration.
 - `zollner::ZollnerOptions`: Zöllner extension configuration.
 """
 struct HamiltonianProblem
@@ -470,7 +474,6 @@ struct HamiltonianProblem
     dt::Float64
     convergence_tolerance::Float64
     maximum_iterations::Int
-    regularization::RegularizationOptions
     zollner::ZollnerOptions
 
     function HamiltonianProblem(
@@ -484,7 +487,6 @@ struct HamiltonianProblem
         dt::Real,
         convergence_tolerance::Real = 1e-13,
         maximum_iterations::Integer = 100,
-        regularization::RegularizationOptions = RegularizationOptions(),
         zollner::ZollnerOptions = ZollnerOptions(),
     )
         n_particles = system.n_particles
@@ -516,7 +518,6 @@ struct HamiltonianProblem
             Float64(dt),
             Float64(convergence_tolerance),
             Int(maximum_iterations),
-            regularization,
             zollner,
         )
     end
@@ -530,7 +531,6 @@ end
     speed_of_light(prob::HamiltonianProblem) -> Float64
     kappas(prob::HamiltonianProblem) -> AbstractVector{Float64}
     params(prob::HamiltonianProblem) -> Vector{Float64}
-    regularization(prob::HamiltonianProblem) -> RegularizationOptions
     zollner(prob::HamiltonianProblem) -> ZollnerOptions
 
 Read-only accessors. `masses`, `charges`, and `kappas` return views into the
@@ -545,7 +545,6 @@ charges(prob::HamiltonianProblem) =
 speed_of_light(prob::HamiltonianProblem) = prob.params[2*n_particles(prob)+1]
 kappas(prob::HamiltonianProblem) = @view prob.params[2*n_particles(prob)+2:end]
 params(prob::HamiltonianProblem) = prob.params
-regularization(prob::HamiltonianProblem) = prob.regularization
 zollner(prob::HamiltonianProblem) = prob.zollner
 
 """
@@ -652,7 +651,10 @@ mutable struct SymmetricProjectionBuffers
     diff_buffer::Vector{Float64}
     regularization_buffers::RegularizationBuffers
 
-    function SymmetricProjectionBuffers(prob::HamiltonianProblem)
+    function SymmetricProjectionBuffers(
+        prob::HamiltonianProblem,
+        reg_options::RegularizationOptions,
+    )
         d = prob.system.degrees_of_freedom
         n_particles = prob.system.n_particles
         dims = prob.system.dims
@@ -671,7 +673,6 @@ mutable struct SymmetricProjectionBuffers
             min_pair_distance = 1.0
         end
 
-        reg_options = prob.regularization
         r_on = isnothing(reg_options.r_on) ? (reg_options.r_on_factor * min_pair_distance) : reg_options.r_on
         r_off = isnothing(reg_options.r_off) ? (reg_options.r_off_factor * min_pair_distance) : reg_options.r_off
         r_on_value = Float64(max(r_on, reg_options.g_floor))
@@ -685,6 +686,7 @@ mutable struct SymmetricProjectionBuffers
             r_off_value,
             effective_backend,
             backend_fallback,
+            reg_options,
         )
 
         new(
