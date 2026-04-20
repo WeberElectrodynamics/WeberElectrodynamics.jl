@@ -1,13 +1,17 @@
 @testset "NamedTerm queries" begin
-    @testset "convenience ctor tags the Weber term" begin
+    @testset "convenience ctor decomposes into weber + zollner" begin
         sys = HamiltonianSystem(3, 2)
-        @test term_names(sys) == [:weber]
+        @test term_names(sys) == [:weber, :zollner]
         @test has_term(sys, :weber)
-        @test !has_term(sys, :zollner)
-        t = get_term(sys, :weber)
-        @test t.name === :weber
-        @test isequal(t.H_symbolic, sys.hamiltonian_symbolic)
-        @test t.pair_decomposition === nothing
+        @test has_term(sys, :zollner)
+        weber = get_term(sys, :weber)
+        zol = get_term(sys, :zollner)
+        @test weber.name === :weber
+        @test zol.name === :zollner
+        # Sum of the two symbolic term Hamiltonians reconstructs the full system H.
+        @test isequal(weber.H_symbolic + zol.H_symbolic, sys.hamiltonian_symbolic)
+        @test weber.pair_decomposition === nothing
+        @test zol.pair_decomposition === nothing
     end
 
     @testset "generic ctor defaults to :hamiltonian" begin
