@@ -11,16 +11,16 @@ using Printf
 using LinearAlgebra
 
 # Canonical physical constants — identical to examples/two_body_reference.ipynb
-const M_CANON            = (1.0, 1.0)
-const Q_CANON_UNLIKE     = (1.0, -1.0)
-const Q_CANON_LIKE       = (1.0, 1.0)
-const C_CANON            = 4.0
-const DT_CANON           = 0.001
+const M_CANON = (1.0, 1.0)
+const Q_CANON_UNLIKE = (1.0, -1.0)
+const Q_CANON_LIKE = (1.0, 1.0)
+const C_CANON = 4.0
+const DT_CANON = 0.001
 
 # Canonical Kepler orbit (e = 3/4, a = 8/7, μ = 1/2, |k| = 1)
-const A_SEMI_CANON       = 8 / 7
-const MU_CANON           = 0.5
-const T_ORBIT_CANON      = 2π * sqrt(A_SEMI_CANON^3 * MU_CANON / 1.0)  # ≈ 5.4282
+const A_SEMI_CANON = 8 / 7
+const MU_CANON = 0.5
+const T_ORBIT_CANON = 2π * sqrt(A_SEMI_CANON^3 * MU_CANON / 1.0)  # ≈ 5.4282
 
 """
     canonical_2d_problem(; n_orbits=5, dt=DT_CANON, zollner=ZollnerOptions())
@@ -40,13 +40,17 @@ function canonical_2d_problem(;
 )
     system = HamiltonianSystem(2, 2)
     q0 = [-1.0, 0.0, 1.0, 0.0]
-    p0 = [ 0.0, -0.25, 0.0, 0.25]
+    p0 = [0.0, -0.25, 0.0, 0.25]
     tspan = (0.0, n_orbits * T_ORBIT_CANON)
-    return HamiltonianProblem(system, tspan, q0, p0;
-        masses  = collect(M_CANON),
+    return HamiltonianProblem(
+        system,
+        tspan,
+        q0,
+        p0;
+        masses = collect(M_CANON),
         charges = collect(Q_CANON_UNLIKE),
-        c       = C_CANON,
-        dt      = dt,
+        c = C_CANON,
+        dt = dt,
         zollner = zollner,
     )
 end

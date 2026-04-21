@@ -324,7 +324,8 @@ function compute_pair_force_timeseries(
         @. radial_term_rddot[t] = coulomb[t] * rddot_coeff
 
         # Total force (using vector form)
-        @. force[t] = coulomb[t] + vector_term_vv[t] + vector_term_ra[t] + vector_term_rv2[t]
+        @. force[t] =
+            coulomb[t] + vector_term_vv[t] + vector_term_ra[t] + vector_term_rv2[t]
 
         # Magnitude
         mag = norm(force[t])

@@ -40,7 +40,10 @@ Compute total linear and angular momentum timeseries from a `HamiltonianSolution
 # Returns
 - `MomentumData` with linear and angular momentum at each selected timestep.
 """
-function compute_momentum_timeseries(solution::HamiltonianSolution; stride::Int=1)::MomentumData
+function compute_momentum_timeseries(
+    solution::HamiltonianSolution;
+    stride::Int = 1,
+)::MomentumData
     if stride <= 0
         throw(ArgumentError("stride must be positive, got $stride"))
     end
@@ -141,7 +144,10 @@ function compute_momentum_timeseries(solution::HamiltonianSolution; stride::Int=
 end
 
 function Base.show(io::IO, data::MomentumData)
-    print(io, "MomentumData($(data.n_particles) particles, $(data.dims)D, $(length(data.t)) timesteps)")
+    print(
+        io,
+        "MomentumData($(data.n_particles) particles, $(data.dims)D, $(length(data.t)) timesteps)",
+    )
 end
 
 function Base.show(io::IO, ::MIME"text/plain", data::MomentumData)
@@ -150,8 +156,14 @@ function Base.show(io::IO, ::MIME"text/plain", data::MomentumData)
     println(io, "  Dimensions: $(data.dims)")
     println(io, "  Timesteps: $(length(data.t))")
     println(io, "  t: $(data.t[1]) -> $(data.t[end])")
-    println(io, "  |P| range: $(minimum(data.linear_momentum_magnitude)) -> $(maximum(data.linear_momentum_magnitude))")
+    println(
+        io,
+        "  |P| range: $(minimum(data.linear_momentum_magnitude)) -> $(maximum(data.linear_momentum_magnitude))",
+    )
     if !isnothing(data.angular_momentum_magnitude)
-        println(io, "  |L| range: $(minimum(data.angular_momentum_magnitude)) -> $(maximum(data.angular_momentum_magnitude))")
+        println(
+            io,
+            "  |L| range: $(minimum(data.angular_momentum_magnitude)) -> $(maximum(data.angular_momentum_magnitude))",
+        )
     end
 end

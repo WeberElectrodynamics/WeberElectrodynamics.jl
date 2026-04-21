@@ -280,7 +280,8 @@ end
     end
 
     if isfinite(min_distance)
-        diagnostics.min_encounter_distance = min(diagnostics.min_encounter_distance, min_distance)
+        diagnostics.min_encounter_distance =
+            min(diagnostics.min_encounter_distance, min_distance)
     end
     if max_constraint_violation > diagnostics.max_constraint_violation
         diagnostics.max_constraint_violation = max_constraint_violation
@@ -394,7 +395,13 @@ end
     @inbounds @. rb.q_mid = q + midpoint_scale * rb.dq_ext
     @inbounds @. rb.p_mid = p + midpoint_scale * rb.dp_ext
 
-    _compute_full_pair_external_derivatives!(rb, rb.q_mid, rb.p_mid, t + dt_half * 0.5, prob)
+    _compute_full_pair_external_derivatives!(
+        rb,
+        rb.q_mid,
+        rb.p_mid,
+        t + dt_half * 0.5,
+        prob,
+    )
 
     @inbounds @. q = q + dt_half * rb.dq_ext
     @inbounds @. p = p + dt_half * rb.dp_ext
@@ -549,12 +556,7 @@ end
 end
 
 # General-dimension variants for the adaptive_cartesian backend.
-@inline function _current_pair_r(
-    q::Vector{Float64},
-    dims::Int,
-    i::Int,
-    j::Int,
-)::Float64
+@inline function _current_pair_r(q::Vector{Float64}, dims::Int, i::Int, j::Int)::Float64
     i0 = (i - 1) * dims
     j0 = (j - 1) * dims
     r2 = 0.0
@@ -730,27 +732,12 @@ end
     end
 
     _lc_project!(rb.rel_q, rb.rel_p, rb.lc_u, rb.lc_U)
-    _write_pair_state_2d!(
-        q,
-        p,
-        i,
-        j,
-        mi,
-        mj,
-        M,
-        rb.pair_R,
-        rb.pair_P,
-        rb.rel_q,
-        rb.rel_p,
-    )
+    _write_pair_state_2d!(q, p, i, j, mi, mj, M, rb.pair_R, rb.pair_P, rb.rel_q, rb.rel_p)
 
     return nothing
 end
 
-@inline function _step_unregularized!(
-    integrator::HamiltonianIntegrator,
-    dt_step::Float64,
-)
+@inline function _step_unregularized!(integrator::HamiltonianIntegrator, dt_step::Float64)
     _projected_cartesian_step!(
         integrator.q,
         integrator.p,
@@ -783,11 +770,7 @@ end
 # outer `step!` loop. The default method errors so that unsupported
 # algorithms fail loudly rather than silently falling back.
 # -----------------------------------------------------------------------------
-function _step_core!(
-    ::HamiltonianIntegrator,
-    alg::HamiltonianAlgorithm,
-    ::Float64,
-)
+function _step_core!(::HamiltonianIntegrator, alg::HamiltonianAlgorithm, ::Float64)
     throw(ArgumentError("step! not implemented for algorithm $(typeof(alg))"))
 end
 
@@ -918,8 +901,24 @@ end
         dt_half = 0.5 * dt_sub
 
         _external_half_step_midpoint!(integrator.q, integrator.p, t_sub, dt_half, prob, rb)
-        _lifted_pair_substep_2d!(integrator.q, integrator.p, t_sub + dt_half, dt_sub, prob, rb, i, j)
-        _external_half_step_midpoint!(integrator.q, integrator.p, t_sub + dt_half + dt_sub, dt_half, prob, rb)
+        _lifted_pair_substep_2d!(
+            integrator.q,
+            integrator.p,
+            t_sub + dt_half,
+            dt_sub,
+            prob,
+            rb,
+            i,
+            j,
+        )
+        _external_half_step_midpoint!(
+            integrator.q,
+            integrator.p,
+            t_sub + dt_half + dt_sub,
+            dt_half,
+            prob,
+            rb,
+        )
 
         t_remaining -= dt_sub
         t_sub += dt_sub
@@ -930,8 +929,24 @@ end
     if t_remaining > 1e-14
         dt_half = 0.5 * t_remaining
         _external_half_step_midpoint!(integrator.q, integrator.p, t_sub, dt_half, prob, rb)
-        _lifted_pair_substep_2d!(integrator.q, integrator.p, t_sub + dt_half, t_remaining, prob, rb, i, j)
-        _external_half_step_midpoint!(integrator.q, integrator.p, t_sub + dt_half + t_remaining, dt_half, prob, rb)
+        _lifted_pair_substep_2d!(
+            integrator.q,
+            integrator.p,
+            t_sub + dt_half,
+            t_remaining,
+            prob,
+            rb,
+            i,
+            j,
+        )
+        _external_half_step_midpoint!(
+            integrator.q,
+            integrator.p,
+            t_sub + dt_half + t_remaining,
+            dt_half,
+            prob,
+            rb,
+        )
         substeps += 1
     end
 
@@ -1048,10 +1063,7 @@ end
     return nothing
 end
 
-@inline function _clone_diagnostics(
-    diagnostics::RegularizationDiagnostics,
-    n_steps::Int,
-)
+@inline function _clone_diagnostics(diagnostics::RegularizationDiagnostics, n_steps::Int)
     out = RegularizationDiagnostics(
         diagnostics.enabled,
         n_steps,
@@ -1141,8 +1153,12 @@ function CommonSolve.init(
     reg_opts = buffers.regularization_buffers.options
     requested_backend = reg_opts.enabled ? reg_opts.backend : REG_BACKEND_DISABLED
     used_backend = REG_BACKEND_DISABLED
-    diagnostics =
-        RegularizationDiagnostics(reg_opts.enabled, n_steps, requested_backend, used_backend)
+    diagnostics = RegularizationDiagnostics(
+        reg_opts.enabled,
+        n_steps,
+        requested_backend,
+        used_backend,
+    )
 
     HamiltonianIntegrator(
         prob,
@@ -1165,11 +1181,7 @@ end
 # just normalises; the `RegularizedIntegrator` method in
 # integrators/regularized.jl adds a `CollisionBounce` when
 # `collision_bounce_radius > 0` and none was supplied explicitly.
-function _resolve_callbacks(
-    ::HamiltonianProblem,
-    ::HamiltonianAlgorithm,
-    cbs,
-)
+function _resolve_callbacks(::HamiltonianProblem, ::HamiltonianAlgorithm, cbs)
     return _normalise_callbacks(cbs)
 end
 
@@ -1210,7 +1222,8 @@ to land exactly on `prob.tspan[2]`.
 function CommonSolve.step!(integrator::HamiltonianIntegrator)
     max_steps = length(integrator.t_history) - 1
 
-    if integrator.step_count >= max_steps || integrator.t >= integrator.t_end - eps(integrator.t_end)
+    if integrator.step_count >= max_steps ||
+       integrator.t >= integrator.t_end - eps(integrator.t_end)
         integrator.t = integrator.t_end
         return false
     end

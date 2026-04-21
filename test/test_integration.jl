@@ -15,8 +15,16 @@
         q0 = [-m2 / M * r0, 0.0, m1 / M * r0, 0.0]
         p0 = [0.0, m1 * (-m2 / M * v_circ * 0.9), 0.0, m2 * (m1 / M * v_circ * 0.9)]
 
-        prob = HamiltonianProblem(system, (0.0, 1.0), q0, p0;
-            masses = [m1, m2], charges = [q1_charge, q2_charge], c = c, dt = 0.001)
+        prob = HamiltonianProblem(
+            system,
+            (0.0, 1.0),
+            q0,
+            p0;
+            masses = [m1, m2],
+            charges = [q1_charge, q2_charge],
+            c = c,
+            dt = 0.001,
+        )
 
         # Solve
         sol = solve(prob)
@@ -91,8 +99,16 @@
             q0 = [-m2 / M * r0, 0.0, m1 / M * r0, 0.0]
             p0 = [0.0, m1 * (-m2 / M * v_circ * 0.9), 0.0, m2 * (m1 / M * v_circ * 0.9)]
 
-            prob = HamiltonianProblem(system, (0.0, 1.0), q0, p0;
-                masses = [m1, m2], charges = [q1_charge, q2_charge], c = c, dt = 0.001)
+            prob = HamiltonianProblem(
+                system,
+                (0.0, 1.0),
+                q0,
+                p0;
+                masses = [m1, m2],
+                charges = [q1_charge, q2_charge],
+                c = c,
+                dt = 0.001,
+            )
             sol = solve(prob)
             @test sol.retcode == :Success
         end

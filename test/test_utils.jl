@@ -22,7 +22,16 @@ function make_weber_problem(;
     v_circ = sqrt(abs(k) * M / (m1 * m2 * r0))
     q0 = [-m2 / M * r0, 0.0, m1 / M * r0, 0.0]
     p0 = [0.0, m1 * (-m2 / M * v_circ * 0.9), 0.0, m2 * (m1 / M * v_circ * 0.9)]
-    HamiltonianProblem(system, tspan, q0, p0; masses = [m1, m2], charges = [q1, q2], c = c, dt = dt)
+    HamiltonianProblem(
+        system,
+        tspan,
+        q0,
+        p0;
+        masses = [m1, m2],
+        charges = [q1, q2],
+        c = c,
+        dt = dt,
+    )
 end
 
 """
@@ -48,7 +57,16 @@ function make_coulomb_like_problem(;
     v_circ = sqrt(k * M / (m1 * m2 * r0))
     q0 = [-m2 / M * r0, 0.0, m1 / M * r0, 0.0]
     p0 = [0.0, m1 * (-m2 / M * v_circ), 0.0, m2 * (m1 / M * v_circ)]
-    HamiltonianProblem(system, tspan, q0, p0; masses = [m1, m2], charges = [q1, q2], c = 1e10, dt = dt)
+    HamiltonianProblem(
+        system,
+        tspan,
+        q0,
+        p0;
+        masses = [m1, m2],
+        charges = [q1, q2],
+        c = 1e10,
+        dt = dt,
+    )
 end
 
 # =============================================================================

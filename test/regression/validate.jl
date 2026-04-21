@@ -25,12 +25,8 @@ using JLD2
 using Printf
 
 const FIXTURE_DIR = joinpath(@__DIR__, "fixtures")
-const FIXTURES = [
-    "twobody_ellipse",
-    "threebody_mixed",
-    "close_approach_lifted",
-    "zollner_offmatch",
-]
+const FIXTURES =
+    ["twobody_ellipse", "threebody_mixed", "close_approach_lifted", "zollner_offmatch"]
 
 # Hard threshold — any drift above this blocks a phase merge. The integrator
 # is deterministic at full Float64 precision, so any nonzero drift signals a
@@ -145,8 +141,15 @@ function validate_all()
     for name in FIXTURES
         pass, mt, mq, mp, okret = validate_fixture(name)
         status = pass ? "PASS" : "FAIL"
-        @printf("  %s  %-26s  |Δt|=%.2e  |Δq|=%.2e  |Δp|=%.2e  retcode=%s\n",
-                status, name, mt, mq, mp, okret ? "ok" : "MISMATCH")
+        @printf(
+            "  %s  %-26s  |Δt|=%.2e  |Δq|=%.2e  |Δp|=%.2e  retcode=%s\n",
+            status,
+            name,
+            mt,
+            mq,
+            mp,
+            okret ? "ok" : "MISMATCH"
+        )
         all_pass &= pass
     end
 

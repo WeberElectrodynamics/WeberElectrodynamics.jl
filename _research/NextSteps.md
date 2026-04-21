@@ -15,13 +15,10 @@ These are candidates, not commitments — prioritise as needs arise.
   with `step!(cache, prob, alg, t, dt)` dispatch and a `projection_kernel` trait
   only pays off when a second base algorithm lands (ImplicitMidpoint,
   GaussLegendre). Defer until then.
-- **Ship `kinetic_term` and `coulomb_term` builders.** Small, orthogonal, and
-  unlocks non-Weber custom-Hamiltonian demos (`H = kinetic_term(...) +
-  coulomb_term(...)`). Good first-issue size.
-- **Move κ out of the `params` vector to term-owned storage.** Current layout
-  `[masses…, charges…, c, κ₁₂…]` is insulated by `kappas(prob)` but still
-  couples downstream code via `_pair_index`. Term-owned κ would let us delete
-  that coupling; requires coordinated changes to the compiled-EOM signature.
+- **Move κ out of the `params` vector to term-owned storage.** Pulled out
+  into a standalone work prompt: [KappaStorageRefactor.md](KappaStorageRefactor.md).
+  Breaking change to the compiled-EOM signature, not justified until another
+  caller needs it.
 - **Split [src/callbacks.jl](../src/callbacks.jl) into a directory** when a second
   callback lands (e.g. `EnergyObserver`, `RegularizationDiagnosticsObserver`).
 

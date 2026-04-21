@@ -9,7 +9,7 @@ export @sprintf, norm, dot
 # Hamiltonian System (symbolic builder + compiled EOMs)
 # =============================================================================
 include("hamiltonian_system.jl")
-export HamiltonianSystem, weber_term, zollner_term
+export HamiltonianSystem, weber_term, zollner_term, kinetic_term, coulomb_term
 export NamedTerm, term_names, has_term, get_term
 export n_particles, dims, degrees_of_freedom
 
@@ -216,8 +216,15 @@ Requires `using Plots` to activate the Plots.jl extension.
 """
 function plot_zollner_phase_space end
 
-export plot_trajectories, plot_energy, plot_pair_energy, plot_energy_errors, plot_pair_forces, plot_phase_space, plot_momentum_errors
-export plot_zollner_energy, plot_zollner_force_residual, plot_weber_vs_zollner, plot_zollner_phase_space
+export plot_trajectories,
+    plot_energy,
+    plot_pair_energy,
+    plot_energy_errors,
+    plot_pair_forces,
+    plot_phase_space,
+    plot_momentum_errors
+export plot_zollner_energy,
+    plot_zollner_force_residual, plot_weber_vs_zollner, plot_zollner_phase_space
 
 # =============================================================================
 # Animation (Makie Extension)

@@ -31,7 +31,15 @@
 
         coulomb, velocity, rdot, zollner_extra =
             WeberElectrodynamics.compute_pair_weber_components(
-                q, p, 1, 2, masses, charges, c_val, 2, κ,
+                q,
+                p,
+                1,
+                2,
+                masses,
+                charges,
+                c_val,
+                2,
+                κ,
             )
 
         wr = weber.pair_decomposition(1, 2, q, p, params)
@@ -69,7 +77,15 @@
         for (i, j, κ) in ((1, 2, params[8]), (1, 3, params[9]), (2, 3, params[10]))
             coulomb, velocity, rdot, zollner_extra =
                 WeberElectrodynamics.compute_pair_weber_components(
-                    q, p, i, j, masses, charges, c_val, 3, κ,
+                    q,
+                    p,
+                    i,
+                    j,
+                    masses,
+                    charges,
+                    c_val,
+                    3,
+                    κ,
                 )
 
             wr = weber.pair_decomposition(i, j, q, p, params)
@@ -88,9 +104,13 @@
         p = [px1, py1, px2, py2]
         H = sum(p .^ 2) / 2
         sys = HamiltonianSystem(
-            H, q, p;
-            param_symbols = [m1, m2], t = tt,
-            n_particles = 2, dims = 2,
+            H,
+            q,
+            p;
+            param_symbols = [m1, m2],
+            t = tt,
+            n_particles = 2,
+            dims = 2,
         )
         @test term_names(sys) == [:hamiltonian]
         @test_throws KeyError get_term(sys, :missing)
@@ -104,19 +124,33 @@
         param_syms = [m1, m2, m3, q1, q2, q3, cc, k12, k13, k23]
 
         H_pure = weber_term(
-            q_syms, p_syms;
-            masses = [m1, m2, m3], charges = [q1, q2, q3], c = cc,
-            kappas = [1.0, 1.0, 1.0], n_particles = 3, dims = 2,
+            q_syms,
+            p_syms;
+            masses = [m1, m2, m3],
+            charges = [q1, q2, q3],
+            c = cc,
+            kappas = [1.0, 1.0, 1.0],
+            n_particles = 3,
+            dims = 2,
         )
         H_corr = zollner_term(
-            q_syms, p_syms;
-            masses = [m1, m2, m3], charges = [q1, q2, q3], c = cc,
-            kappas = [k12, k13, k23], n_particles = 3, dims = 2,
+            q_syms,
+            p_syms;
+            masses = [m1, m2, m3],
+            charges = [q1, q2, q3],
+            c = cc,
+            kappas = [k12, k13, k23],
+            n_particles = 3,
+            dims = 2,
         )
         sys = HamiltonianSystem(
-            H_pure + H_corr, q_syms, p_syms;
-            param_symbols = param_syms, t = tt,
-            n_particles = 3, dims = 2,
+            H_pure + H_corr,
+            q_syms,
+            p_syms;
+            param_symbols = param_syms,
+            t = tt,
+            n_particles = 3,
+            dims = 2,
             terms = [NamedTerm(:weber, H_pure), NamedTerm(:zollner, H_corr)],
         )
 

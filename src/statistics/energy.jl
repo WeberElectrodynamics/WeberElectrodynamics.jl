@@ -165,11 +165,7 @@ function compute_energy_statistics(total_energy::Vector{Float64})::EnergyStatist
     E_initial = total_energy[1]
 
     if n < 2
-        return EnergyStatistics(
-            0.0, 0.0, 0.0,
-            1.0, 1.0, 1.0,
-            0.0, 0.0, 0.0,
-        )
+        return EnergyStatistics(0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0)
     end
 
     # Local error: |E_t - E_{t-1}|
@@ -188,9 +184,15 @@ function compute_energy_statistics(total_energy::Vector{Float64})::EnergyStatist
     # Handle near-zero initial energy
     if abs(E_initial) < 100 * eps(Float64)
         return EnergyStatistics(
-            local_error_max, local_error_min, local_error_avg,
-            NaN, NaN, NaN,
-            NaN, NaN, NaN,
+            local_error_max,
+            local_error_min,
+            local_error_avg,
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN,
+            NaN,
         )
     end
 
@@ -217,9 +219,15 @@ function compute_energy_statistics(total_energy::Vector{Float64})::EnergyStatist
     global_percent_avg = global_percent_sum / (n - 1)
 
     return EnergyStatistics(
-        local_error_max, local_error_min, local_error_avg,
-        global_ratio_max, global_ratio_min, global_ratio_avg,
-        global_percent_max, global_percent_min, global_percent_avg,
+        local_error_max,
+        local_error_min,
+        local_error_avg,
+        global_ratio_max,
+        global_ratio_min,
+        global_ratio_avg,
+        global_percent_max,
+        global_percent_min,
+        global_percent_avg,
     )
 end
 
@@ -238,7 +246,10 @@ the manual decomposition against the Symbolics-compiled function.
 # Returns
 - `EnergyData` with all energy components and conservation statistics.
 """
-function compute_energy_timeseries(solution::HamiltonianSolution; stride::Int = 1)::EnergyData
+function compute_energy_timeseries(
+    solution::HamiltonianSolution;
+    stride::Int = 1,
+)::EnergyData
     if stride <= 0
         throw(ArgumentError("stride must be positive, got $stride"))
     end
@@ -349,7 +360,10 @@ function compute_energy_timeseries(solution::HamiltonianSolution; stride::Int = 
 end
 
 function Base.show(io::IO, data::EnergyData)
-    print(io, "EnergyData($(data.n_particles) particles, $(data.n_pairs) pairs, $(length(data.t)) timesteps)")
+    print(
+        io,
+        "EnergyData($(data.n_particles) particles, $(data.n_pairs) pairs, $(length(data.t)) timesteps)",
+    )
 end
 
 function Base.show(io::IO, ::MIME"text/plain", data::EnergyData)
@@ -360,8 +374,20 @@ function Base.show(io::IO, ::MIME"text/plain", data::EnergyData)
     println(io, "  t: $(data.t[1]) → $(data.t[end])")
     println(io, "  Statistics:")
     s = data.statistics
-    println(io, "    Local error  (max/min/avg): $(s.local_error_max) / $(s.local_error_min) / $(s.local_error_avg)")
-    println(io, "    Global ratio (max/min/avg): $(s.global_error_ratio_max) / $(s.global_error_ratio_min) / $(s.global_error_ratio_avg)")
-    println(io, "    Global %     (max/min/avg): $(s.global_error_percent_max) / $(s.global_error_percent_min) / $(s.global_error_percent_avg)")
-    println(io, "  Hamiltonian validation: max error = $(maximum(data.hamiltonian_validation_error))")
+    println(
+        io,
+        "    Local error  (max/min/avg): $(s.local_error_max) / $(s.local_error_min) / $(s.local_error_avg)",
+    )
+    println(
+        io,
+        "    Global ratio (max/min/avg): $(s.global_error_ratio_max) / $(s.global_error_ratio_min) / $(s.global_error_ratio_avg)",
+    )
+    println(
+        io,
+        "    Global %     (max/min/avg): $(s.global_error_percent_max) / $(s.global_error_percent_min) / $(s.global_error_percent_avg)",
+    )
+    println(
+        io,
+        "  Hamiltonian validation: max error = $(maximum(data.hamiltonian_validation_error))",
+    )
 end

@@ -25,9 +25,14 @@
     @testset "Kappa computation — unlike charges" begin
         sys = HamiltonianSystem(2, 2)
         prob = HamiltonianProblem(
-            sys, (0.0, 1.0),
-            [1.0, 0.0, -1.0, 0.0], [0.0, 0.0, 0.0, 0.0];
-            masses = [1.0, 1.0], charges = [1.0, -1.0], c = 10.0, dt = 0.01,
+            sys,
+            (0.0, 1.0),
+            [1.0, 0.0, -1.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0];
+            masses = [1.0, 1.0],
+            charges = [1.0, -1.0],
+            c = 10.0,
+            dt = 0.01,
             zollner = ZollnerOptions(enabled = true, a = 0.1),
         )
         @test length(kappas(prob)) == 1
@@ -37,9 +42,14 @@
     @testset "Kappa computation — like charges" begin
         sys = HamiltonianSystem(2, 2)
         prob = HamiltonianProblem(
-            sys, (0.0, 1.0),
-            [1.0, 0.0, -1.0, 0.0], [0.0, 0.0, 0.0, 0.0];
-            masses = [1.0, 1.0], charges = [1.0, 1.0], c = 10.0, dt = 0.01,
+            sys,
+            (0.0, 1.0),
+            [1.0, 0.0, -1.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0];
+            masses = [1.0, 1.0],
+            charges = [1.0, 1.0],
+            c = 10.0,
+            dt = 0.01,
             zollner = ZollnerOptions(enabled = true, a = 0.1),
         )
         @test length(kappas(prob)) == 1
@@ -54,10 +64,15 @@
         sys = HamiltonianSystem(3, 2)
         a = 0.05
         prob = HamiltonianProblem(
-            sys, (0.0, 1.0),
-            [1.0, 0.0, 0.0, 0.0, -1.0, 0.0], zeros(6);
-            masses = [1.0, 1.0, 1.0], charges = [1.0, -1.0, 1.0],
-            c = 10.0, dt = 0.01, zollner = ZollnerOptions(enabled = true, a = a),
+            sys,
+            (0.0, 1.0),
+            [1.0, 0.0, 0.0, 0.0, -1.0, 0.0],
+            zeros(6);
+            masses = [1.0, 1.0, 1.0],
+            charges = [1.0, -1.0, 1.0],
+            c = 10.0,
+            dt = 0.01,
+            zollner = ZollnerOptions(enabled = true, a = a),
         )
         @test length(kappas(prob)) == 3
         @test kappas(prob)[1] ≈ 1.0 + a   # pair (1,2): unlike
@@ -72,17 +87,23 @@
             q0 = zeros(N * 2)
             q0[1] = 1.0
             p0 = zeros(N * 2)
-            charges = [(-1)^i * 1.0 for i in 1:N]
+            charges = [(-1)^i * 1.0 for i = 1:N]
             prob = HamiltonianProblem(
-                sys, (0.0, 1.0), q0, p0;
-                masses = ones(N), charges = charges, c = 10.0, dt = 0.01,
+                sys,
+                (0.0, 1.0),
+                q0,
+                p0;
+                masses = ones(N),
+                charges = charges,
+                c = 10.0,
+                dt = 0.01,
             )
             expected_len = 2N + 1 + N * (N - 1) ÷ 2
             @test length(params(prob)) == expected_len
             @test length(kappas(prob)) == N * (N - 1) ÷ 2
             # params must literally end with the kappas values
             n_pairs = N * (N - 1) ÷ 2
-            @test params(prob)[end-n_pairs+1:end] == kappas(prob)
+            @test params(prob)[(end-n_pairs+1):end] == kappas(prob)
         end
     end
 
@@ -90,9 +111,14 @@
         # A disabled Zöllner with any a should give κ=1 for all pairs
         sys = HamiltonianSystem(2, 2)
         prob_off = HamiltonianProblem(
-            sys, (0.0, 1.0),
-            [1.0, 0.0, -1.0, 0.0], [0.0, 0.1, 0.0, -0.1];
-            masses = [1.0, 1.0], charges = [1.0, -1.0], c = 10.0, dt = 0.01,
+            sys,
+            (0.0, 1.0),
+            [1.0, 0.0, -1.0, 0.0],
+            [0.0, 0.1, 0.0, -0.1];
+            masses = [1.0, 1.0],
+            charges = [1.0, -1.0],
+            c = 10.0,
+            dt = 0.01,
             zollner = ZollnerOptions(enabled = false, a = 0.5),
         )
         @test all(k -> k ≈ 1.0, kappas(prob_off))
@@ -104,9 +130,14 @@
         # Smoke test: ensure the solver accepts and runs a Zöllner-modified problem
         sys = HamiltonianSystem(2, 2)
         prob = HamiltonianProblem(
-            sys, (0.0, 0.1),
-            [1.0, 0.0, -1.0, 0.0], [0.0, 0.3, 0.0, -0.3];
-            masses = [1.0, 1.0], charges = [1.0, -1.0], c = 10.0, dt = 0.005,
+            sys,
+            (0.0, 0.1),
+            [1.0, 0.0, -1.0, 0.0],
+            [0.0, 0.3, 0.0, -0.3];
+            masses = [1.0, 1.0],
+            charges = [1.0, -1.0],
+            c = 10.0,
+            dt = 0.005,
             zollner = ZollnerOptions(enabled = true, a = 0.01),
         )
         sol = solve(prob, SymmetricProjectionIntegrator())
@@ -126,9 +157,14 @@
 
         # Disabled: Zöllner residual should be zero everywhere
         prob_off = HamiltonianProblem(
-            sys, (0.0, 0.1),
-            [1.0, 0.0, -1.0, 0.0], [0.0, 0.3, 0.0, -0.3];
-            masses = [1.0, 1.0], charges = [1.0, -1.0], c = 10.0, dt = 0.005,
+            sys,
+            (0.0, 0.1),
+            [1.0, 0.0, -1.0, 0.0],
+            [0.0, 0.3, 0.0, -0.3];
+            masses = [1.0, 1.0],
+            charges = [1.0, -1.0],
+            c = 10.0,
+            dt = 0.005,
         )
         sol_off = solve(prob_off, SymmetricProjectionIntegrator())
         en_off = compute_energy_timeseries(sol_off)
@@ -139,9 +175,14 @@
 
         # Enabled with unlike charges: Zöllner residual should be nonzero
         prob_on = HamiltonianProblem(
-            sys, (0.0, 0.1),
-            [1.0, 0.0, -1.0, 0.0], [0.0, 0.3, 0.0, -0.3];
-            masses = [1.0, 1.0], charges = [1.0, -1.0], c = 10.0, dt = 0.005,
+            sys,
+            (0.0, 0.1),
+            [1.0, 0.0, -1.0, 0.0],
+            [0.0, 0.3, 0.0, -0.3];
+            masses = [1.0, 1.0],
+            charges = [1.0, -1.0],
+            c = 10.0,
+            dt = 0.005,
             zollner = ZollnerOptions(enabled = true, a = 0.05),
         )
         sol_on = solve(prob_on, SymmetricProjectionIntegrator())
@@ -159,9 +200,14 @@
         # but the infrastructure must accept both flags at once.
         sys = HamiltonianSystem(2, 2)
         prob = HamiltonianProblem(
-            sys, (0.0, 0.5),
-            [1.0, 0.0, -1.0, 0.0], [0.0, 0.5, 0.0, -0.5];
-            masses = [1.0, 1.0], charges = [1.0, -1.0], c = 10.0, dt = 0.005,
+            sys,
+            (0.0, 0.5),
+            [1.0, 0.0, -1.0, 0.0],
+            [0.0, 0.5, 0.0, -0.5];
+            masses = [1.0, 1.0],
+            charges = [1.0, -1.0],
+            c = 10.0,
+            dt = 0.005,
             zollner = ZollnerOptions(enabled = true, a = 0.01),
         )
         alg = RegularizedIntegrator(SymmetricProjectionIntegrator())
@@ -188,8 +234,14 @@
         q0 = [-m2 / M * r0, 0.0, m1 / M * r0, 0.0]
         p0 = [0.0, m1 * (-m2 / M) * v_circ, 0.0, m2 * (m1 / M) * v_circ]
         prob = HamiltonianProblem(
-            sys, (0.0, 1.0), q0, p0;
-            masses = [m1, m2], charges = [q1, q2], c = c, dt = 0.001,
+            sys,
+            (0.0, 1.0),
+            q0,
+            p0;
+            masses = [m1, m2],
+            charges = [q1, q2],
+            c = c,
+            dt = 0.001,
             zollner = ZollnerOptions(enabled = true, a = a),
         )
         alg = RegularizedIntegrator(
