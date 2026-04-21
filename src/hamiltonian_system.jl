@@ -77,9 +77,8 @@ end
 function _generate_param_symbols(n_particles::Int)
     mass_symbols = [Symbol("m$i") for i = 1:n_particles]
     charge_symbols = [Symbol("q$i") for i = 1:n_particles]
-    kappa_symbols = [
-        Symbol("kappa_$(i)_$(j)") for i = 1:n_particles for j = (i+1):n_particles
-    ]
+    kappa_symbols =
+        [Symbol("kappa_$(i)_$(j)") for i = 1:n_particles for j = (i+1):n_particles]
     return (mass_symbols, charge_symbols, :c, kappa_symbols)
 end
 
@@ -90,6 +89,7 @@ end
 
 include("hamiltonian/builders/weber.jl")
 include("hamiltonian/builders/zollner.jl")
+include("hamiltonian/builders/basic.jl")
 
 """
     HamiltonianSystem(H, q_vars, p_vars;
@@ -133,13 +133,28 @@ function HamiltonianSystem(
     dp_dt_symbolic = [-Symbolics.derivative(H, q_vars[i]) for i in eachindex(q_vars)]
 
     dq_dt_compiled = Symbolics.build_function(
-        dq_dt_symbolic, q_vars, p_vars, t, param_symbols, expression = Val{false},
+        dq_dt_symbolic,
+        q_vars,
+        p_vars,
+        t,
+        param_symbols,
+        expression = Val{false},
     )[2]
     dp_dt_compiled = Symbolics.build_function(
-        dp_dt_symbolic, q_vars, p_vars, t, param_symbols, expression = Val{false},
+        dp_dt_symbolic,
+        q_vars,
+        p_vars,
+        t,
+        param_symbols,
+        expression = Val{false},
     )[2]
     hamiltonian_compiled = Symbolics.build_function(
-        H, q_vars, p_vars, t, param_symbols, expression = Val{false},
+        H,
+        q_vars,
+        p_vars,
+        t,
+        param_symbols,
+        expression = Val{false},
     )
 
     degrees_of_freedom = n_particles * dims
@@ -183,7 +198,8 @@ function HamiltonianSystem(n_particles::Int, dims::Int)
     q_vars = [Symbolics.variable(sym) for sym in coordinate_symbols]
     p_vars = [Symbolics.variable(sym) for sym in momentum_symbols]
 
-    mass_symbols, charge_symbols, c_symbol, kappa_syms = _generate_param_symbols(n_particles)
+    mass_symbols, charge_symbols, c_symbol, kappa_syms =
+        _generate_param_symbols(n_particles)
     m_vars = [Symbolics.variable(sym) for sym in mass_symbols]
     charge_vars = [Symbolics.variable(sym) for sym in charge_symbols]
     c_var = Symbolics.variable(c_symbol)
