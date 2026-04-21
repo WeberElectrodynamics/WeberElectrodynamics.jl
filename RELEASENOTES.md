@@ -6,7 +6,7 @@
 This release completes the layered **System → Problem → Algorithm → Callbacks** architectural refactor. The public API is reshaped end-to-end; no deprecation shims are provided.
 
 - **Renamed top-level types.** `WeberSystem` → `HamiltonianSystem`, `WeberProblem` → `HamiltonianProblem`, `WeberSolution` → `HamiltonianSolution`, `WeberIntegrator` → `HamiltonianIntegrator`, `WeberAlgorithm` → `HamiltonianAlgorithm`.
-- **`HamiltonianSystem` is now built from terms.** `HamiltonianSystem(n, dims)` still works (defaults to Weber + Zöllner). A new generic constructor `HamiltonianSystem(H, q, p; params, t)` and term builders `weber_term(...)`, `zollner_term(...)`, `kinetic_term(...)`, `coulomb_term(...)` let users assemble custom Hamiltonians. Each system exposes `system.terms::Vector{NamedTerm}` with per-term `pair_decomposition` closures driving statistics.
+- **`HamiltonianSystem` is now built from terms.** `HamiltonianSystem(n, dims)` still works (defaults to Weber + Zöllner). A new generic constructor `HamiltonianSystem(H, q, p; params, t)` and term builders `weber_term(...)` and `zollner_term(...)` let users assemble custom Hamiltonians. Each system exposes `system.terms::Vector{NamedTerm}` with per-term `pair_decomposition` closures driving statistics.
 - **`HamiltonianProblem` fields dropped.** `masses`, `charges`, `c`, `kappas`, `regularization`, `zollner` are no longer fields on the problem. Construct with kwargs as before; access via exported accessors: `masses(prob)`, `charges(prob)`, `speed_of_light(prob)`, `kappas(prob)`, `regularization(prob)`, `zollner(prob)`, `params(prob)`, `n_particles(sys)`, `dims(sys)`.
 - **Regularization is now an algorithm wrapper, not a problem option.** Replace `regularization=RegularizationOptions(...)` on `HamiltonianProblem` with `RegularizedIntegrator(SymmetricProjectionIntegrator(); r_on_factor=..., r_off_factor=..., backend=..., ...)` passed to `solve`.
 - **Collision bounce is now a callback.** Replace `regularization=RegularizationOptions(collision_bounce_radius=r)` with `solve(prob, alg; callbacks=CollisionBounce(r))`.
@@ -18,7 +18,7 @@ This release completes the layered **System → Problem → Algorithm → Callba
 - `CollisionBounce(radius)` pre-step callback. `CallbackSet(...)` composition.
 - Accessor API on `HamiltonianSystem` and `HamiltonianProblem` to insulate downstream code from struct layout.
 - `NamedTerm{S}` with per-term compiled EOMs and optional `pair_decomposition(i, j, q, p, params)` for pair-wise statistics.
-- Symbolic builders: `weber_term`, `zollner_term`, `kinetic_term`, `coulomb_term`.
+- Symbolic builders: `weber_term`, `zollner_term`.
 - Regression fixtures (`test/regression/fixtures/*.jld2`) with 1e-12 numerical-equivalence validation across every refactor phase.
 
 ### Migration guide

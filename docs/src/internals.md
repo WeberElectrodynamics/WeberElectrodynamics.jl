@@ -61,7 +61,7 @@ params = [m₁, ..., mₙ, q₁, ..., qₙ, c, κ₁₂, κ₁₃, ..., κ_{N-1,
 length = 2N + 1 + N*(N-1)/2
 ```
 
-Any code calling `sys.dq_dt_compiled(out, q, p, params)` or `sys.dp_dt_compiled(out, q, p, params)` directly **must** include the κ (kappa) entries. When Zöllner is disabled, all κ values are 1.0.
+Any code calling `sys.dq_dt_compiled(out, q, p, t, params)` or `sys.dp_dt_compiled(out, q, p, t, params)` directly **must** include the κ (kappa) entries. When Zöllner is disabled, all κ values are 1.0.
 
 Pair index: `_pair_index(i, j, n) = (i-1)*(2n-i)÷2 + (j-i)` (1-based, i < j)
 
