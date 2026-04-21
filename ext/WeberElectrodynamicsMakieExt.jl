@@ -11,7 +11,6 @@ using WeberElectrodynamics:
     HamiltonianSolution,
     SymmetricProjectionIntegrator,
     HamiltonianAlgorithm,
-    _pair_index,
     compute_total_kinetic_energy,
     compute_pair_weber_components
 using CommonSolve: init, step!
@@ -110,12 +109,11 @@ function _compute_step_energy(
     c_val = speed_of_light(prob)
     d = dims(prob)
     n = n_particles(prob)
-    κs = kappas(prob)
 
     KE = compute_total_kinetic_energy(p, ms, d)
     PE = 0.0
     for i = 1:n, j = (i+1):n
-        kappa_ij = κs[_pair_index(i, j, n)]
+        kappa_ij = kappa(prob, i, j)
         coulomb, velocity, _, _ =
             compute_pair_weber_components(q, p, i, j, ms, qs, c_val, d, kappa_ij)
         PE += coulomb + velocity

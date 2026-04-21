@@ -21,8 +21,9 @@ using WeberElectrodynamics: _pair_index
         c = 1000.0  # Large c to make Weber ≈ Coulomb
 
         system = HamiltonianSystem(2, 2)
-        # params = [m1, m2, q1, q2, c, κ₁₂]; κ=1 (Zöllner disabled)
-        params = [m1, m2, q1, q2, c, 1.0]
+        # params = [m1, m2, q1, q2, c]; kappas = [κ₁₂], κ=1 (Zöllner disabled)
+        params = [m1, m2, q1, q2, c]
+        kappas = [1.0]
 
         # Test at specific point: particles at x = ±1, no y offset
         q = [1.0, 0.0, -1.0, 0.0]  # particles at x=1 and x=-1
@@ -30,8 +31,8 @@ using WeberElectrodynamics: _pair_index
 
         out_q = zeros(4)
         out_p = zeros(4)
-        system.dq_dt_compiled(out_q, q, p, 0.0, params)
-        system.dp_dt_compiled(out_p, q, p, 0.0, params)
+        system.dq_dt_compiled(out_q, q, p, 0.0, params, kappas)
+        system.dp_dt_compiled(out_p, q, p, 0.0, params, kappas)
 
         # dq/dt = ∂H/∂p ≈ p/m (Weber correction is small for large c)
         @test out_q[1] ≈ p[1] / m1 atol = 1e-6  # px1/m1
@@ -55,9 +56,10 @@ using WeberElectrodynamics: _pair_index
         @test sys1d.degrees_of_freedom == 2
         @test length(sys1d.dq_dt_symbolic) == 2
 
-        params1d = [1.0, 1.0, 1.0, -1.0, 1.0, 1.0]  # m1, m2, q1, q2, c, κ₁₂
+        params1d = [1.0, 1.0, 1.0, -1.0, 1.0]  # m1, m2, q1, q2, c
+        kappas1d = [1.0]                       # κ₁₂
         out1 = zeros(2)
-        sys1d.dq_dt_compiled(out1, [1.0, -1.0], [0.5, -0.5], 0.0, params1d)
+        sys1d.dq_dt_compiled(out1, [1.0, -1.0], [0.5, -0.5], 0.0, params1d, kappas1d)
         # Weber's velocity-dependent potential affects dq/dt, so we just verify
         # the function runs and produces finite output of correct dimension
         @test length(out1) == 2
@@ -79,8 +81,9 @@ using WeberElectrodynamics: _pair_index
         @test sys3body.degrees_of_freedom == 6
         @test sys3body.n_particles == 3
 
-        # params: [m1, m2, m3, q1, q2, q3, c, κ₁₂, κ₁₃, κ₂₃]; all κ=1 (Zöllner disabled)
-        params3 = [1.0, 1.0, 1.0, 1.0, -1.0, 0.5, 1.0, 1.0, 1.0, 1.0]
+        # params: [m1, m2, m3, q1, q2, q3, c]; kappas: [κ₁₂, κ₁₃, κ₂₃]; all κ=1 (Zöllner disabled)
+        params3 = [1.0, 1.0, 1.0, 1.0, -1.0, 0.5, 1.0]
+        kappas3 = [1.0, 1.0, 1.0]
 
         # Should have 3 pairwise interactions in the Hamiltonian
         out_q = zeros(6)
@@ -89,8 +92,8 @@ using WeberElectrodynamics: _pair_index
         p = zeros(6)
 
         # Should run without error
-        sys3body.dq_dt_compiled(out_q, q, p, 0.0, params3)
-        sys3body.dp_dt_compiled(out_p, q, p, 0.0, params3)
+        sys3body.dq_dt_compiled(out_q, q, p, 0.0, params3, kappas3)
+        sys3body.dp_dt_compiled(out_p, q, p, 0.0, params3, kappas3)
     end
 
     @testset "Single particle system" begin
@@ -99,13 +102,14 @@ using WeberElectrodynamics: _pair_index
         @test sys1.degrees_of_freedom == 2
 
         params1 = [2.0, 1.0, 1.0]  # m1, q1, c
+        kappas1 = Float64[]        # no pairs
         out_q = zeros(2)
         out_p = zeros(2)
         q = [1.0, 2.0]
         p = [0.5, 1.0]
 
-        sys1.dq_dt_compiled(out_q, q, p, 0.0, params1)
-        sys1.dp_dt_compiled(out_p, q, p, 0.0, params1)
+        sys1.dq_dt_compiled(out_q, q, p, 0.0, params1, kappas1)
+        sys1.dp_dt_compiled(out_p, q, p, 0.0, params1, kappas1)
 
         # dq/dt = p/m (free particle)
         @test out_q[1] ≈ 0.5 / 2.0  # px/m = 0.25

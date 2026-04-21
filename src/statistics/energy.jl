@@ -284,7 +284,7 @@ function compute_energy_timeseries(
     pair_energies = sizehint!(Dict{Tuple{Int,Int},PairEnergyData}(), n_pairs)
     for i = 1:n
         for j = (i+1):n
-            kappa_ij = κs[_pair_index(i, j, n)]
+            kappa_ij = kappa(prob, i, j)
             pair_energies[(i, j)] = PairEnergyData(
                 (i, j),
                 kappa_ij,
@@ -317,8 +317,8 @@ function compute_energy_timeseries(
         zollner_sum = 0.0
         for i = 1:n
             for j = (i+1):n
-                wc = weber_decomp(i, j, q, p, params_vec)
-                zc = zollner_decomp(i, j, q, p, params_vec)
+                wc = weber_decomp(i, j, q, p, params_vec, κs)
+                zc = zollner_decomp(i, j, q, p, params_vec, κs)
                 coulomb = wc.coulomb
                 velocity = wc.velocity
                 rdot = wc.rdot
@@ -338,7 +338,7 @@ function compute_energy_timeseries(
         total_zollner_residual[pt_idx] = zollner_sum
 
         # Validate against compiled Hamiltonian
-        H_compiled = hamiltonian_compiled(q, p, t_pt, params_vec)
+        H_compiled = hamiltonian_compiled(q, p, t_pt, params_vec, κs)
         hamiltonian_validation[pt_idx] = abs(total_energy[pt_idx] - H_compiled)
     end
 

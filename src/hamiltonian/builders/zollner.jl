@@ -91,6 +91,7 @@ function _zollner_pair_decomposition(
     q::AbstractVector{Float64},
     p::AbstractVector{Float64},
     params::AbstractVector{Float64},
+    kappas::AbstractVector{Float64},
     n_particles::Int,
     dims::Int,
 )
@@ -99,7 +100,7 @@ function _zollner_pair_decomposition(
     @inbounds qi = params[n_particles+i]
     @inbounds qj = params[n_particles+j]
     @inbounds c = params[2*n_particles+1]
-    @inbounds κ = params[2*n_particles+1+_pair_index(i, j, n_particles)]
+    @inbounds κ = kappas[_pair_index(i, j, n_particles)]
 
     qi_start = (i - 1) * dims + 1
     qj_start = (j - 1) * dims + 1
