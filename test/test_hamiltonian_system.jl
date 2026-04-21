@@ -168,9 +168,9 @@ using WeberElectrodynamics: _pair_index
         @test _pair_index(3, 4, 4) == 6
 
         # All indices for a given n are unique and cover 1:n_pairs exactly
-        for n in 2:5
-            indices = [_pair_index(i, j, n) for i in 1:n for j in (i+1):n]
-            @test sort(indices) == collect(1:n*(n-1)÷2)
+        for n = 2:5
+            indices = [_pair_index(i, j, n) for i = 1:n for j = (i+1):n]
+            @test sort(indices) == collect(1:(n*(n-1)÷2))
         end
     end
 end

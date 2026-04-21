@@ -1,7 +1,4 @@
-@inline function _compute_pair_distances!(
-    rb::RegularizationBuffers,
-    q::Vector{Float64},
-)
+@inline function _compute_pair_distances!(rb::RegularizationBuffers, q::Vector{Float64})
     dims = rb.dims
     @inbounds for k = 1:rb.n_pairs
         i = rb.pair_i[k]
@@ -146,10 +143,7 @@ end
     return max_r
 end
 
-@inline function _build_chain_order!(
-    rb::RegularizationBuffers,
-    q::Vector{Float64},
-)
+@inline function _build_chain_order!(rb::RegularizationBuffers, q::Vector{Float64})
     n_active = rb.active_count
     if n_active == 0
         return 0
@@ -247,9 +241,7 @@ end
     return mu
 end
 
-@inline function _lc_lift!(
-    rb::RegularizationBuffers,
-)
+@inline function _lc_lift!(rb::RegularizationBuffers)
     x = rb.rel_q[1]
     y = rb.rel_q[2]
     px = rb.rel_p[1]
@@ -371,9 +363,7 @@ end
     return abs(_ks_constraint(u, U))
 end
 
-@inline function _ks_lift!(
-    rb::RegularizationBuffers,
-)
+@inline function _ks_lift!(rb::RegularizationBuffers)
     x1 = rb.rel_q[1]
     x2 = rb.rel_q[2]
     x3 = rb.rel_q[3]

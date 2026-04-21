@@ -145,8 +145,7 @@ struct RegularizationOptions
     warn_on_fallback::Bool
     collision_bounce_radius::Float64
 
-    function RegularizationOptions(
-        ;
+    function RegularizationOptions(;
         enabled::Bool = false,
         r_on::Union{Nothing,Real} = nothing,
         r_off::Union{Nothing,Real} = nothing,
@@ -539,9 +538,9 @@ n_particles(prob::HamiltonianProblem) = n_particles(prob.system)
 dims(prob::HamiltonianProblem) = dims(prob.system)
 masses(prob::HamiltonianProblem) = @view prob.params[1:n_particles(prob)]
 charges(prob::HamiltonianProblem) =
-    @view prob.params[n_particles(prob)+1:2*n_particles(prob)]
+    @view prob.params[(n_particles(prob)+1):(2*n_particles(prob))]
 speed_of_light(prob::HamiltonianProblem) = prob.params[2*n_particles(prob)+1]
-kappas(prob::HamiltonianProblem) = @view prob.params[2*n_particles(prob)+2:end]
+kappas(prob::HamiltonianProblem) = @view prob.params[(2*n_particles(prob)+2):end]
 params(prob::HamiltonianProblem) = prob.params
 
 # Internal: clone a problem with an overridden tspan while preserving the
@@ -608,8 +607,14 @@ function Base.show(io::IO, ::MIME"text/plain", sol::HamiltonianSolution)
     println(io, "  t: $(sol.t[1]) → $(sol.t[end]) ($(length(sol)) points)")
     println(io, "  DOF: $(length(sol.q[1]))")
     if sol.regularization.enabled
-        println(io, "  Regularization backend: requested=$(sol.regularization.requested_backend), used=$(sol.regularization.used_backend)")
-        println(io, "  Regularization steps: pair=$(sol.regularization.pair_steps), chain=$(sol.regularization.chain_steps), cartesian=$(sol.regularization.unregularized_steps)")
+        println(
+            io,
+            "  Regularization backend: requested=$(sol.regularization.requested_backend), used=$(sol.regularization.used_backend)",
+        )
+        println(
+            io,
+            "  Regularization steps: pair=$(sol.regularization.pair_steps), chain=$(sol.regularization.chain_steps), cartesian=$(sol.regularization.unregularized_steps)",
+        )
     end
 end
 
@@ -621,7 +626,7 @@ end
     min_r = Inf
     @inbounds for i = 1:n_particles
         qi_start = (i - 1) * dims
-        for j = (i + 1):n_particles
+        for j = (i+1):n_particles
             qj_start = (j - 1) * dims
             r2 = 0.0
             for d = 1:dims
@@ -637,10 +642,7 @@ end
     return min_r
 end
 
-@inline function _resolve_regularization_backend(
-    dims::Int,
-    options::RegularizationOptions,
-)
+@inline function _resolve_regularization_backend(dims::Int, options::RegularizationOptions)
     requested = options.backend
     if requested == REG_BACKEND_LIFTED && dims != 2
         return REG_BACKEND_ADAPTIVE, true
@@ -688,11 +690,16 @@ mutable struct SymmetricProjectionBuffers
             min_pair_distance = 1.0
         end
 
-        r_on = isnothing(reg_options.r_on) ? (reg_options.r_on_factor * min_pair_distance) : reg_options.r_on
-        r_off = isnothing(reg_options.r_off) ? (reg_options.r_off_factor * min_pair_distance) : reg_options.r_off
+        r_on =
+            isnothing(reg_options.r_on) ? (reg_options.r_on_factor * min_pair_distance) :
+            reg_options.r_on
+        r_off =
+            isnothing(reg_options.r_off) ? (reg_options.r_off_factor * min_pair_distance) :
+            reg_options.r_off
         r_on_value = Float64(max(r_on, reg_options.g_floor))
         r_off_value = Float64(max(r_off, r_on_value * 1.01))
-        effective_backend, backend_fallback = _resolve_regularization_backend(dims, reg_options)
+        effective_backend, backend_fallback =
+            _resolve_regularization_backend(dims, reg_options)
         regularization_buffers = RegularizationBuffers(
             n_particles,
             dims,

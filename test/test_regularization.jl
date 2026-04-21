@@ -1,5 +1,6 @@
 @testset "Regularization" begin
-    function make_orbit_problem(dims::Int;
+    function make_orbit_problem(
+        dims::Int;
         dt::Float64,
         t_end::Float64,
         v_scale::Float64,
@@ -26,12 +27,24 @@
             charges = [0.2, -0.2]
         elseif dims == 2
             q0 = [-m2 / M * r0, 0.0, m1 / M * r0, 0.0]
-            p0 = [0.0, m1 * (-m2 / M * v_circ * v_scale), 0.0, m2 * (m1 / M * v_circ * v_scale)]
+            p0 = [
+                0.0,
+                m1 * (-m2 / M * v_circ * v_scale),
+                0.0,
+                m2 * (m1 / M * v_circ * v_scale),
+            ]
             masses = [m1, m2]
             charges = [q1, q2]
         else
             q0 = [-m2 / M * r0, 0.0, 0.0, m1 / M * r0, 0.0, 0.0]
-            p0 = [0.0, m1 * (-m2 / M * v_circ * v_scale), 0.0, 0.0, m2 * (m1 / M * v_circ * v_scale), 0.0]
+            p0 = [
+                0.0,
+                m1 * (-m2 / M * v_circ * v_scale),
+                0.0,
+                0.0,
+                m2 * (m1 / M * v_circ * v_scale),
+                0.0,
+            ]
             masses = [m1, m2]
             charges = [q1, q2]
         end
@@ -163,13 +176,25 @@
             r_on = 0.2,
             r_off = 0.3,
         )
-        @test_logs (:warn, r"falling back to :adaptive_cartesian") init(prob_3d, alg_3d_warn)
+        @test_logs (:warn, r"falling back to :adaptive_cartesian") init(
+            prob_3d,
+            alg_3d_warn,
+        )
     end
 
     @testset "Transform identities" begin
         @testset "Levi-Civita" begin
             Random.seed!(42)
-            rb = WeberElectrodynamics.RegularizationBuffers(2, 2, 4, 0.1, 0.2, :lifted_pair, false, RegularizationOptions())
+            rb = WeberElectrodynamics.RegularizationBuffers(
+                2,
+                2,
+                4,
+                0.1,
+                0.2,
+                :lifted_pair,
+                false,
+                RegularizationOptions(),
+            )
             q_rel = zeros(2)
             p_rel = zeros(2)
 
@@ -199,7 +224,16 @@
         end
 
         @testset "KS" begin
-            rb = WeberElectrodynamics.RegularizationBuffers(2, 3, 6, 0.1, 0.2, :adaptive_cartesian, false, RegularizationOptions())
+            rb = WeberElectrodynamics.RegularizationBuffers(
+                2,
+                3,
+                6,
+                0.1,
+                0.2,
+                :adaptive_cartesian,
+                false,
+                RegularizationOptions(),
+            )
             J = rb.ks_J
 
             for _ = 1:32
@@ -225,52 +259,78 @@
                 @test abs(psi) < 1e-10
 
                 rb.ks_U .+= randn(4) * 1e-4
-                c_err = WeberElectrodynamics._ks_project_constraint!(rb.ks_U, rb.ks_u, rb.ks_n)
+                c_err =
+                    WeberElectrodynamics._ks_project_constraint!(rb.ks_U, rb.ks_u, rb.ks_n)
                 @test c_err < 1e-10
             end
         end
     end
 
     @testset "Switching and hysteresis" begin
-        rb = WeberElectrodynamics.RegularizationBuffers(3, 2, 6, 0.2, 0.3, :adaptive_cartesian, false, RegularizationOptions())
+        rb = WeberElectrodynamics.RegularizationBuffers(
+            3,
+            2,
+            6,
+            0.2,
+            0.3,
+            :adaptive_cartesian,
+            false,
+            RegularizationOptions(),
+        )
 
         q_activate = [-0.09, 0.0, 0.09, 0.0, 0.8, 0.0]
-        active, mode, _ = WeberElectrodynamics._detect_regularization_component!(rb, q_activate, true)
+        active, mode, _ =
+            WeberElectrodynamics._detect_regularization_component!(rb, q_activate, true)
         @test active
         @test mode == WeberElectrodynamics.REG_MODE_PAIR
 
         q_between = [-0.13, 0.0, 0.13, 0.0, 0.8, 0.0]
         for _ = 1:8
-            active, mode, _ = WeberElectrodynamics._detect_regularization_component!(rb, q_between, true)
+            active, mode, _ =
+                WeberElectrodynamics._detect_regularization_component!(rb, q_between, true)
             @test active
             @test mode == WeberElectrodynamics.REG_MODE_PAIR
         end
 
         q_off = [-0.17, 0.0, 0.17, 0.0, 0.8, 0.0]
-        active, mode, _ = WeberElectrodynamics._detect_regularization_component!(rb, q_off, true)
+        active, mode, _ =
+            WeberElectrodynamics._detect_regularization_component!(rb, q_off, true)
         @test !active
         @test mode == WeberElectrodynamics.REG_MODE_NONE
 
         q_pair = [-0.09, 0.0, 0.09, 0.0, 1.0, 0.0]
-        active, mode, _ = WeberElectrodynamics._detect_regularization_component!(rb, q_pair, true)
+        active, mode, _ =
+            WeberElectrodynamics._detect_regularization_component!(rb, q_pair, true)
         @test active
         @test mode == WeberElectrodynamics.REG_MODE_PAIR
 
         q_chain = [-0.09, 0.0, 0.09, 0.0, 0.2, 0.0]
-        active, mode, _ = WeberElectrodynamics._detect_regularization_component!(rb, q_chain, true)
+        active, mode, _ =
+            WeberElectrodynamics._detect_regularization_component!(rb, q_chain, true)
         @test active
         @test mode == WeberElectrodynamics.REG_MODE_CHAIN
 
         q_pair_again = [-0.09, 0.0, 0.09, 0.0, 0.6, 0.0]
-        active, mode, _ = WeberElectrodynamics._detect_regularization_component!(rb, q_pair_again, true)
+        active, mode, _ =
+            WeberElectrodynamics._detect_regularization_component!(rb, q_pair_again, true)
         @test active
         @test mode == WeberElectrodynamics.REG_MODE_PAIR
     end
 
     @testset "Chain-disabled overlap fallback" begin
-        rb = WeberElectrodynamics.RegularizationBuffers(3, 2, 6, 0.2, 0.3, :adaptive_cartesian, false, RegularizationOptions())
+        rb = WeberElectrodynamics.RegularizationBuffers(
+            3,
+            2,
+            6,
+            0.2,
+            0.3,
+            :adaptive_cartesian,
+            false,
+            RegularizationOptions(),
+        )
         q_overlap = [-0.09, 0.0, 0.09, 0.0, 0.2, 0.0]
-        active, mode, _ = WeberElectrodynamics._detect_regularization_component!(rb, q_overlap, false)
+        active, mode, _ =
+            WeberElectrodynamics._detect_regularization_component!(rb, q_overlap, false)
         @test active
         @test rb.active_count > 2
         @test mode == WeberElectrodynamics.REG_MODE_NONE
@@ -304,7 +364,8 @@
     end
 
     @testset "Pair mode correctness (2D lifted)" begin
-        prob_cart, alg_cart = make_orbit_problem(2;
+        prob_cart, alg_cart = make_orbit_problem(
+            2;
             dt = 0.004,
             t_end = 3.0,
             v_scale = 0.2,
@@ -313,7 +374,8 @@
             r_on = 0.6,
             r_off = 0.9,
         )
-        prob_adaptive, alg_adaptive = make_orbit_problem(2;
+        prob_adaptive, alg_adaptive = make_orbit_problem(
+            2;
             dt = 0.004,
             t_end = 3.0,
             v_scale = 0.2,
@@ -322,7 +384,8 @@
             r_on = 0.6,
             r_off = 0.9,
         )
-        prob_lifted, alg_lifted = make_orbit_problem(2;
+        prob_lifted, alg_lifted = make_orbit_problem(
+            2;
             dt = 0.004,
             t_end = 3.0,
             v_scale = 0.2,
@@ -331,7 +394,8 @@
             r_on = 0.6,
             r_off = 0.9,
         )
-        prob_ref, alg_ref = make_orbit_problem(2;
+        prob_ref, alg_ref = make_orbit_problem(
+            2;
             dt = 0.001,
             t_end = 3.0,
             v_scale = 0.2,
@@ -393,11 +457,8 @@
             dt = T_est / 2000,
         )
 
-        sol = solve(
-            prob,
-            SymmetricProjectionIntegrator();
-            callbacks = CollisionBounce(0.01),
-        )
+        sol =
+            solve(prob, SymmetricProjectionIntegrator(); callbacks = CollisionBounce(0.01))
         @test sol.retcode == :Success
 
         # All states finite.
@@ -405,8 +466,10 @@
         @test all(isfinite, sol.p[end])
 
         # Particles stay bounded: r ≤ r₀ (they never exceed the starting separation).
-        rs = [sqrt((sol.q[k][1] - sol.q[k][3])^2 + (sol.q[k][2] - sol.q[k][4])^2)
-              for k in 1:length(sol.t)]
+        rs = [
+            sqrt((sol.q[k][1] - sol.q[k][3])^2 + (sol.q[k][2] - sol.q[k][4])^2) for
+            k = 1:length(sol.t)
+        ]
         @test maximum(rs) <= r0 + 1e-6
 
         # Energy conservation < 1%.
@@ -414,7 +477,7 @@
         @test en.statistics.global_error_percent_max < 1.0
 
         # Multiple oscillation cycles occur (at least 10 half-periods in 10T).
-        n_minima = count(k -> rs[k] < rs[k-1] && rs[k] < rs[k+1], 2:length(rs)-1)
+        n_minima = count(k -> rs[k] < rs[k-1] && rs[k] < rs[k+1], 2:(length(rs)-1))
         @test n_minima >= 10
     end
 
@@ -499,20 +562,9 @@
         q0 = [-1.0, 0.0, 1.0, 0.0]
         p0 = [0.0, -0.05, 0.0, 0.05]
 
-        kwargs = (
-            masses = [1.0, 0.5],
-            charges = [0.1, -0.1],
-            c = 4.0,
-            dt = 0.001,
-        )
+        kwargs = (masses = [1.0, 0.5], charges = [0.1, -0.1], c = 4.0, dt = 0.001)
 
-        prob_shared = HamiltonianProblem(
-            sys,
-            (0.0, 0.2),
-            q0,
-            p0;
-            kwargs...,
-        )
+        prob_shared = HamiltonianProblem(sys, (0.0, 0.2), q0, p0; kwargs...)
         alg_on = RegularizedIntegrator(
             SymmetricProjectionIntegrator();
             backend = :adaptive_cartesian,
@@ -527,7 +579,8 @@
         @test sol_on.regularization.pair_steps == 0
         @test sol_on.regularization.chain_steps == 0
         @test sol_on.regularization.unregularized_steps == length(sol_on) - 1
-        @test sol_on.regularization.used_backend == WeberElectrodynamics.REG_BACKEND_DISABLED
+        @test sol_on.regularization.used_backend ==
+              WeberElectrodynamics.REG_BACKEND_DISABLED
         @test sol_off.t == sol_on.t
         @test all(sol_off.q .== sol_on.q)
         @test all(sol_off.p .== sol_on.p)
@@ -560,7 +613,8 @@
     end
 
     @testset "Diagnostics validity" begin
-        prob, alg = make_orbit_problem(2;
+        prob, alg = make_orbit_problem(
+            2;
             dt = 0.004,
             t_end = 3.0,
             v_scale = 0.2,

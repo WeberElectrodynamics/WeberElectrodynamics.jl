@@ -9,7 +9,10 @@
     @testset "default callbacks are empty" begin
         sys = HamiltonianSystem(2, 2)
         prob = HamiltonianProblem(
-            sys, (0.0, 0.05), [1.0, 0.0, -1.0, 0.0], [0.0, 0.1, 0.0, -0.1];
+            sys,
+            (0.0, 0.05),
+            [1.0, 0.0, -1.0, 0.0],
+            [0.0, 0.1, 0.0, -0.1];
             masses = [1.0, 1.0],
             charges = [1.0, -1.0],
             c = 100.0,
@@ -22,7 +25,10 @@
     @testset "user callback stored on integrator" begin
         sys = HamiltonianSystem(2, 2)
         prob = HamiltonianProblem(
-            sys, (0.0, 0.05), [1.0, 0.0, -1.0, 0.0], [0.0, 0.1, 0.0, -0.1];
+            sys,
+            (0.0, 0.05),
+            [1.0, 0.0, -1.0, 0.0],
+            [0.0, 0.1, 0.0, -0.1];
             masses = [1.0, 1.0],
             charges = [1.0, -1.0],
             c = 100.0,
@@ -97,7 +103,10 @@
     @testset "RegularizedIntegrator bridge synthesises CollisionBounce" begin
         sys = HamiltonianSystem(2, 2)
         prob = HamiltonianProblem(
-            sys, (0.0, 0.05), [1.0, 0.0, -1.0, 0.0], [0.0, 0.1, 0.0, -0.1];
+            sys,
+            (0.0, 0.05),
+            [1.0, 0.0, -1.0, 0.0],
+            [0.0, 0.1, 0.0, -0.1];
             masses = [1.0, 1.0],
             charges = [1.0, -1.0],
             c = 100.0,
@@ -118,7 +127,10 @@
     @testset "explicit CollisionBounce overrides bridge synthesis" begin
         sys = HamiltonianSystem(2, 2)
         prob = HamiltonianProblem(
-            sys, (0.0, 0.05), [1.0, 0.0, -1.0, 0.0], [0.0, 0.1, 0.0, -0.1];
+            sys,
+            (0.0, 0.05),
+            [1.0, 0.0, -1.0, 0.0],
+            [0.0, 0.1, 0.0, -0.1];
             masses = [1.0, 1.0],
             charges = [1.0, -1.0],
             c = 100.0,
@@ -141,7 +153,10 @@
         cb = _NoOpCallback()
         sys = HamiltonianSystem(2, 2)
         prob = HamiltonianProblem(
-            sys, (0.0, 0.03), [1.0, 0.0, -1.0, 0.0], [0.0, 0.1, 0.0, -0.1];
+            sys,
+            (0.0, 0.03),
+            [1.0, 0.0, -1.0, 0.0],
+            [0.0, 0.1, 0.0, -0.1];
             masses = [1.0, 1.0],
             charges = [1.0, -1.0],
             c = 100.0,

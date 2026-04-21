@@ -78,11 +78,7 @@ function _allocate_cache(prob::HamiltonianProblem, alg::RegularizedIntegrator)
     return buffers
 end
 
-function _resolve_callbacks(
-    ::HamiltonianProblem,
-    alg::RegularizedIntegrator,
-    cbs,
-)
+function _resolve_callbacks(::HamiltonianProblem, alg::RegularizedIntegrator, cbs)
     user = _normalise_callbacks(cbs)
     bounce_r = alg.options.collision_bounce_radius
     if bounce_r > 0 && !any(c -> c isa CollisionBounce, user)

@@ -19,13 +19,16 @@
         )
         @test hasmethod(
             WeberElectrodynamics._allocate_cache,
-            Tuple{HamiltonianProblem, SymmetricProjectionIntegrator},
+            Tuple{HamiltonianProblem,SymmetricProjectionIntegrator},
         )
     end
 
     sys = HamiltonianSystem(2, 2)
     prob = HamiltonianProblem(
-        sys, (0.0, 0.05), [1.0, 0.0, -1.0, 0.0], [0.0, 0.1, 0.0, -0.1];
+        sys,
+        (0.0, 0.05),
+        [1.0, 0.0, -1.0, 0.0],
+        [0.0, 0.1, 0.0, -0.1];
         masses = [1.0, 1.0],
         charges = [1.0, -1.0],
         c = 100.0,

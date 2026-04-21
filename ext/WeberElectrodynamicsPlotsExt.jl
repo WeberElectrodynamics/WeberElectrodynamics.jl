@@ -115,7 +115,14 @@ function WeberElectrodynamics.plot_energy(data::EnergyData)::Plots.Plot
         legend = :outertopright,
         PLOT_DEFAULTS...,
     )
-    plot!(p1, data.t, data.total_energy, label = L"H = T + U", linewidth = 2, color = :black)
+    plot!(
+        p1,
+        data.t,
+        data.total_energy,
+        label = L"H = T + U",
+        linewidth = 2,
+        color = :black,
+    )
     plot!(
         p1,
         data.t,
@@ -261,7 +268,8 @@ function WeberElectrodynamics.plot_pair_energy(
         linewidth = 0,
     )
 
-    plt = plot(p1, p2, layout = grid(2, 1, heights = [0.6, 0.4]), size = _multi_panel_size(2))
+    plt =
+        plot(p1, p2, layout = grid(2, 1, heights = [0.6, 0.4]), size = _multi_panel_size(2))
     return plt
 end
 
@@ -293,7 +301,14 @@ function WeberElectrodynamics.plot_energy_errors(data::EnergyData)::Plots.Plot
         legend = :outertopright,
         PLOT_DEFAULTS...,
     )
-    plot!(p1, data.t[2:end], local_errors_plot, label = "", linewidth = 1, color = :steelblue)
+    plot!(
+        p1,
+        data.t[2:end],
+        local_errors_plot,
+        label = "",
+        linewidth = 1,
+        color = :steelblue,
+    )
     hline!(
         p1,
         [stats.local_error_max],
@@ -313,7 +328,8 @@ function WeberElectrodynamics.plot_energy_errors(data::EnergyData)::Plots.Plot
 
     # Panel 2: Relative energy error
     max_rel_err = maximum(relative_error)
-    avg_rel_err = length(relative_error) > 1 ?
+    avg_rel_err =
+        length(relative_error) > 1 ?
         sum(relative_error[2:end]) / (length(relative_error) - 1) : max_rel_err
 
     p2 = plot(;
@@ -342,7 +358,8 @@ function WeberElectrodynamics.plot_energy_errors(data::EnergyData)::Plots.Plot
         label = latexstring("\\mathrm{avg} = ", _format_scientific(avg_rel_err)),
     )
 
-    plt = plot(p1, p2, layout = grid(2, 1, heights = [0.5, 0.5]), size = _multi_panel_size(2))
+    plt =
+        plot(p1, p2, layout = grid(2, 1, heights = [0.5, 0.5]), size = _multi_panel_size(2))
     return plt
 end
 
@@ -449,14 +466,54 @@ function WeberElectrodynamics.plot_pair_forces(data::PairForceData)::Plots.Plot
     # sign(k) gives physics; sign(dot(term, coulomb)) gives coefficient sign
     k_sign = sign(data.charge_product)
     coulomb_signed = [k_sign * norm(data.coulomb[t]) for t = 1:n_times]
-    vv_signed = [sign(dot(data.vector_term_vv[t], data.coulomb[t])) * k_sign * norm(data.vector_term_vv[t]) for t = 1:n_times]
-    ra_signed = [sign(dot(data.vector_term_ra[t], data.coulomb[t])) * k_sign * norm(data.vector_term_ra[t]) for t = 1:n_times]
-    rv2_signed = [sign(dot(data.vector_term_rv2[t], data.coulomb[t])) * k_sign * norm(data.vector_term_rv2[t]) for t = 1:n_times]
+    vv_signed = [
+        sign(dot(data.vector_term_vv[t], data.coulomb[t])) *
+        k_sign *
+        norm(data.vector_term_vv[t]) for t = 1:n_times
+    ]
+    ra_signed = [
+        sign(dot(data.vector_term_ra[t], data.coulomb[t])) *
+        k_sign *
+        norm(data.vector_term_ra[t]) for t = 1:n_times
+    ]
+    rv2_signed = [
+        sign(dot(data.vector_term_rv2[t], data.coulomb[t])) *
+        k_sign *
+        norm(data.vector_term_rv2[t]) for t = 1:n_times
+    ]
 
-    plot!(p3, data.t, coulomb_signed, label = L"F_{\mathrm{C}} = q_i q_j/r^2", linewidth = 1.5, color = decomp_colors[1])
-    plot!(p3, data.t, vv_signed, label = L"\mathbf v\cdot\mathbf v/c^2", linewidth = 1.5, color = decomp_colors[2])
-    plot!(p3, data.t, ra_signed, label = L"\mathbf r\cdot\mathbf a/c^2", linewidth = 1.5, color = decomp_colors[3])
-    plot!(p3, data.t, rv2_signed, label = L"-\tfrac{3}{2}(\hat{\mathbf r}\cdot\mathbf v)^2/c^2", linewidth = 1.5, color = decomp_colors[4])
+    plot!(
+        p3,
+        data.t,
+        coulomb_signed,
+        label = L"F_{\mathrm{C}} = q_i q_j/r^2",
+        linewidth = 1.5,
+        color = decomp_colors[1],
+    )
+    plot!(
+        p3,
+        data.t,
+        vv_signed,
+        label = L"\mathbf v\cdot\mathbf v/c^2",
+        linewidth = 1.5,
+        color = decomp_colors[2],
+    )
+    plot!(
+        p3,
+        data.t,
+        ra_signed,
+        label = L"\mathbf r\cdot\mathbf a/c^2",
+        linewidth = 1.5,
+        color = decomp_colors[3],
+    )
+    plot!(
+        p3,
+        data.t,
+        rv2_signed,
+        label = L"-\tfrac{3}{2}(\hat{\mathbf r}\cdot\mathbf v)^2/c^2",
+        linewidth = 1.5,
+        color = decomp_colors[4],
+    )
     hline!(p3, [0.0], linestyle = :dash, color = :gray, linewidth = 0.5, label = "")
 
     # =========================================================================
@@ -471,19 +528,51 @@ function WeberElectrodynamics.plot_pair_forces(data::PairForceData)::Plots.Plot
     )
 
     # Reuse coulomb_signed and k_sign from above
-    rdot2_signed = [sign(dot(data.radial_term_rdot2[t], data.coulomb[t])) * k_sign * norm(data.radial_term_rdot2[t]) for t = 1:n_times]
-    rddot_signed = [sign(dot(data.radial_term_rddot[t], data.coulomb[t])) * k_sign * norm(data.radial_term_rddot[t]) for t = 1:n_times]
+    rdot2_signed = [
+        sign(dot(data.radial_term_rdot2[t], data.coulomb[t])) *
+        k_sign *
+        norm(data.radial_term_rdot2[t]) for t = 1:n_times
+    ]
+    rddot_signed = [
+        sign(dot(data.radial_term_rddot[t], data.coulomb[t])) *
+        k_sign *
+        norm(data.radial_term_rddot[t]) for t = 1:n_times
+    ]
 
-    plot!(p4, data.t, coulomb_signed, label = L"F_{\mathrm{C}} = q_i q_j/r^2", linewidth = 1.5, color = decomp_colors[1])
-    plot!(p4, data.t, rdot2_signed, label = L"-\dot r^{\,2}/(2c^2)", linewidth = 1.5, color = decomp_colors[2])
-    plot!(p4, data.t, rddot_signed, label = L"r\,\ddot r/c^2", linewidth = 1.5, color = decomp_colors[3])
+    plot!(
+        p4,
+        data.t,
+        coulomb_signed,
+        label = L"F_{\mathrm{C}} = q_i q_j/r^2",
+        linewidth = 1.5,
+        color = decomp_colors[1],
+    )
+    plot!(
+        p4,
+        data.t,
+        rdot2_signed,
+        label = L"-\dot r^{\,2}/(2c^2)",
+        linewidth = 1.5,
+        color = decomp_colors[2],
+    )
+    plot!(
+        p4,
+        data.t,
+        rddot_signed,
+        label = L"r\,\ddot r/c^2",
+        linewidth = 1.5,
+        color = decomp_colors[3],
+    )
     hline!(p4, [0.0], linestyle = :dash, color = :gray, linewidth = 0.5, label = "")
 
     # =========================================================================
     # Combine into 1×4 vertical layout
     # =========================================================================
     plt = plot(
-        p1, p2, p3, p4,
+        p1,
+        p2,
+        p3,
+        p4,
         layout = grid(4, 1, heights = [0.25, 0.25, 0.25, 0.25]),
         size = (SINGLE_COLUMN_WIDTH, round(Int, SINGLE_COLUMN_WIDTH * 2)),
     )
@@ -583,8 +672,10 @@ function WeberElectrodynamics.plot_momentum_errors(data::MomentumData)::Plots.Pl
 
     linear_label = if P0_mag > 0
         latexstring(
-            "\\mathrm{abs\\ max}\\ ", _format_scientific(dP_max),
-            ",\\ \\mathrm{rel\\ max}\\ ", _format_scientific(dP_max / P0_mag),
+            "\\mathrm{abs\\ max}\\ ",
+            _format_scientific(dP_max),
+            ",\\ \\mathrm{rel\\ max}\\ ",
+            _format_scientific(dP_max / P0_mag),
         )
     else
         latexstring("\\mathrm{abs\\ max}\\ ", _format_scientific(dP_max))
@@ -634,8 +725,10 @@ function WeberElectrodynamics.plot_momentum_errors(data::MomentumData)::Plots.Pl
 
     angular_label = if L0_mag > 0
         latexstring(
-            "\\mathrm{abs\\ max}\\ ", _format_scientific(dL_max),
-            ",\\ \\mathrm{rel\\ max}\\ ", _format_scientific(dL_max / L0_mag),
+            "\\mathrm{abs\\ max}\\ ",
+            _format_scientific(dL_max),
+            ",\\ \\mathrm{rel\\ max}\\ ",
+            _format_scientific(dL_max / L0_mag),
         )
     else
         latexstring("\\mathrm{abs\\ max}\\ ", _format_scientific(dL_max))
@@ -713,8 +806,8 @@ end
 
 function _plot_trajectories_2d(data::TrajectoryData)::Plots.Plot
     # Compute tight axis limits from all trajectory data
-    all_x = vcat([data.trajectories[p][:, 1] for p in 1:data.n_particles]...)
-    all_y = vcat([data.trajectories[p][:, 2] for p in 1:data.n_particles]...)
+    all_x = vcat([data.trajectories[p][:, 1] for p = 1:data.n_particles]...)
+    all_y = vcat([data.trajectories[p][:, 2] for p = 1:data.n_particles]...)
     xmin, xmax = extrema(all_x)
     ymin, ymax = extrema(all_y)
     dx = xmax - xmin
@@ -838,21 +931,34 @@ function WeberElectrodynamics.plot_zollner_energy(data::EnergyData)::Plots.Plot
         PLOT_DEFAULTS...,
     )
     plot!(
-        p1, data.t, data.total_potential_energy,
-        label = L"U_{\mathrm{total}}", linewidth = 2, color = :black,
+        p1,
+        data.t,
+        data.total_potential_energy,
+        label = L"U_{\mathrm{total}}",
+        linewidth = 2,
+        color = :black,
     )
-    for (pair_idx, ((i, j), pdata)) in enumerate(sort(collect(data.pair_energies), by = x -> x[1]))
+    for (pair_idx, ((i, j), pdata)) in
+        enumerate(sort(collect(data.pair_energies), by = x -> x[1]))
         c = colors[mod1(pair_idx, length(colors))]
         kappa_str = @sprintf("%.4g", pdata.kappa)
         plot!(
-            p1, data.t, pdata.total_pair_potential,
+            p1,
+            data.t,
+            pdata.total_pair_potential,
             label = latexstring("U_{", i, j, "}\\ \\kappa=", kappa_str),
-            linewidth = 1.2, color = c, linestyle = :solid,
+            linewidth = 1.2,
+            color = c,
+            linestyle = :solid,
         )
         plot!(
-            p1, data.t, pdata.zollner_extra_potential,
+            p1,
+            data.t,
+            pdata.zollner_extra_potential,
             label = latexstring("\\Delta U^{\\mathrm Z}_{", i, j, "}"),
-            linewidth = 1.0, color = c, linestyle = :dash,
+            linewidth = 1.0,
+            color = c,
+            linestyle = :dash,
         )
     end
 
@@ -864,21 +970,18 @@ function WeberElectrodynamics.plot_zollner_energy(data::EnergyData)::Plots.Plot
         legend = :outertopright,
         PLOT_DEFAULTS...,
     )
+    plot!(p2, data.t, data.total_energy, label = L"H", linewidth = 2, color = :black)
     plot!(
-        p2, data.t, data.total_energy,
-        label = L"H", linewidth = 2, color = :black,
-    )
-    plot!(
-        p2, data.t, data.total_zollner_residual,
+        p2,
+        data.t,
+        data.total_zollner_residual,
         label = L"\sum \Delta U^{\mathrm Z}\ (\mathrm{emergent\ gravity})",
-        linewidth = 1.8, color = :firebrick, linestyle = :dash,
+        linewidth = 1.8,
+        color = :firebrick,
+        linestyle = :dash,
     )
 
-    return plot(
-        p1, p2;
-        layout = grid(2, 1),
-        size = _multi_panel_size(2),
-    )
+    return plot(p1, p2; layout = grid(2, 1), size = _multi_panel_size(2))
 end
 
 """
@@ -904,14 +1007,21 @@ function WeberElectrodynamics.plot_zollner_force_residual(data::PairForceData)::
         PLOT_DEFAULTS...,
     )
     plot!(
-        p1, data.t, data.magnitude,
+        p1,
+        data.t,
+        data.magnitude,
         label = L"||F_{\mathrm{total}}||",
-        linewidth = 2, color = :steelblue,
+        linewidth = 2,
+        color = :steelblue,
     )
     plot!(
-        p1, data.t, data.zollner_extra_magnitude,
+        p1,
+        data.t,
+        data.zollner_extra_magnitude,
         label = L"||(\kappa-1)\, F_{\mathrm{C}}||",
-        linewidth = 1.5, color = :firebrick, linestyle = :dash,
+        linewidth = 1.5,
+        color = :firebrick,
+        linestyle = :dash,
     )
 
     # Panel 2: Ratio (κ-1)*F_coulomb / F_total
@@ -929,20 +1039,24 @@ function WeberElectrodynamics.plot_zollner_force_residual(data::PairForceData)::
         PLOT_DEFAULTS...,
     )
     plot!(
-        p2, data.t, ratio,
+        p2,
+        data.t,
+        ratio,
         label = L"(\kappa-1)\ \mathrm{fraction}",
-        linewidth = 1.5, color = :firebrick,
+        linewidth = 1.5,
+        color = :firebrick,
     )
     delta_kappa_str = @sprintf("%.4g", abs(data.kappa - 1.0))
-    hline!(p2, [abs(data.kappa - 1.0)];
+    hline!(
+        p2,
+        [abs(data.kappa - 1.0)];
         label = latexstring("a = ", delta_kappa_str),
-        linewidth = 1.0, color = :black, linestyle = :dot)
-
-    return plot(
-        p1, p2;
-        layout = grid(2, 1),
-        size = _multi_panel_size(2),
+        linewidth = 1.0,
+        color = :black,
+        linestyle = :dot,
     )
+
+    return plot(p1, p2; layout = grid(2, 1), size = _multi_panel_size(2))
 end
 
 """
@@ -989,14 +1103,18 @@ function WeberElectrodynamics.plot_weber_vs_zollner(
                 traj1.trajectories[particle][:, 1],
                 traj1.trajectories[particle][:, 2];
                 label = latexstring("P_{", particle, "}\\ \\mathrm{", labels[1], "}"),
-                linewidth = 1.5, color = c, linestyle = :solid,
+                linewidth = 1.5,
+                color = c,
+                linestyle = :solid,
             )
             plot!(
                 plt,
                 traj2.trajectories[particle][:, 1],
                 traj2.trajectories[particle][:, 2];
                 label = latexstring("P_{", particle, "}\\ \\mathrm{", labels[2], "}"),
-                linewidth = 1.5, color = c, linestyle = :dash,
+                linewidth = 1.5,
+                color = c,
+                linestyle = :dash,
             )
         end
     else  # 3D
@@ -1008,7 +1126,9 @@ function WeberElectrodynamics.plot_weber_vs_zollner(
                 traj1.trajectories[particle][:, 2],
                 traj1.trajectories[particle][:, 3];
                 label = latexstring("P_{", particle, "}\\ \\mathrm{", labels[1], "}"),
-                linewidth = 1.5, color = c, linestyle = :solid,
+                linewidth = 1.5,
+                color = c,
+                linestyle = :solid,
             )
             plot!(
                 plt,
@@ -1016,7 +1136,9 @@ function WeberElectrodynamics.plot_weber_vs_zollner(
                 traj2.trajectories[particle][:, 2],
                 traj2.trajectories[particle][:, 3];
                 label = latexstring("P_{", particle, "}\\ \\mathrm{", labels[2], "}"),
-                linewidth = 1.5, color = c, linestyle = :dash,
+                linewidth = 1.5,
+                color = c,
+                linestyle = :dash,
             )
         end
     end
@@ -1053,13 +1175,18 @@ function WeberElectrodynamics.plot_zollner_phase_space(
         data1.phase_space.separation_distance,
         data1.phase_space.radial_velocity;
         label = labels[1],
-        linewidth = 1.5, color = :steelblue, linestyle = :solid,
+        linewidth = 1.5,
+        color = :steelblue,
+        linestyle = :solid,
     )
     scatter!(
         plt,
         [data1.phase_space.separation_distance[1]],
         [data1.phase_space.radial_velocity[1]];
-        marker = :circle, markersize = 6, color = :steelblue, label = "",
+        marker = :circle,
+        markersize = 6,
+        color = :steelblue,
+        label = "",
     )
 
     plot!(
@@ -1067,13 +1194,18 @@ function WeberElectrodynamics.plot_zollner_phase_space(
         data2.phase_space.separation_distance,
         data2.phase_space.radial_velocity;
         label = labels[2],
-        linewidth = 1.5, color = :firebrick, linestyle = :dash,
+        linewidth = 1.5,
+        color = :firebrick,
+        linestyle = :dash,
     )
     scatter!(
         plt,
         [data2.phase_space.separation_distance[1]],
         [data2.phase_space.radial_velocity[1]];
-        marker = :circle, markersize = 6, color = :firebrick, label = "",
+        marker = :circle,
+        markersize = 6,
+        color = :firebrick,
+        label = "",
     )
 
     return plt

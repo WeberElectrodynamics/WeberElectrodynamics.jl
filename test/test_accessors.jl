@@ -9,7 +9,10 @@
 
     @testset "HamiltonianProblem parameter accessors" begin
         prob = HamiltonianProblem(
-            sys, (0.0, 1.0), zeros(6), zeros(6);
+            sys,
+            (0.0, 1.0),
+            zeros(6),
+            zeros(6);
             masses = [1.0, 2.0, 3.0],
             charges = [1.0, -1.0, 0.5],
             c = 10.0,
@@ -33,7 +36,10 @@
 
     @testset "zollner injects κ accessor" begin
         prob = HamiltonianProblem(
-            sys, (0.0, 1.0), zeros(6), zeros(6);
+            sys,
+            (0.0, 1.0),
+            zeros(6),
+            zeros(6);
             masses = [1.0, 1.0, 1.0],
             charges = [1.0, -1.0, 1.0],
             c = 10.0,

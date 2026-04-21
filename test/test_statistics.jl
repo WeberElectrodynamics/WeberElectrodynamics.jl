@@ -183,7 +183,8 @@ using WeberElectrodynamics: compute_total_kinetic_energy, compute_pair_weber_com
         c = 1e6  # Large c for Coulomb limit
 
         @testset "compute_pair_force_timeseries basic" begin
-            forces = compute_pair_force_timeseries(sol_coulomb, (1, 2), 2, 2, masses, charges, c)
+            forces =
+                compute_pair_force_timeseries(sol_coulomb, (1, 2), 2, 2, masses, charges, c)
 
             @test forces isa PairForceData
             @test forces.pair == (1, 2)
@@ -202,7 +203,8 @@ using WeberElectrodynamics: compute_total_kinetic_energy, compute_pair_weber_com
         end
 
         @testset "ForceStatistics" begin
-            forces = compute_pair_force_timeseries(sol_coulomb, (1, 2), 2, 2, masses, charges, c)
+            forces =
+                compute_pair_force_timeseries(sol_coulomb, (1, 2), 2, 2, masses, charges, c)
             stats = forces.stats
 
             @test stats isa ForceStatistics
@@ -213,27 +215,38 @@ using WeberElectrodynamics: compute_total_kinetic_energy, compute_pair_weber_com
         end
 
         @testset "Weber force decomposition consistency" begin
-            forces = compute_pair_force_timeseries(sol_weber, (1, 2), 2, 2, masses, charges, 1e6)
+            forces =
+                compute_pair_force_timeseries(sol_weber, (1, 2), 2, 2, masses, charges, 1e6)
 
             # Vector form: F = Coulomb + v·v term + r·a term + rv² term
             for t = 1:length(forces.t)
-                force_from_terms = forces.coulomb[t] .+ forces.vector_term_vv[t] .+
-                                   forces.vector_term_ra[t] .+ forces.vector_term_rv2[t]
+                force_from_terms =
+                    forces.coulomb[t] .+ forces.vector_term_vv[t] .+
+                    forces.vector_term_ra[t] .+ forces.vector_term_rv2[t]
                 @test forces.force[t] ≈ force_from_terms rtol = 1e-12
             end
 
             # Radial form: F = Coulomb + rdot² term + rddot term
             # Should equal vector form
             for t = 1:length(forces.t)
-                force_radial = forces.coulomb[t] .+ forces.radial_term_rdot2[t] .+
-                               forces.radial_term_rddot[t]
+                force_radial =
+                    forces.coulomb[t] .+ forces.radial_term_rdot2[t] .+
+                    forces.radial_term_rddot[t]
                 @test forces.force[t] ≈ force_radial rtol = 1e-10
             end
         end
 
         @testset "compute_pair_force_timeseries with stride" begin
-            forces =
-                compute_pair_force_timeseries(sol_coulomb, (1, 2), 2, 2, masses, charges, c; stride = 5)
+            forces = compute_pair_force_timeseries(
+                sol_coulomb,
+                (1, 2),
+                2,
+                2,
+                masses,
+                charges,
+                c;
+                stride = 5,
+            )
 
             # Fewer time points due to stride
             @test length(forces.t) < length(sol_coulomb.t) - 1
@@ -313,7 +326,8 @@ using WeberElectrodynamics: compute_total_kinetic_energy, compute_pair_weber_com
         c = 1e6
 
         @testset "Phase space data embedded in force data" begin
-            forces = compute_pair_force_timeseries(sol_coulomb, (1, 2), 2, 2, masses, charges, c)
+            forces =
+                compute_pair_force_timeseries(sol_coulomb, (1, 2), 2, 2, masses, charges, c)
             ps = forces.phase_space
 
             @test ps isa PhaseSpaceData
@@ -325,7 +339,16 @@ using WeberElectrodynamics: compute_total_kinetic_energy, compute_pair_weber_com
         end
 
         @testset "Phase space with stride" begin
-            forces = compute_pair_force_timeseries(sol_coulomb, (1, 2), 2, 2, masses, charges, c; stride = 5)
+            forces = compute_pair_force_timeseries(
+                sol_coulomb,
+                (1, 2),
+                2,
+                2,
+                masses,
+                charges,
+                c;
+                stride = 5,
+            )
             ps = forces.phase_space
 
             # Should have fewer points due to stride
@@ -334,13 +357,15 @@ using WeberElectrodynamics: compute_total_kinetic_energy, compute_pair_weber_com
         end
 
         @testset "Positive separation distance" begin
-            forces = compute_pair_force_timeseries(sol_coulomb, (1, 2), 2, 2, masses, charges, c)
+            forces =
+                compute_pair_force_timeseries(sol_coulomb, (1, 2), 2, 2, masses, charges, c)
             ps = forces.phase_space
             @test all(ps.separation_distance .> 0)  # Particles should never collide
         end
 
         @testset "Phase space consistency with force data" begin
-            forces = compute_pair_force_timeseries(sol_weber, (1, 2), 2, 2, masses, charges, 1e6)
+            forces =
+                compute_pair_force_timeseries(sol_weber, (1, 2), 2, 2, masses, charges, 1e6)
             ps = forces.phase_space
 
             # Same time vector
@@ -374,7 +399,8 @@ using WeberElectrodynamics: compute_total_kinetic_energy, compute_pair_weber_com
             # Verify components match vector data
             for t = 1:length(momentum.t)
                 for d = 1:2
-                    @test momentum.linear_momentum_components[t, d] == momentum.linear_momentum[t][d]
+                    @test momentum.linear_momentum_components[t, d] ==
+                          momentum.linear_momentum[t][d]
                 end
             end
         end
@@ -403,7 +429,8 @@ using WeberElectrodynamics: compute_total_kinetic_energy, compute_pair_weber_com
             momentum2d = compute_momentum_timeseries(sol2d)
 
             @test momentum2d.angular_momentum[1] < 0
-            @test momentum2d.angular_momentum_magnitude[1] ≈ abs(momentum2d.angular_momentum[1])
+            @test momentum2d.angular_momentum_magnitude[1] ≈
+                  abs(momentum2d.angular_momentum[1])
             @test all(momentum2d.angular_momentum_magnitude .>= 0)
         end
 
@@ -512,8 +539,8 @@ using WeberElectrodynamics: compute_total_kinetic_energy, compute_pair_weber_com
         charges = [1.0, -1.0]
         c = 10.0
 
-        coulomb, vel, rdot, zextra = compute_pair_weber_components(
-            q_rest, p_rest, 1, 2, masses, charges, c, 2, 1.0)
+        coulomb, vel, rdot, zextra =
+            compute_pair_weber_components(q_rest, p_rest, 1, 2, masses, charges, c, 2, 1.0)
 
         # At rest: rdot = 0, velocity term = 0, zollner_extra = 0 (kappa=1)
         @test rdot ≈ 0.0
@@ -525,28 +552,55 @@ using WeberElectrodynamics: compute_total_kinetic_energy, compute_pair_weber_com
         # Particle 2 moving right at v=3 → rdot = +3 (separating)
         p_radial = [0.0, 0.0, 3.0, 0.0]
         coulomb2, vel2, rdot2, _ = compute_pair_weber_components(
-            q_rest, p_radial, 1, 2, masses, charges, c, 2, 1.0)
+            q_rest,
+            p_radial,
+            1,
+            2,
+            masses,
+            charges,
+            c,
+            2,
+            1.0,
+        )
         @test rdot2 ≈ 3.0
         # velocity term = -coulomb2 * rdot2²/(2c²)
         @test vel2 ≈ -coulomb2 * rdot2^2 / (2 * c^2)
 
         # Large-c limit: velocity correction vanishes relative to Coulomb
         coulomb3, vel3, _, _ = compute_pair_weber_components(
-            q_rest, p_radial, 1, 2, masses, charges, 1e9, 2, 1.0)
+            q_rest,
+            p_radial,
+            1,
+            2,
+            masses,
+            charges,
+            1e9,
+            2,
+            1.0,
+        )
         @test abs(vel3) / abs(coulomb3) < 1e-12
 
         # kappa ≠ 1: Coulomb scales, Zöllner extra = (kappa-1)*q1*q2/r (rdot=0)
         kappa = 1.3
         coul_k, _, _, zextra_k = compute_pair_weber_components(
-            q_rest, p_rest, 1, 2, masses, charges, c, 2, kappa)
+            q_rest,
+            p_rest,
+            1,
+            2,
+            masses,
+            charges,
+            c,
+            2,
+            kappa,
+        )
         @test coul_k ≈ kappa * charges[1] * charges[2] / 2.0
         @test zextra_k ≈ (kappa - 1.0) * charges[1] * charges[2] / 2.0
 
         # 1D: particles at x=0 and x=3 converging (particle 1 right, particle 2 left)
         q_1d = [0.0, 3.0]
         p_1d = [1.0, -1.0]
-        coulomb_1d, _, rdot_1d, _ = compute_pair_weber_components(
-            q_1d, p_1d, 1, 2, [1.0, 1.0], [1.0, 1.0], c, 1)
+        coulomb_1d, _, rdot_1d, _ =
+            compute_pair_weber_components(q_1d, p_1d, 1, 2, [1.0, 1.0], [1.0, 1.0], c, 1)
         @test coulomb_1d ≈ 1.0 / 3.0  # same-sign charges, r=3
         @test rdot_1d < 0.0            # converging
     end

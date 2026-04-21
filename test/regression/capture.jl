@@ -124,22 +124,30 @@ function fixture_twobody_ellipse()
     v_circ = sqrt(abs(q1 * q2) * M / (m1 * m2 * r0))
     v_scale = 0.9  # sub-circular → mild eccentricity
     q_initial = [-m2 / M * r0, 0.0, m1 / M * r0, 0.0]
-    p_initial = [
-        0.0, m1 * (-m2 / M * v_circ * v_scale),
-        0.0, m2 * (m1 / M * v_circ * v_scale),
-    ]
+    p_initial =
+        [0.0, m1 * (-m2 / M * v_circ * v_scale), 0.0, m2 * (m1 / M * v_circ * v_scale)]
     tspan = (0.0, 2.0)
     dt = 5e-4
 
     system = HamiltonianSystem(2, 2)
     prob = HamiltonianProblem(
-        system, tspan, q_initial, p_initial;
-        masses = [m1, m2], charges = [q1, q2], c = c, dt = dt,
+        system,
+        tspan,
+        q_initial,
+        p_initial;
+        masses = [m1, m2],
+        charges = [q1, q2],
+        c = c,
+        dt = dt,
     )
     alg = SymmetricProjectionIntegrator()
     sol = solve(prob, alg)
-    return prob, alg, sol, ZollnerOptions(), "twobody_ellipse",
-        "2-body unregularized bound elliptic orbit (finite c, mild eccentricity)"
+    return prob,
+    alg,
+    sol,
+    ZollnerOptions(),
+    "twobody_ellipse",
+    "2-body unregularized bound elliptic orbit (finite c, mild eccentricity)"
 end
 
 function fixture_threebody_mixed()
@@ -154,13 +162,23 @@ function fixture_threebody_mixed()
     tspan = (0.0, 0.5)
     dt = 5e-4
     prob = HamiltonianProblem(
-        system, tspan, q_initial, p_initial;
-        masses = masses, charges = charges, c = c, dt = dt,
+        system,
+        tspan,
+        q_initial,
+        p_initial;
+        masses = masses,
+        charges = charges,
+        c = c,
+        dt = dt,
     )
     alg = SymmetricProjectionIntegrator()
     sol = solve(prob, alg)
-    return prob, alg, sol, ZollnerOptions(), "threebody_mixed",
-        "3-body unregularized mixed-charge system starting from rest"
+    return prob,
+    alg,
+    sol,
+    ZollnerOptions(),
+    "threebody_mixed",
+    "3-body unregularized mixed-charge system starting from rest"
 end
 
 function fixture_close_approach_lifted()
@@ -175,17 +193,21 @@ function fixture_close_approach_lifted()
     v_circ = sqrt(abs(q1 * q2) * M / (m1 * m2 * r0))
     v_scale = 0.5
     q_initial = [-m2 / M * r0, 0.0, m1 / M * r0, 0.0]
-    p_initial = [
-        0.0, m1 * (-m2 / M * v_circ * v_scale),
-        0.0, m2 * (m1 / M * v_circ * v_scale),
-    ]
+    p_initial =
+        [0.0, m1 * (-m2 / M * v_circ * v_scale), 0.0, m2 * (m1 / M * v_circ * v_scale)]
     tspan = (0.0, 8.0)
     dt = 2e-3
 
     system = HamiltonianSystem(2, 2)
     prob = HamiltonianProblem(
-        system, tspan, q_initial, p_initial;
-        masses = [m1, m2], charges = [q1, q2], c = c, dt = dt,
+        system,
+        tspan,
+        q_initial,
+        p_initial;
+        masses = [m1, m2],
+        charges = [q1, q2],
+        c = c,
+        dt = dt,
     )
     alg = RegularizedIntegrator(
         SymmetricProjectionIntegrator();
@@ -197,8 +219,12 @@ function fixture_close_approach_lifted()
         warn_on_fallback = false,
     )
     sol = solve(prob, alg)
-    return prob, alg, sol, ZollnerOptions(), "close_approach_lifted",
-        "2-body close approach with :lifted_pair Levi-Civita regularization"
+    return prob,
+    alg,
+    sol,
+    ZollnerOptions(),
+    "close_approach_lifted",
+    "2-body close approach with :lifted_pair Levi-Civita regularization"
 end
 
 function fixture_zollner_offmatch()
@@ -214,10 +240,8 @@ function fixture_zollner_offmatch()
     v_circ = sqrt(abs(q1 * q2) * M / (m1 * m2 * r0))
     v_scale = 0.5
     q_initial = [-m2 / M * r0, 0.0, m1 / M * r0, 0.0]
-    p_initial = [
-        0.0, m1 * (-m2 / M * v_circ * v_scale),
-        0.0, m2 * (m1 / M * v_circ * v_scale),
-    ]
+    p_initial =
+        [0.0, m1 * (-m2 / M * v_circ * v_scale), 0.0, m2 * (m1 / M * v_circ * v_scale)]
     tspan = (0.0, 5.0)
     dt = 1e-3
 
@@ -225,8 +249,14 @@ function fixture_zollner_offmatch()
 
     system = HamiltonianSystem(2, 2)
     prob = HamiltonianProblem(
-        system, tspan, q_initial, p_initial;
-        masses = [m1, m2], charges = [q1, q2], c = c, dt = dt,
+        system,
+        tspan,
+        q_initial,
+        p_initial;
+        masses = [m1, m2],
+        charges = [q1, q2],
+        c = c,
+        dt = dt,
         zollner = zol,
     )
     alg = RegularizedIntegrator(
@@ -238,8 +268,12 @@ function fixture_zollner_offmatch()
         warn_on_fallback = false,
     )
     sol = solve(prob, alg)
-    return prob, alg, sol, zol, "zollner_offmatch",
-        "2-body Zöllner off-match (a≠0) with adaptive-Cartesian regularization"
+    return prob,
+    alg,
+    sol,
+    zol,
+    "zollner_offmatch",
+    "2-body Zöllner off-match (a≠0) with adaptive-Cartesian regularization"
 end
 
 # ---------------------------------------------------------------------------
@@ -293,8 +327,10 @@ function save_fixture(
         end
     end
     sz = filesize(path)
-    println("  wrote $path  ($(round(sz / 1024; digits=1)) KiB)  " *
-            "retcode=$(sol.retcode)  n_steps=$(length(sol.t))")
+    println(
+        "  wrote $path  ($(round(sz / 1024; digits=1)) KiB)  " *
+        "retcode=$(sol.retcode)  n_steps=$(length(sol.t))",
+    )
     return path
 end
 

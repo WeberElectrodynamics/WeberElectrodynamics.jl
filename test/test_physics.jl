@@ -54,7 +54,7 @@
 
         # For large c (Coulomb limit), Weber correction terms should be small
         # Vector form: F ≈ Coulomb (v·v, r·a, rv² terms should be negligible)
-        for t in 1:length(forces.t)
+        for t = 1:length(forces.t)
             coulomb_mag = norm(forces.coulomb[t])
             vv_mag = norm(forces.vector_term_vv[t])
             ra_mag = norm(forces.vector_term_ra[t])
@@ -82,11 +82,13 @@
         )
 
         # Vector form and radial form should give same total force
-        for t in 1:length(forces.t)
-            force_vector = forces.coulomb[t] .+ forces.vector_term_vv[t] .+
-                           forces.vector_term_ra[t] .+ forces.vector_term_rv2[t]
-            force_radial = forces.coulomb[t] .+ forces.radial_term_rdot2[t] .+
-                           forces.radial_term_rddot[t]
+        for t = 1:length(forces.t)
+            force_vector =
+                forces.coulomb[t] .+ forces.vector_term_vv[t] .+ forces.vector_term_ra[t] .+
+                forces.vector_term_rv2[t]
+            force_radial =
+                forces.coulomb[t] .+ forces.radial_term_rdot2[t] .+
+                forces.radial_term_rddot[t]
 
             @test forces.force[t] ≈ force_vector rtol = 1e-12
             @test force_vector ≈ force_radial rtol = 1e-10

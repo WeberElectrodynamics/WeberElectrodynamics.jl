@@ -1,10 +1,19 @@
 module WeberElectrodynamicsMakieExt
 
 using WeberElectrodynamics
-using WeberElectrodynamics: @sprintf, norm, dot,
-    HamiltonianProblem, HamiltonianIntegrator, HamiltonianSystem, HamiltonianSolution,
-    SymmetricProjectionIntegrator, HamiltonianAlgorithm,
-    _pair_index, compute_total_kinetic_energy, compute_pair_weber_components
+using WeberElectrodynamics:
+    @sprintf,
+    norm,
+    dot,
+    HamiltonianProblem,
+    HamiltonianIntegrator,
+    HamiltonianSystem,
+    HamiltonianSolution,
+    SymmetricProjectionIntegrator,
+    HamiltonianAlgorithm,
+    _pair_index,
+    compute_total_kinetic_energy,
+    compute_pair_weber_components
 using CommonSolve: init, step!
 using Makie
 
@@ -55,25 +64,29 @@ function RollingBuffer(capacity::Int, prob::HamiltonianProblem)
     n = n_particles(prob)
     d = dims(prob)
 
-    positions = [Matrix{Float64}(undef, d, capacity) for _ in 1:n]
+    positions = [Matrix{Float64}(undef, d, capacity) for _ = 1:n]
 
     pair_sep = Dict{Tuple{Int,Int},Vector{Float64}}()
     pair_rdot = Dict{Tuple{Int,Int},Vector{Float64}}()
-    for i in 1:n, j in (i+1):n
+    for i = 1:n, j = (i+1):n
         pair_sep[(i, j)] = Vector{Float64}(undef, capacity)
         pair_rdot[(i, j)] = Vector{Float64}(undef, capacity)
     end
 
-    particle_q = Dict(i => Matrix{Float64}(undef, d, capacity) for i in 1:n)
-    particle_p = Dict(i => Matrix{Float64}(undef, d, capacity) for i in 1:n)
+    particle_q = Dict(i => Matrix{Float64}(undef, d, capacity) for i = 1:n)
+    particle_p = Dict(i => Matrix{Float64}(undef, d, capacity) for i = 1:n)
 
     RollingBuffer(
-        capacity, 0, 1,
+        capacity,
+        0,
+        1,
         Vector{Float64}(undef, capacity),
         positions,
         Vector{Float64}(undef, capacity),
-        pair_sep, pair_rdot,
-        particle_q, particle_p,
+        pair_sep,
+        pair_rdot,
+        particle_q,
+        particle_p,
     )
 end
 
@@ -87,7 +100,11 @@ end
 # Per-Step Computation
 # =============================================================================
 
-function _compute_step_energy(q::AbstractVector{Float64}, p::AbstractVector{Float64}, prob::HamiltonianProblem)
+function _compute_step_energy(
+    q::AbstractVector{Float64},
+    p::AbstractVector{Float64},
+    prob::HamiltonianProblem,
+)
     ms = masses(prob)
     qs = charges(prob)
     c_val = speed_of_light(prob)
@@ -97,19 +114,22 @@ function _compute_step_energy(q::AbstractVector{Float64}, p::AbstractVector{Floa
 
     KE = compute_total_kinetic_energy(p, ms, d)
     PE = 0.0
-    for i in 1:n, j in (i+1):n
+    for i = 1:n, j = (i+1):n
         kappa_ij = κs[_pair_index(i, j, n)]
-        coulomb, velocity, _, _ = compute_pair_weber_components(
-            q, p, i, j, ms, qs, c_val, d, kappa_ij,
-        )
+        coulomb, velocity, _, _ =
+            compute_pair_weber_components(q, p, i, j, ms, qs, c_val, d, kappa_ij)
         PE += coulomb + velocity
     end
     return KE + PE
 end
 
 function _compute_step_pair_phase(
-    q::AbstractVector{Float64}, p::AbstractVector{Float64},
-    i::Int, j::Int, masses::AbstractVector{Float64}, dims::Int,
+    q::AbstractVector{Float64},
+    p::AbstractVector{Float64},
+    i::Int,
+    j::Int,
+    masses::AbstractVector{Float64},
+    dims::Int,
 )
     qi_start = (i - 1) * dims
     qj_start = (j - 1) * dims
@@ -117,7 +137,7 @@ function _compute_step_pair_phase(
 
     r_sq = 0.0
     r_dot_v = 0.0
-    @inbounds for d in 1:dims
+    @inbounds for d = 1:dims
         dq = q[qi_start+d] - q[qj_start+d]
         dv = p[qi_start+d] / mi - p[qj_start+d] / mj
         r_sq += dq^2
@@ -132,8 +152,13 @@ end
 # Buffer Push
 # =============================================================================
 
-function push_step!(buf::RollingBuffer, t::Float64, q::AbstractVector{Float64},
-                    p::AbstractVector{Float64}, prob::HamiltonianProblem)
+function push_step!(
+    buf::RollingBuffer,
+    t::Float64,
+    q::AbstractVector{Float64},
+    p::AbstractVector{Float64},
+    prob::HamiltonianProblem,
+)
     idx = buf.cursor
     D = dims(prob)
     n = n_particles(prob)
@@ -141,9 +166,9 @@ function push_step!(buf::RollingBuffer, t::Float64, q::AbstractVector{Float64},
     buf.t[idx] = t
 
     # Positions per particle
-    @inbounds for particle in 1:n
+    @inbounds for particle = 1:n
         base = (particle - 1) * D
-        for d in 1:D
+        for d = 1:D
             buf.positions[particle][d, idx] = q[base+d]
         end
     end
@@ -152,16 +177,16 @@ function push_step!(buf::RollingBuffer, t::Float64, q::AbstractVector{Float64},
     buf.total_energy[idx] = _compute_step_energy(q, p, prob)
 
     # Pair phase space
-    @inbounds for i in 1:n, j in (i+1):n
+    @inbounds for i = 1:n, j = (i+1):n
         r, rdot = _compute_step_pair_phase(q, p, i, j, masses(prob), D)
         buf.pair_separation[(i, j)][idx] = r
         buf.pair_radial_velocity[(i, j)][idx] = rdot
     end
 
     # Per-particle phase space
-    @inbounds for particle in 1:n
+    @inbounds for particle = 1:n
         base = (particle - 1) * D
-        for d in 1:D
+        for d = 1:D
             buf.particle_q[particle][d, idx] = q[base+d]
             buf.particle_p[particle][d, idx] = p[base+d]
         end
@@ -186,7 +211,7 @@ function _linearize(arr::Vector{Float64}, buf::RollingBuffer)
         return arr[1:buf.count]
     end
     oldest = buf.cursor  # next write position = oldest entry
-    return vcat(@view(arr[oldest:buf.capacity]), @view(arr[1:oldest-1]))
+    return vcat(@view(arr[oldest:buf.capacity]), @view(arr[1:(oldest-1)]))
 end
 
 function _linearize_col(mat::Matrix{Float64}, row::Int, buf::RollingBuffer)
@@ -197,7 +222,7 @@ function _linearize_col(mat::Matrix{Float64}, row::Int, buf::RollingBuffer)
         return vec(mat[row, 1:buf.count])
     end
     oldest = buf.cursor
-    return vcat(@view(mat[row, oldest:buf.capacity]), @view(mat[row, 1:oldest-1]))
+    return vcat(@view(mat[row, oldest:buf.capacity]), @view(mat[row, 1:(oldest-1)]))
 end
 
 # Log-linear speed range: 1,2,...,9, 10,20,...,90, 100,200,...,900, 1000
@@ -205,7 +230,7 @@ function _log_linear_range(max_val::Int)
     values = Int[]
     decade = 1
     while decade <= max_val
-        for k in 1:9
+        for k = 1:9
             v = k * decade
             v <= max_val && push!(values, v)
         end
@@ -291,15 +316,15 @@ function _create_observables(prob::HamiltonianProblem)
     n = n_particles(prob)
     d = dims(prob)
 
-    traj_x = [Observable(Float64[]) for _ in 1:n]
-    traj_y = [Observable(Float64[]) for _ in 1:n]
-    traj_z = [Observable(Float64[]) for _ in 1:n]  # always allocated, used only when d==3
+    traj_x = [Observable(Float64[]) for _ = 1:n]
+    traj_y = [Observable(Float64[]) for _ = 1:n]
+    traj_z = [Observable(Float64[]) for _ = 1:n]  # always allocated, used only when d==3
 
     if d == 3
         marker_2d = Observable{Point2f}[]
-        marker_3d = [Observable(Point3f(0, 0, 0)) for _ in 1:n]
+        marker_3d = [Observable(Point3f(0, 0, 0)) for _ = 1:n]
     else
-        marker_2d = [Observable(Point2f(0, 0)) for _ in 1:n]
+        marker_2d = [Observable(Point2f(0, 0)) for _ = 1:n]
         marker_3d = Observable{Point3f}[]
     end
 
@@ -312,10 +337,17 @@ function _create_observables(prob::HamiltonianProblem)
     step_text = Observable("step = 0")
 
     PlotObservables(
-        traj_x, traj_y, traj_z, marker_2d, marker_3d,
-        phase_x, phase_y, phase_marker,
+        traj_x,
+        traj_y,
+        traj_z,
+        marker_2d,
+        marker_3d,
+        phase_x,
+        phase_y,
+        phase_marker,
         energy_error_text,
-        time_text, step_text,
+        time_text,
+        step_text,
     )
 end
 
@@ -331,7 +363,7 @@ function _update_observables!(state::AnimationState, obs::PlotObservables)
 
     # Trajectory tails (last tail_length entries)
     tail_len = min(state.tail_length[], buf.count)
-    for particle in 1:n
+    for particle = 1:n
         x_full = _linearize_col(buf.positions[particle], 1, buf)
         y_full = _linearize_col(buf.positions[particle], 2, buf)
         start_idx = max(1, length(x_full) - tail_len + 1)
@@ -375,7 +407,11 @@ function _update_observables!(state::AnimationState, obs::PlotObservables)
     return nothing
 end
 
-function _update_phase_space!(state::AnimationState, obs::PlotObservables, buf::RollingBuffer)
+function _update_phase_space!(
+    state::AnimationState,
+    obs::PlotObservables,
+    buf::RollingBuffer,
+)
     sel = state.phase_selection[]
 
     if startswith(sel, "Pair")
@@ -425,8 +461,13 @@ function _get_ylims(ax::Axis)
     return (fl.origin[2], fl.origin[2] + fl.widths[2])
 end
 
-function _autoscale!(ax::Axis, x_obs::Observable, y_obs::Observable;
-                     padding::Float64 = 0.05, track_x::Bool = false)
+function _autoscale!(
+    ax::Axis,
+    x_obs::Observable,
+    y_obs::Observable;
+    padding::Float64 = 0.05,
+    track_x::Bool = false,
+)
     on(y_obs) do yd
         xd = x_obs[]
         if isempty(xd) || isempty(yd) || length(xd) < 2
@@ -463,10 +504,12 @@ function _autoscale!(ax::Axis, x_obs::Observable, y_obs::Observable;
     return nothing
 end
 
-function _autoscale_trajectory_2d!(ax::Axis,
-                                   traj_xs::Vector{Observable{Vector{Float64}}},
-                                   traj_ys::Vector{Observable{Vector{Float64}}};
-                                   padding::Float64 = 0.05)
+function _autoscale_trajectory_2d!(
+    ax::Axis,
+    traj_xs::Vector{Observable{Vector{Float64}}},
+    traj_ys::Vector{Observable{Vector{Float64}}};
+    padding::Float64 = 0.05,
+)
     on(traj_xs[1]) do _
         all_x = Float64[]
         all_y = Float64[]
@@ -512,11 +555,13 @@ function _get_lims_3d(ax::Axis3)
     return (o[1], o[1] + w[1], o[2], o[2] + w[2], o[3], o[3] + w[3])
 end
 
-function _autoscale_trajectory_3d!(ax::Axis3,
-                                   traj_xs::Vector{Observable{Vector{Float64}}},
-                                   traj_ys::Vector{Observable{Vector{Float64}}},
-                                   traj_zs::Vector{Observable{Vector{Float64}}};
-                                   padding::Float64 = 0.05)
+function _autoscale_trajectory_3d!(
+    ax::Axis3,
+    traj_xs::Vector{Observable{Vector{Float64}}},
+    traj_ys::Vector{Observable{Vector{Float64}}},
+    traj_zs::Vector{Observable{Vector{Float64}}};
+    padding::Float64 = 0.05,
+)
     on(traj_xs[1]) do _
         all_x = Float64[]
         all_y = Float64[]
@@ -606,8 +651,10 @@ function _alpha_gradient(col, n::Integer; min_alpha = 0.15)
     n <= 0 && return RGBAf[]
     base = Makie.to_color(col)
     n == 1 && return [RGBAf(base.r, base.g, base.b, 1.0)]
-    return [RGBAf(base.r, base.g, base.b,
-                  min_alpha + (1.0 - min_alpha) * (k - 1) / (n - 1)) for k in 1:n]
+    return [
+        RGBAf(base.r, base.g, base.b, min_alpha + (1.0 - min_alpha) * (k - 1) / (n - 1)) for
+        k = 1:n
+    ]
 end
 
 function _weber_theme()
@@ -617,17 +664,26 @@ function _weber_theme()
         backgroundcolor = :white,
         palette = (color = Makie.wong_colors(),),
         Axis = (
-            xgridcolor = (:black, 0.08), ygridcolor = (:black, 0.08),
-            xminorgridvisible = false, yminorgridvisible = false,
-            topspinevisible = false, rightspinevisible = false,
-            xtickalign = 1, ytickalign = 1,
-            titlesize = 15, xlabelsize = 13, ylabelsize = 13,
+            xgridcolor = (:black, 0.08),
+            ygridcolor = (:black, 0.08),
+            xminorgridvisible = false,
+            yminorgridvisible = false,
+            topspinevisible = false,
+            rightspinevisible = false,
+            xtickalign = 1,
+            ytickalign = 1,
+            titlesize = 15,
+            xlabelsize = 13,
+            ylabelsize = 13,
         ),
         Axis3 = (
             xgridcolor = (:black, 0.12),
             ygridcolor = (:black, 0.12),
             zgridcolor = (:black, 0.12),
-            titlesize = 15, xlabelsize = 13, ylabelsize = 13, zlabelsize = 13,
+            titlesize = 15,
+            xlabelsize = 13,
+            ylabelsize = 13,
+            zlabelsize = 13,
             protrusions = 40,
         ),
         Label = (fontsize = 13,),
@@ -635,15 +691,21 @@ function _weber_theme()
     return merge(overlay, base)
 end
 
-function _build_figure(state::AnimationState, obs::PlotObservables;
-                       figure_size::Tuple{Int,Int} = (1200, 800))
+function _build_figure(
+    state::AnimationState,
+    obs::PlotObservables;
+    figure_size::Tuple{Int,Int} = (1200, 800),
+)
     return with_theme(_weber_theme()) do
         _build_figure_impl(state, obs, figure_size)
     end
 end
 
-function _build_figure_impl(state::AnimationState, obs::PlotObservables,
-                            figure_size::Tuple{Int,Int})
+function _build_figure_impl(
+    state::AnimationState,
+    obs::PlotObservables,
+    figure_size::Tuple{Int,Int},
+)
     fig = Figure(; size = figure_size, px_per_unit = 2)
 
     prob = state.prob
@@ -653,100 +715,168 @@ function _build_figure_impl(state::AnimationState, obs::PlotObservables,
     # =========================================================================
     # Big trajectory panel (Axis3 for 3D, Axis for 2D)
     # =========================================================================
-    particle_cols = [_particle_color(i) for i in 1:n]
-    legend_entries = [[LineElement(color = particle_cols[i], linewidth = 2.2),
-                       MarkerElement(marker = :circle, color = particle_cols[i],
-                                     markersize = 10, strokewidth = 0.6,
-                                     strokecolor = :black)] for i in 1:n]
-    legend_labels = ["P$i" for i in 1:n]
+    particle_cols = [_particle_color(i) for i = 1:n]
+    legend_entries = [
+        [
+            LineElement(color = particle_cols[i], linewidth = 2.2),
+            MarkerElement(
+                marker = :circle,
+                color = particle_cols[i],
+                markersize = 10,
+                strokewidth = 0.6,
+                strokecolor = :black,
+            ),
+        ] for i = 1:n
+    ]
+    legend_labels = ["P$i" for i = 1:n]
 
     if d == 3
-        ax_traj = Axis3(fig[1:3, 1:3];
+        ax_traj = Axis3(
+            fig[1:3, 1:3];
             title = "Particle Trajectories",
-            xlabel = "x", ylabel = "y", zlabel = "z",
+            xlabel = "x",
+            ylabel = "y",
+            zlabel = "z",
             aspect = :data,
             perspectiveness = 0.3,
             viewmode = :fit,
         )
-        for particle in 1:n
+        for particle = 1:n
             col = particle_cols[particle]
             xobs = obs.traj_x[particle]
             yobs = obs.traj_y[particle]
             zobs = obs.traj_z[particle]
             pts = lift(xobs, yobs, zobs) do x, y, z
                 m = min(length(x), length(y), length(z))
-                Point3f[Point3f(x[k], y[k], z[k]) for k in 1:m]
+                Point3f[Point3f(x[k], y[k], z[k]) for k = 1:m]
             end
             trail_colors = lift(pts) do p
                 _alpha_gradient(col, length(p))
             end
-            lines!(ax_traj, pts; color = trail_colors, linewidth = 2.2,
-                linecap = :round, joinstyle = :round)
-            scatter!(ax_traj, obs.marker_3d[particle];
-                color = col, markersize = 14,
-                strokewidth = 0.6, strokecolor = :black, fxaa = true)
+            lines!(
+                ax_traj,
+                pts;
+                color = trail_colors,
+                linewidth = 2.2,
+                linecap = :round,
+                joinstyle = :round,
+            )
+            scatter!(
+                ax_traj,
+                obs.marker_3d[particle];
+                color = col,
+                markersize = 14,
+                strokewidth = 0.6,
+                strokecolor = :black,
+                fxaa = true,
+            )
         end
-        axislegend(ax_traj, legend_entries, legend_labels;
-            position = :rt, framevisible = true,
-            framecolor = (:black, 0.15), labelsize = 11)
+        axislegend(
+            ax_traj,
+            legend_entries,
+            legend_labels;
+            position = :rt,
+            framevisible = true,
+            framecolor = (:black, 0.15),
+            labelsize = 11,
+        )
     else
-        ax_traj = Axis(fig[1:3, 1:3];
+        ax_traj = Axis(
+            fig[1:3, 1:3];
             title = "Particle Trajectories",
-            xlabel = "x", ylabel = "y",
+            xlabel = "x",
+            ylabel = "y",
             aspect = DataAspect(),
         )
-        for particle in 1:n
+        for particle = 1:n
             col = particle_cols[particle]
             xobs = obs.traj_x[particle]
             yobs = obs.traj_y[particle]
             trail_colors = lift(xobs, yobs) do x, y
                 _alpha_gradient(col, min(length(x), length(y)))
             end
-            lines!(ax_traj, xobs, yobs; color = trail_colors, linewidth = 2.2,
-                linecap = :round, joinstyle = :round)
-            scatter!(ax_traj, obs.marker_2d[particle];
-                color = col, markersize = 14,
-                strokewidth = 0.6, strokecolor = :black)
+            lines!(
+                ax_traj,
+                xobs,
+                yobs;
+                color = trail_colors,
+                linewidth = 2.2,
+                linecap = :round,
+                joinstyle = :round,
+            )
+            scatter!(
+                ax_traj,
+                obs.marker_2d[particle];
+                color = col,
+                markersize = 14,
+                strokewidth = 0.6,
+                strokecolor = :black,
+            )
         end
-        axislegend(ax_traj, legend_entries, legend_labels;
-            position = :rt, framevisible = true,
-            framecolor = (:black, 0.15), labelsize = 11)
+        axislegend(
+            ax_traj,
+            legend_entries,
+            legend_labels;
+            position = :rt,
+            framevisible = true,
+            framecolor = (:black, 0.15),
+            labelsize = 11,
+        )
     end
 
     # =========================================================================
     # Right sidebar: phase menu, phase plot, info column
     # =========================================================================
-    pairs = [(i, j) for i in 1:n for j in (i+1):n]
+    pairs = [(i, j) for i = 1:n for j = (i+1):n]
     pair_labels = ["Pair ($i,$j)" for (i, j) in pairs]
-    particle_labels = ["Particle $i" for i in 1:n]
+    particle_labels = ["Particle $i" for i = 1:n]
     all_labels = vcat(pair_labels, particle_labels)
 
     # Phase menu (top of sidebar)
     menu_grid = fig[1, 4] = GridLayout()
     Label(menu_grid[1, 1], "Phase:"; fontsize = 11, halign = :right)
-    menu = Menu(menu_grid[1, 2]; options = all_labels,
-                default = state.phase_selection[], width = 160)
+    menu = Menu(
+        menu_grid[1, 2];
+        options = all_labels,
+        default = state.phase_selection[],
+        width = 160,
+    )
 
     # Phase space panel
-    ax_phase = Axis(fig[2, 4];
+    ax_phase = Axis(
+        fig[2, 4];
         title = _phase_title(state),
         xlabel = _phase_xlabel(state),
         ylabel = _phase_ylabel(state),
     )
-    lines!(ax_phase, obs.phase_x, obs.phase_y;
-        color = (:black, 0.65), linewidth = 1.6, linecap = :round)
-    scatter!(ax_phase, obs.phase_marker;
-        color = :black, markersize = 11,
-        strokewidth = 0.6, strokecolor = :white)
+    lines!(
+        ax_phase,
+        obs.phase_x,
+        obs.phase_y;
+        color = (:black, 0.65),
+        linewidth = 1.6,
+        linecap = :round,
+    )
+    scatter!(
+        ax_phase,
+        obs.phase_marker;
+        color = :black,
+        markersize = 11,
+        strokewidth = 0.6,
+        strokecolor = :white,
+    )
 
     # Info column: energy error + time + step
     info_grid = fig[3, 4] = GridLayout()
-    Label(info_grid[1, 1], obs.energy_error_text;
-        fontsize = 14, halign = :left, font = :bold)
-    Label(info_grid[2, 1], obs.time_text;
-        fontsize = 13, halign = :left)
-    Label(info_grid[3, 1], obs.step_text;
-        fontsize = 13, halign = :left)
+    Label(
+        info_grid[1, 1],
+        obs.energy_error_text;
+        fontsize = 14,
+        halign = :left,
+        font = :bold,
+    )
+    Label(info_grid[2, 1], obs.time_text; fontsize = 13, halign = :left)
+    Label(info_grid[3, 1], obs.step_text; fontsize = 13, halign = :left)
 
     # Sidebar column width
     colsize!(fig.layout, 4, Relative(0.25))
@@ -762,13 +892,16 @@ function _build_figure_impl(state::AnimationState, obs::PlotObservables,
     reset_btn = Button(controls_grid[1, 2]; label = "Reset", width = 70)
 
     Label(controls_grid[1, 3], "Trail:"; fontsize = 11, halign = :right)
-    trail_slider = Slider(controls_grid[1, 4]; range = 10:10:state.buffer_size,
-                          startvalue = state.tail_length[])
+    trail_slider = Slider(
+        controls_grid[1, 4];
+        range = 10:10:state.buffer_size,
+        startvalue = state.tail_length[],
+    )
 
     Label(controls_grid[1, 5], "Speed:"; fontsize = 11, halign = :right)
     speed_range = _log_linear_range(1000)
-    speed_slider = Slider(controls_grid[1, 6]; range = speed_range,
-                          startvalue = state.compute_batch[])
+    speed_slider =
+        Slider(controls_grid[1, 6]; range = speed_range, startvalue = state.compute_batch[])
 
     on(play_btn.clicks) do _
         state.is_playing[] = !state.is_playing[]
@@ -825,8 +958,13 @@ function _reset_animation!(state::AnimationState, obs::PlotObservables)
         prob_to_init = isnothing(state.extended_prob) ? state.prob : state.extended_prob
         state.source.integrator = init(prob_to_init, state.alg)
         state.source.total_steps = 0
-        push_step!(state.buffer, state.source.integrator.t,
-                   state.source.integrator.q, state.source.integrator.p, state.prob)
+        push_step!(
+            state.buffer,
+            state.source.integrator.t,
+            state.source.integrator.q,
+            state.source.integrator.p,
+            state.prob,
+        )
     elseif state.source isa ReplaySource
         state.source.cursor = 1
         sol = state.source.sol
@@ -876,7 +1014,13 @@ function _advance_source!(state::AnimationState)
             return false
         end
         src.cursor = next_cursor
-        push_step!(state.buffer, sol.t[next_cursor], sol.q[next_cursor], sol.p[next_cursor], state.prob)
+        push_step!(
+            state.buffer,
+            sol.t[next_cursor],
+            sol.q[next_cursor],
+            sol.p[next_cursor],
+            state.prob,
+        )
         return true
     end
     return false
@@ -889,7 +1033,7 @@ function _start_animation!(state::AnimationState, obs::PlotObservables)
         end
 
         batch = state.compute_batch[]
-        for _ in 1:batch
+        for _ = 1:batch
             more = _advance_source!(state)
             if !more
                 state.is_playing[] = false
@@ -965,21 +1109,27 @@ function WeberElectrodynamics.animate_weber(
     q0, p0 = prob.q_initial, prob.p_initial
     E0 = _compute_step_energy(q0, p0, prob)
 
-    phase_sel = phase_mode == :pair ?
-        "Pair ($(initial_pair[1]),$(initial_pair[2]))" :
+    phase_sel =
+        phase_mode == :pair ? "Pair ($(initial_pair[1]),$(initial_pair[2]))" :
         "Particle $initial_particle"
 
     buffer = RollingBuffer(buffer_size, prob)
     source = StreamingSource(integrator, 0)
 
     state = AnimationState(
-        source, prob, buffer,
-        Observable(false), nothing,
-        Observable(tail_length), Observable(compute_batch),
+        source,
+        prob,
+        buffer,
+        Observable(false),
+        nothing,
+        Observable(tail_length),
+        Observable(compute_batch),
         buffer_size,
         E0,
-        Observable(phase_sel), Observable(initial_component),
-        alg, extended_prob,
+        Observable(phase_sel),
+        Observable(initial_component),
+        alg,
+        extended_prob,
         Any[],
     )
 
@@ -1048,21 +1198,27 @@ function WeberElectrodynamics.animate_weber(
     q0, p0 = sol.q[1], sol.p[1]
     E0 = _compute_step_energy(q0, p0, prob)
 
-    phase_sel = phase_mode == :pair ?
-        "Pair ($(initial_pair[1]),$(initial_pair[2]))" :
+    phase_sel =
+        phase_mode == :pair ? "Pair ($(initial_pair[1]),$(initial_pair[2]))" :
         "Particle $initial_particle"
 
     buffer = RollingBuffer(buffer_size, prob)
     source = ReplaySource(sol, stride, 1)
 
     state = AnimationState(
-        source, prob, buffer,
-        Observable(false), nothing,
-        Observable(tail_length), Observable(compute_batch),
+        source,
+        prob,
+        buffer,
+        Observable(false),
+        nothing,
+        Observable(tail_length),
+        Observable(compute_batch),
         buffer_size,
         E0,
-        Observable(phase_sel), Observable(initial_component),
-        SymmetricProjectionIntegrator(), nothing,
+        Observable(phase_sel),
+        Observable(initial_component),
+        SymmetricProjectionIntegrator(),
+        nothing,
         Any[],
     )
 
