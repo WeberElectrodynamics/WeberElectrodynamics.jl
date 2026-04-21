@@ -80,8 +80,8 @@
         @test kappas(prob)[3] ≈ 1.0 + a   # pair (2,3): unlike
     end
 
-    @testset "Params vector length" begin
-        # For N particles: params length = 2N + 1 + N*(N-1)/2
+    @testset "Params and kappas vector lengths" begin
+        # For N particles: params length = 2N + 1, kappas length = N*(N-1)/2
         for N in [2, 3, 4]
             sys = HamiltonianSystem(N, 2)
             q0 = zeros(N * 2)
@@ -98,12 +98,14 @@
                 c = 10.0,
                 dt = 0.01,
             )
-            expected_len = 2N + 1 + N * (N - 1) ÷ 2
-            @test length(params(prob)) == expected_len
+            @test length(params(prob)) == 2N + 1
             @test length(kappas(prob)) == N * (N - 1) ÷ 2
-            # params must literally end with the kappas values
-            n_pairs = N * (N - 1) ÷ 2
-            @test params(prob)[(end-n_pairs+1):end] == kappas(prob)
+            # kappas accessor aligns with the _pair_index order via kappa(prob, i, j)
+            for i = 1:N, j = (i+1):N
+                @test kappa(prob, i, j) == kappas(prob)[
+                    WeberElectrodynamics._pair_index(i, j, N)
+                ]
+            end
         end
     end
 
@@ -122,8 +124,6 @@
             zollner = ZollnerOptions(enabled = false, a = 0.5),
         )
         @test all(k -> k ≈ 1.0, kappas(prob_off))
-        # params tail should be all 1.0
-        @test params(prob_off)[end] ≈ 1.0
     end
 
     @testset "Integration runs with Zöllner enabled" begin
@@ -220,7 +220,7 @@
         # Verify that κ ≠ 1 is actually used inside regularization substeps,
         # not just during unregularized steps.  Use a circular orbit at r0 < r_on
         # so regularization fires on every step.  Energy conservation confirms
-        # the params_pair kappas path is exercised correctly.
+        # the kappas_pair path is exercised correctly.
         a = 0.05
         m1 = m2 = 1.0
         q1 = 0.1
@@ -255,7 +255,7 @@
         @test sol.retcode == :Success
         # r0 < r_on so regularization fires on every step.
         @test sol.regularization.pair_steps > 0
-        # Energy conservation validates the params_pair kappas path.
+        # Energy conservation validates the kappas_pair path.
         energy = compute_energy_timeseries(sol)
         E0 = energy.total_energy[1]
         if abs(E0) > 1e-10

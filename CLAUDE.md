@@ -53,10 +53,12 @@ See [docs/src/internals.md](docs/src/internals.md) for per-file descriptions of 
 
 Quick-reference mirror — source of truth: [docs/src/internals.md](docs/src/internals.md).
 
-### Params vector layout
+### Params and κ vector layout
 
-`params = [m₁…mₙ, q₁…qₙ, c, κ₁₂…κ_{N-1,N}]` — length `2N + 1 + N*(N-1)/2`.
-Direct calls to `dq_dt_compiled`/`dp_dt_compiled` **must** include κ entries (all 1.0 when Zöllner disabled).
+`params = [m₁…mₙ, q₁…qₙ, c]` — length `2N + 1`.
+`kappas = [κ₁₂, κ₁₃, …, κ_{N-1,N}]` — length `N*(N-1)/2`, indexed by `_pair_index(i, j, n)`.
+Compiled EOM signature: `dq_dt_compiled(out, q, p, t, params, kappas)` (same for `dp_dt` and `hamiltonian_compiled`). Direct callers **must** pass both; when Zöllner is disabled, `kappas = ones(N*(N-1)÷2)`.
+Per-pair accessor: `kappa(prob, i, j)`.
 
 ### Algorithms and callbacks
 

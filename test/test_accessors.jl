@@ -26,12 +26,17 @@
         @test speed_of_light(prob) == 10.0
         @test kappas(prob) == ones(3)
 
-        # params layout: [m₁…mₙ, q₁…qₙ, c, κ₁₂, κ₁₃, κ₂₃]
-        @test length(params(prob)) == 2*3 + 1 + 3
+        # params layout: [m₁…mₙ, q₁…qₙ, c]; kappas stored separately
+        @test length(params(prob)) == 2*3 + 1
         @test params(prob)[1:3] == masses(prob)
         @test params(prob)[4:6] == charges(prob)
         @test params(prob)[7] == speed_of_light(prob)
-        @test params(prob)[8:10] == kappas(prob)
+        @test length(kappas(prob)) == 3
+
+        # kappa(prob, i, j) per-pair accessor
+        @test kappa(prob, 1, 2) == 1.0
+        @test kappa(prob, 1, 3) == 1.0
+        @test kappa(prob, 2, 3) == 1.0
     end
 
     @testset "zollner injects κ accessor" begin

@@ -52,16 +52,26 @@ Documenter.jl scaffold: `make.jl`, `Project.toml`, `src/` (page sources), `build
 
 ## Internal Conventions
 
-### Params vector layout
+### Params and κ vector layout
 
 ```
-params = [m₁, ..., mₙ, q₁, ..., qₙ, c, κ₁₂, κ₁₃, ..., κ_{N-1,N}]
-length = 2N + 1 + N*(N-1)/2
+params = [m₁, ..., mₙ, q₁, ..., qₙ, c]                     # length 2N + 1
+kappas = [κ₁₂, κ₁₃, ..., κ_{N-1,N}]                         # length N*(N-1)/2
 ```
 
-Any code calling `sys.dq_dt_compiled(out, q, p, t, params)` or `sys.dp_dt_compiled(out, q, p, t, params)` directly **must** include the κ (kappa) entries. When Zöllner is disabled, all κ values are 1.0.
+Compiled EOM signature (all three accept the same 6 positional args):
 
-Pair index: `_pair_index(i, j, n) = (i-1)*(2n-i)÷2 + (j-i)` (1-based, i < j)
+```
+sys.dq_dt_compiled(out, q, p, t, params, kappas)
+sys.dp_dt_compiled(out, q, p, t, params, kappas)
+sys.hamiltonian_compiled(q, p, t, params, kappas)
+```
+
+Any code calling these directly **must** pass both `params` and `kappas`. When Zöllner is disabled, `kappas = ones(N*(N-1)÷2)`. For single-particle systems (no pairs), `kappas = Float64[]`.
+
+On `HamiltonianProblem`, use `kappas(prob)` to obtain the whole vector, or `kappa(prob, i, j)` for a single pair. The latter is preferred over manual `_pair_index` arithmetic in downstream code.
+
+Pair index (internal): `_pair_index(i, j, n) = (i-1)*(2n-i)÷2 + (j-i)` (1-based, i < j)
 
 ### Regularization backends
 

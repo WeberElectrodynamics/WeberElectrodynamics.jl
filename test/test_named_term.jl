@@ -21,13 +21,14 @@
 
         q = [1.0, 0.2, -0.5, 0.3]
         p = [0.1, 0.2, -0.15, -0.1]
-        # params = [m1, m2, q1, q2, c, κ12]
-        params = [1.0, 2.0, 1.0, -1.0, 5.0, 1.3]
+        # params = [m1, m2, q1, q2, c]; kappas = [κ12]
+        params = [1.0, 2.0, 1.0, -1.0, 5.0]
+        kappas = [1.3]
 
         masses = params[1:2]
         charges = params[3:4]
         c_val = params[5]
-        κ = params[6]
+        κ = kappas[1]
 
         coulomb, velocity, rdot, zollner_extra =
             WeberElectrodynamics.compute_pair_weber_components(
@@ -42,8 +43,8 @@
                 κ,
             )
 
-        wr = weber.pair_decomposition(1, 2, q, p, params)
-        zr = zol.pair_decomposition(1, 2, q, p, params)
+        wr = weber.pair_decomposition(1, 2, q, p, params, kappas)
+        zr = zol.pair_decomposition(1, 2, q, p, params, kappas)
 
         @test wr.coulomb ≈ coulomb
         @test wr.velocity ≈ velocity
@@ -55,8 +56,8 @@
         @test zr.rdot ≈ rdot
 
         # κ = 1 → Zöllner contribution vanishes identically.
-        params_k1 = [1.0, 2.0, 1.0, -1.0, 5.0, 1.0]
-        zr1 = zol.pair_decomposition(1, 2, q, p, params_k1)
+        kappas_k1 = [1.0]
+        zr1 = zol.pair_decomposition(1, 2, q, p, params, kappas_k1)
         @test zr1.zollner_extra == 0.0
     end
 
@@ -67,14 +68,15 @@
 
         q = [0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.5, 0.2]
         p = [0.1, 0.0, 0.0, -0.1, 0.05, 0.0, 0.0, -0.05, 0.02]
-        # params = [m1, m2, m3, q1, q2, q3, c, κ12, κ13, κ23]
-        params = [1.0, 1.0, 1.0, 1.0, -1.0, 1.0, 8.0, 1.1, 1.0, 1.2]
+        # params = [m1, m2, m3, q1, q2, q3, c]; kappas = [κ12, κ13, κ23]
+        params = [1.0, 1.0, 1.0, 1.0, -1.0, 1.0, 8.0]
+        kappas = [1.1, 1.0, 1.2]
 
         masses = params[1:3]
         charges = params[4:6]
         c_val = params[7]
 
-        for (i, j, κ) in ((1, 2, params[8]), (1, 3, params[9]), (2, 3, params[10]))
+        for (i, j, κ) in ((1, 2, kappas[1]), (1, 3, kappas[2]), (2, 3, kappas[3]))
             coulomb, velocity, rdot, zollner_extra =
                 WeberElectrodynamics.compute_pair_weber_components(
                     q,
@@ -88,8 +90,8 @@
                     κ,
                 )
 
-            wr = weber.pair_decomposition(i, j, q, p, params)
-            zr = zol.pair_decomposition(i, j, q, p, params)
+            wr = weber.pair_decomposition(i, j, q, p, params, kappas)
+            zr = zol.pair_decomposition(i, j, q, p, params, kappas)
 
             @test wr.coulomb ≈ coulomb
             @test wr.velocity ≈ velocity
@@ -121,7 +123,8 @@
         @variables m1 m2 m3 q1 q2 q3 cc k12 k13 k23 tt
         q_syms = [x1, y1, x2, y2, x3, y3]
         p_syms = [px1, py1, px2, py2, px3, py3]
-        param_syms = [m1, m2, m3, q1, q2, q3, cc, k12, k13, k23]
+        param_syms = [m1, m2, m3, q1, q2, q3, cc]
+        kappa_syms = [k12, k13, k23]
 
         H_pure = weber_term(
             q_syms,
@@ -148,6 +151,7 @@
             q_syms,
             p_syms;
             param_symbols = param_syms,
+            kappa_symbols = kappa_syms,
             t = tt,
             n_particles = 3,
             dims = 2,

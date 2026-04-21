@@ -3,12 +3,13 @@
         # Building via the generic ctor on weber_term output must yield the
         # same compiled EOMs as the convenience ctor (same symbolic expression).
         sys_conv = HamiltonianSystem(2, 2)
-        params = [1.0, 1.0, 1.0, -1.0, 100.0, 1.0]  # m1, m2, q1, q2, c, κ12
+        params = [1.0, 1.0, 1.0, -1.0, 100.0]  # m1, m2, q1, q2, c
+        kappas = [1.0]                         # κ12
         q0 = [1.0, 0.0, -1.0, 0.0]
         p0 = [0.0, 0.1, 0.0, -0.1]
 
         out_conv = zeros(4)
-        sys_conv.dp_dt_compiled(out_conv, q0, p0, 0.0, params)
+        sys_conv.dp_dt_compiled(out_conv, q0, p0, 0.0, params, kappas)
 
         # Sanity: attractive Coulomb, equal & opposite forces
         @test out_conv[1] < 0  # particle 1 pulled in −x
@@ -26,7 +27,7 @@
         m_syms = [m1, m2, m3]
         q_charge_syms = [q1, q2, q3]
         kappa_syms = [k12, k13, k23]
-        param_syms = vcat(m_syms, q_charge_syms, [cc], kappa_syms)
+        param_syms = vcat(m_syms, q_charge_syms, [cc])
 
         H_full = weber_term(
             q_syms,
@@ -64,6 +65,7 @@
             q_syms,
             p_syms;
             param_symbols = param_syms,
+            kappa_symbols = kappa_syms,
             t = tt,
             n_particles = 3,
             dims = 2,
@@ -73,6 +75,7 @@
             q_syms,
             p_syms;
             param_symbols = param_syms,
+            kappa_symbols = kappa_syms,
             t = tt,
             n_particles = 3,
             dims = 2,
@@ -80,18 +83,19 @@
 
         q0 = [0.0, 0.0, 1.0, 0.0, 0.0, 1.0]
         p0 = [0.1, 0.2, -0.1, 0.0, 0.0, -0.2]
-        pvals = [1.0, 1.0, 0.5, 1.0, -1.0, 0.5, 10.0, 1.3, 1.3, 1.0]
+        pvals = [1.0, 1.0, 0.5, 1.0, -1.0, 0.5, 10.0]  # 3 masses + 3 charges + c
+        kvals = [1.3, 1.3, 1.0]                        # κ12, κ13, κ23
 
         outA = zeros(6);
         outB = zeros(6)
-        sys_full.dp_dt_compiled(outA, q0, p0, 0.0, pvals)
-        sys_comp.dp_dt_compiled(outB, q0, p0, 0.0, pvals)
+        sys_full.dp_dt_compiled(outA, q0, p0, 0.0, pvals, kvals)
+        sys_comp.dp_dt_compiled(outB, q0, p0, 0.0, pvals, kvals)
         @test maximum(abs.(outA .- outB)) < 1e-14
 
         outA .= 0;
         outB .= 0
-        sys_full.dq_dt_compiled(outA, q0, p0, 0.0, pvals)
-        sys_comp.dq_dt_compiled(outB, q0, p0, 0.0, pvals)
+        sys_full.dq_dt_compiled(outA, q0, p0, 0.0, pvals, kvals)
+        sys_comp.dq_dt_compiled(outB, q0, p0, 0.0, pvals, kvals)
         @test maximum(abs.(outA .- outB)) < 1e-14
     end
 
@@ -139,9 +143,10 @@
         q0 = [0.3, -0.4, 1.1, 0.7]
         p0 = [0.2, -0.1, 0.05, 0.4]
         pvals = [m1v, m2v]
+        kvals = Float64[]
 
         out_q = zeros(4)
-        sys.dq_dt_compiled(out_q, q0, p0, 0.0, pvals)
+        sys.dq_dt_compiled(out_q, q0, p0, 0.0, pvals, kvals)
         @test isapprox(
             out_q,
             [p0[1] / m1v, p0[2] / m1v, p0[3] / m2v, p0[4] / m2v];
@@ -149,7 +154,7 @@
         )
 
         out_p = zeros(4)
-        sys.dp_dt_compiled(out_p, q0, p0, 0.0, pvals)
+        sys.dp_dt_compiled(out_p, q0, p0, 0.0, pvals, kvals)
         @test all(iszero, out_p)
     end
 
@@ -180,9 +185,10 @@
         q0 = [-1.0, 0.0, 1.0, 0.0]
         p0 = [0.0, 0.3, 0.0, -0.3]
         pvals = [1.0, 1.0, 1.0, -1.0]
+        kvals = Float64[]
 
         out_p = zeros(4)
-        sys.dp_dt_compiled(out_p, q0, p0, 0.0, pvals)
+        sys.dp_dt_compiled(out_p, q0, p0, 0.0, pvals, kvals)
 
         # Attraction: particle 1 pulled +x, particle 2 pulled −x.
         @test out_p[1] > 0
@@ -244,19 +250,20 @@
         p_zero = zeros(6)
         pvals_kc = [1.0, 1.0, 0.5, 1.0, -1.0, 0.5]
         pvals_w = vcat(pvals_kc, [10.0])  # any finite c works at p = 0
+        kvals_empty = Float64[]
 
         out_kc = zeros(6);
         out_w = zeros(6)
-        sys_kc.dp_dt_compiled(out_kc, q0, p_zero, 0.0, pvals_kc)
-        sys_w.dp_dt_compiled(out_w, q0, p_zero, 0.0, pvals_w)
+        sys_kc.dp_dt_compiled(out_kc, q0, p_zero, 0.0, pvals_kc, kvals_empty)
+        sys_w.dp_dt_compiled(out_w, q0, p_zero, 0.0, pvals_w, kvals_empty)
         @test maximum(abs.(out_kc .- out_w)) < 1e-14
 
         # dq/dt differs trivially (pᵢ/mᵢ vs weber's identical expression) but
         # should also agree exactly at p = 0 (both identically zero).
         out_kc .= 0;
         out_w .= 0
-        sys_kc.dq_dt_compiled(out_kc, q0, p_zero, 0.0, pvals_kc)
-        sys_w.dq_dt_compiled(out_w, q0, p_zero, 0.0, pvals_w)
+        sys_kc.dq_dt_compiled(out_kc, q0, p_zero, 0.0, pvals_kc, kvals_empty)
+        sys_w.dq_dt_compiled(out_w, q0, p_zero, 0.0, pvals_w, kvals_empty)
         @test maximum(abs.(out_kc .- out_w)) < 1e-14
     end
 end

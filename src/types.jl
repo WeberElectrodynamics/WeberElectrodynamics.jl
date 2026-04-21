@@ -332,6 +332,7 @@ mutable struct RegularizationBuffers
     ks_n::Vector{Float64}
 
     params_pair::Vector{Float64}
+    kappas_pair::Vector{Float64}
     dq_full::Vector{Float64}
     dp_full::Vector{Float64}
     dq_pair::Vector{Float64}
@@ -413,7 +414,8 @@ mutable struct RegularizationBuffers
             Vector{Float64}(undef, 4),
             Matrix{Float64}(undef, 3, 4),
             Vector{Float64}(undef, 4),
-            Vector{Float64}(undef, 2n_particles + 1 + n_pairs),
+            Vector{Float64}(undef, 2n_particles + 1),
+            Vector{Float64}(undef, n_pairs),
             Vector{Float64}(undef, dof),
             Vector{Float64}(undef, dof),
             Vector{Float64}(undef, dof),
@@ -449,7 +451,7 @@ and solver/regularization options into a single immutable structure.
 - `maximum_iterations=100`: Maximum projection iterations per step.
 - `zollner=ZollnerOptions()`: Zöllner electrogravitational extension options.
   See `ZollnerOptions` for all available fields. The options are used at
-  construction time to compute the per-pair `κ` values packed into `params`
+  construction time to compute the per-pair `κ` values stored in `prob.kappas`
   and are **not** retained on the problem; inspect κ via `kappas(prob)`.
 
 Regularization options moved to [`RegularizedIntegrator`](@ref); pass them via
@@ -459,8 +461,10 @@ Regularization options moved to [`RegularizedIntegrator`](@ref); pass them via
 - `system::HamiltonianSystem`: Compiled Hamiltonian system.
 - `tspan::Tuple{Float64,Float64}`: Integration interval.
 - `q_initial`, `p_initial::Vector{Float64}`: Initial phase-space point.
-- `params::Vector{Float64}`: Packed parameter vector `[masses; charges; c; kappas]`.
-  Access slices via the `masses`, `charges`, `speed_of_light`, `kappas` accessors.
+- `params::Vector{Float64}`: Packed parameter vector `[masses; charges; c]`,
+  length `2N + 1`. Access slices via `masses`, `charges`, `speed_of_light`.
+- `kappas::Vector{Float64}`: Per-pair Zöllner coupling `[κ₁₂, κ₁₃, …]`,
+  length `N*(N-1)/2`. All entries `1.0` when Zöllner is disabled.
 - `dt::Float64`: Fixed step size.
 - `convergence_tolerance::Float64`: Projection convergence threshold.
 - `maximum_iterations::Int`: Maximum projection iterations per step.
@@ -471,6 +475,7 @@ struct HamiltonianProblem
     q_initial::Vector{Float64}
     p_initial::Vector{Float64}
     params::Vector{Float64}
+    kappas::Vector{Float64}
     dt::Float64
     convergence_tolerance::Float64
     maximum_iterations::Int
@@ -506,7 +511,7 @@ struct HamiltonianProblem
         c_f64 = Float64(c)
 
         kappas = _compute_zollner_kappas(charges_f64, zollner, n_particles)
-        params = vcat(masses_f64, charges_f64, [c_f64], kappas)
+        params = vcat(masses_f64, charges_f64, [c_f64])
 
         new(
             system,
@@ -514,9 +519,37 @@ struct HamiltonianProblem
             Vector{Float64}(q_initial),
             Vector{Float64}(p_initial),
             params,
+            kappas,
             Float64(dt),
             Float64(convergence_tolerance),
             Int(maximum_iterations),
+        )
+    end
+
+    # Internal constructor used by _with_tspan to clone a problem while
+    # preserving the already-packed params and κ vectors. Not part of the
+    # public API.
+    function HamiltonianProblem(
+        system::HamiltonianSystem,
+        tspan::Tuple{Float64,Float64},
+        q_initial::Vector{Float64},
+        p_initial::Vector{Float64},
+        params::Vector{Float64},
+        kappas::Vector{Float64},
+        dt::Float64,
+        convergence_tolerance::Float64,
+        maximum_iterations::Int,
+    )
+        new(
+            system,
+            tspan,
+            q_initial,
+            p_initial,
+            params,
+            kappas,
+            dt,
+            convergence_tolerance,
+            maximum_iterations,
         )
     end
 end
@@ -527,12 +560,13 @@ end
     masses(prob::HamiltonianProblem) -> AbstractVector{Float64}
     charges(prob::HamiltonianProblem) -> AbstractVector{Float64}
     speed_of_light(prob::HamiltonianProblem) -> Float64
-    kappas(prob::HamiltonianProblem) -> AbstractVector{Float64}
+    kappas(prob::HamiltonianProblem) -> Vector{Float64}
     params(prob::HamiltonianProblem) -> Vector{Float64}
 
-Read-only accessors. `masses`, `charges`, and `kappas` return views into the
-backing `params` vector (layout `[m₁…mₙ, q₁…qₙ, c, κ…]`), so they are O(1)
-and allocation-free but must be treated as read-only.
+Read-only accessors. `masses` and `charges` return views into the backing
+`params` vector (layout `[m₁…mₙ, q₁…qₙ, c]`); `kappas` returns the backing
+`κ` vector directly. All are O(1) and allocation-free but must be treated
+as read-only.
 """
 n_particles(prob::HamiltonianProblem) = n_particles(prob.system)
 dims(prob::HamiltonianProblem) = dims(prob.system)
@@ -540,24 +574,32 @@ masses(prob::HamiltonianProblem) = @view prob.params[1:n_particles(prob)]
 charges(prob::HamiltonianProblem) =
     @view prob.params[(n_particles(prob)+1):(2*n_particles(prob))]
 speed_of_light(prob::HamiltonianProblem) = prob.params[2*n_particles(prob)+1]
-kappas(prob::HamiltonianProblem) = @view prob.params[(2*n_particles(prob)+2):end]
+kappas(prob::HamiltonianProblem) = prob.kappas
 params(prob::HamiltonianProblem) = prob.params
 
+"""
+    kappa(prob::HamiltonianProblem, i::Int, j::Int) -> Float64
+
+Return the Zöllner coupling `κ_ij` for pair `(i, j)` with `i < j`.
+"""
+kappa(prob::HamiltonianProblem, i::Int, j::Int) =
+    prob.kappas[_pair_index(i, j, n_particles(prob))]
+
 # Internal: clone a problem with an overridden tspan while preserving the
-# compiled system, initial conditions, and packed params (including any
-# Zöllner-derived κ values). Used by the Makie streaming animation to extend
-# the integration horizon without needing to re-derive the construction inputs.
+# compiled system, initial conditions, packed params, and κ vector. Used by
+# the Makie streaming animation to extend the integration horizon without
+# needing to re-derive the construction inputs.
 function _with_tspan(prob::HamiltonianProblem, tspan::Tuple{Real,Real})
     return HamiltonianProblem(
         prob.system,
-        prob.tspan,
-        prob.q_initial,
-        prob.p_initial,
+        (Float64(tspan[1]), Float64(tspan[2])),
+        copy(prob.q_initial),
+        copy(prob.p_initial),
         copy(prob.params),
+        copy(prob.kappas),
         prob.dt,
         prob.convergence_tolerance,
         prob.maximum_iterations,
-        (Float64(tspan[1]), Float64(tspan[2])),
     )
 end
 

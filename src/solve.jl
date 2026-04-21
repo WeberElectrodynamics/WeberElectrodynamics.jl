@@ -8,6 +8,7 @@ using LinearAlgebra: norm, mul!, Transpose
     dq_dt_compiled,
     dp_dt_compiled,
     params::Vector{Float64},
+    kappas::Vector{Float64},
     auxiliary_position_buffer::Vector{Float64},
     momentum_buffer::Vector{Float64},
     position_buffer::Vector{Float64},
@@ -29,22 +30,22 @@ using LinearAlgebra: norm, mul!, Transpose
         P_component = Z_vec[idx_P_start:idx_P_end]
         Y_component = Z_vec[idx_Y_start:idx_Y_end]
 
-        dq_dt_compiled(auxiliary_position_buffer, Q_component, Y_component, t, params)
-        dp_dt_compiled(momentum_buffer, Q_component, Y_component, t, params)
+        dq_dt_compiled(auxiliary_position_buffer, Q_component, Y_component, t, params, kappas)
+        dp_dt_compiled(momentum_buffer, Q_component, Y_component, t, params, kappas)
 
         @. X_component = X_component + auxiliary_position_buffer * (dt / 2)
         @. P_component = P_component + momentum_buffer * (dt / 2)
 
         t_mid = t + dt / 2
-        dq_dt_compiled(position_buffer, X_component, P_component, t_mid, params)
-        dp_dt_compiled(auxiliary_momentum_buffer, X_component, P_component, t_mid, params)
+        dq_dt_compiled(position_buffer, X_component, P_component, t_mid, params, kappas)
+        dp_dt_compiled(auxiliary_momentum_buffer, X_component, P_component, t_mid, params, kappas)
 
         @. Q_component = Q_component + position_buffer * dt
         @. Y_component = Y_component + auxiliary_momentum_buffer * dt
 
         t_end = t + dt
-        dq_dt_compiled(auxiliary_position_buffer, Q_component, Y_component, t_end, params)
-        dp_dt_compiled(momentum_buffer, Q_component, Y_component, t_end, params)
+        dq_dt_compiled(auxiliary_position_buffer, Q_component, Y_component, t_end, params, kappas)
+        dp_dt_compiled(momentum_buffer, Q_component, Y_component, t_end, params, kappas)
 
         @. X_component = X_component + auxiliary_position_buffer * (dt / 2)
         @. P_component = P_component + momentum_buffer * (dt / 2)
@@ -66,6 +67,7 @@ end
     dq_dt_compiled,
     dp_dt_compiled,
     params::Vector{Float64},
+    kappas::Vector{Float64},
     auxiliary_position_buffer::Vector{Float64},
     momentum_buffer::Vector{Float64},
     position_buffer::Vector{Float64},
@@ -82,6 +84,7 @@ end
             dq_dt_compiled,
             dp_dt_compiled,
             params,
+            kappas,
             auxiliary_position_buffer,
             momentum_buffer,
             position_buffer,
@@ -109,6 +112,7 @@ end
     dq_dt_compiled = prob.system.dq_dt_compiled
     dp_dt_compiled = prob.system.dp_dt_compiled
     params = prob.params
+    kappas = prob.kappas
 
     d = buffers.d
 
@@ -150,6 +154,7 @@ end
             dq_dt_compiled,
             dp_dt_compiled,
             params,
+            kappas,
             auxiliary_position_buffer,
             momentum_buffer,
             position_buffer,
@@ -176,6 +181,7 @@ end
                 dq_dt_compiled,
                 dp_dt_compiled,
                 params,
+                kappas,
                 auxiliary_position_buffer,
                 momentum_buffer,
                 position_buffer,
@@ -202,6 +208,7 @@ end
         dq_dt_compiled,
         dp_dt_compiled,
         params,
+        kappas,
         auxiliary_position_buffer,
         momentum_buffer,
         position_buffer,
@@ -224,6 +231,7 @@ end
             dq_dt_compiled,
             dp_dt_compiled,
             params,
+            kappas,
             auxiliary_position_buffer,
             momentum_buffer,
             position_buffer,
@@ -335,6 +343,7 @@ end
 )
     n = rb.n_particles
     params_pair = rb.params_pair
+    kappas_pair = rb.kappas_pair
     ms = masses(prob)
     qs = charges(prob)
     κs = kappas(prob)
@@ -347,11 +356,12 @@ end
         params_pair[n+i] = qs[i]
         params_pair[n+j] = qs[j]
         params_pair[2n+1] = speed_of_light(prob)
-        # Copy kappas; charges for non-(i,j) pairs are zero so their κ values
-        # do not affect the force, but the buffer must have the right length.
+        # Copy κ vector; charges for non-(i,j) pairs are zero so their κ
+        # values do not affect the force, but the buffer must have the right
+        # length to match the compiled EOM's expectation.
         n_pairs = rb.n_pairs
         for k = 1:n_pairs
-            params_pair[2n+1+k] = κs[k]
+            kappas_pair[k] = κs[k]
         end
     end
 
@@ -366,10 +376,10 @@ end
     prob::HamiltonianProblem,
 )
     system = prob.system
-    system.dq_dt_compiled(rb.dq_full, q_state, p_state, t, prob.params)
-    system.dp_dt_compiled(rb.dp_full, q_state, p_state, t, prob.params)
-    system.dq_dt_compiled(rb.dq_pair, q_state, p_state, t, rb.params_pair)
-    system.dp_dt_compiled(rb.dp_pair, q_state, p_state, t, rb.params_pair)
+    system.dq_dt_compiled(rb.dq_full, q_state, p_state, t, prob.params, prob.kappas)
+    system.dp_dt_compiled(rb.dp_full, q_state, p_state, t, prob.params, prob.kappas)
+    system.dq_dt_compiled(rb.dq_pair, q_state, p_state, t, rb.params_pair, rb.kappas_pair)
+    system.dp_dt_compiled(rb.dp_pair, q_state, p_state, t, rb.params_pair, rb.kappas_pair)
 
     @inbounds @. rb.dq_ext = rb.dq_full - rb.dq_pair
     @inbounds @. rb.dp_ext = rb.dp_full - rb.dp_pair
@@ -647,8 +657,8 @@ end
     prev_u2 = rb.lc_u[2]
     prev_u_norm2 = prev_u1 * prev_u1 + prev_u2 * prev_u2
 
-    system.dq_dt_compiled(rb.dq_pair, q, p, t, rb.params_pair)
-    system.dp_dt_compiled(rb.dp_pair, q, p, t, rb.params_pair)
+    system.dq_dt_compiled(rb.dq_pair, q, p, t, rb.params_pair, rb.kappas_pair)
+    system.dp_dt_compiled(rb.dp_pair, q, p, t, rb.params_pair, rb.kappas_pair)
 
     mi, mj, mu, M = _extract_pair_2d_state!(rb, q, p, ms, i, j)
     _extract_pair_2d_derivatives!(rb, rb.dq_pair, rb.dp_pair, i, j, mi, mj, mu, M)
@@ -708,8 +718,8 @@ end
     )
 
     t_mid = t + dt_sub * 0.5
-    system.dq_dt_compiled(rb.dq_pair, rb.q_mid, rb.p_mid, t_mid, rb.params_pair)
-    system.dp_dt_compiled(rb.dp_pair, rb.q_mid, rb.p_mid, t_mid, rb.params_pair)
+    system.dq_dt_compiled(rb.dq_pair, rb.q_mid, rb.p_mid, t_mid, rb.params_pair, rb.kappas_pair)
+    system.dp_dt_compiled(rb.dp_pair, rb.q_mid, rb.p_mid, t_mid, rb.params_pair, rb.kappas_pair)
     _extract_pair_2d_derivatives!(rb, rb.dq_pair, rb.dp_pair, i, j, mi, mj, mu, M)
 
     _compute_lc_tau_derivatives!(
