@@ -63,18 +63,19 @@ From [_research/investigations/](_research/investigations/):
 | [CriticalRadiusAndLikeChargeAttraction.md](_research/investigations/CriticalRadiusAndLikeChargeAttraction.md) | Borderline — foundational, cited by four other investigations; move or mirror | `CriticalRadiusAndSubCriticalAttraction.md` |
 | [TransformedWeberHamiltonians.md](_research/investigations/TransformedWeberHamiltonians.md) | Needs cleanup — catalogue style, add synthesis section before promotion | `WeberHamiltonianTransformations.md` |
 
-From [_research/exploratory/](_research/exploratory/):
+Also from [_research/investigations/](_research/investigations/) (studies rather than theorems):
 
 | Source | Verdict | Proposed `theory/` name |
 |--------|---------|-------------------------|
-| [CollisionBounceRegularization.md](_research/exploratory/CollisionBounceRegularization.md) | Ready — already cited from [src/callbacks.jl:42](src/callbacks.jl#L42); validated convergence | `CollisionBounceRegularization.md` |
-| [ThreeBodyBoundStates.md](_research/exploratory/ThreeBodyBoundStates.md) | Ready — ±± vs ±∓ dichotomy, Case B is canonical demo | `ThreeBodyBoundStates.md` |
-| [FourPositiveChargeCrossInvestigation.md](_research/exploratory/FourPositiveChargeCrossInvestigation.md) | Ready after trim — lead with collinear success; cross result to a paragraph | `FourBodySubcriticalBoundStates.md` |
-| [ThreePositiveChargeInvestigation.md](_research/exploratory/ThreePositiveChargeInvestigation.md) | Ready after trim — lead with the impossibility result; scans → appendix | `ThreeBodyCollinearAnalysis.md` |
-| [RustImplementation.md](_research/exploratory/RustImplementation.md) | Keep in `_research/` — speculative design, not yet implemented | — |
+| [CollisionBounceRegularization.md](_research/investigations/CollisionBounceRegularization.md) | Ready — already cited from [src/callbacks.jl:42](src/callbacks.jl#L42); validated convergence | `CollisionBounceRegularization.md` |
+| [ThreeBodyBoundStates.md](_research/investigations/ThreeBodyBoundStates.md) | Ready — ±± vs ±∓ dichotomy, Case B is canonical demo | `ThreeBodyBoundStates.md` |
+| [FourPositiveChargeCrossInvestigation.md](_research/investigations/FourPositiveChargeCrossInvestigation.md) | Ready after trim — lead with collinear success; cross result to a paragraph | `FourBodySubcriticalBoundStates.md` |
+| [ThreePositiveChargeInvestigation.md](_research/investigations/ThreePositiveChargeInvestigation.md) | Ready after trim — lead with the impossibility result; scans → appendix | `ThreeBodyCollinearAnalysis.md` |
+| [RustImplementation.md](_research/investigations/RustImplementation.md) | Keep in `_research/` — speculative design, not yet implemented | — |
+| [HypergeometricStructure.md](_research/investigations/HypergeometricStructure.md) | Symbolic-algebra study — no finalised theorems yet | — |
 
-`_research/homology/`, `_research/sub_critical_weber_research/`, and
-`_research/hypergeometric_analysis/` have no finalised theorems yet.
+`_research/homology/` and `_research/sub_critical_weber_research/` have no
+finalised theorems yet.
 
 ## Theory/code gaps worth closing
 

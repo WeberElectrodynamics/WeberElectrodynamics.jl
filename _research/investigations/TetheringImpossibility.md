@@ -527,11 +527,11 @@ initial conditions.
   No such field exists in pure Weber electrodynamics.
 - **$\ell=0$ bound states.** Purely radial sub-critical collisions *are*
   regularisable (FW 2024, and see
-  [`CollisionBounceRegularization.md`](../exploratory/CollisionBounceRegularization.md)).
+  [`CollisionBounceRegularization.md`](CollisionBounceRegularization.md)).
   Configurations that enforce $\ell=0$ for every like-charge pair —
   collinear chains with the right symmetries — give stable bound states.
   See
-  [`FourPositiveChargeCrossInvestigation.md`](../exploratory/FourPositiveChargeCrossInvestigation.md)
+  [`FourPositiveChargeCrossInvestigation.md`](FourPositiveChargeCrossInvestigation.md)
   for the $++++$ collinear chain, and
   [`examples/four_body_bound_states/zollner_binary_molecule_live.ipynb`](../../examples/four_body_bound_states/zollner_binary_molecule_live.ipynb)
   for a $++$ / $--$ binary molecule.
@@ -564,11 +564,11 @@ regularisation scheme fails.
   nucleus.* *Anal. Math. Phys.* **14**:31. Theorem 2.1 (radial energy
   equation), Theorem A (quantum limit-circle).
 - **Successful $\ell=0$ multi-body bound states:**
-  [`research/exploratory/FourPositiveChargeCrossInvestigation.md`](../exploratory/FourPositiveChargeCrossInvestigation.md),
-  [`research/exploratory/ThreePositiveChargeInvestigation.md`](../exploratory/ThreePositiveChargeInvestigation.md),
-  [`research/exploratory/ThreeBodyBoundStates.md`](../exploratory/ThreeBodyBoundStates.md).
+  [`research/investigations/FourPositiveChargeCrossInvestigation.md`](FourPositiveChargeCrossInvestigation.md),
+  [`research/investigations/ThreePositiveChargeInvestigation.md`](ThreePositiveChargeInvestigation.md),
+  [`research/investigations/ThreeBodyBoundStates.md`](ThreeBodyBoundStates.md).
 - **Collision-bounce for $\ell=0$ pairs:**
-  [`research/exploratory/CollisionBounceRegularization.md`](../exploratory/CollisionBounceRegularization.md).
+  [`research/investigations/CollisionBounceRegularization.md`](CollisionBounceRegularization.md).
 - **Numerical notebooks confirming this theorem:**
   [`examples/four_body_bound_states/tethered_subcritical_pair_live.ipynb`](../../examples/four_body_bound_states/tethered_subcritical_pair_live.ipynb),
   [`examples/four_body_bound_states/inner_negative_tether_live.ipynb`](../../examples/four_body_bound_states/inner_negative_tether_live.ipynb).

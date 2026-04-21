@@ -190,7 +190,7 @@ The classical regularity that permits regularization at $\ell = 0$ is mirrored b
 
 ## Practical Implications
 
-1. **Collision bounce** remains the best practical approach for the $\ell = 0$ sub-critical like-charge oscillation in the WeberElectrodynamics package (see [CollisionBounceRegularization.md](../exploratory/CollisionBounceRegularization.md)).
+1. **Collision bounce** remains the best practical approach for the $\ell = 0$ sub-critical like-charge oscillation in the WeberElectrodynamics package (see [CollisionBounceRegularization.md](CollisionBounceRegularization.md)).
 
 2. For $\ell \neq 0$ inside $\rho$, **no regularization exists**. The integrator must either:
    - Avoid initial conditions that lead to spiraling collisions
