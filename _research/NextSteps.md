@@ -35,32 +35,6 @@ These are candidates, not commitments — prioritise as needs arise.
 - **Promoting physical parameters (mass, charge) to generalized coordinates.**
   One of the motivating use cases for the refactor; still not done.
 
-## `_research/` promotion candidates for `theory/`
-
-From [Investigations/](Investigations/):
-
-| Source | Verdict | Proposed `theory/` name |
-|--------|---------|-------------------------|
-| [AngularMomentumRegularization.md](Investigations/AngularMomentumRegularization.md) | Ready — topological-obstruction theorem, seven failed approaches catalogued | `AngularMomentumNonRegularizability.md` |
-| [TetheringImpossibility.md](Investigations/TetheringImpossibility.md) | Ready — non-existence theorem + numerical validation | `ExternalChargeStabilizationImpossibility.md` |
-| [CriticalRadiusAndLikeChargeAttraction.md](Investigations/CriticalRadiusAndLikeChargeAttraction.md) | Borderline — foundational, cited by four other investigations; move or mirror | `CriticalRadiusAndSubCriticalAttraction.md` |
-| [TransformedWeberHamiltonians.md](Investigations/TransformedWeberHamiltonians.md) | Needs cleanup — catalogue style, add synthesis section before promotion | `WeberHamiltonianTransformations.md` |
-
-Also from [Investigations/](Investigations/) (studies rather than theorems):
-
-| Source | Verdict | Proposed `theory/` name |
-|--------|---------|-------------------------|
-| [CollisionBounceRegularization.md](Investigations/CollisionBounceRegularization.md) | Ready — already cited from [src/callbacks.jl:42](../src/callbacks.jl#L42); validated convergence | `CollisionBounceRegularization.md` |
-| [ThreeBodyBoundStates.md](Investigations/ThreeBodyBoundStates.md) | Ready — ±± vs ±∓ dichotomy, Case B is canonical demo | `ThreeBodyBoundStates.md` |
-| [FourPositiveChargeCrossInvestigation.md](Investigations/FourPositiveChargeCrossInvestigation.md) | Ready after trim — lead with collinear success; cross result to a paragraph | `FourBodySubcriticalBoundStates.md` |
-| [ThreePositiveChargeInvestigation.md](Investigations/ThreePositiveChargeInvestigation.md) | Ready after trim — lead with the impossibility result; scans → appendix | `ThreeBodyCollinearAnalysis.md` |
-| [RustImplementation.md](Investigations/RustImplementation.md) | Keep in `_research/` — speculative design, not yet implemented | — |
-| [HypergeometricStructure.md](Investigations/HypergeometricStructure.md) | Symbolic-algebra study — no finalised theorems yet | — |
-
-[Topology/Homology/](Topology/Homology/) and the sub-critical exploration notes in
-[Investigations/SubCriticalWeberExploration.md](Investigations/SubCriticalWeberExploration.md)
-have no finalised theorems yet.
-
 ## Theory/code gaps worth closing
 
 The code implements more than [theory/](../theory/) specifies. Candidates for new
@@ -87,17 +61,4 @@ spec documents:
 5. **Collision-singularity classification.** Head-on (ℓ=0, regularisable) vs
    spiralling (ℓ≠0, not regularisable). Partially covered in
    [theory/NonZeroRadialVelocityBoundICs.md](../theory/NonZeroRadialVelocityBoundICs.md)
-   §2.2; deserves its own note, ideally alongside the promoted
-   `AngularMomentumNonRegularizability.md` above.
-
-## Cleared in this pass
-
-- Accessor functions (`masses`, `charges`, `speed_of_light`, `kappas`,
-  `params`, `dims`, `degrees_of_freedom`) added to
-  [docs/src/api/problem.md](../docs/src/api/problem.md) and
-  [docs/src/api/system.md](../docs/src/api/system.md).
-- [CLAUDE.md](../CLAUDE.md) corrected: `regularization(prob)` and `zollner(prob)`
-  were listed as accessors but do not exist.
-- `benchmarks/` removed. It was a one-off Phase 0 gate artifact from commit
-  `91922a0`; no CI or test consumer. Re-add with CI integration when real
-  benchmarking work starts.
+   §2.2; deserves its own note.
