@@ -41,14 +41,11 @@ Documenter.jl scaffold: `make.jl`, `Project.toml`, `src/` (page sources), `build
 > Reports, notes, and scripts here may be incomplete, superseded, or contradicted
 > by code and theory elsewhere in the repo. See [`_research/README.md`](https://github.com/WeberElectrodynamics/WeberElectrodynamics/blob/main/_research/README.md).
 
-- `FourBodyTwoPlusTwoMinus/` — 4-body (2+/2−) multi-agent investigation
-- `homology/` — Rabinowitz-Floer homology study
-- `exploratory/` — foundational lessons learned (collision bounce, three-body, …)
-- `hypergeometric_analysis/` — special-function analyses
-- `investigations/` — geometric/topological questions
+- `FourBodyTwoPlusTwoMinus/` — 4-body (2+/2−) multi-agent investigation (reports only)
+- `homology/` — Rabinowitz-Floer homology study (reports only)
+- `investigations/` — geometric/topological questions, collision bounce, three-body, hypergeometric structure, sub-critical exploration
 - `notebooks/` — Jupyter reference and scratch notebooks
-- `sub_critical_weber_research/` — sub-critical regime exploration + literature taxonomy
-- `topology/` — phase-space topology notebooks
+- `literature_searches/` — bibliographic TOML snapshots
 
 ---
 

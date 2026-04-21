@@ -1,6 +1,0 @@
-orbit_id,classification,period,energy_drift,lyapunov,n_periods_verified
-2body_circular,PERIODIC,12.5660,2.07e-14,1.46e-03,5
-2body_elliptical_e03,QUASI-PERIODIC,12.1620,9.39e-08,5.42e-01,8
-2body_circular_large_c,PERIODIC,12.5660,3.54e-14,6.34e-03,5
-4body_rhombus_chaotic,CHAOTIC-BOUND,,5.11e-06,1.14e+02,0
-2body_escape,ESCAPE,,9.56e-09,,0
