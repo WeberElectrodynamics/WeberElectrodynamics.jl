@@ -28,20 +28,11 @@ julia -e 'using JuliaFormatter; format(".")'
 
 ## Repository Structure
 
-```
-WeberElectrodynamics/
-├── src/                    # Package source
-├── ext/                    # Weak-dependency extensions (Plots, Makie)
-├── test/                   # Test suite
-├── examples/               # Canonical reference notebook (two_body_reference.ipynb)
-├── docs/                   # Documenter.jl scaffold (make.jl, src/, build/)
-├── theory/                 # Mathematical derivations and theory documents
-├── _research/              # Research sandbox — exploratory, not definitive (see _research/README.md)
-├── papers/
-│   └── Computational-Weber-Electrodynamics/   # LaTeX paper with own Project.toml
-├── CHANGELOG.md            # Versioned changelog (semver)
-└── Project.toml            # Package metadata and compat bounds
-```
+`src/`, `ext/`, `test/`, `examples/` — package source, weak-dep extensions,
+tests, reference notebook. `docs/` — Documenter scaffold. `theory/` — math
+derivations. `_research/` — **exploratory sandbox**, not authoritative.
+`papers/<name>/` — LaTeX papers with their own `VERSION` files. See
+[docs/src/internals.md](docs/src/internals.md) for per-file descriptions.
 
 ## Architecture
 
@@ -71,16 +62,17 @@ Regularization and collision bounce are composed outside the problem:
 
 ### Accessor API
 
-`HamiltonianProblem` no longer stores `masses`, `charges`, `c`, or `kappas` as fields.
-`ZollnerOptions` and `RegularizationOptions` are construction-time only and not retained
-on the problem. Use exported accessors:
-`masses(prob)`, `charges(prob)`, `speed_of_light(prob)`, `kappas(prob)`, `params(prob)`,
-plus `n_particles(sys)`, `dims(sys)`, `degrees_of_freedom(sys)` on `HamiltonianSystem`.
+`HamiltonianProblem` stores `params` and `kappas` as fields; `masses`, `charges`,
+and `c` are O(1) views into `params`. `ZollnerOptions` and `RegularizationOptions`
+are construction-time only and not retained on the problem. Use the exported
+accessors: `masses(prob)`, `charges(prob)`, `speed_of_light(prob)`, `kappas(prob)`,
+`kappa(prob, i, j)`, `params(prob)`, plus `n_particles(sys)`, `dims(sys)`,
+`degrees_of_freedom(sys)` on `HamiltonianSystem`.
 
-### EnergyStatistics fields
+### EnergyStatistics gotcha
 
-`en.statistics` has `local_error_max/min/avg`, `global_error_ratio_*`, `global_error_percent_*`.
-There is **no** `local_error_percent_max` — use `local_error_max`.
+No `local_error_percent_max` field — use `local_error_max`. Full field list in
+[internals.md](docs/src/internals.md).
 
 ## Environment
 
