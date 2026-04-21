@@ -69,8 +69,11 @@ Regularization and collision bounce are composed outside the problem:
 
 ### Accessor API
 
-`HamiltonianProblem` no longer stores `masses`, `charges`, `c`, `kappas`, `regularization`, or `zollner` as fields. Use exported accessors:
-`masses(prob)`, `charges(prob)`, `speed_of_light(prob)`, `kappas(prob)`, `regularization(prob)`, `zollner(prob)`, `params(prob)`, plus `n_particles(sys)`, `dims(sys)` on `HamiltonianSystem`.
+`HamiltonianProblem` no longer stores `masses`, `charges`, `c`, or `kappas` as fields.
+`ZollnerOptions` and `RegularizationOptions` are construction-time only and not retained
+on the problem. Use exported accessors:
+`masses(prob)`, `charges(prob)`, `speed_of_light(prob)`, `kappas(prob)`, `params(prob)`,
+plus `n_particles(sys)`, `dims(sys)`, `degrees_of_freedom(sys)` on `HamiltonianSystem`.
 
 ### EnergyStatistics fields
 

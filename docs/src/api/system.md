@@ -27,6 +27,13 @@ get_term
 
 ## Metadata accessors
 
+Shape accessors are defined for both `HamiltonianSystem` and `HamiltonianProblem`.
+
 ```@docs
 n_particles
 ```
+
+| Function | Returns |
+|----------|---------|
+| `dims(sys)` / `dims(prob)` | spatial dimension (`1`, `2`, or `3`) |
+| `degrees_of_freedom(sys)` | total canonical DOF (`n_particles * dims`) |

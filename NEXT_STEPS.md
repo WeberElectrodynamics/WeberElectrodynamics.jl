@@ -2,7 +2,8 @@
 
 Forward-looking notes after the System → Problem → Algorithm → Callbacks refactor
 landed in v0.5.0. Captures intentional deferrals, debts surfaced during the
-refactor, and unblocked work items.
+refactor, candidates for promotion from the research sandbox, and gaps in the
+theory/code mapping.
 
 These are candidates, not commitments — prioritise as needs arise.
 
@@ -50,3 +51,68 @@ They work today because the layout is unchanged, but they'd break the moment
 - [_research/FourBodyTwoPlusTwoMinus/11_contact_reeb/star_shaped_check.jl](_research/FourBodyTwoPlusTwoMinus/11_contact_reeb/star_shaped_check.jl)
 
 Migrate them to `params(prob)` and the accessor API.
+
+## `_research/` promotion candidates for `theory/`
+
+From [_research/investigations/](_research/investigations/):
+
+| Source | Verdict | Proposed `theory/` name |
+|--------|---------|-------------------------|
+| [AngularMomentumRegularization.md](_research/investigations/AngularMomentumRegularization.md) | Ready — topological-obstruction theorem, seven failed approaches catalogued | `AngularMomentumNonRegularizability.md` |
+| [TetheringImpossibility.md](_research/investigations/TetheringImpossibility.md) | Ready — non-existence theorem + numerical validation | `ExternalChargeStabilizationImpossibility.md` |
+| [CriticalRadiusAndLikeChargeAttraction.md](_research/investigations/CriticalRadiusAndLikeChargeAttraction.md) | Borderline — foundational, cited by four other investigations; move or mirror | `CriticalRadiusAndSubCriticalAttraction.md` |
+| [TransformedWeberHamiltonians.md](_research/investigations/TransformedWeberHamiltonians.md) | Needs cleanup — catalogue style, add synthesis section before promotion | `WeberHamiltonianTransformations.md` |
+
+From [_research/exploratory/](_research/exploratory/):
+
+| Source | Verdict | Proposed `theory/` name |
+|--------|---------|-------------------------|
+| [CollisionBounceRegularization.md](_research/exploratory/CollisionBounceRegularization.md) | Ready — already cited from [src/callbacks.jl:42](src/callbacks.jl#L42); validated convergence | `CollisionBounceRegularization.md` |
+| [ThreeBodyBoundStates.md](_research/exploratory/ThreeBodyBoundStates.md) | Ready — ±± vs ±∓ dichotomy, Case B is canonical demo | `ThreeBodyBoundStates.md` |
+| [FourPositiveChargeCrossInvestigation.md](_research/exploratory/FourPositiveChargeCrossInvestigation.md) | Ready after trim — lead with collinear success; cross result to a paragraph | `FourBodySubcriticalBoundStates.md` |
+| [ThreePositiveChargeInvestigation.md](_research/exploratory/ThreePositiveChargeInvestigation.md) | Ready after trim — lead with the impossibility result; scans → appendix | `ThreeBodyCollinearAnalysis.md` |
+| [RustImplementation.md](_research/exploratory/RustImplementation.md) | Keep in `_research/` — speculative design, not yet implemented | — |
+
+`_research/homology/`, `_research/sub_critical_weber_research/`, and
+`_research/hypergeometric_analysis/` have no finalised theorems yet.
+
+## Theory/code gaps worth closing
+
+The code implements more than [theory/](theory/) specifies. Candidates for new
+spec documents:
+
+1. **Parameter vector specification.** Layout `[m₁…m_N, q₁…q_N, c, κ₁₂…]`,
+   the `_pair_index` formula, and construction protocol. Today only in
+   CLAUDE.md + [docs/src/internals.md](docs/src/internals.md); no spec-level
+   reference for users writing custom ICs.
+2. **Symmetric-projection defaults & diagnostics.** Document that
+   `relaxation=0.25` in [src/types.jl:34](src/types.jl#L34) is a default, not
+   a derived constant — `SemiExplicitIntegrator.md:144,162` derives 1/4 but
+   the code generalises it to a tunable parameter. Also tolerance/max-iter
+   choices and residual semantics.
+3. **Regularization backend selection guide.** `:lifted_pair` (2D only) vs
+   `:adaptive_cartesian` (all dims), Weber-velocity-term limitation, the 3D
+   KS "diagnostic-only" status, interaction with collision bounce. Currently
+   scattered across [docs/src/regularization.md](docs/src/regularization.md)
+   and [theory/RegularizedIntegrationDesign.md](theory/RegularizedIntegrationDesign.md).
+4. **Zöllner predictions & measurement.** Extend
+   [theory/ZollnerElectrogravitationalTheory.md](theory/ZollnerElectrogravitationalTheory.md)
+   with testable numerical predictions and how to infer `a` from observed
+   orbital behaviour.
+5. **Collision-singularity classification.** Head-on (ℓ=0, regularisable) vs
+   spiralling (ℓ≠0, not regularisable). Partially covered in
+   [theory/NonZeroRadialVelocityBoundICs.md](theory/NonZeroRadialVelocityBoundICs.md)
+   §2.2; deserves its own note, ideally alongside the promoted
+   `AngularMomentumNonRegularizability.md` above.
+
+## Cleared in this pass
+
+- Accessor functions (`masses`, `charges`, `speed_of_light`, `kappas`,
+  `params`, `dims`, `degrees_of_freedom`) added to
+  [docs/src/api/problem.md](docs/src/api/problem.md) and
+  [docs/src/api/system.md](docs/src/api/system.md).
+- [CLAUDE.md](CLAUDE.md) corrected: `regularization(prob)` and `zollner(prob)`
+  were listed as accessors but do not exist.
+- `benchmarks/` removed. It was a one-off Phase 0 gate artifact from commit
+  `91922a0`; no CI or test consumer. Re-add with CI integration when real
+  benchmarking work starts.
