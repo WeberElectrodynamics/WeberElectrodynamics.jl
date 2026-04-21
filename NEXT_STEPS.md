@@ -38,20 +38,6 @@ These are candidates, not commitments — prioritise as needs arise.
 - **Promoting physical parameters (mass, charge) to generalized coordinates.**
   One of the motivating use cases for the refactor; still not done.
 
-## Research-sandbox hygiene
-
-Four `_research/` files still construct `params` manually with
-`[masses; charges; [c]; kappas]` and call `hamiltonian_compiled` directly.
-They work today because the layout is unchanged, but they'd break the moment
-κ moves term-owned:
-
-- [_research/homology/03_contact_reeb_numerics/reeb_2body.jl](_research/homology/03_contact_reeb_numerics/reeb_2body.jl)
-- [_research/homology/03_contact_reeb_numerics/star_center_search.jl](_research/homology/03_contact_reeb_numerics/star_center_search.jl)
-- [_research/FourBodyTwoPlusTwoMinus/02_symmetry_reduction/verify_symmetries.jl](_research/FourBodyTwoPlusTwoMinus/02_symmetry_reduction/verify_symmetries.jl)
-- [_research/FourBodyTwoPlusTwoMinus/11_contact_reeb/star_shaped_check.jl](_research/FourBodyTwoPlusTwoMinus/11_contact_reeb/star_shaped_check.jl)
-
-Migrate them to `params(prob)` and the accessor API.
-
 ## `_research/` promotion candidates for `theory/`
 
 From [_research/investigations/](_research/investigations/):
@@ -74,7 +60,8 @@ Also from [_research/investigations/](_research/investigations/) (studies rather
 | [RustImplementation.md](_research/investigations/RustImplementation.md) | Keep in `_research/` — speculative design, not yet implemented | — |
 | [HypergeometricStructure.md](_research/investigations/HypergeometricStructure.md) | Symbolic-algebra study — no finalised theorems yet | — |
 
-`_research/homology/` and `_research/sub_critical_weber_research/` have no
+`_research/homology/` and the sub-critical exploration notes in
+`_research/investigations/SubCriticalWeberExploration.md` have no
 finalised theorems yet.
 
 ## Theory/code gaps worth closing
