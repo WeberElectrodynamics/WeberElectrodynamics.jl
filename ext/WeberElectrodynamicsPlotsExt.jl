@@ -4,6 +4,7 @@ using WeberElectrodynamics
 using WeberElectrodynamics: @sprintf, norm, dot
 using Plots
 using LaTeXStrings
+using Printf: Format, format
 
 # Publication figure sizes (pixels at 300 DPI)
 const SINGLE_COLUMN_WIDTH = 1050   # 3.5 inches at 300 DPI
@@ -35,12 +36,13 @@ const PLOT_DEFAULTS = (
 
 """Format a number in scientific notation for plot labels."""
 function _format_scientific(x::Float64; sigdigits::Int = 2)::String
+    @assert sigdigits >= 0 "sigdigits must be non-negative"
     if x == 0.0
         return "0"
     elseif isnan(x) || isinf(x)
         return string(x)
     end
-    return @sprintf("%.2e", x)
+    return format(Format("%.$(sigdigits)e"), x)
 end
 
 """Compute local errors |E_t - E_{t-1}| from energy timeseries."""
@@ -51,15 +53,6 @@ function _compute_local_errors(energy::Vector{Float64})::Vector{Float64}
         errors[i-1] = abs(energy[i] - energy[i-1])
     end
     return errors
-end
-
-"""Compute global error percentage |(E_t - E_0)/E_0| * 100."""
-function _compute_global_error_percent(energy::Vector{Float64})::Vector{Float64}
-    E0 = energy[1]
-    if abs(E0) < 100 * eps(Float64)
-        return fill(NaN, length(energy))
-    end
-    return abs.((energy .- E0) ./ E0) .* 100.0
 end
 
 """Standard figure size for single-panel plots (4:3 aspect ratio)."""
@@ -1025,11 +1018,10 @@ function WeberElectrodynamics.plot_zollner_force_residual(data::PairForceData)::
     )
 
     # Panel 2: Ratio (κ-1)*F_coulomb / F_total
-    ratio = ifelse.(
-        data.magnitude .> eps(Float64),
-        data.zollner_extra_magnitude ./ data.magnitude,
-        zeros(length(data.magnitude)),
-    )
+    ratio = [
+        m > eps(Float64) ? z / m : 0.0 for
+        (z, m) in zip(data.zollner_extra_magnitude, data.magnitude)
+    ]
 
     p2 = plot(;
         title = "Relative Zöllner Contribution",

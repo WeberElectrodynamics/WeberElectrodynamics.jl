@@ -820,21 +820,7 @@ end
     @inbounds for _ = 1:substeps
         _extract_pair_relative_state!(rb, integrator.q, integrator.p, ms, i, j)
 
-        if dims == 1
-            x = rb.rel_q[1]
-            px = rb.rel_p[1]
-            # Sign flip at x=0 is intentional: represents passing-through collision
-            # in 1D (the only allowed topology).  Unlike 2D/3D, we do not enforce
-            # sign continuity across the map's two sheets because in 1D both sheets
-            # are physically distinct (particle labels exchange at the collision).
-            s = x >= 0 ? 1.0 : -1.0
-            u = sqrt(abs(x))
-            rb.lc_u[1] = u
-            rb.lc_U[1] = 2 * s * u * px
-        elseif dims == 2
-            _lc_lift!(rb)
-            _lc_project!(rb.rel_q, rb.rel_p, rb.lc_u, rb.lc_U)
-        elseif dims == 3
+        if dims == 3
             # KS lift + one-pass constraint projection (diagnostic only).
             # The Cartesian substep that follows does not maintain the KS bilinear
             # constraint; c_err is tracked for diagnostics but not iterated to
@@ -924,7 +910,7 @@ end
         _external_half_step_midpoint!(
             integrator.q,
             integrator.p,
-            t_sub + dt_half + dt_sub,
+            t_sub + dt_half,
             dt_half,
             prob,
             rb,
@@ -952,7 +938,7 @@ end
         _external_half_step_midpoint!(
             integrator.q,
             integrator.p,
-            t_sub + dt_half + t_remaining,
+            t_sub + dt_half,
             dt_half,
             prob,
             rb,

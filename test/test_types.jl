@@ -17,6 +17,23 @@
         @test_throws AssertionError SymmetricProjectionIntegrator(relaxation = 1.5)
     end
 
+    @testset "RegularizationOptions validation" begin
+        opts = RegularizationOptions()
+        @test opts.enabled == false
+        @test opts.backend == WeberElectrodynamics.REG_BACKEND_LIFTED
+
+        @test_throws AssertionError RegularizationOptions(r_on = 0.0)
+        @test_throws AssertionError RegularizationOptions(r_off = -1.0)
+        @test_throws AssertionError RegularizationOptions(r_on = 0.2, r_off = 0.1)
+        @test_throws AssertionError RegularizationOptions(r_on_factor = 0.0)
+        @test_throws AssertionError RegularizationOptions(r_off_factor = 0.0)
+        @test_throws AssertionError RegularizationOptions(max_substeps = 0)
+        @test_throws AssertionError RegularizationOptions(constraint_tolerance = 0.0)
+        @test_throws AssertionError RegularizationOptions(g_floor = 0.0)
+        @test_throws AssertionError RegularizationOptions(backend = :unknown)
+        @test_throws AssertionError RegularizationOptions(collision_bounce_radius = -0.1)
+    end
+
     @testset "HamiltonianSystem" begin
         # Basic construction (now purely symbolic)
         system = HamiltonianSystem(2, 2)
@@ -91,6 +108,7 @@
         @test prob.dt == 0.01
         @test prob.convergence_tolerance == 1e-13  # default
         @test prob.maximum_iterations == 100  # default
+        @test fieldtype(typeof(prob), :system) == typeof(system)
         # params = [m1, m2, q1, q2, c]; kappas = [κ₁₂]; Zöllner disabled → κ=1
         @test params(prob) == [1.0, 0.5, 1.0, -1.0, 4.0]
         @test kappas(prob) == [1.0]
@@ -235,6 +253,7 @@
         @test integrator.q == prob.q_initial
         @test integrator.p == prob.p_initial
         @test integrator.step_count == 0
+        @test fieldtype(typeof(integrator), :prob) == typeof(prob)
 
         # show method
         io = IOBuffer()

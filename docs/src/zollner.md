@@ -14,8 +14,8 @@ between neutral dyads produces an effective gravitational interaction.
 
 The mismatch is parameterized by `a > 0`:
 
-- Unlike-sign pairs: κᵢⱼ = 1 + a  (stronger attraction)
-- Like-sign pairs:   κᵢⱼ = 1.0    (standard repulsion)
+- Opposite nonzero signs: κᵢⱼ = 1 + a  (stronger attraction)
+- Like-sign or neutral pairs: κᵢⱼ = 1.0
 
 Each pair potential becomes:
 
@@ -59,9 +59,9 @@ alg = RegularizedIntegrator(SymmetricProjectionIntegrator())
 sol = solve(prob, alg)
 ```
 
-κ values are automatically included in the parameter vector passed to regularization
-sub-steps, so the Zöllner coupling is respected even during close-encounter
-regularization. No extra configuration is needed.
+κ values are passed alongside the parameter vector during regularization sub-steps,
+so the Zöllner coupling is respected even during close-encounter regularization.
+No extra configuration is needed.
 
 ## Zöllner-specific plots
 
@@ -72,7 +72,7 @@ contribution:
 using Plots
 
 energy = compute_energy_timeseries(sol)
-forces = compute_pair_force_timeseries(sol, 1, 2)
+forces = compute_pair_force_timeseries(sol, (1, 2))
 
 plot_zollner_energy(energy)               # pair potentials + Zöllner extra
 plot_zollner_force_residual(forces)       # force magnitude vs Zöllner fraction

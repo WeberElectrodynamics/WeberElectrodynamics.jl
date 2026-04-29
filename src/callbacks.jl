@@ -37,7 +37,9 @@ apply_post_step!(::HamiltonianCallback, _, _::Float64) = nothing
 Pre-step callback that reflects the relative coordinate of any pair closer
 than `radius` through the origin, preserving COM and momenta (C⁰-continuation
 of the ℓ = 0 head-on collision; Frauenfelder & Weber 2024). Works best with
-the unregularized symplectic path; LC regularization can drift the bounce.
+the unregularized symplectic path. Under `RegularizedIntegrator`, the callback
+fires only at macro-step boundaries; close approaches inside regularized
+substeps are not reflected until the next outer step.
 
 See `docs/exploratory/CollisionBounceRegularization.md` for the full physics
 motivation and validation.
@@ -85,8 +87,11 @@ _normalise_callbacks(::Nothing) = ()
 _normalise_callbacks(cb::HamiltonianCallback) = (cb,)
 _normalise_callbacks(cbs::Tuple{Vararg{HamiltonianCallback}}) = cbs
 function _normalise_callbacks(cbs)
-    tup = Tuple(cbs)
-    all(c -> c isa HamiltonianCallback, tup) ||
-        throw(ArgumentError("callbacks must all subtype HamiltonianCallback"))
-    return tup
+    callbacks = ()
+    for cb in Iterators.reverse(collect(cbs))
+        cb isa HamiltonianCallback ||
+            throw(ArgumentError("callbacks must all subtype HamiltonianCallback"))
+        callbacks = (cb, callbacks...)
+    end
+    return callbacks
 end

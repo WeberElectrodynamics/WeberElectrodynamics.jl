@@ -102,6 +102,8 @@ end
 
 """
     compute_pair_force_timeseries(sol, pair, n_particles, dims, masses, charges, c; stride=1) -> PairForceData
+    compute_pair_force_timeseries(sol, pair; stride=1) -> PairForceData
+    compute_pair_force_timeseries(sol, i, j; stride=1) -> PairForceData
 
 Compute the Weber force decomposition for one particle pair over a simulation.
 
@@ -149,6 +151,9 @@ function compute_pair_force_timeseries(
     if i == j
         throw(ArgumentError("pair indices must be different, got ($i, $j)"))
     end
+    if j < i
+        i, j = j, i
+    end
     if length(masses) != n_particles
         throw(
             ArgumentError(
@@ -187,7 +192,6 @@ function compute_pair_force_timeseries(
         )
     end
 
-    dt = sol.t[indices[2]] - sol.t[indices[1]]
     t_forces = sol.t[indices[1:(end-1)]]
     n_force_steps = length(t_forces)
 
@@ -217,9 +221,19 @@ function compute_pair_force_timeseries(
     accelerations_j = Array{Float64}(undef, dims, n_force_steps)
 
     @inbounds for t = 1:n_force_steps
+        dt_step = sol.t[indices[t+1]] - sol.t[indices[t]]
+        if dt_step <= 0
+            throw(
+                ArgumentError(
+                    "solution time points must be strictly increasing over sampled intervals",
+                ),
+            )
+        end
         for d = 1:dims
-            accelerations_i[d, t] = (velocities_i[d, t+1] - velocities_i[d, t]) / dt
-            accelerations_j[d, t] = (velocities_j[d, t+1] - velocities_j[d, t]) / dt
+            accelerations_i[d, t] =
+                (velocities_i[d, t+1] - velocities_i[d, t]) / dt_step
+            accelerations_j[d, t] =
+                (velocities_j[d, t+1] - velocities_j[d, t]) / dt_step
         end
     end
 
@@ -353,7 +367,7 @@ function compute_pair_force_timeseries(
     return PairForceData(
         t_forces,
         dims,
-        pair,
+        (i, j),
         kappa_ij,
         k,
         force,
@@ -368,4 +382,31 @@ function compute_pair_force_timeseries(
         zollner_extra_magnitude,
         phase_space,
     )
+end
+
+function compute_pair_force_timeseries(
+    sol::HamiltonianSolution,
+    pair::Tuple{Int,Int};
+    stride::Int = 1,
+)::PairForceData
+    prob = sol.prob
+    return compute_pair_force_timeseries(
+        sol,
+        pair,
+        n_particles(prob),
+        dims(prob),
+        masses(prob),
+        charges(prob),
+        speed_of_light(prob);
+        stride = stride,
+    )
+end
+
+function compute_pair_force_timeseries(
+    sol::HamiltonianSolution,
+    i::Int,
+    j::Int;
+    stride::Int = 1,
+)::PairForceData
+    return compute_pair_force_timeseries(sol, (i, j); stride = stride)
 end

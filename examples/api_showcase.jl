@@ -143,7 +143,7 @@ prob_n3 = HamiltonianProblem(
     dt = 0.002,
     zollner = ZollnerOptions(enabled = true, a = 0.07),
 )
-@printf "  kappas(prob) = %s   (sign(0.0) == 0.0 ⇒ neutral pairs are 'unlike-sign')\n" string(
+@printf "  kappas(prob) = %s   (neutral pairs keep κ=1; only opposite nonzero signs get κ=1+a)\n" string(
     kappas(prob_n3),
 )
 sol_n3 = solve(prob_n3)

@@ -252,6 +252,54 @@ using WeberElectrodynamics: compute_total_kinetic_energy, compute_pair_weber_com
             @test length(forces.t) < length(sol_coulomb.t) - 1
         end
 
+        @testset "compute_pair_force_timeseries shorthand and pair ordering" begin
+            verbose =
+                compute_pair_force_timeseries(sol_coulomb, (1, 2), 2, 2, masses, charges, c)
+            inferred = compute_pair_force_timeseries(sol_coulomb, (1, 2))
+            inferred_ints = compute_pair_force_timeseries(sol_coulomb, 1, 2)
+            reversed =
+                compute_pair_force_timeseries(sol_coulomb, (2, 1), 2, 2, masses, charges, c)
+
+            @test inferred.pair == (1, 2)
+            @test inferred_ints.pair == (1, 2)
+            @test reversed.pair == (1, 2)
+            @test length(inferred.t) == length(verbose.t)
+            @test inferred.force[1] ≈ verbose.force[1]
+            @test inferred_ints.force[1] ≈ verbose.force[1]
+            @test reversed.force[1] ≈ verbose.force[1]
+        end
+
+        @testset "compute_pair_force_timeseries uses local timestep intervals" begin
+            sys1d = HamiltonianSystem(2, 1)
+            prob1d = HamiltonianProblem(
+                sys1d,
+                (0.0, 0.25),
+                [0.0, 2.0],
+                [0.0, 0.0];
+                masses = [1.0, 1.0],
+                charges = [1.0, 1.0],
+                c = 1.0,
+                dt = 0.1,
+            )
+            diagnostics =
+                RegularizationDiagnostics(false, 3, :disabled, :disabled)
+            sol_nonuniform = HamiltonianSolution(
+                [0.0, 0.1, 0.2, 0.25],
+                [[0.0, 2.0], [0.0, 2.0], [0.0, 2.0], [0.0, 2.0]],
+                [[0.0, 0.0], [0.0, 0.1], [0.0, 0.2], [0.0, 0.35]],
+                prob1d,
+                :Success,
+                diagnostics,
+            )
+
+            forces = compute_pair_force_timeseries(sol_nonuniform, (1, 2))
+
+            # Final interval is 0.05, so Δv₂=0.15 gives a₂=3.0 and
+            # r·a = (-2)·(-3) = 6. The Coulomb vector is -0.25 in 1D.
+            @test forces.vector_term_ra[end][1] ≈ -1.5
+            @test forces.force[end][1] ≈ -1.745
+        end
+
         @testset "Validation errors" begin
             @test_throws ArgumentError compute_pair_force_timeseries(
                 sol_coulomb,

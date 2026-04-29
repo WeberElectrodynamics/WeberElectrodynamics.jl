@@ -94,6 +94,10 @@ using WeberElectrodynamics: _pair_index
         # Should run without error
         sys3body.dq_dt_compiled(out_q, q, p, 0.0, params3, kappas3)
         sys3body.dp_dt_compiled(out_p, q, p, 0.0, params3, kappas3)
+        @test all(isfinite, out_q)
+        @test all(isfinite, out_p)
+        @test sum(out_p[1:2:end]) ≈ 0.0 atol = 1e-12
+        @test sum(out_p[2:2:end]) ≈ 0.0 atol = 1e-12
     end
 
     @testset "Single particle system" begin
@@ -120,6 +124,22 @@ using WeberElectrodynamics: _pair_index
         @test out_p[2] ≈ 0.0
     end
 
+    @testset "Two-particle force with nonzero momentum" begin
+        sys2 = HamiltonianSystem(2, 1)
+        params2 = [1.0, 2.0, 1.0, -1.0, 10.0]
+        kappas2 = [1.0]
+        q = [-1.0, 1.0]
+        p = [0.3, -0.1]
+        out_p = zeros(2)
+
+        sys2.dp_dt_compiled(out_p, q, p, 0.0, params2, kappas2)
+
+        @test all(isfinite, out_p)
+        @test out_p[1] > 0.0
+        @test out_p[2] < 0.0
+        @test sum(out_p) ≈ 0.0 atol = 1e-12
+    end
+
     @testset "Energy function correctness" begin
         # Verify the symbolic Hamiltonian evaluates correctly
         m1, m2 = 1.0, 0.5
@@ -134,12 +154,12 @@ using WeberElectrodynamics: _pair_index
 
         # Compute energy manually using the test utility function
         E_manual = weber_energy_2body_2d(q, p, [m1, m2], [q1, q2], c)
+        E_compiled =
+            system.hamiltonian_compiled(q, p, 0.0, [m1, m2, q1, q2, c], [1.0])
 
-        # The Hamiltonian symbolic expression should give same result
-        # (This is implicit in the integration tests - if energy is conserved,
-        # the symbolic Hamiltonian must be correct)
         @test E_manual isa Float64
         @test isfinite(E_manual)
+        @test E_compiled ≈ E_manual atol = 1e-12
     end
 
     @testset "Symbolic parameters in Hamiltonian" begin

@@ -16,8 +16,8 @@ up to Symbolics.jl expression rewriting. When all κ = 1 the correction is
 identically zero.
 
 The physical Zöllner mismatch (κ_ij = 1+a for unlike-sign pairs, 1 otherwise)
-is expressed by the concrete κ values injected via `params` at solve time;
-see `_compute_zollner_kappas`.
+is expressed by the concrete κ values passed separately from `params` at solve
+time; see `_compute_zollner_kappas`.
 
 # Arguments
 - `q_vars`, `p_vars`: Phase-space symbolic variables.

@@ -118,6 +118,50 @@ function compare_trajectory(sol, captured::Dict{String,Any})
     return max_t_err, max_q_err, max_p_err, retcode_match
 end
 
+const DIAGNOSTIC_FIELDS = (
+    "enabled",
+    "requested_backend",
+    "used_backend",
+    "activation_count",
+    "deactivation_count",
+    "active_steps",
+    "pair_steps",
+    "adaptive_pair_steps",
+    "lifted_pair_steps",
+    "chain_steps",
+    "unregularized_steps",
+    "backend_fallback_steps",
+    "total_substeps",
+    "max_substeps_used",
+    "max_constraint_violation",
+    "min_encounter_distance",
+)
+
+function _diag_value(d::RegularizationDiagnostics, field::String)
+    value = getfield(d, Symbol(field))
+    return value isa Symbol ? String(value) : value
+end
+
+function _matches_reference(a::Real, b::Real)
+    if isnan(a) || isnan(b)
+        return isnan(a) && isnan(b)
+    elseif isinf(a) || isinf(b)
+        return a == b
+    end
+    return abs(a - b) <= TOLERANCE
+end
+
+_matches_reference(a, b) = a == b
+
+function compare_diagnostics(d::RegularizationDiagnostics, captured::Dict{String,Any})
+    for field in DIAGNOSTIC_FIELDS
+        new_value = _diag_value(d, field)
+        ref_value = captured[field]
+        _matches_reference(new_value, ref_value) || return false, field
+    end
+    return true, ""
+end
+
 function validate_fixture(name::String)
     path = joinpath(FIXTURE_DIR, "$(name).jld2")
     isfile(path) || error("fixture missing: $path (run capture.jl first)")
@@ -134,9 +178,10 @@ function validate_fixture(name::String)
     prob, alg = rebuild_problem(fixture["setup"])
     sol = solve(prob, alg)
     max_t, max_q, max_p, ok_ret = compare_trajectory(sol, fixture["trajectory"])
+    ok_diag, diag_field = compare_diagnostics(sol.regularization, fixture["diagnostics"])
 
-    pass = max_q ≤ TOLERANCE && max_p ≤ TOLERANCE && max_t ≤ TOLERANCE && ok_ret
-    return pass, max_t, max_q, max_p, ok_ret
+    pass = max_q ≤ TOLERANCE && max_p ≤ TOLERANCE && max_t ≤ TOLERANCE && ok_ret && ok_diag
+    return pass, max_t, max_q, max_p, ok_ret, ok_diag, diag_field
 end
 
 function validate_all()
@@ -146,16 +191,17 @@ function validate_all()
 
     all_pass = true
     for name in FIXTURES
-        pass, mt, mq, mp, okret = validate_fixture(name)
+        pass, mt, mq, mp, okret, okdiag, diag_field = validate_fixture(name)
         status = pass ? "PASS" : "FAIL"
         @printf(
-            "  %s  %-26s  |Δt|=%.2e  |Δq|=%.2e  |Δp|=%.2e  retcode=%s\n",
+            "  %s  %-26s  |Δt|=%.2e  |Δq|=%.2e  |Δp|=%.2e  retcode=%s  diagnostics=%s\n",
             status,
             name,
             mt,
             mq,
             mp,
-            okret ? "ok" : "MISMATCH"
+            okret ? "ok" : "MISMATCH",
+            okdiag ? "ok" : "MISMATCH:$diag_field"
         )
         all_pass &= pass
     end
