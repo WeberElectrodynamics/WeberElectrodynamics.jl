@@ -8,7 +8,7 @@ captured problem must reproduce the stored trajectory bit-for-bit (tolerance
 
 ## Files
 
-- [`capture.jl`](capture.jl) — one-shot script that builds four representative
+- [`capture.jl`](capture.jl) — one-shot script that builds seven representative
   problems against the current public API and serialises each to a `.jld2`
   file under `fixtures/`. Re-run only when intentionally replacing the
   reference trajectories (commit the new fixtures in the same PR that changes
@@ -22,12 +22,15 @@ captured problem must reproduce the stored trajectory bit-for-bit (tolerance
 
 ## Fixture coverage
 
-| Fixture                    | Covers                                                    |
-|----------------------------|-----------------------------------------------------------|
-| `twobody_ellipse`          | Unregularized symmetric-projection integrator, finite c   |
-| `threebody_mixed`          | Unregularized 3-body with mixed-sign charges              |
-| `close_approach_lifted`    | `:lifted_pair` Levi-Civita regularization fires (2D)      |
-| `zollner_offmatch`         | `:adaptive_cartesian` + Zöllner κ ≠ 1 in substep path     |
+| Fixture                            | Covers                                                  |
+|------------------------------------|---------------------------------------------------------|
+| `twobody_ellipse`                  | Unregularized symmetric-projection integrator, finite c |
+| `threebody_mixed`                  | Unregularized 3-body with mixed-sign charges            |
+| `close_approach_lifted`            | `:lifted_pair` Levi-Civita regularization fires (2D)    |
+| `zollner_offmatch`                 | `:adaptive_cartesian` + Zöllner κ ≠ 1 in substep path   |
+| `oned_kepler`                      | 1D 2-body repulsive oscillation, unregularized          |
+| `threed_close_approach_adaptive`   | 3D 2-body close approach, `:adaptive_cartesian` backend |
+| `fourbody_mixed`                   | 4-body 2D (2+/2−) topology, unregularized               |
 
 ## Regenerating
 
