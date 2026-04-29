@@ -227,6 +227,126 @@ function fixture_close_approach_lifted()
     "2-body close approach with :lifted_pair Levi-Civita regularization"
 end
 
+function fixture_oned_kepler()
+    # 1D 2-body repulsive oscillation. Particles at x = ±1 moving toward each
+    # other with kinetic energy < repulsion barrier — they slow, stop short of
+    # the singularity, reverse. No regularization needed; locks the 1D code path.
+    m1, m2 = 1.0, 1.0
+    q1, q2 = 1.0, 1.0      # repulsive
+    c = 4.0
+    q_initial = [-1.0, 1.0]
+    p_initial = [0.1, -0.1]
+    tspan = (0.0, 5.0)
+    dt = 1e-3
+
+    system = HamiltonianSystem(2, 1)
+    prob = HamiltonianProblem(
+        system,
+        tspan,
+        q_initial,
+        p_initial;
+        masses = [m1, m2],
+        charges = [q1, q2],
+        c = c,
+        dt = dt,
+    )
+    alg = SymmetricProjectionIntegrator()
+    sol = solve(prob, alg)
+    return prob,
+    alg,
+    sol,
+    ZollnerOptions(),
+    "oned_kepler",
+    "1D 2-body repulsive oscillation, unregularized"
+end
+
+function fixture_threed_close_approach_adaptive()
+    # 3D analogue of close_approach_lifted, with the only 3D-supported backend
+    # (`:adaptive_cartesian`). Same 2-body parameters, embedded in the z=0
+    # plane to share an analytic structure with the 2D fixture.
+    m1, m2 = 1.0, 0.1
+    q1, q2 = sqrt(0.1), -sqrt(0.1)
+    c = 4.0
+    r0 = 2.0
+    M = m1 + m2
+    v_circ = sqrt(abs(q1 * q2) * M / (m1 * m2 * r0))
+    v_scale = 0.5
+    # 3D coordinates: x for separation, y for tangential momentum, z = 0.
+    q_initial = [-m2 / M * r0, 0.0, 0.0, m1 / M * r0, 0.0, 0.0]
+    p_initial = [
+        0.0,
+        m1 * (-m2 / M * v_circ * v_scale),
+        0.0,
+        0.0,
+        m2 * (m1 / M * v_circ * v_scale),
+        0.0,
+    ]
+    tspan = (0.0, 8.0)
+    dt = 2e-3
+
+    system = HamiltonianSystem(2, 3)
+    prob = HamiltonianProblem(
+        system,
+        tspan,
+        q_initial,
+        p_initial;
+        masses = [m1, m2],
+        charges = [q1, q2],
+        c = c,
+        dt = dt,
+    )
+    alg = RegularizedIntegrator(
+        SymmetricProjectionIntegrator();
+        backend = :adaptive_cartesian,
+        r_on_factor = 0.3,
+        r_off_factor = 0.45,
+        max_substeps = 512,
+        constraint_tolerance = 1e-12,
+        warn_on_fallback = false,
+    )
+    sol = solve(prob, alg)
+    return prob,
+    alg,
+    sol,
+    ZollnerOptions(),
+    "threed_close_approach_adaptive",
+    "3D 2-body close approach with :adaptive_cartesian regularization"
+end
+
+function fixture_fourbody_mixed()
+    # 4-body 2D system with charges [+1, +1, -1, -1] in a (2+/2-) topology.
+    # Mirrors the configuration studied in _research/Topology/. Symmetric square
+    # arrangement, starting from rest; short integration window keeps closest
+    # encounter distance well above any regularization threshold.
+    system = HamiltonianSystem(4, 2)
+    q_initial = [1.0, 0.0, -1.0, 0.0, 0.0, 1.0, 0.0, -1.0]   # square at (±1,0), (0,±1)
+    p_initial = zeros(8)
+    masses = ones(4)
+    charges = [1.0, 1.0, -1.0, -1.0]
+    c = 10.0
+    tspan = (0.0, 0.3)
+    dt = 5e-4
+
+    prob = HamiltonianProblem(
+        system,
+        tspan,
+        q_initial,
+        p_initial;
+        masses = masses,
+        charges = charges,
+        c = c,
+        dt = dt,
+    )
+    alg = SymmetricProjectionIntegrator()
+    sol = solve(prob, alg)
+    return prob,
+    alg,
+    sol,
+    ZollnerOptions(),
+    "fourbody_mixed",
+    "4-body unregularized (2+/2-) square topology, starting from rest"
+end
+
 function fixture_zollner_offmatch()
     # 2-body attractive pair with Zöllner mismatch; adaptive-Cartesian regularized.
     # Apocenter-start eccentric orbit that plunges through pericenter, so κ=1+a
@@ -349,6 +469,9 @@ function main()
         fixture_threebody_mixed,
         fixture_close_approach_lifted,
         fixture_zollner_offmatch,
+        fixture_oned_kepler,
+        fixture_threed_close_approach_adaptive,
+        fixture_fourbody_mixed,
     )
         name_guess = string(nameof(builder))
         print("Building $name_guess ... ")
