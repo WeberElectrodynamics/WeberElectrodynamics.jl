@@ -29,4 +29,11 @@
         @test alg.options.warn_on_fallback === false
         @test alg.options.collision_bounce_radius == 0.01
     end
+
+    @testset "default base algorithm shorthand" begin
+        alg = WeberElectrodynamics.RegularizedIntegrator(; backend = :adaptive_cartesian)
+        @test alg.base_alg isa SymmetricProjectionIntegrator
+        @test alg.options.enabled === true
+        @test alg.options.backend === :adaptive_cartesian
+    end
 end

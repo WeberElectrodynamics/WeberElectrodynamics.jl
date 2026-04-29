@@ -8,16 +8,16 @@ contributing to the total `H`. Stored on `HamiltonianSystem` as
 contributions without re-deriving them from the compiled aggregate.
 
 The optional `pair_decomposition` closure returns a per-pair decomposition of
-the term's contribution, evaluated on concrete `(i, j, q, p, params)` inputs.
-The shape of the returned tuple is term-specific; the Weber and Zöllner
-builders will attach compatible closures in Phase 4 when statistics migrate
-onto this interface.
+the term's contribution, evaluated on concrete
+`(i, j, q, p, params, kappas)` inputs. The shape of the returned tuple is
+term-specific. The built-in Weber and Zöllner builders attach compatible
+closures used by the pair energy and force diagnostics.
 
 # Fields
 - `name::Symbol`: Identifier used by `get_term`, `has_term`, `term_names`.
 - `H_symbolic`: Symbolic expression contributing to the aggregate Hamiltonian.
 - `pair_decomposition::Union{Function,Nothing}`: Optional closure
-  `(i, j, q, p, params) -> NamedTuple` for per-pair statistics.
+  `(i, j, q, p, params, kappas) -> NamedTuple` for per-pair statistics.
 """
 struct NamedTerm{H,F}
     name::Symbol

@@ -15,8 +15,9 @@ regularization when:
 - You observe energy drift or `NaN` values near close passages without it.
 
 Regularization handles the Coulomb/Kepler singularity only. Weber's
-velocity-dependent correction is **not** regularized — the LC and KS transforms
-apply to the conservative part of the force.
+velocity-dependent correction is **not analytically regularized**; it is still
+evaluated through the package's equations of motion during regularized
+substeps.
 
 ## Enabling regularization
 
@@ -41,21 +42,24 @@ set implicitly).
 
 | Backend | Symbol | Dimensions | Method |
 |---------|--------|-----------|--------|
-| Levi-Civita (default) | `:lifted_pair` | **2D only** | Lifts the pair to ℝ⁴ fictitious time |
-| Adaptive Cartesian | `:adaptive_cartesian` | 2D and 3D | Cartesian sub-stepping with KS constraint |
+| Lifted pair (default) | `:lifted_pair` | 1D | Square-root chart with fictitious time |
+| Lifted pair (default) | `:lifted_pair` | 2D | Levi-Civita pair chart with fictitious time |
+| Lifted pair (default) | `:lifted_pair` | 3D | KS pair chart with constraint projection diagnostics |
+| Adaptive Cartesian | `:adaptive_cartesian` | 1D, 2D, 3D | Cartesian close-encounter substeps |
+| Chain mode | automatic | 1D, 2D, 3D | Adaptive Cartesian substeps over multi-particle close clusters |
 
-For 3D problems, `:lifted_pair` automatically falls back to `:adaptive_cartesian`
-(with an optional warning controlled by `warn_on_fallback`).
+`RegularizedIntegrator(; kwargs...)` is shorthand for wrapping
+`SymmetricProjectionIntegrator()`.
 
 !!! note "3D KS constraint"
-    The `:adaptive_cartesian` backend applies a one-pass KS constraint projection
-    at each close-encounter lift, then runs a Cartesian sub-step. The constraint
-    is not iterated to convergence within the sub-step; `max_constraint_violation`
-    in the diagnostics tracks the residual. For current 2D-heavy use cases this
-    is sufficient. True iterative 3D KS stepping is deferred to a future release.
+    The `:lifted_pair` backend uses a KS pair chart and projects the KS momentum
+    constraint at the start, midpoint, and end of each lifted substep. The
+    diagnostics report both `max_constraint_violation` and KS projection counts.
+    The `:adaptive_cartesian` backend still uses KS lifts for diagnostics only
+    before running Cartesian substeps.
 
 ```julia
-# Explicit 3D choice
+# Explicit Cartesian fallback choice
 alg = RegularizedIntegrator(
     SymmetricProjectionIntegrator();
     backend = :adaptive_cartesian,
@@ -88,15 +92,16 @@ sol = solve(prob, alg)
 ## Chain mode
 
 When three or more particles form a connected close-encounter cluster,
-regularization falls back to chain mode (adaptive Cartesian substeps for the
-whole cluster). Chain mode is enabled by default; disable with
+regularization enters chain mode (adaptive Cartesian substeps for the whole
+cluster). Chain mode is enabled by default; disable with
 `RegularizedIntegrator(...; chain_enabled = false)`.
 
 ## Collision bounce
 
-For head-on (ℓ = 0) collisions between like-charge pairs, a reflection
-boundary can be applied before each macro-step. This avoids the non-regularizable
-ℓ ≠ 0 singularity (where particles reach r = 0 at infinite speed).
+For head-on (ℓ = 0) collisions between like-charge pairs, a reflection boundary
+can be applied before each macro-step. Under `RegularizedIntegrator`, the same
+radius is also checked after regularized substeps, so close approaches inside a
+regularized macro-step do not have to wait for the next outer step.
 
 Collision bounce is a [`CollisionBounce`](@ref) callback; pass it through the
 `callbacks` kwarg of `solve` (or `init`):
@@ -115,8 +120,8 @@ alg = RegularizedIntegrator(SymmetricProjectionIntegrator();
 sol = solve(prob, alg)
 ```
 
-Collision bounce works best **without** Levi-Civita regularization (the
-unregularized symplectic integrator keeps energy bounded across the bounce).
+Collision bounce is intended for C0-continuable head-on cases. It does not make
+generic nonzero-angular-momentum collisions regular.
 
 ## Diagnostics
 
@@ -138,7 +143,9 @@ Key fields and what they mean:
 | `activation_count` | How many times regularization switched on | Very high → r_off is too close to r_on |
 | `min_encounter_distance` | Closest particle approach over the run | Near 0 → singularity risk; consider bounce radius |
 | `max_constraint_violation` | Peak KS constraint residual (3D only) | > 1e-8 → reduce `dt` or `max_substeps` |
-| `backend_fallback_steps` | Steps that used the fallback backend | > 0 when `:lifted_pair` was requested on a 3D problem |
+| `ks_constraint_projection_count` | Number of KS constraint projections | Useful for confirming the 3D lifted path ran |
+| `ks_constraint_iteration_count` | Total KS projection iterations | Higher than projections if future iterative correction is enabled |
+| `backend_fallback_steps` | Steps that used the fallback backend | > 0 only when a requested backend is unavailable |
 | `total_substeps` | Total regularization micro-steps taken | Very large → consider wider r_on/r_off thresholds |
 
 ## API reference

@@ -41,8 +41,8 @@ the unregularized symplectic path. Under `RegularizedIntegrator`, the callback
 fires only at macro-step boundaries; close approaches inside regularized
 substeps are not reflected until the next outer step.
 
-See `docs/exploratory/CollisionBounceRegularization.md` for the full physics
-motivation and validation.
+See `docs/src/regularization.md` and `theory/Regularization.md` for the
+regularization and collision-continuation context.
 """
 struct CollisionBounce <: HamiltonianCallback
     radius::Float64

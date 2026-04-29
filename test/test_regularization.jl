@@ -78,7 +78,7 @@
     state_error(sol_a::HamiltonianSolution, sol_b::HamiltonianSolution) =
         norm(sol_a.q[end] - sol_b.q[end]) + norm(sol_a.p[end] - sol_b.p[end])
 
-    @testset "API and fallback" begin
+    @testset "API and lifted backend availability" begin
         sys2 = HamiltonianSystem(2, 2)
         q0_2d = [-1.0, 0.0, 1.0, 0.0]
         p0_2d = [0.0, -0.05, 0.0, 0.05]
@@ -118,28 +118,19 @@
         )
         int_fb = init(prob_fb, alg_fb)
         rb_fb = int_fb.buffers.regularization_buffers
-        @test rb_fb.effective_backend == WeberElectrodynamics.REG_BACKEND_ADAPTIVE
-        @test rb_fb.backend_fallback
+        @test rb_fb.effective_backend == WeberElectrodynamics.REG_BACKEND_LIFTED
+        @test !rb_fb.backend_fallback
 
         step!(int_fb)
-        @test int_fb.diagnostics.adaptive_pair_steps == 1
-        @test int_fb.diagnostics.lifted_pair_steps == 0
-        @test int_fb.diagnostics.backend_fallback_steps == 1
-
-        alg_warn = RegularizedIntegrator(
-            SymmetricProjectionIntegrator();
-            backend = :lifted_pair,
-            warn_on_fallback = true,
-            r_on = 0.2,
-            r_off = 0.26,
-        )
-        @test_logs (:warn, r"falling back to :adaptive_cartesian") init(prob_fb, alg_warn)
+        @test int_fb.diagnostics.lifted_pair_steps == 1
+        @test int_fb.diagnostics.adaptive_pair_steps == 0
+        @test int_fb.diagnostics.backend_fallback_steps == 0
     end
 
-    @testset "3D lifted pair fallback to adaptive_cartesian" begin
+    @testset "3D lifted pair uses KS backend" begin
         sys3 = HamiltonianSystem(2, 3)
         # Start within r_on (separation 0.16 < r_on 0.2) so regularization fires
-        # on the first step and backend_fallback_steps is immediately exercised.
+        # on the first step and the KS path is immediately exercised.
         q0_3d = [-0.08, 0.0, 0.0, 0.08, 0.0, 0.0]
         p0_3d = [0.0, -0.05, 0.0, 0.0, 0.05, 0.0]
 
@@ -162,24 +153,14 @@
         )
         int_3d = init(prob_3d, alg_3d)
         rb_3d = int_3d.buffers.regularization_buffers
-        @test rb_3d.effective_backend == WeberElectrodynamics.REG_BACKEND_ADAPTIVE
-        @test rb_3d.backend_fallback
+        @test rb_3d.effective_backend == WeberElectrodynamics.REG_BACKEND_LIFTED
+        @test !rb_3d.backend_fallback
 
         step!(int_3d)
-        @test int_3d.diagnostics.backend_fallback_steps == 1
-        @test int_3d.diagnostics.lifted_pair_steps == 0
-
-        alg_3d_warn = RegularizedIntegrator(
-            SymmetricProjectionIntegrator();
-            backend = :lifted_pair,
-            warn_on_fallback = true,
-            r_on = 0.2,
-            r_off = 0.3,
-        )
-        @test_logs (:warn, r"falling back to :adaptive_cartesian") init(
-            prob_3d,
-            alg_3d_warn,
-        )
+        @test int_3d.diagnostics.backend_fallback_steps == 0
+        @test int_3d.diagnostics.lifted_pair_steps == 1
+        @test int_3d.diagnostics.ks_constraint_projection_count > 0
+        @test int_3d.diagnostics.ks_constraint_iteration_count > 0
     end
 
     @testset "chain-disabled multi-pair encounter deactivates regularization" begin
@@ -292,6 +273,11 @@
                 c_err =
                     WeberElectrodynamics._ks_project_constraint!(rb.ks_U, rb.ks_u, rb.ks_n)
                 @test c_err < 1e-10
+
+                q_rel = zeros(3)
+                p_rel = zeros(3)
+                WeberElectrodynamics._ks_project!(q_rel, p_rel, rb.ks_u, rb.ks_U, J)
+                @test q_rel ≈ [x1, x2, x3] rtol = 1e-10 atol = 1e-10
             end
         end
     end

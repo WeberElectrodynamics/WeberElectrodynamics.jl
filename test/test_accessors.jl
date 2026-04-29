@@ -5,6 +5,8 @@
         @test n_particles(sys) == 3
         @test dims(sys) == 2
         @test degrees_of_freedom(sys) == 6
+        @test n_pairs(sys) == 3
+        @test pair_indices(sys) == [(1, 2), (1, 3), (2, 3)]
     end
 
     @testset "HamiltonianProblem parameter accessors" begin
@@ -25,6 +27,8 @@
         @test charges(prob) == [1.0, -1.0, 0.5]
         @test speed_of_light(prob) == 10.0
         @test kappas(prob) == ones(3)
+        @test n_pairs(prob) == 3
+        @test pair_indices(prob) == [(1, 2), (1, 3), (2, 3)]
 
         # params layout: [m₁…mₙ, q₁…qₙ, c]; kappas stored separately
         @test length(params(prob)) == 2*3 + 1

@@ -22,14 +22,15 @@ struct TrajectoryData
 end
 
 """
+    compute_trajectory_data(sol; stride=1) -> TrajectoryData
     compute_trajectory_data(sol, n_particles, dims; stride=1) -> TrajectoryData
 
 Extract per-particle position trajectories from a `HamiltonianSolution`.
 
 # Arguments
 - `sol::HamiltonianSolution`: Completed simulation result.
-- `n_particles::Int`: Number of particles encoded in `sol`.
-- `dims::Int`: Spatial dimension (must match `dims(sol.prob)`).
+- `n_particles::Int`: Optional explicit number of particles encoded in `sol`.
+- `dims::Int`: Optional explicit spatial dimension (must match `dims(sol.prob)`).
 
 # Keywords
 - `stride=1`: Downsample factor; every `stride`-th timestep is included.
@@ -94,4 +95,11 @@ function compute_trajectory_data(
         n_particles,
         dims,
     )
+end
+
+function compute_trajectory_data(
+    sol::HamiltonianSolution;
+    stride::Int = 1,
+)::TrajectoryData
+    return compute_trajectory_data(sol, n_particles(sol.prob), dims(sol.prob); stride = stride)
 end

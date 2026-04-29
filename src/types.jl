@@ -106,8 +106,9 @@ end
 Configuration for close-encounter regularization.
 
 When two particles approach within `r_on`, the integrator switches from
-Cartesian coordinates to a regularized representation (Levi-Civita/KS or
-adaptive Cartesian substeps) and back once the separation exceeds `r_off`.
+Cartesian coordinates to a regularized representation (1D square-root,
+2D Levi-Civita, 3D KS, or adaptive Cartesian substeps) and back once the
+separation exceeds `r_off`.
 
 # Keywords
 - `enabled=false`: Enable regularization globally.
@@ -121,9 +122,9 @@ adaptive Cartesian substeps) and back once the separation exceeds `r_off`.
 - `constraint_tolerance=1e-12`: Convergence threshold for the projection constraint.
 - `g_floor=1e-12`: Minimum regularization scale to prevent division by zero.
 - `chain_enabled=true`: Allow chain regularization for multi-particle close encounters.
-- `backend=:lifted_pair`: Regularization backend. `:lifted_pair` uses
-  Levi-Civita/KS (2D only; auto-falls back to `:adaptive_cartesian` for 3D).
-  `:adaptive_cartesian` works for all dimensions.
+- `backend=:lifted_pair`: Regularization backend. `:lifted_pair` uses lifted
+  square-root (1D), Levi-Civita (2D), or KS (3D) pair charts.
+  `:adaptive_cartesian` works for all dimensions and for chain encounters.
 - `warn_on_fallback=true`: Emit a warning when the backend is automatically changed.
 - `collision_bounce_radius=0.0`: Reflect pairs that come closer than this distance
   before each macro-step (0.0 = disabled). Intended for head-on (ℓ=0) collisions.
@@ -210,13 +211,16 @@ of the outer `SymmetricProjectionIntegrator`.
 - `active_steps::Int`: Steps taken while any regularization was active.
 - `pair_steps::Int`: Steps handled by the pair regularization path.
 - `adaptive_pair_steps::Int`: Steps handled by `:adaptive_cartesian`.
-- `lifted_pair_steps::Int`: Steps handled by `:lifted_pair` (Levi-Civita/KS).
+- `lifted_pair_steps::Int`: Steps handled by `:lifted_pair`
+  (1D square-root, 2D Levi-Civita, 3D KS).
 - `chain_steps::Int`: Steps handled by the chain (multi-pair) path.
 - `unregularized_steps::Int`: Steps taken in plain Cartesian coordinates.
 - `backend_fallback_steps::Int`: Steps where a fallback backend was used.
 - `total_substeps::Int`: Total regularized substeps across all macro-steps.
 - `max_substeps_used::Int`: Largest substep count used in any single macro-step.
 - `max_constraint_violation::Float64`: Maximum projection constraint residual observed.
+- `ks_constraint_projection_count::Int`: Number of KS momentum constraint projections.
+- `ks_constraint_iteration_count::Int`: Total KS projection iterations.
 - `min_encounter_distance::Float64`: Minimum pairwise separation seen during the solve.
 - `mode_history::Vector{UInt8}`: Per-step regularization mode (0=none, 1=pair, 2=chain).
 """
@@ -236,6 +240,8 @@ mutable struct RegularizationDiagnostics
     total_substeps::Int
     max_substeps_used::Int
     max_constraint_violation::Float64
+    ks_constraint_projection_count::Int
+    ks_constraint_iteration_count::Int
     min_encounter_distance::Float64
     mode_history::Vector{UInt8}
 
@@ -261,6 +267,8 @@ mutable struct RegularizationDiagnostics
             0,
             0,
             0.0,
+            0,
+            0,
             Inf,
             fill(REG_MODE_NONE, n_steps),
         )
@@ -328,6 +336,12 @@ mutable struct RegularizationBuffers
 
     ks_u::Vector{Float64}
     ks_U::Vector{Float64}
+    ks_u_mid::Vector{Float64}
+    ks_U_mid::Vector{Float64}
+    ks_du_tau::Vector{Float64}
+    ks_dU_tau::Vector{Float64}
+    ks_du_tau_mid::Vector{Float64}
+    ks_dU_tau_mid::Vector{Float64}
     ks_J::Matrix{Float64}
     ks_n::Vector{Float64}
 
@@ -410,6 +424,12 @@ mutable struct RegularizationBuffers
             Vector{Float64}(undef, 2),
             Vector{Float64}(undef, max(dims, 3)),
             Vector{Float64}(undef, max(dims, 3)),
+            Vector{Float64}(undef, 4),
+            Vector{Float64}(undef, 4),
+            Vector{Float64}(undef, 4),
+            Vector{Float64}(undef, 4),
+            Vector{Float64}(undef, 4),
+            Vector{Float64}(undef, 4),
             Vector{Float64}(undef, 4),
             Vector{Float64}(undef, 4),
             Matrix{Float64}(undef, 3, 4),
@@ -570,11 +590,62 @@ as read-only.
 """
 n_particles(prob::HamiltonianProblem) = n_particles(prob.system)
 dims(prob::HamiltonianProblem) = dims(prob.system)
+
+"""
+    n_pairs(sys_or_prob) -> Int
+
+Return the number of unordered particle pairs, `N*(N-1)/2`.
+"""
+n_pairs(sys::HamiltonianSystem) = n_particles(sys) * (n_particles(sys) - 1) ÷ 2
+n_pairs(prob::HamiltonianProblem) = n_pairs(prob.system)
+
+"""
+    pair_indices(sys_or_prob) -> Vector{Tuple{Int,Int}}
+
+Return all canonical particle pairs `(i, j)` with `i < j` in the same order
+used by `kappas(prob)` and [`kappa(prob, i, j)`](@ref). The order is
+`(1,2), (1,3), ..., (N-1,N)`.
+"""
+function pair_indices(sys::HamiltonianSystem)
+    n = n_particles(sys)
+    return [(i, j) for i = 1:n for j = (i+1):n]
+end
+pair_indices(prob::HamiltonianProblem) = pair_indices(prob.system)
+
+"""
+    masses(prob::HamiltonianProblem) -> AbstractVector{Float64}
+
+Return a read-only view of particle masses from `params(prob)`.
+"""
 masses(prob::HamiltonianProblem) = @view prob.params[1:n_particles(prob)]
+
+"""
+    charges(prob::HamiltonianProblem) -> AbstractVector{Float64}
+
+Return a read-only view of particle charges from `params(prob)`.
+"""
 charges(prob::HamiltonianProblem) =
     @view prob.params[(n_particles(prob)+1):(2*n_particles(prob))]
+
+"""
+    speed_of_light(prob::HamiltonianProblem) -> Float64
+
+Return the speed-of-light parameter `c`.
+"""
 speed_of_light(prob::HamiltonianProblem) = prob.params[2*n_particles(prob)+1]
+
+"""
+    kappas(prob::HamiltonianProblem) -> Vector{Float64}
+
+Return the backing vector of per-pair Zöllner coupling factors.
+"""
 kappas(prob::HamiltonianProblem) = prob.kappas
+
+"""
+    params(prob::HamiltonianProblem) -> Vector{Float64}
+
+Return the packed parameter vector `[masses; charges; c]`.
+"""
 params(prob::HamiltonianProblem) = prob.params
 
 """
@@ -695,9 +766,7 @@ end
 
 @inline function _resolve_regularization_backend(dims::Int, options::RegularizationOptions)
     requested = options.backend
-    if requested == REG_BACKEND_LIFTED && dims != 2
-        return REG_BACKEND_ADAPTIVE, true
-    end
+    dims in (1, 2, 3) || return REG_BACKEND_ADAPTIVE, requested == REG_BACKEND_LIFTED
     return requested, false
 end
 
@@ -800,14 +869,20 @@ run to completion. The current state is accessible via `integrator.q`,
 - `q::Vector{Float64}`: Current flattened positions.
 - `p::Vector{Float64}`: Current flattened momenta.
 - `step_count::Int`: Number of macro-steps completed so far.
+- `max_steps::Int`: Total macro-steps planned for the integration interval.
 - `buffers::SymmetricProjectionBuffers`: Pre-allocated workspace (internal).
 - `callbacks::Tuple`: Per-step callbacks (pre-/post-step hooks).
 - `diagnostics::RegularizationDiagnostics`: Live regularization statistics.
 - `t_history::Vector{Float64}`: Pre-allocated time history array.
 - `q_history::Vector{Vector{Float64}}`: Pre-allocated position history.
 - `p_history::Vector{Vector{Float64}}`: Pre-allocated momentum history.
+- `save_stride::Int`: Store every `save_stride`-th macro-step plus the final step.
+- `save_count::Int`: Number of history points stored so far.
+- `stream_sink`: Optional callable invoked as `(t, q, p, step)` for the initial
+  state and every completed macro-step. The sink must copy `q`/`p` if it
+  retains them.
 """
-mutable struct HamiltonianIntegrator{P<:HamiltonianProblem,A<:HamiltonianAlgorithm,C,CB<:Tuple}
+mutable struct HamiltonianIntegrator{P<:HamiltonianProblem,A<:HamiltonianAlgorithm,C,CB<:Tuple,S}
     prob::P
     alg::A
     t::Float64
@@ -815,12 +890,16 @@ mutable struct HamiltonianIntegrator{P<:HamiltonianProblem,A<:HamiltonianAlgorit
     q::Vector{Float64}
     p::Vector{Float64}
     step_count::Int
+    max_steps::Int
     buffers::C
     callbacks::CB
     diagnostics::RegularizationDiagnostics
     t_history::Vector{Float64}
     q_history::Vector{Vector{Float64}}
     p_history::Vector{Vector{Float64}}
+    save_stride::Int
+    save_count::Int
+    stream_sink::S
 end
 
 function Base.show(io::IO, int::HamiltonianIntegrator)

@@ -26,7 +26,26 @@ lives on its own field of length `N(N−1)/2`, separate from `params`.
 See also `n_particles(prob)` and `dims(prob)`, documented on the [System](system.md) page.
 
 ```@docs
+masses
+charges
+speed_of_light
+kappas
 kappa
+params
+```
+
+## Initial-condition helpers
+
+These helpers return named tuples with flattened `q` and `p` vectors ready for
+`HamiltonianProblem`. Helpers that infer Coulomb scales accept explicit `kappa`
+or `kappas` values; `ZollnerOptions` itself is still applied at problem
+construction time.
+
+```@docs
+center_of_mass_frame
+two_body_initial_conditions
+polygon_initial_conditions
+rigid_rotation_initial_conditions
 ```
 
 ## Optional features

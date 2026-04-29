@@ -16,21 +16,18 @@ Regularization backend is configured through `RegularizedIntegrator(base_alg; ba
 - `:lifted_pair`
 - `:adaptive_cartesian`
 
-Effective backend is resolved at init:
-
-- 2D: requested backend is honored.
-- 1D/3D with requested `:lifted_pair`: fallback to `:adaptive_cartesian`.
-
-Fallback behavior:
+Effective backend is resolved at init. For supported dimensions (`1`, `2`, and
+`3`), both configured backends are available for binary pair mode. Fallback
+behavior is reserved for unsupported future dimensions:
 
 - one init-time warning when `warn_on_fallback=true`
 - diagnostics counter increment on fallback pair steps
 
 Support matrix:
 
-- 2D pair mode: true lifted pair backend available
-- 1D pair mode: adaptive Cartesian backend
-- 3D pair mode: adaptive Cartesian backend
+- 1D pair mode: lifted square-root or adaptive Cartesian backend
+- 2D pair mode: lifted Levi-Civita or adaptive Cartesian backend
+- 3D pair mode: lifted KS or adaptive Cartesian backend
 - chain mode (all dims): adaptive Cartesian backend
 
 ## Encounter Dispatch and Hysteresis
@@ -66,12 +63,12 @@ The adaptive Cartesian pair backend keeps the previous robust path:
 3. For each substep, run the existing projected Cartesian kernel.
 4. In 3D, apply KS constraint projection in lifted diagnostics path.
 
-## Pair Mode: `:lifted_pair` (2D)
+## Pair Mode: `:lifted_pair`
 
-2D lifted pair mode uses a split method:
+Lifted pair mode uses a split method:
 
 - `A`: external perturbation half-step (physical time, midpoint)
-- `B`: lifted pair full-step (LC coordinates)
+- `B`: lifted pair full-step (1D square-root, 2D LC, or 3D KS coordinates)
 - `A`: external perturbation half-step
 
 ### Derivative decomposition
@@ -132,13 +129,17 @@ Chain mode uses adaptive Cartesian integration:
 
 ## KS Constraint Handling
 
-3D regularized paths still use KS diagnostics support in adaptive Cartesian mode:
+3D regularized paths have two KS-related modes:
 
-- lift to KS variables for active pair checks
-- project momentum to satisfy bilinear KS constraint
-- track max constraint violation in diagnostics
+- `:lifted_pair` uses a KS pair chart with fictitious time for binary close
+  encounters.
+- `:adaptive_cartesian` still lifts to KS variables for active-pair diagnostics,
+  projects momentum to satisfy the bilinear KS constraint, and then advances the
+  Cartesian projected kernel.
+- Diagnostics track max constraint violation plus KS projection/iteration counts.
 
-True 3D lifted KS stepping is deferred to a future release.
+True chain-coordinate KS regularization for multi-particle clusters remains
+deferred; chain mode is adaptive Cartesian over the active component.
 
 ## Diagnostics
 
@@ -151,6 +152,7 @@ True 3D lifted KS stepping is deferred to a future release.
 - `backend_fallback_steps`
 - `total_substeps`, `max_substeps_used`
 - `min_encounter_distance`, `max_constraint_violation`
+- `ks_constraint_projection_count`, `ks_constraint_iteration_count`
 - per-step mode history (`0` Cartesian, `1` pair, `2` chain)
 
 `used_backend` semantics:

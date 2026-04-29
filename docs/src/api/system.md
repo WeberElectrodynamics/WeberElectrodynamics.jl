@@ -59,6 +59,8 @@ Shape accessors are defined for both `HamiltonianSystem` and `HamiltonianProblem
 
 ```@docs
 n_particles
+n_pairs
+pair_indices
 ```
 
 | Function | Returns |

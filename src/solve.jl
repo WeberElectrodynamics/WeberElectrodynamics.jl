@@ -325,13 +325,29 @@ end
         integrator.t = integrator.t_end
     end
 
-    idx = integrator.step_count + 1
-    @inbounds begin
-        integrator.t_history[idx] = integrator.t
-        integrator.q_history[idx] .= integrator.q
-        integrator.p_history[idx] .= integrator.p
+    _emit_stream_state!(integrator)
+
+    if _should_save_step(integrator)
+        integrator.save_count += 1
+        idx = integrator.save_count
+        @inbounds begin
+            integrator.t_history[idx] = integrator.t
+            integrator.q_history[idx] .= integrator.q
+            integrator.p_history[idx] .= integrator.p
+        end
     end
 
+    return nothing
+end
+
+@inline function _should_save_step(integrator::HamiltonianIntegrator)::Bool
+    step = integrator.step_count
+    return step == integrator.max_steps || step % integrator.save_stride == 0
+end
+
+@inline function _emit_stream_state!(integrator::HamiltonianIntegrator)
+    integrator.stream_sink === nothing && return nothing
+    integrator.stream_sink(integrator.t, integrator.q, integrator.p, integrator.step_count)
     return nothing
 end
 
@@ -476,6 +492,100 @@ end
 
         rb.rel_qdot[d] = dqi - dqj
         rb.rel_pdot[d] = mu * (dpi / mi - dpj / mj)
+    end
+
+    return nothing
+end
+
+@inline function _extract_pair_state!(
+    rb::RegularizationBuffers,
+    q_state::Vector{Float64},
+    p_state::Vector{Float64},
+    masses::AbstractVector{Float64},
+    dims::Int,
+    i::Int,
+    j::Int,
+)
+    mi = masses[i]
+    mj = masses[j]
+    M = mi + mj
+    mu = mi * mj / M
+
+    i0 = (i - 1) * dims
+    j0 = (j - 1) * dims
+
+    @inbounds for d = 1:dims
+        qi = q_state[i0+d]
+        qj = q_state[j0+d]
+        pi = p_state[i0+d]
+        pj = p_state[j0+d]
+
+        rb.pair_R[d] = (mi * qi + mj * qj) / M
+        rb.pair_P[d] = pi + pj
+        rb.rel_q[d] = qi - qj
+        rb.rel_p[d] = mu * (pi / mi - pj / mj)
+    end
+
+    return mi, mj, mu, M
+end
+
+@inline function _extract_pair_derivatives!(
+    rb::RegularizationBuffers,
+    dq_state::Vector{Float64},
+    dp_state::Vector{Float64},
+    dims::Int,
+    i::Int,
+    j::Int,
+    mi::Float64,
+    mj::Float64,
+    mu::Float64,
+    M::Float64,
+)
+    i0 = (i - 1) * dims
+    j0 = (j - 1) * dims
+
+    @inbounds for d = 1:dims
+        dqi = dq_state[i0+d]
+        dqj = dq_state[j0+d]
+        dpi = dp_state[i0+d]
+        dpj = dp_state[j0+d]
+
+        rb.pair_Rdot[d] = (mi * dqi + mj * dqj) / M
+        rb.pair_Pdot[d] = dpi + dpj
+        rb.rel_qdot[d] = dqi - dqj
+        rb.rel_pdot[d] = mu * (dpi / mi - dpj / mj)
+    end
+
+    return nothing
+end
+
+@inline function _write_pair_state!(
+    q_state::Vector{Float64},
+    p_state::Vector{Float64},
+    dims::Int,
+    i::Int,
+    j::Int,
+    mi::Float64,
+    mj::Float64,
+    M::Float64,
+    R::Vector{Float64},
+    P::Vector{Float64},
+    rel_q::Vector{Float64},
+    rel_p::Vector{Float64},
+)
+    i0 = (i - 1) * dims
+    j0 = (j - 1) * dims
+
+    αi = mj / M
+    αj = mi / M
+    βi = mi / M
+    βj = mj / M
+
+    @inbounds for d = 1:dims
+        q_state[i0+d] = R[d] + αi * rel_q[d]
+        q_state[j0+d] = R[d] - αj * rel_q[d]
+        p_state[i0+d] = βi * P[d] + rel_p[d]
+        p_state[j0+d] = βj * P[d] - rel_p[d]
     end
 
     return nothing
@@ -639,6 +749,75 @@ end
     return r_geom
 end
 
+@inline function _lift_1d!(
+    rb::RegularizationBuffers,
+    chart_sign::Float64,
+)
+    x = rb.rel_q[1]
+    p_rel = rb.rel_p[1]
+    r = abs(x)
+
+    if r <= eps(Float64)
+        rb.lc_u[1] = 0.0
+        rb.lc_U[1] = 0.0
+        return 0.0
+    end
+
+    sign_value = chart_sign
+    if sign_value == 0.0
+        sign_value = x < 0 ? -1.0 : 1.0
+    end
+    u = sqrt(r)
+    rb.lc_u[1] = u
+    rb.lc_U[1] = 2 * sign_value * u * p_rel
+    return r
+end
+
+@inline function _project_1d!(
+    q_rel::Vector{Float64},
+    p_rel::Vector{Float64},
+    u::Vector{Float64},
+    U::Vector{Float64},
+    chart_sign::Float64,
+)
+    u1 = u[1]
+    q_rel[1] = chart_sign * u1 * u1
+
+    if abs(u1) <= eps(Float64)
+        return 0.0
+    end
+
+    p_rel[1] = U[1] / (2 * chart_sign * u1)
+    return abs(q_rel[1])
+end
+
+@inline function _compute_1d_tau_derivatives!(
+    du_tau::Vector{Float64},
+    dU_tau::Vector{Float64},
+    u::Vector{Float64},
+    p_rel::Vector{Float64},
+    qdot_rel::Vector{Float64},
+    pdot_rel::Vector{Float64},
+    chart_sign::Float64,
+    g_scale::Float64,
+    g_floor::Float64,
+)
+    u1 = u[1]
+    r_geom = max(u1 * u1, g_floor)
+
+    if abs(u1) <= eps(Float64)
+        du_dt = 0.0
+    else
+        du_dt = qdot_rel[1] / (2 * chart_sign * u1)
+    end
+    dU_dt = 2 * chart_sign * (du_dt * p_rel[1] + u1 * pdot_rel[1])
+
+    du_tau[1] = g_scale * du_dt
+    dU_tau[1] = g_scale * dU_dt
+
+    return r_geom
+end
+
 @inline function _lifted_pair_substep_2d!(
     q::Vector{Float64},
     p::Vector{Float64},
@@ -747,6 +926,321 @@ end
     return nothing
 end
 
+@inline function _lifted_pair_substep_1d!(
+    q::Vector{Float64},
+    p::Vector{Float64},
+    t::Float64,
+    dt_sub::Float64,
+    prob::HamiltonianProblem,
+    rb::RegularizationBuffers,
+    i::Int,
+    j::Int,
+)
+    system = prob.system
+    ms = masses(prob)
+    g_floor = rb.options.g_floor
+
+    prev_u = rb.lc_u[1]
+
+    system.dq_dt_compiled(rb.dq_pair, q, p, t, rb.params_pair, rb.kappas_pair)
+    system.dp_dt_compiled(rb.dp_pair, q, p, t, rb.params_pair, rb.kappas_pair)
+
+    mi, mj, mu, M = _extract_pair_state!(rb, q, p, ms, 1, i, j)
+    _extract_pair_derivatives!(rb, rb.dq_pair, rb.dp_pair, 1, i, j, mi, mj, mu, M)
+
+    chart_sign = rb.rel_q[1] < 0 ? -1.0 : 1.0
+    _lift_1d!(rb, chart_sign)
+    if prev_u != 0.0 && rb.lc_u[1] * prev_u < 0
+        rb.lc_u[1] = -rb.lc_u[1]
+        rb.lc_U[1] = -rb.lc_U[1]
+    end
+
+    r_eff = max(rb.lc_u[1] * rb.lc_u[1], g_floor)
+    _compute_1d_tau_derivatives!(
+        rb.lc_du_tau,
+        rb.lc_dU_tau,
+        rb.lc_u,
+        rb.rel_p,
+        rb.rel_qdot,
+        rb.rel_pdot,
+        chart_sign,
+        r_eff,
+        g_floor,
+    )
+
+    dτ = dt_sub / r_eff
+
+    @inbounds begin
+        rb.lc_u_mid[1] = rb.lc_u[1] + 0.5 * dτ * rb.lc_du_tau[1]
+        rb.lc_U_mid[1] = rb.lc_U[1] + 0.5 * dτ * rb.lc_dU_tau[1]
+        rb.pair_R_mid[1] = rb.pair_R[1] + 0.5 * dt_sub * rb.pair_Rdot[1]
+        rb.pair_P_mid[1] = rb.pair_P[1] + 0.5 * dt_sub * rb.pair_Pdot[1]
+    end
+
+    _project_1d!(rb.temp_rel_q, rb.temp_rel_p, rb.lc_u_mid, rb.lc_U_mid, chart_sign)
+
+    copyto!(rb.q_mid, q)
+    copyto!(rb.p_mid, p)
+    _write_pair_state!(
+        rb.q_mid,
+        rb.p_mid,
+        1,
+        i,
+        j,
+        mi,
+        mj,
+        M,
+        rb.pair_R_mid,
+        rb.pair_P_mid,
+        rb.temp_rel_q,
+        rb.temp_rel_p,
+    )
+
+    t_mid = t + dt_sub * 0.5
+    system.dq_dt_compiled(rb.dq_pair, rb.q_mid, rb.p_mid, t_mid, rb.params_pair, rb.kappas_pair)
+    system.dp_dt_compiled(rb.dp_pair, rb.q_mid, rb.p_mid, t_mid, rb.params_pair, rb.kappas_pair)
+    _extract_pair_derivatives!(rb, rb.dq_pair, rb.dp_pair, 1, i, j, mi, mj, mu, M)
+
+    _compute_1d_tau_derivatives!(
+        rb.lc_du_tau_mid,
+        rb.lc_dU_tau_mid,
+        rb.lc_u_mid,
+        rb.temp_rel_p,
+        rb.rel_qdot,
+        rb.rel_pdot,
+        chart_sign,
+        r_eff,
+        g_floor,
+    )
+
+    @inbounds begin
+        rb.lc_u[1] = rb.lc_u[1] + dτ * rb.lc_du_tau_mid[1]
+        rb.lc_U[1] = rb.lc_U[1] + dτ * rb.lc_dU_tau_mid[1]
+        rb.pair_R[1] = rb.pair_R[1] + dt_sub * rb.pair_Rdot[1]
+        rb.pair_P[1] = rb.pair_P[1] + dt_sub * rb.pair_Pdot[1]
+    end
+
+    _project_1d!(rb.rel_q, rb.rel_p, rb.lc_u, rb.lc_U, chart_sign)
+    _write_pair_state!(q, p, 1, i, j, mi, mj, M, rb.pair_R, rb.pair_P, rb.rel_q, rb.rel_p)
+
+    return nothing
+end
+
+@inline function _compute_ks_tau_derivatives!(
+    du_tau::Vector{Float64},
+    dU_tau::Vector{Float64},
+    u::Vector{Float64},
+    p_rel::Vector{Float64},
+    qdot_rel::Vector{Float64},
+    pdot_rel::Vector{Float64},
+    J::Matrix{Float64},
+    g_scale::Float64,
+    g_floor::Float64,
+)
+    r = u[1] * u[1] + u[2] * u[2] + u[3] * u[3] + u[4] * u[4]
+    r_geom = max(r, g_floor)
+
+    _ks_jacobian!(J, u)
+    inv_4r = 0.25 / r_geom
+    @inbounds for k = 1:4
+        du_dt = 0.0
+        for d = 1:3
+            du_dt += J[d, k] * qdot_rel[d]
+        end
+        du_dt *= inv_4r
+        du_tau[k] = g_scale * du_dt
+    end
+
+    du1 = du_tau[1] / g_scale
+    du2 = du_tau[2] / g_scale
+    du3 = du_tau[3] / g_scale
+    du4 = du_tau[4] / g_scale
+    p1, p2, p3 = p_rel[1], p_rel[2], p_rel[3]
+
+    @inbounds begin
+        dU_dt1 =
+            J[1, 1] * pdot_rel[1] + J[2, 1] * pdot_rel[2] + J[3, 1] * pdot_rel[3] +
+            2 * (du1 * p1 + du2 * p2 + du3 * p3)
+        dU_dt2 =
+            J[1, 2] * pdot_rel[1] + J[2, 2] * pdot_rel[2] + J[3, 2] * pdot_rel[3] +
+            2 * (-du2 * p1 + du1 * p2 + du4 * p3)
+        dU_dt3 =
+            J[1, 3] * pdot_rel[1] + J[2, 3] * pdot_rel[2] + J[3, 3] * pdot_rel[3] +
+            2 * (-du3 * p1 - du4 * p2 + du1 * p3)
+        dU_dt4 =
+            J[1, 4] * pdot_rel[1] + J[2, 4] * pdot_rel[2] + J[3, 4] * pdot_rel[3] +
+            2 * (du4 * p1 - du3 * p2 + du2 * p3)
+
+        dU_tau[1] = g_scale * dU_dt1
+        dU_tau[2] = g_scale * dU_dt2
+        dU_tau[3] = g_scale * dU_dt3
+        dU_tau[4] = g_scale * dU_dt4
+    end
+
+    return r_geom
+end
+
+@inline function _project_ks_constraint_tracked!(
+    diagnostics::RegularizationDiagnostics,
+    U::Vector{Float64},
+    u::Vector{Float64},
+    n::Vector{Float64},
+    tolerance::Float64,
+)::Float64
+    before = abs(_ks_constraint(u, U))
+    after = _ks_project_constraint!(U, u, n)
+    diagnostics.ks_constraint_projection_count += 1
+    diagnostics.ks_constraint_iteration_count += 1
+    return after <= tolerance ? 0.0 : max(before, after)
+end
+
+@inline function _lifted_pair_substep_3d!(
+    q::Vector{Float64},
+    p::Vector{Float64},
+    t::Float64,
+    dt_sub::Float64,
+    prob::HamiltonianProblem,
+    rb::RegularizationBuffers,
+    diagnostics::RegularizationDiagnostics,
+    i::Int,
+    j::Int,
+)
+    system = prob.system
+    ms = masses(prob)
+    reg = rb.options
+    g_floor = reg.g_floor
+
+    prev_u1 = rb.ks_u[1]
+    prev_u2 = rb.ks_u[2]
+    prev_u3 = rb.ks_u[3]
+    prev_u4 = rb.ks_u[4]
+    prev_norm2 = prev_u1^2 + prev_u2^2 + prev_u3^2 + prev_u4^2
+
+    system.dq_dt_compiled(rb.dq_pair, q, p, t, rb.params_pair, rb.kappas_pair)
+    system.dp_dt_compiled(rb.dp_pair, q, p, t, rb.params_pair, rb.kappas_pair)
+
+    mi, mj, mu, M = _extract_pair_state!(rb, q, p, ms, 3, i, j)
+    _extract_pair_derivatives!(rb, rb.dq_pair, rb.dp_pair, 3, i, j, mi, mj, mu, M)
+
+    _ks_lift!(rb)
+    if prev_norm2 > 0
+        dot_u =
+            rb.ks_u[1] * prev_u1 + rb.ks_u[2] * prev_u2 + rb.ks_u[3] * prev_u3 +
+            rb.ks_u[4] * prev_u4
+        if dot_u < 0
+            @inbounds for k = 1:4
+                rb.ks_u[k] = -rb.ks_u[k]
+                rb.ks_U[k] = -rb.ks_U[k]
+            end
+        end
+    end
+
+    max_constraint = _project_ks_constraint_tracked!(
+        diagnostics,
+        rb.ks_U,
+        rb.ks_u,
+        rb.ks_n,
+        reg.constraint_tolerance,
+    )
+
+    r_eff = max(
+        rb.ks_u[1]^2 + rb.ks_u[2]^2 + rb.ks_u[3]^2 + rb.ks_u[4]^2,
+        g_floor,
+    )
+    _compute_ks_tau_derivatives!(
+        rb.ks_du_tau,
+        rb.ks_dU_tau,
+        rb.ks_u,
+        rb.rel_p,
+        rb.rel_qdot,
+        rb.rel_pdot,
+        rb.ks_J,
+        r_eff,
+        g_floor,
+    )
+
+    dτ = dt_sub / r_eff
+
+    @inbounds for k = 1:4
+        rb.ks_u_mid[k] = rb.ks_u[k] + 0.5 * dτ * rb.ks_du_tau[k]
+        rb.ks_U_mid[k] = rb.ks_U[k] + 0.5 * dτ * rb.ks_dU_tau[k]
+    end
+    @inbounds for d = 1:3
+        rb.pair_R_mid[d] = rb.pair_R[d] + 0.5 * dt_sub * rb.pair_Rdot[d]
+        rb.pair_P_mid[d] = rb.pair_P[d] + 0.5 * dt_sub * rb.pair_Pdot[d]
+    end
+
+    max_constraint = max(
+        max_constraint,
+        _project_ks_constraint_tracked!(
+            diagnostics,
+            rb.ks_U_mid,
+            rb.ks_u_mid,
+            rb.ks_n,
+            reg.constraint_tolerance,
+        ),
+    )
+    _ks_project!(rb.temp_rel_q, rb.temp_rel_p, rb.ks_u_mid, rb.ks_U_mid, rb.ks_J)
+
+    copyto!(rb.q_mid, q)
+    copyto!(rb.p_mid, p)
+    _write_pair_state!(
+        rb.q_mid,
+        rb.p_mid,
+        3,
+        i,
+        j,
+        mi,
+        mj,
+        M,
+        rb.pair_R_mid,
+        rb.pair_P_mid,
+        rb.temp_rel_q,
+        rb.temp_rel_p,
+    )
+
+    t_mid = t + dt_sub * 0.5
+    system.dq_dt_compiled(rb.dq_pair, rb.q_mid, rb.p_mid, t_mid, rb.params_pair, rb.kappas_pair)
+    system.dp_dt_compiled(rb.dp_pair, rb.q_mid, rb.p_mid, t_mid, rb.params_pair, rb.kappas_pair)
+    _extract_pair_derivatives!(rb, rb.dq_pair, rb.dp_pair, 3, i, j, mi, mj, mu, M)
+
+    _compute_ks_tau_derivatives!(
+        rb.ks_du_tau_mid,
+        rb.ks_dU_tau_mid,
+        rb.ks_u_mid,
+        rb.temp_rel_p,
+        rb.rel_qdot,
+        rb.rel_pdot,
+        rb.ks_J,
+        r_eff,
+        g_floor,
+    )
+
+    @inbounds for k = 1:4
+        rb.ks_u[k] = rb.ks_u[k] + dτ * rb.ks_du_tau_mid[k]
+        rb.ks_U[k] = rb.ks_U[k] + dτ * rb.ks_dU_tau_mid[k]
+    end
+    @inbounds for d = 1:3
+        rb.pair_R[d] = rb.pair_R[d] + dt_sub * rb.pair_Rdot[d]
+        rb.pair_P[d] = rb.pair_P[d] + dt_sub * rb.pair_Pdot[d]
+    end
+
+    max_constraint = max(
+        max_constraint,
+        _project_ks_constraint_tracked!(
+            diagnostics,
+            rb.ks_U,
+            rb.ks_u,
+            rb.ks_n,
+            reg.constraint_tolerance,
+        ),
+    )
+    _ks_project!(rb.rel_q, rb.rel_p, rb.ks_u, rb.ks_U, rb.ks_J)
+    _write_pair_state!(q, p, 3, i, j, mi, mj, M, rb.pair_R, rb.pair_P, rb.rel_q, rb.rel_p)
+
+    return max_constraint
+end
+
 @inline function _step_unregularized!(integrator::HamiltonianIntegrator, dt_step::Float64)
     _projected_cartesian_step!(
         integrator.q,
@@ -824,13 +1318,16 @@ end
             # KS lift + one-pass constraint projection (diagnostic only).
             # The Cartesian substep that follows does not maintain the KS bilinear
             # constraint; c_err is tracked for diagnostics but not iterated to
-            # convergence. True 3D lifted-KS stepping is deferred per design.
+            # convergence. Use :lifted_pair for the full lifted KS pair path.
             # See RegularizedIntegrationDesign.md §"KS Constraint Handling".
             _ks_lift!(rb)
-            c_err = _ks_project_constraint!(rb.ks_U, rb.ks_u, rb.ks_n)
-            if c_err <= constraint_tolerance
-                c_err = 0.0
-            end
+            c_err = _project_ks_constraint_tracked!(
+                integrator.diagnostics,
+                rb.ks_U,
+                rb.ks_u,
+                rb.ks_n,
+                constraint_tolerance,
+            )
             if c_err > max_constraint
                 max_constraint = c_err
             end
@@ -845,6 +1342,7 @@ end
             base_algorithm(integrator.alg),
             integrator.buffers,
         )
+        _apply_regularized_substep_bounces!(integrator)
         t_sub += dt_sub
     end
 
@@ -861,13 +1359,14 @@ end
     return nothing
 end
 
-@inline function _step_regularized_pair_lifted_2d!(
+@inline function _step_regularized_pair_lifted!(
     integrator::HamiltonianIntegrator,
     dt_step::Float64,
     min_distance::Float64,
 )
     prob = integrator.prob
     rb = integrator.buffers.regularization_buffers
+    dims = rb.dims
 
     i = rb.active_anchor_i
     j = rb.active_anchor_j
@@ -885,9 +1384,10 @@ end
     t_remaining = dt_step
     substeps = 0
     t_sub = integrator.t
+    max_constraint = 0.0
 
     @inbounds while t_remaining > 1e-14 && substeps < max_sub
-        r_current = max(_current_pair_r_2d(integrator.q, i, j), g_floor)
+        r_current = max(_current_pair_r(integrator.q, dims, i, j), g_floor)
 
         # Physical substep proportional to current r (bounded fictitious step).
         dt_sub = min(r_current * dtau_target, t_remaining)
@@ -897,16 +1397,44 @@ end
         dt_half = 0.5 * dt_sub
 
         _external_half_step_midpoint!(integrator.q, integrator.p, t_sub, dt_half, prob, rb)
-        _lifted_pair_substep_2d!(
-            integrator.q,
-            integrator.p,
-            t_sub + dt_half,
-            dt_sub,
-            prob,
-            rb,
-            i,
-            j,
-        )
+        if dims == 1
+            _lifted_pair_substep_1d!(
+                integrator.q,
+                integrator.p,
+                t_sub + dt_half,
+                dt_sub,
+                prob,
+                rb,
+                i,
+                j,
+            )
+        elseif dims == 2
+            _lifted_pair_substep_2d!(
+                integrator.q,
+                integrator.p,
+                t_sub + dt_half,
+                dt_sub,
+                prob,
+                rb,
+                i,
+                j,
+            )
+        else
+            max_constraint = max(
+                max_constraint,
+                _lifted_pair_substep_3d!(
+                    integrator.q,
+                    integrator.p,
+                    t_sub + dt_half,
+                    dt_sub,
+                    prob,
+                    rb,
+                    integrator.diagnostics,
+                    i,
+                    j,
+                ),
+            )
+        end
         _external_half_step_midpoint!(
             integrator.q,
             integrator.p,
@@ -915,6 +1443,7 @@ end
             prob,
             rb,
         )
+        _apply_regularized_substep_bounces!(integrator)
 
         t_remaining -= dt_sub
         t_sub += dt_sub
@@ -925,16 +1454,44 @@ end
     if t_remaining > 1e-14
         dt_half = 0.5 * t_remaining
         _external_half_step_midpoint!(integrator.q, integrator.p, t_sub, dt_half, prob, rb)
-        _lifted_pair_substep_2d!(
-            integrator.q,
-            integrator.p,
-            t_sub + dt_half,
-            t_remaining,
-            prob,
-            rb,
-            i,
-            j,
-        )
+        if dims == 1
+            _lifted_pair_substep_1d!(
+                integrator.q,
+                integrator.p,
+                t_sub + dt_half,
+                t_remaining,
+                prob,
+                rb,
+                i,
+                j,
+            )
+        elseif dims == 2
+            _lifted_pair_substep_2d!(
+                integrator.q,
+                integrator.p,
+                t_sub + dt_half,
+                t_remaining,
+                prob,
+                rb,
+                i,
+                j,
+            )
+        else
+            max_constraint = max(
+                max_constraint,
+                _lifted_pair_substep_3d!(
+                    integrator.q,
+                    integrator.p,
+                    t_sub + dt_half,
+                    t_remaining,
+                    prob,
+                    rb,
+                    integrator.diagnostics,
+                    i,
+                    j,
+                ),
+            )
+        end
         _external_half_step_midpoint!(
             integrator.q,
             integrator.p,
@@ -943,6 +1500,7 @@ end
             prob,
             rb,
         )
+        _apply_regularized_substep_bounces!(integrator)
         substeps += 1
     end
 
@@ -952,7 +1510,7 @@ end
         REG_MODE_PAIR,
         substeps,
         min_distance,
-        0.0,
+        max_constraint,
         REG_BACKEND_LIFTED,
         rb.backend_fallback,
     )
@@ -990,10 +1548,13 @@ end
                 j = rb.chain_order[idx+1]
                 _extract_pair_relative_state!(rb, integrator.q, integrator.p, ms, i, j)
                 _ks_lift!(rb)
-                c_err = _ks_project_constraint!(rb.ks_U, rb.ks_u, rb.ks_n)
-                if c_err <= constraint_tolerance
-                    c_err = 0.0
-                end
+                c_err = _project_ks_constraint_tracked!(
+                    integrator.diagnostics,
+                    rb.ks_U,
+                    rb.ks_u,
+                    rb.ks_n,
+                    constraint_tolerance,
+                )
                 if c_err > max_constraint
                     max_constraint = c_err
                 end
@@ -1009,6 +1570,7 @@ end
             base_algorithm(integrator.alg),
             integrator.buffers,
         )
+        _apply_regularized_substep_bounces!(integrator)
         t_sub += dt_sub
     end
 
@@ -1050,8 +1612,8 @@ end
 
     if mode == REG_MODE_CHAIN
         _step_regularized_chain!(integrator, dt_step, min_distance)
-    elseif rb.effective_backend == REG_BACKEND_LIFTED && rb.dims == 2
-        _step_regularized_pair_lifted_2d!(integrator, dt_step, min_distance)
+    elseif rb.effective_backend == REG_BACKEND_LIFTED && rb.dims in (1, 2, 3)
+        _step_regularized_pair_lifted!(integrator, dt_step, min_distance)
     else
         _step_regularized_pair_adaptive!(integrator, dt_step, min_distance)
     end
@@ -1078,6 +1640,8 @@ end
     out.total_substeps = diagnostics.total_substeps
     out.max_substeps_used = diagnostics.max_substeps_used
     out.max_constraint_violation = diagnostics.max_constraint_violation
+    out.ks_constraint_projection_count = diagnostics.ks_constraint_projection_count
+    out.ks_constraint_iteration_count = diagnostics.ks_constraint_iteration_count
     out.min_encounter_distance = diagnostics.min_encounter_distance
 
     if n_steps > 0
@@ -1105,20 +1669,49 @@ end
 # `_allocate_cache(::HamiltonianProblem, ::RegularizedIntegrator)` lives in
 # integrators/regularized.jl because the type is defined there.
 
+function _resolve_save_stride(save_stride::Integer, save_every)
+    if save_every !== nothing
+        save_stride != 1 &&
+            throw(ArgumentError("pass only one of save_stride or save_every"))
+        save_stride = save_every
+    end
+    stride = Int(save_stride)
+    stride > 0 || throw(ArgumentError("save_stride must be positive, got $stride"))
+    return stride
+end
+
+@inline function _saved_history_length(n_steps::Int, save_stride::Int)::Int
+    n_steps == 0 && return 1
+    saved_completed_steps = n_steps ÷ save_stride
+    if n_steps % save_stride != 0
+        saved_completed_steps += 1
+    end
+    return saved_completed_steps + 1
+end
+
 """
     init(prob::HamiltonianProblem,
          alg::HamiltonianAlgorithm = SymmetricProjectionIntegrator();
-         callbacks = ()) -> HamiltonianIntegrator
+         callbacks = (),
+         save_stride = 1,
+         save_every = nothing,
+         stream_sink = nothing) -> HamiltonianIntegrator
 
 Initialise a step-by-step integrator without running any steps.
 
-Pre-allocates all workspace buffers and history arrays sized to hold the full
-trajectory. Use the returned integrator with `step!` for fine-grained control,
+Pre-allocates all workspace buffers and history arrays sized according to the
+save policy. Use the returned integrator with `step!` for fine-grained control,
 or pass it directly to `solve!`.
 
 # Keyword arguments
 - `callbacks`: a single [`HamiltonianCallback`](@ref) or an iterable of them.
   Invoked pre-/post-step around each macro-step.
+- `save_stride=1`: Store every `save_stride`-th macro-step plus the initial and
+  final states. The default stores every step.
+- `save_every=nothing`: Alias for `save_stride`; pass only one of the two.
+- `stream_sink=nothing`: Optional callable invoked as `(t, q, p, step)` for the
+  initial state and after every macro-step. The sink must copy `q`/`p` if it
+  retains them.
 
 If `alg` is a `RegularizedIntegrator` with `collision_bounce_radius > 0` and
 no `CollisionBounce` is present in `callbacks`, a matching one is synthesised
@@ -1131,16 +1724,21 @@ function CommonSolve.init(
     prob::HamiltonianProblem,
     alg::HamiltonianAlgorithm = SymmetricProjectionIntegrator();
     callbacks = (),
+    save_stride::Integer = 1,
+    save_every = nothing,
+    stream_sink = nothing,
 )
     degrees_of_freedom = prob.system.degrees_of_freedom
 
     buffers = _allocate_cache(prob, alg)
     cb_tuple = _resolve_callbacks(prob, alg, callbacks)
+    stride = _resolve_save_stride(save_stride, save_every)
 
     n_steps = Int(ceil((prob.tspan[2] - prob.tspan[1]) / prob.dt))
-    t_history = Vector{Float64}(undef, n_steps + 1)
-    q_history = [Vector{Float64}(undef, degrees_of_freedom) for _ = 1:(n_steps+1)]
-    p_history = [Vector{Float64}(undef, degrees_of_freedom) for _ = 1:(n_steps+1)]
+    n_saved = _saved_history_length(n_steps, stride)
+    t_history = Vector{Float64}(undef, n_saved)
+    q_history = [Vector{Float64}(undef, degrees_of_freedom) for _ = 1:n_saved]
+    p_history = [Vector{Float64}(undef, degrees_of_freedom) for _ = 1:n_saved]
 
     t_history[1] = prob.tspan[1]
     q_history[1] .= prob.q_initial
@@ -1156,7 +1754,7 @@ function CommonSolve.init(
         used_backend,
     )
 
-    HamiltonianIntegrator(
+    integrator = HamiltonianIntegrator(
         prob,
         alg,
         prob.tspan[1],
@@ -1164,13 +1762,19 @@ function CommonSolve.init(
         copy(prob.q_initial),
         copy(prob.p_initial),
         0,
+        n_steps,
         buffers,
         cb_tuple,
         diagnostics,
         t_history,
         q_history,
         p_history,
+        stride,
+        1,
+        stream_sink,
     )
+    _emit_stream_state!(integrator)
+    return integrator
 end
 
 # Merge user-supplied callbacks with algorithm-synthesised ones. Base version
@@ -1202,6 +1806,32 @@ end
     return nothing
 end
 
+@inline _callback_collision_radius(::Tuple{}) = 0.0
+@inline function _callback_collision_radius(cbs::Tuple)
+    cb = first(cbs)
+    current = cb isa CollisionBounce ? cb.radius : 0.0
+    return max(current, _callback_collision_radius(Base.tail(cbs)))
+end
+
+@inline function _regularized_bounce_radius(integrator::HamiltonianIntegrator)
+    rb = integrator.buffers.regularization_buffers
+    return max(rb.options.collision_bounce_radius, _callback_collision_radius(integrator.callbacks))
+end
+
+@inline function _apply_regularized_substep_bounces!(integrator::HamiltonianIntegrator)
+    bounce_r = _regularized_bounce_radius(integrator)
+    bounce_r > 0 || return nothing
+    prob = integrator.prob
+    _apply_collision_bounces!(
+        integrator.q,
+        masses(prob),
+        prob.system.dims,
+        prob.system.n_particles,
+        bounce_r,
+    )
+    return nothing
+end
+
 """
     step!(integrator::HamiltonianIntegrator) -> Bool
 
@@ -1216,7 +1846,7 @@ to land exactly on `prob.tspan[2]`.
 - `true` if more steps remain, `false` when integration is complete.
 """
 function CommonSolve.step!(integrator::HamiltonianIntegrator)
-    max_steps = length(integrator.t_history) - 1
+    max_steps = integrator.max_steps
 
     if integrator.step_count >= max_steps ||
        integrator.t >= integrator.t_end - eps(integrator.t_end)
@@ -1264,7 +1894,7 @@ function CommonSolve.solve!(integrator::HamiltonianIntegrator)
         end
     end
 
-    n = integrator.step_count + 1
+    n = integrator.save_count
     diagnostics = _clone_diagnostics(integrator.diagnostics, integrator.step_count)
 
     HamiltonianSolution(
@@ -1278,7 +1908,12 @@ function CommonSolve.solve!(integrator::HamiltonianIntegrator)
 end
 
 """
-    solve(prob::HamiltonianProblem, alg::HamiltonianAlgorithm = SymmetricProjectionIntegrator()) -> HamiltonianSolution
+    solve(prob::HamiltonianProblem,
+          alg::HamiltonianAlgorithm = SymmetricProjectionIntegrator();
+          callbacks = (),
+          save_stride = 1,
+          save_every = nothing,
+          stream_sink = nothing) -> HamiltonianSolution
 
 Initialise and run the integrator in a single call.
 
@@ -1291,7 +1926,17 @@ function CommonSolve.solve(
     prob::HamiltonianProblem,
     alg::HamiltonianAlgorithm = SymmetricProjectionIntegrator();
     callbacks = (),
+    save_stride::Integer = 1,
+    save_every = nothing,
+    stream_sink = nothing,
 )
-    integrator = CommonSolve.init(prob, alg; callbacks = callbacks)
+    integrator = CommonSolve.init(
+        prob,
+        alg;
+        callbacks = callbacks,
+        save_stride = save_stride,
+        save_every = save_every,
+        stream_sink = stream_sink,
+    )
     CommonSolve.solve!(integrator)
 end
