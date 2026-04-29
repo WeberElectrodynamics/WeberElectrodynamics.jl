@@ -48,8 +48,8 @@ periods.
 ```julia
 using WeberElectrodynamics, Plots
 
-system = WeberSystem(2, 2)
-prob = WeberProblem(system, (0.0, 27.14),
+system = HamiltonianSystem(2, 2)
+prob = HamiltonianProblem(system, (0.0, 27.14),
     [-1.0, 0.0,  1.0, 0.0],        # q(0): particles at (±1, 0)
     [ 0.0, -0.25, 0.0, 0.25];      # p(0): |p| = 1/4 tangential
     masses = [1.0, 1.0], charges = [1.0, -1.0], c = 4.0, dt = 0.001,

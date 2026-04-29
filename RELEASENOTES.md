@@ -15,8 +15,8 @@ This release completes the layered **System → Problem → Algorithm → Callba
 
 ### Added
 
-- `RegularizedIntegrator{BaseAlg}` algorithm wrapper preserving symplectic projection via the base algorithm's `projection_kernel`.
-- `CollisionBounce(radius)` pre-step callback. `CallbackSet(...)` composition.
+- `RegularizedIntegrator{BaseAlg}` algorithm wrapper that delegates the inner step to the wrapped base algorithm via `_step_core!` / `_allocate_cache` hooks, preserving its symplectic projection while interleaving Levi-Civita / KS substeps near close encounters.
+- `CollisionBounce(radius)` pre-step callback. Compose callbacks by passing a tuple (or any iterable of `HamiltonianCallback`) to the `callbacks=` kwarg of `solve` / `init`.
 - Accessor API on `HamiltonianSystem` and `HamiltonianProblem` to insulate downstream code from struct layout.
 - `NamedTerm{S}` with per-term compiled EOMs and optional `pair_decomposition(i, j, q, p, params, kappas)` for pair-wise statistics.
 - `kappa(prob, i, j)` per-pair accessor, co-located with `_pair_index` in `hamiltonian_system.jl`.
