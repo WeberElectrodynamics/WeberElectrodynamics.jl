@@ -580,10 +580,15 @@ params(prob::HamiltonianProblem) = prob.params
 """
     kappa(prob::HamiltonianProblem, i::Int, j::Int) -> Float64
 
-Return the Zöllner coupling `κ_ij` for pair `(i, j)` with `i < j`.
+Return the Zöllner coupling `κ_ij` for pair `(i, j)`. Indices must satisfy
+`1 ≤ i < j ≤ n_particles(prob)`; the function asserts the ordering rather
+than silently returning the wrong pair-index value.
 """
-kappa(prob::HamiltonianProblem, i::Int, j::Int) =
-    prob.kappas[_pair_index(i, j, n_particles(prob))]
+function kappa(prob::HamiltonianProblem, i::Int, j::Int)
+    n = n_particles(prob)
+    @assert 1 <= i < j <= n "kappa requires 1 ≤ i < j ≤ $n, got i=$i, j=$j"
+    return prob.kappas[_pair_index(i, j, n)]
+end
 
 # Internal: clone a problem with an overridden tspan while preserving the
 # compiled system, initial conditions, packed params, and κ vector. Used by

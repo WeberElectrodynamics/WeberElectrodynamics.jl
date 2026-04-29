@@ -56,4 +56,47 @@
         @test κ ≈ [1.1, 1.0, 1.1]
     end
 
+    @testset "kappa argument validation" begin
+        prob = HamiltonianProblem(
+            sys,
+            (0.0, 1.0),
+            zeros(6),
+            zeros(6);
+            masses = [1.0, 2.0, 3.0],
+            charges = [1.0, -1.0, 0.5],
+            c = 10.0,
+            dt = 0.01,
+        )
+        # Valid index ordering — no throw.
+        @test kappa(prob, 1, 2) == 1.0
+        @test kappa(prob, 2, 3) == 1.0
+        # Reversed (i ≥ j) must throw rather than silently return wrong κ.
+        @test_throws AssertionError kappa(prob, 2, 1)
+        @test_throws AssertionError kappa(prob, 3, 2)
+        @test_throws AssertionError kappa(prob, 1, 1)
+        # Out-of-range indices.
+        @test_throws AssertionError kappa(prob, 0, 1)
+        @test_throws AssertionError kappa(prob, 1, 4)
+    end
+
+    @testset "accessor view aliasing" begin
+        prob = HamiltonianProblem(
+            sys,
+            (0.0, 1.0),
+            zeros(6),
+            zeros(6);
+            masses = [1.0, 2.0, 3.0],
+            charges = [1.0, -1.0, 0.5],
+            c = 10.0,
+            dt = 0.01,
+        )
+        # masses(prob) and charges(prob) are O(1) views into prob.params —
+        # parent identity proves they share memory rather than copy.
+        @test parent(masses(prob)) === params(prob)
+        @test parent(charges(prob)) === params(prob)
+        # kappas lives on its own field, NOT a slice of params.
+        @test kappas(prob) === prob.kappas
+        @test parent(kappas(prob)) !== params(prob)
+    end
+
 end
