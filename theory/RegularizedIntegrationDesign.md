@@ -4,14 +4,14 @@
 
 This document specifies the regularized integration design implemented for the Weber Hamiltonian.
 
-- Scope is limited to the Weber Hamiltonian produced by `WeberSystem`.
+- Scope is limited to the Weber Hamiltonian produced by `HamiltonianSystem`.
 - Public solver signatures (`solve/init/step!/solve!`) remain unchanged.
-- Regularization is problem-level configurable and disabled by default.
+- Regularization is configured by wrapping the base algorithm in `RegularizedIntegrator` and is disabled by default.
 - Far-field evolution remains on the existing Cartesian projected kernel.
 
 ## Backend Semantics
 
-Regularization backend is configured through `RegularizationOptions(backend = ...)` passed to `WeberProblem`:
+Regularization backend is configured through `RegularizedIntegrator(base_alg; backend = ...)`:
 
 - `:lifted_pair`
 - `:adaptive_cartesian`

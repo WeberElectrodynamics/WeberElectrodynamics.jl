@@ -39,8 +39,10 @@ makedocs(
     warnonly = [:missing_docs],
 )
 
-deploydocs(
-    repo = "github.com/WeberElectrodynamics/WeberElectrodynamics.jl.git",
-    devbranch = "main",
-    push_preview = false,
-)
+if get(ENV, "GITHUB_EVENT_NAME", "") != "pull_request"
+    deploydocs(
+        repo = "github.com/WeberElectrodynamics/WeberElectrodynamics.jl.git",
+        devbranch = "main",
+        push_preview = false,
+    )
+end

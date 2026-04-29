@@ -195,6 +195,28 @@
         @test sol_a.p == sol_b.p
     end
 
+    @testset "generic callback iterables preserve concrete tuple types" begin
+        struct _IterableNoOpCallback <: HamiltonianCallback end
+        sys = HamiltonianSystem(2, 2)
+        prob = HamiltonianProblem(
+            sys,
+            (0.0, 0.05),
+            [1.0, 0.0, -1.0, 0.0],
+            [0.0, 0.1, 0.0, -0.1];
+            masses = [1.0, 1.0],
+            charges = [1.0, -1.0],
+            c = 100.0,
+            dt = 0.01,
+        )
+        cb_a = _IterableNoOpCallback()
+        cb_b = CollisionBounce(0.0)
+        callbacks = HamiltonianCallback[cb_a, cb_b]
+        integrator = init(prob, SymmetricProjectionIntegrator(); callbacks = callbacks)
+
+        @test integrator.callbacks == (cb_a, cb_b)
+        @test typeof(integrator.callbacks) == Tuple{typeof(cb_a),typeof(cb_b)}
+    end
+
     @testset "multi-callback tuple iterates in order" begin
         # Track invocation order via a side-effect counter on a captured closure.
         # Each callback bumps a per-instance counter; we verify both fire and

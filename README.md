@@ -28,7 +28,10 @@ A Julia package for symplectic numerical integration of n-body Weber electrodyna
 
 ## Examples
 
-The [examples/](examples/) directory contains [`two_body_reference.ipynb`](examples/two_body_reference.ipynb) — the canonical annotated two-body tutorial with every diagnostic plot.
+The [examples/](examples/) directory contains:
+
+- [`two_body_reference.ipynb`](examples/two_body_reference.ipynb) — the canonical annotated two-body tutorial with every diagnostic plot.
+- [`api_showcase.jl`](examples/api_showcase.jl) / [`api_showcase.ipynb`](examples/api_showcase.ipynb) — a v0.5.0 API tour covering custom Hamiltonians, term introspection, accessors, regularization, and callbacks.
 
 Additional **exploratory** studies (regularization, critical radius dynamics, Zöllner electrogravity, three- and four-body cases) live under [`_research/Notebooks/`](_research/Notebooks/). The `_research/` folder is a research sandbox — its contents are not definitive and should not be cited as package behaviour. See [`_research/README.md`](_research/README.md).
 

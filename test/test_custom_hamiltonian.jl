@@ -242,4 +242,42 @@
         @test result.separation ≈ 5.0
         @test result.sentinel === :ok
     end
+
+    @testset "energy statistics support generic Hamiltonian systems" begin
+        @variables x1 y1 x2 y2 px1 py1 px2 py2 m1 m2 qq1 qq2 cc tt
+        q_syms = [x1, y1, x2, y2]
+        p_syms = [px1, py1, px2, py2]
+
+        H = kinetic_term(p_syms; masses = [m1, m2], n_particles = 2, dims = 2)
+        sys = HamiltonianSystem(
+            H,
+            q_syms,
+            p_syms;
+            param_symbols = [m1, m2, qq1, qq2, cc],
+            kappa_symbols = Num[],
+            t = tt,
+            n_particles = 2,
+            dims = 2,
+        )
+
+        prob = HamiltonianProblem(
+            sys,
+            (0.0, 0.1),
+            [1.0, 0.0, -1.0, 0.0],
+            [0.0, 0.5, 0.0, -0.5];
+            masses = [1.0, 1.0],
+            charges = [0.0, 0.0],
+            c = 1.0,
+            dt = 0.05,
+        )
+        sol = solve(prob)
+        energy = compute_energy_timeseries(sol)
+
+        @test energy.n_pairs == 1
+        @test isempty(energy.pair_energies)
+        @test energy.total_energy ≈ energy.kinetic_energy
+        @test all(abs.(energy.total_potential_energy) .< 1e-14)
+        @test all(energy.total_zollner_residual .== 0.0)
+        @test all(energy.hamiltonian_validation_error .< 1e-14)
+    end
 end

@@ -70,9 +70,9 @@
         # Valid index ordering — no throw.
         @test kappa(prob, 1, 2) == 1.0
         @test kappa(prob, 2, 3) == 1.0
-        # Reversed (i ≥ j) must throw rather than silently return wrong κ.
-        @test_throws AssertionError kappa(prob, 2, 1)
-        @test_throws AssertionError kappa(prob, 3, 2)
+        # Reversed pairs are canonicalized to the same κ.
+        @test kappa(prob, 2, 1) == kappa(prob, 1, 2)
+        @test kappa(prob, 3, 2) == kappa(prob, 2, 3)
         @test_throws AssertionError kappa(prob, 1, 1)
         # Out-of-range indices.
         @test_throws AssertionError kappa(prob, 0, 1)

@@ -69,15 +69,15 @@ sys.hamiltonian_compiled(q, p, t, params, kappas)
 
 Any code calling these directly **must** pass both `params` and `kappas`. When Zöllner is disabled, `kappas = ones(N*(N-1)÷2)`. For single-particle systems (no pairs), `kappas = Float64[]`.
 
-On `HamiltonianProblem`, use `kappas(prob)` to obtain the whole vector, or `kappa(prob, i, j)` for a single pair. The latter is preferred over manual `_pair_index` arithmetic in downstream code.
+On `HamiltonianProblem`, use `kappas(prob)` to obtain the whole vector, or `kappa(prob, i, j)` for a single pair. `kappa` canonicalizes pair order and is preferred over manual `_pair_index` arithmetic in downstream code.
 
 Pair index (internal): `_pair_index(i, j, n) = (i-1)*(2n-i)÷2 + (j-i)` (1-based, i < j)
 
 ### Regularization backends
 
 Only two valid values for `RegularizationOptions.backend`:
-- `:adaptive_cartesian` — KS-style, works for 2D and 3D
-- `:lifted_pair` — Levi-Civita, **2D only** (auto-falls back to `:adaptive_cartesian` for 3D)
+- `:adaptive_cartesian` — KS-style, works for all dimensions
+- `:lifted_pair` — Levi-Civita, **2D only** (auto-falls back to `:adaptive_cartesian` outside 2D)
 
 Neither backend regularizes Weber's velocity-dependent force — only the Coulomb/Kepler singularity.
 
@@ -91,8 +91,8 @@ Neither backend regularizes Weber's velocity-dependent force — only the Coulom
 ### Zöllner extension
 
 - `ZollnerOptions(enabled, a)` — mismatch parameter `a`
-- κ_ij = 1+a for unlike-sign charge pairs, 1.0 for like-sign
-- Computed at `HamiltonianProblem` construction and packed into `params`; read via the `kappas(prob)` accessor
+- κ_ij = 1+a for opposite nonzero charge signs, 1.0 for like-sign or neutral pairs
+- Computed at `HamiltonianProblem` construction and stored separately from `params`; read via the `kappas(prob)` accessor
 
 ### Makie animation extension
 

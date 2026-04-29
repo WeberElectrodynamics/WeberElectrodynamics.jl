@@ -81,12 +81,11 @@
     end
 
     @testset "Kappa computation — N=3 with one neutral particle" begin
-        # Particles: +1, 0, -1. With sign(0.0) == 0.0, the neutral pair is
-        # treated as "unlike sign" relative to any nonzero charge — see
-        # _compute_zollner_kappas comment. So all three pairs receive κ = 1+a:
-        #   (1,2): +1 vs 0 → unlike → 1+a
-        #   (1,3): +1 vs -1 → unlike → 1+a
-        #   (2,3): 0 vs -1 → unlike → 1+a
+        # Particles: +1, 0, -1. Neutral pairs keep κ = 1; only opposite
+        # nonzero signs receive κ = 1+a.
+        #   (1,2): +1 vs 0  → neutral pair → 1
+        #   (1,3): +1 vs -1 → unlike      → 1+a
+        #   (2,3): 0 vs -1  → neutral pair → 1
         sys = HamiltonianSystem(3, 2)
         a = 0.07
         prob = HamiltonianProblem(
@@ -102,13 +101,13 @@
         )
         κ = kappas(prob)
         @test length(κ) == 3
-        @test κ[1] ≈ 1.0 + a
+        @test κ[1] ≈ 1.0
         @test κ[2] ≈ 1.0 + a
-        @test κ[3] ≈ 1.0 + a
+        @test κ[3] ≈ 1.0
         # Per-pair accessor agrees.
-        @test kappa(prob, 1, 2) ≈ 1.0 + a
+        @test kappa(prob, 1, 2) ≈ 1.0
         @test kappa(prob, 1, 3) ≈ 1.0 + a
-        @test kappa(prob, 2, 3) ≈ 1.0 + a
+        @test kappa(prob, 2, 3) ≈ 1.0
     end
 
     @testset "Params and kappas vector lengths" begin

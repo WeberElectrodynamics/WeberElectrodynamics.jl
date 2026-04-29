@@ -46,9 +46,9 @@ end
 
 Configuration for the Zöllner electrogravitational extension to Weber's force law.
 
-When enabled, unlike-sign charge pairs receive a coupling factor κ = 1 + a,
-producing an emergent attractive correction to the Weber potential.
-Like-sign pairs are unaffected (κ = 1).
+When enabled, charge pairs with opposite nonzero signs receive a coupling
+factor κ = 1 + a, producing an emergent attractive correction to the Weber
+potential. Like-sign and neutral pairs are unaffected (κ = 1).
 
 # Keywords
 - `enabled=false`: Activate the Zöllner mismatch.
@@ -71,10 +71,10 @@ struct ZollnerOptions
 end
 
 # Compute per-pair Zöllner coupling factors κ_ij.
-# κ_ij = 1+a for unlike-sign charge pairs, 1.0 for like-sign pairs.
+# κ_ij = 1+a for opposite nonzero signs, 1.0 for like-sign or neutral pairs.
 # Returns a vector of length n_particles*(n_particles-1)/2, ordered by (i<j).
-# Note: sign(0.0) == 0.0, so a neutral particle (q=0) is treated as unlike
-# any charged particle and receives κ = 1+a when Zöllner is enabled.
+# Neutral particles keep κ = 1.0 because the pair has no electrostatic
+# interaction; only pairs with opposite nonzero signs receive κ = 1+a.
 function _compute_zollner_kappas(
     charges::Vector{Float64},
     zollner::ZollnerOptions,
@@ -86,7 +86,7 @@ function _compute_zollner_kappas(
         idx = 1
         @inbounds for i = 1:n_particles
             for j = (i+1):n_particles
-                if sign(charges[i]) != sign(charges[j])
+                if charges[i] * charges[j] < 0
                     kappas[idx] = 1.0 + zollner.a
                 end
                 idx += 1
@@ -469,8 +469,8 @@ Regularization options moved to [`RegularizedIntegrator`](@ref); pass them via
 - `convergence_tolerance::Float64`: Projection convergence threshold.
 - `maximum_iterations::Int`: Maximum projection iterations per step.
 """
-struct HamiltonianProblem
-    system::HamiltonianSystem
+struct HamiltonianProblem{S<:HamiltonianSystem}
+    system::S
     tspan::Tuple{Float64,Float64}
     q_initial::Vector{Float64}
     p_initial::Vector{Float64}
@@ -513,7 +513,7 @@ struct HamiltonianProblem
         kappas = _compute_zollner_kappas(charges_f64, zollner, n_particles)
         params = vcat(masses_f64, charges_f64, [c_f64])
 
-        new(
+        new{typeof(system)}(
             system,
             (Float64(tspan[1]), Float64(tspan[2])),
             Vector{Float64}(q_initial),
@@ -540,7 +540,7 @@ struct HamiltonianProblem
         convergence_tolerance::Float64,
         maximum_iterations::Int,
     )
-        new(
+        new{typeof(system)}(
             system,
             tspan,
             q_initial,
@@ -580,13 +580,17 @@ params(prob::HamiltonianProblem) = prob.params
 """
     kappa(prob::HamiltonianProblem, i::Int, j::Int) -> Float64
 
-Return the Zöllner coupling `κ_ij` for pair `(i, j)`. Indices must satisfy
-`1 ≤ i < j ≤ n_particles(prob)`; the function asserts the ordering rather
-than silently returning the wrong pair-index value.
+Return the Zöllner coupling `κ_ij` for pair `(i, j)`. Pair order does not
+matter, but the indices must be distinct and in `1:n_particles(prob)`.
 """
 function kappa(prob::HamiltonianProblem, i::Int, j::Int)
     n = n_particles(prob)
-    @assert 1 <= i < j <= n "kappa requires 1 ≤ i < j ≤ $n, got i=$i, j=$j"
+    @assert 1 <= i <= n "kappa index i must be in 1:$n, got i=$i"
+    @assert 1 <= j <= n "kappa index j must be in 1:$n, got j=$j"
+    @assert i != j "kappa requires distinct particle indices, got i=j=$i"
+    if j < i
+        i, j = j, i
+    end
     return prob.kappas[_pair_index(i, j, n)]
 end
 
@@ -625,11 +629,11 @@ and `length(sol)`. Each index returns a `(t, q, p)` tuple.
   projection fixed-point failed to converge.
 - `regularization::RegularizationDiagnostics`: Regularization usage statistics.
 """
-struct HamiltonianSolution
+struct HamiltonianSolution{P<:HamiltonianProblem}
     t::Vector{Float64}
     q::Vector{Vector{Float64}}
     p::Vector{Vector{Float64}}
-    prob::HamiltonianProblem
+    prob::P
     retcode::Symbol
     regularization::RegularizationDiagnostics
 end
@@ -803,8 +807,8 @@ run to completion. The current state is accessible via `integrator.q`,
 - `q_history::Vector{Vector{Float64}}`: Pre-allocated position history.
 - `p_history::Vector{Vector{Float64}}`: Pre-allocated momentum history.
 """
-mutable struct HamiltonianIntegrator{A<:HamiltonianAlgorithm,C,CB<:Tuple}
-    prob::HamiltonianProblem
+mutable struct HamiltonianIntegrator{P<:HamiltonianProblem,A<:HamiltonianAlgorithm,C,CB<:Tuple}
+    prob::P
     alg::A
     t::Float64
     t_end::Float64

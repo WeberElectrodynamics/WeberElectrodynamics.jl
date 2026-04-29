@@ -43,8 +43,22 @@ if [ ! -f RELEASENOTES.md ]; then
   exit 1
 fi
 
-# Strip blank lines and HTML comment lines; check something remains
-NOTES=$(grep -v '^\s*$' RELEASENOTES.md | grep -v '^\s*<!--' || true)
+# Strip blank lines and HTML comments, including multi-line comment blocks;
+# check something remains.
+NOTES=$(python3 - <<'PYEOF'
+import re
+from pathlib import Path
+
+content = Path("RELEASENOTES.md").read_text()
+content = re.sub(r"<!--.*?-->", "", content, flags=re.S)
+lines = [line.rstrip() for line in content.splitlines()]
+while lines and not lines[0].strip():
+    lines.pop(0)
+while lines and not lines[-1].strip():
+    lines.pop()
+print("\n".join(lines))
+PYEOF
+)
 
 if [ -z "$NOTES" ]; then
   echo "ERROR: RELEASENOTES.md is empty."
@@ -79,41 +93,41 @@ fi
 # ── Execute ────────────────────────────────────────────────────────────────────
 echo "Releasing $CURRENT → $NEW"
 
+ACTIVE_GH_USER=$(gh auth status --hostname github.com --json hosts --jq '.hosts["github.com"][] | select(.active == true and .state == "success") | .login' 2>/dev/null || true)
+if [ "$ACTIVE_GH_USER" != "WeberElectrodynamics" ]; then
+  echo "ERROR: active gh account must be WeberElectrodynamics for JuliaRegistrator."
+  echo "Current active account: ${ACTIVE_GH_USER:-none}"
+  echo "Run: gh auth switch --user WeberElectrodynamics"
+  exit 1
+fi
+
 # Full notes content (preserving blank lines between sections)
-FULL_NOTES=$(python3 -c "
-import re
-content = open('RELEASENOTES.md').read()
-# Strip leading/trailing blank lines and comment lines
-lines = content.splitlines()
-filtered = [l for l in lines if not l.strip().startswith('<!--')]
-# Strip leading/trailing blank lines
-while filtered and not filtered[0].strip():
-    filtered.pop(0)
-while filtered and not filtered[-1].strip():
-    filtered.pop()
-print('\n'.join(filtered))
-")
+FULL_NOTES="$NOTES"
 
 # ── Bump Project.toml ─────────────────────────────────────────────────────────
-sed -i '' "s/^version = \"$CURRENT\"/version = \"$NEW\"/" Project.toml
+python3 - <<PYEOF
+from pathlib import Path
+
+path = Path("Project.toml")
+content = path.read_text()
+old = 'version = "$CURRENT"'
+new = 'version = "$NEW"'
+if old not in content:
+    raise SystemExit("ERROR: Project.toml version bump failed; did not find " + old)
+path.write_text(content.replace(old, new, 1))
+PYEOF
 
 # ── Update CHANGELOG.md ───────────────────────────────────────────────────────
 # Inserts "## [X.Y.Z] - DATE\n\n<notes>" after the [Unreleased] heading
-python3 - <<PYEOF
-import sys
-notes = open('RELEASENOTES.md').read()
-lines = notes.splitlines()
-filtered = [l for l in lines if not l.strip().startswith('<!--')]
-while filtered and not filtered[0].strip():
-    filtered.pop(0)
-while filtered and not filtered[-1].strip():
-    filtered.pop()
-clean_notes = '\n'.join(filtered)
+export FULL_NOTES NEW DATE
+python3 - <<'PYEOF'
+import os
+from pathlib import Path
 
-content = open('CHANGELOG.md').read()
-new_entry = f"## [Unreleased]\n\n## [$NEW] - $DATE\n\n{clean_notes}"
+content = Path("CHANGELOG.md").read_text()
+new_entry = f"## [Unreleased]\n\n## [{os.environ['NEW']}] - {os.environ['DATE']}\n\n{os.environ['FULL_NOTES']}"
 new = content.replace("## [Unreleased]", new_entry, 1)
-open('CHANGELOG.md', 'w').write(new)
+Path("CHANGELOG.md").write_text(new)
 PYEOF
 
 if ! grep -q "## \[$NEW\]" CHANGELOG.md; then

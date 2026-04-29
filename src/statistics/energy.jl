@@ -280,65 +280,79 @@ function compute_energy_timeseries(
     # Compute n_pairs without allocating pairs vector
     n_pairs = n * (n - 1) ÷ 2
 
-    # Initialize pair energy storage with pre-sized Dict
-    pair_energies = sizehint!(Dict{Tuple{Int,Int},PairEnergyData}(), n_pairs)
-    for i = 1:n
-        for j = (i+1):n
-            kappa_ij = kappa(prob, i, j)
-            pair_energies[(i, j)] = PairEnergyData(
-                (i, j),
-                kappa_ij,
-                Vector{Float64}(undef, n_points),
-                Vector{Float64}(undef, n_points),
-                Vector{Float64}(undef, n_points),
-                Vector{Float64}(undef, n_points),
-                Vector{Float64}(undef, n_points),
-            )
-        end
-    end
-
     total_zollner_residual = zeros(Float64, n_points)
 
-    weber_decomp = get_term(system, :weber).pair_decomposition
-    zollner_decomp = get_term(system, :zollner).pair_decomposition
+    weber_decomp =
+        has_term(system, :weber) ? get_term(system, :weber).pair_decomposition : nothing
+    zollner_decomp =
+        has_term(system, :zollner) ? get_term(system, :zollner).pair_decomposition : nothing
+    has_weber_decomposition = weber_decomp !== nothing && zollner_decomp !== nothing
+
+    # Initialize pair energy storage only when the system supplies the built-in
+    # Weber/Zöllner pair decompositions. Generic Hamiltonians still get a valid
+    # compiled-Hamiltonian energy timeseries, but arbitrary NamedTerm shapes
+    # cannot be losslessly projected into PairEnergyData.
+    pair_energies = sizehint!(Dict{Tuple{Int,Int},PairEnergyData}(), n_pairs)
+    if has_weber_decomposition
+        for i = 1:n
+            for j = (i+1):n
+                kappa_ij = kappa(prob, i, j)
+                pair_energies[(i, j)] = PairEnergyData(
+                    (i, j),
+                    kappa_ij,
+                    Vector{Float64}(undef, n_points),
+                    Vector{Float64}(undef, n_points),
+                    Vector{Float64}(undef, n_points),
+                    Vector{Float64}(undef, n_points),
+                    Vector{Float64}(undef, n_points),
+                )
+            end
+        end
+    end
 
     # Main computation loop
     @inbounds for (pt_idx, sol_idx) in enumerate(indices)
         q = solution.q[sol_idx]
         p = solution.p[sol_idx]
         t_pt = solution.t[sol_idx]
+        H_compiled = hamiltonian_compiled(q, p, t_pt, params_vec, κs)
 
         # Kinetic energy
         KE = compute_total_kinetic_energy(p, ms, d)
         kinetic_energy[pt_idx] = KE
 
-        # Pair-wise potential energies
-        PE_total = 0.0
-        zollner_sum = 0.0
-        for i = 1:n
-            for j = (i+1):n
-                wc = weber_decomp(i, j, q, p, params_vec, κs)
-                zc = zollner_decomp(i, j, q, p, params_vec, κs)
-                coulomb = wc.coulomb
-                velocity = wc.velocity
-                rdot = wc.rdot
-                zollner_extra = zc.zollner_extra
-                pair_data = pair_energies[(i, j)]
-                pair_data.coulomb_term[pt_idx] = coulomb
-                pair_data.velocity_term[pt_idx] = velocity
-                pair_data.zollner_extra_potential[pt_idx] = zollner_extra
-                pair_data.total_pair_potential[pt_idx] = coulomb + velocity
-                pair_data.radial_velocity[pt_idx] = rdot
-                PE_total += coulomb + velocity
-                zollner_sum += zollner_extra
+        if has_weber_decomposition
+            # Pair-wise potential energies
+            PE_total = 0.0
+            zollner_sum = 0.0
+            for i = 1:n
+                for j = (i+1):n
+                    wc = weber_decomp(i, j, q, p, params_vec, κs)
+                    zc = zollner_decomp(i, j, q, p, params_vec, κs)
+                    coulomb = wc.coulomb
+                    velocity = wc.velocity
+                    rdot = wc.rdot
+                    zollner_extra = zc.zollner_extra
+                    pair_data = pair_energies[(i, j)]
+                    pair_data.coulomb_term[pt_idx] = coulomb
+                    pair_data.velocity_term[pt_idx] = velocity
+                    pair_data.zollner_extra_potential[pt_idx] = zollner_extra
+                    pair_data.total_pair_potential[pt_idx] = coulomb + velocity
+                    pair_data.radial_velocity[pt_idx] = rdot
+                    PE_total += coulomb + velocity
+                    zollner_sum += zollner_extra
+                end
             end
+            total_potential_energy[pt_idx] = PE_total
+            total_energy[pt_idx] = KE + PE_total
+            total_zollner_residual[pt_idx] = zollner_sum
+        else
+            total_energy[pt_idx] = H_compiled
+            total_potential_energy[pt_idx] = H_compiled - KE
+            total_zollner_residual[pt_idx] = 0.0
         end
-        total_potential_energy[pt_idx] = PE_total
-        total_energy[pt_idx] = KE + PE_total
-        total_zollner_residual[pt_idx] = zollner_sum
 
         # Validate against compiled Hamiltonian
-        H_compiled = hamiltonian_compiled(q, p, t_pt, params_vec, κs)
         hamiltonian_validation[pt_idx] = abs(total_energy[pt_idx] - H_compiled)
     end
 

@@ -182,6 +182,36 @@
         )
     end
 
+    @testset "chain-disabled multi-pair encounter deactivates regularization" begin
+        options = RegularizationOptions(
+            enabled = true,
+            r_on = 0.2,
+            r_off = 0.3,
+            chain_enabled = false,
+            backend = :adaptive_cartesian,
+        )
+        rb = WeberElectrodynamics.RegularizationBuffers(
+            3,
+            2,
+            6,
+            0.2,
+            0.3,
+            WeberElectrodynamics.REG_BACKEND_ADAPTIVE,
+            false,
+            options,
+        )
+        q = [0.0, 0.0, 0.05, 0.0, 0.1, 0.0]
+
+        active, mode, min_r =
+            WeberElectrodynamics._detect_regularization_component!(rb, q, false)
+
+        @test min_r ≈ 0.05
+        @test active == false
+        @test mode == WeberElectrodynamics.REG_MODE_NONE
+        @test rb.is_active == false
+        @test rb.active_count == 0
+    end
+
     @testset "Transform identities" begin
         @testset "Levi-Civita" begin
             Random.seed!(42)
@@ -331,8 +361,8 @@
         q_overlap = [-0.09, 0.0, 0.09, 0.0, 0.2, 0.0]
         active, mode, _ =
             WeberElectrodynamics._detect_regularization_component!(rb, q_overlap, false)
-        @test active
-        @test rb.active_count > 2
+        @test active == false
+        @test rb.active_count == 0
         @test mode == WeberElectrodynamics.REG_MODE_NONE
 
         sys = HamiltonianSystem(3, 2)

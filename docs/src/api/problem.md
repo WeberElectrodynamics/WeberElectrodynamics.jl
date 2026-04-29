@@ -20,7 +20,7 @@ lives on its own field of length `N(N−1)/2`, separate from `params`.
 | `charges(prob)` | `AbstractVector{Float64}` view of particle charges (length `N`) |
 | `speed_of_light(prob)` | `Float64` — the `c` passed at construction |
 | `kappas(prob)` | `Vector{Float64}` of per-pair Zöllner κ values (all `1.0` when Zöllner is disabled; `Float64[]` for `N = 1`) |
-| `kappa(prob, i, j)` | `Float64` — coupling for pair `(i, j)` with `i < j` |
+| `kappa(prob, i, j)` | `Float64` — coupling for pair `(i, j)`; pair order is canonicalized |
 | `params(prob)` | the full packed `Vector{Float64}` consumed by the compiled EOMs |
 
 See also `n_particles(prob)` and `dims(prob)`, documented on the [System](system.md) page.

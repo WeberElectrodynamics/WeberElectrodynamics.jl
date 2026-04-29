@@ -10,9 +10,7 @@ using WeberElectrodynamics:
     HamiltonianSystem,
     HamiltonianSolution,
     SymmetricProjectionIntegrator,
-    HamiltonianAlgorithm,
-    compute_total_kinetic_energy,
-    compute_pair_weber_components
+    HamiltonianAlgorithm
 using CommonSolve: init, step!
 using Makie
 
@@ -100,25 +98,12 @@ end
 # =============================================================================
 
 function _compute_step_energy(
+    t::Float64,
     q::AbstractVector{Float64},
     p::AbstractVector{Float64},
     prob::HamiltonianProblem,
 )
-    ms = masses(prob)
-    qs = charges(prob)
-    c_val = speed_of_light(prob)
-    d = dims(prob)
-    n = n_particles(prob)
-
-    KE = compute_total_kinetic_energy(p, ms, d)
-    PE = 0.0
-    for i = 1:n, j = (i+1):n
-        kappa_ij = kappa(prob, i, j)
-        coulomb, velocity, _, _ =
-            compute_pair_weber_components(q, p, i, j, ms, qs, c_val, d, kappa_ij)
-        PE += coulomb + velocity
-    end
-    return KE + PE
+    return prob.system.hamiltonian_compiled(q, p, t, params(prob), kappas(prob))
 end
 
 function _compute_step_pair_phase(
@@ -172,7 +157,7 @@ function push_step!(
     end
 
     # Total energy (only used for live error display)
-    buf.total_energy[idx] = _compute_step_energy(q, p, prob)
+    buf.total_energy[idx] = _compute_step_energy(t, q, p, prob)
 
     # Pair phase space
     @inbounds for i = 1:n, j = (i+1):n
@@ -201,26 +186,53 @@ end
 # Buffer Linearization
 # =============================================================================
 
-function _linearize(arr::Vector{Float64}, buf::RollingBuffer)
-    if buf.count == 0
-        return Float64[]
-    end
+@inline function _physical_index(buf::RollingBuffer, logical_idx::Int)
     if buf.count < buf.capacity
-        return arr[1:buf.count]
+        return logical_idx
     end
-    oldest = buf.cursor  # next write position = oldest entry
-    return vcat(@view(arr[oldest:buf.capacity]), @view(arr[1:(oldest-1)]))
+    return ((buf.cursor + logical_idx - 2) % buf.capacity) + 1
 end
 
-function _linearize_col(mat::Matrix{Float64}, row::Int, buf::RollingBuffer)
-    if buf.count == 0
-        return Float64[]
+function _copy_linearized!(
+    dest::Vector{Float64},
+    arr::Vector{Float64},
+    buf::RollingBuffer;
+    limit::Int = buf.count,
+)
+    empty!(dest)
+    count = min(limit, buf.count)
+    sizehint!(dest, count)
+    first_idx = buf.count - count + 1
+    @inbounds for logical_idx = first_idx:buf.count
+        push!(dest, arr[_physical_index(buf, logical_idx)])
     end
-    if buf.count < buf.capacity
-        return vec(mat[row, 1:buf.count])
+    return dest
+end
+
+function _copy_linearized_col!(
+    dest::Vector{Float64},
+    mat::Matrix{Float64},
+    row::Int,
+    buf::RollingBuffer;
+    limit::Int = buf.count,
+)
+    empty!(dest)
+    count = min(limit, buf.count)
+    sizehint!(dest, count)
+    first_idx = buf.count - count + 1
+    @inbounds for logical_idx = first_idx:buf.count
+        push!(dest, mat[row, _physical_index(buf, logical_idx)])
     end
-    oldest = buf.cursor
-    return vcat(@view(mat[row, oldest:buf.capacity]), @view(mat[row, 1:(oldest-1)]))
+    return dest
+end
+
+function _max_abs_energy_delta(buf::RollingBuffer, E0::Float64)
+    max_delta = 0.0
+    @inbounds for logical_idx = 1:buf.count
+        idx = _physical_index(buf, logical_idx)
+        max_delta = max(max_delta, abs(buf.total_energy[idx] - E0))
+    end
+    return max_delta
 end
 
 # Log-linear speed range: 1,2,...,9, 10,20,...,90, 100,200,...,900, 1000
@@ -275,13 +287,12 @@ function _format_energy_error(state::AnimationState)
     if buf.count < 2
         return "ΔE/E₀ (max) = --"
     end
-    E_lin = _linearize(buf.total_energy, buf)
     E0 = state.E0
+    max_delta = _max_abs_energy_delta(buf, E0)
     if abs(E0) < eps()
-        err = maximum(abs.(E_lin .- E0))
-        return @sprintf("|ΔE| (max) = %.3e", err)
+        return @sprintf("|ΔE| (max) = %.3e", max_delta)
     end
-    err_pct = maximum(abs.(E_lin .- E0)) / abs(E0) * 100
+    err_pct = max_delta / abs(E0) * 100
     return @sprintf("ΔE/E₀ (max) = %.3e %%", err_pct)
 end
 
@@ -362,24 +373,23 @@ function _update_observables!(state::AnimationState, obs::PlotObservables)
     # Trajectory tails (last tail_length entries)
     tail_len = min(state.tail_length[], buf.count)
     for particle = 1:n
-        x_full = _linearize_col(buf.positions[particle], 1, buf)
-        y_full = _linearize_col(buf.positions[particle], 2, buf)
-        start_idx = max(1, length(x_full) - tail_len + 1)
-        x_tail = x_full[start_idx:end]
-        y_tail = y_full[start_idx:end]
+        x_tail = obs.traj_x[particle][]
+        y_tail = obs.traj_y[particle][]
+        _copy_linearized_col!(x_tail, buf.positions[particle], 1, buf; limit = tail_len)
+        _copy_linearized_col!(y_tail, buf.positions[particle], 2, buf; limit = tail_len)
         obs.traj_x[particle][] = x_tail
         obs.traj_y[particle][] = y_tail
 
         if d == 3
-            z_full = _linearize_col(buf.positions[particle], 3, buf)
-            z_tail = z_full[start_idx:end]
+            z_tail = obs.traj_z[particle][]
+            _copy_linearized_col!(z_tail, buf.positions[particle], 3, buf; limit = tail_len)
             obs.traj_z[particle][] = z_tail
-            if !isempty(x_full)
-                obs.marker_3d[particle][] = Point3f(x_full[end], y_full[end], z_full[end])
+            if !isempty(x_tail)
+                obs.marker_3d[particle][] = Point3f(x_tail[end], y_tail[end], z_tail[end])
             end
         else
-            if !isempty(x_full)
-                obs.marker_2d[particle][] = Point2f(x_full[end], y_full[end])
+            if !isempty(x_tail)
+                obs.marker_2d[particle][] = Point2f(x_tail[end], y_tail[end])
             end
         end
     end
@@ -405,6 +415,15 @@ function _update_observables!(state::AnimationState, obs::PlotObservables)
     return nothing
 end
 
+function _clear_phase_space!(obs::PlotObservables)
+    empty!(obs.phase_x[])
+    empty!(obs.phase_y[])
+    obs.phase_x[] = obs.phase_x[]
+    obs.phase_y[] = obs.phase_y[]
+    obs.phase_marker[] = Point2f(0, 0)
+    return nothing
+end
+
 function _update_phase_space!(
     state::AnimationState,
     obs::PlotObservables,
@@ -415,25 +434,39 @@ function _update_phase_space!(
     if startswith(sel, "Pair")
         m = match(r"Pair \((\d+),(\d+)\)", sel)
         if isnothing(m)
-            return
+            return _clear_phase_space!(obs)
         end
         i, j = parse(Int, m[1]), parse(Int, m[2])
         key = i < j ? (i, j) : (j, i)
         if haskey(buf.pair_separation, key)
-            obs.phase_x[] = _linearize(buf.pair_separation[key], buf)
-            obs.phase_y[] = _linearize(buf.pair_radial_velocity[key], buf)
+            x = obs.phase_x[]
+            y = obs.phase_y[]
+            _copy_linearized!(x, buf.pair_separation[key], buf)
+            _copy_linearized!(y, buf.pair_radial_velocity[key], buf)
+            obs.phase_x[] = x
+            obs.phase_y[] = y
+        else
+            return _clear_phase_space!(obs)
         end
     elseif startswith(sel, "Particle")
         m = match(r"Particle (\d+)", sel)
         if isnothing(m)
-            return
+            return _clear_phase_space!(obs)
         end
         particle = parse(Int, m[1])
         comp = state.phase_component[]
-        if haskey(buf.particle_q, particle)
-            obs.phase_x[] = _linearize_col(buf.particle_q[particle], comp, buf)
-            obs.phase_y[] = _linearize_col(buf.particle_p[particle], comp, buf)
+        if haskey(buf.particle_q, particle) && 1 <= comp <= size(buf.particle_q[particle], 1)
+            x = obs.phase_x[]
+            y = obs.phase_y[]
+            _copy_linearized_col!(x, buf.particle_q[particle], comp, buf)
+            _copy_linearized_col!(y, buf.particle_p[particle], comp, buf)
+            obs.phase_x[] = x
+            obs.phase_y[] = y
+        else
+            return _clear_phase_space!(obs)
         end
+    else
+        return _clear_phase_space!(obs)
     end
 
     px = obs.phase_x[]
@@ -890,9 +923,10 @@ function _build_figure_impl(
     reset_btn = Button(controls_grid[1, 2]; label = "Reset", width = 70)
 
     Label(controls_grid[1, 3], "Trail:"; fontsize = 11, halign = :right)
+    trail_range = sort(unique([1; collect(10:10:state.buffer_size); state.tail_length[]; state.buffer_size]))
     trail_slider = Slider(
         controls_grid[1, 4];
-        range = 10:10:state.buffer_size,
+        range = trail_range,
         startvalue = state.tail_length[],
     )
 
@@ -977,14 +1011,24 @@ end
 # Integrator Recycling (Streaming)
 # =============================================================================
 
-function _recycle_integrator!(integ::HamiltonianIntegrator)
-    span = integ.t_end - integ.t_history[1]
-    integ.step_count = 0
-    integ.t_end = integ.t + span
-    integ.t_history[1] = integ.t
-    integ.q_history[1] .= integ.q
-    integ.p_history[1] .= integ.p
-    fill!(integ.buffers.μ, 0.0)
+function _recycled_problem(integ::HamiltonianIntegrator)
+    old_prob = integ.prob
+    span = old_prob.tspan[2] - old_prob.tspan[1]
+    return HamiltonianProblem(
+        old_prob.system,
+        (integ.t, integ.t + span),
+        copy(integ.q),
+        copy(integ.p),
+        copy(params(old_prob)),
+        copy(kappas(old_prob)),
+        old_prob.dt,
+        old_prob.convergence_tolerance,
+        old_prob.maximum_iterations,
+    )
+end
+
+function _recycle_integrator!(source::StreamingSource, alg::HamiltonianAlgorithm)
+    source.integrator = init(_recycled_problem(source.integrator), alg)
     return nothing
 end
 
@@ -997,7 +1041,8 @@ function _advance_source!(state::AnimationState)
         integ = state.source.integrator
         more = step!(integ)
         if !more
-            _recycle_integrator!(integ)
+            _recycle_integrator!(state.source, state.alg)
+            integ = state.source.integrator
             more = step!(integ)
             !more && return false
         end
@@ -1105,7 +1150,7 @@ function WeberElectrodynamics.animate_weber(
     integrator = init(extended_prob, alg)
 
     q0, p0 = prob.q_initial, prob.p_initial
-    E0 = _compute_step_energy(q0, p0, prob)
+    E0 = _compute_step_energy(prob.tspan[1], q0, p0, prob)
 
     phase_sel =
         phase_mode == :pair ? "Pair ($(initial_pair[1]),$(initial_pair[2]))" :
@@ -1194,7 +1239,7 @@ function WeberElectrodynamics.animate_weber(
     @assert stride > 0 "stride must be positive"
 
     q0, p0 = sol.q[1], sol.p[1]
-    E0 = _compute_step_energy(q0, p0, prob)
+    E0 = _compute_step_energy(sol.t[1], q0, p0, prob)
 
     phase_sel =
         phase_mode == :pair ? "Pair ($(initial_pair[1]),$(initial_pair[2]))" :

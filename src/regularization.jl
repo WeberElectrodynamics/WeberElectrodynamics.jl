@@ -299,8 +299,9 @@ end
 
     r = u1 * u1 + u2 * u2
     if r <= eps(Float64)
-        p_rel[1] = 0.0
-        p_rel[2] = 0.0
+        # The LC map is singular at u = 0: the lifted momentum U does not
+        # determine a unique Cartesian momentum. Preserve the incoming p_rel
+        # rather than silently discarding it.
         return 0.0
     end
 
@@ -458,7 +459,9 @@ end
             rb.active_mode = REG_MODE_CHAIN
             _build_chain_order!(rb, q)
         else
+            rb.is_active = false
             rb.active_mode = REG_MODE_NONE
+            rb.active_count = 0
         end
     end
 
