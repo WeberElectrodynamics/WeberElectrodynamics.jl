@@ -85,7 +85,14 @@ function _generate_param_symbols(n_particles::Int)
 end
 
 # Pair (i,j) with i<j maps to this 1-based index in the kappas vector.
+# Only called at HamiltonianSystem construction time (symbolic builders) and
+# from the public kappa(prob, i, j) accessor — never from the integrator hot
+# loop, so the bounds guard is essentially free. The guard elides under
+# `@inbounds` for the symbolic builder callers that already wrap their access.
 @inline function _pair_index(i::Int, j::Int, n::Int)::Int
+    Base.@boundscheck (1 <= i < j <= n) || throw(
+        ArgumentError("_pair_index requires 1 ≤ i < j ≤ n; got i=$i, j=$j, n=$n"),
+    )
     return (i - 1) * (2n - i) ÷ 2 + (j - i)
 end
 
