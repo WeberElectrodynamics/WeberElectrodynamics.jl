@@ -177,4 +177,33 @@ using WeberElectrodynamics: _pair_index
             @test sort(indices) == collect(1:(n*(n-1)÷2))
         end
     end
+
+    @testset "compiled EOMs are autonomous (t-arg invariance)" begin
+        # The Weber Hamiltonian is autonomous: dq/dt and dp/dt do not depend on
+        # t. Lock that invariant by exercising the compiled EOMs at several
+        # `t` values and asserting bit-identical output. Future time-dependent
+        # terms will need to relax this contract explicitly.
+        sys = HamiltonianSystem(2, 2)
+        params = [1.0, 2.0, 1.0, -1.0, 5.0]    # m1, m2, q1, q2, c
+        kappas = [1.0]
+        q = [1.0, 0.2, -0.5, 0.3]
+        p = [0.1, 0.2, -0.15, -0.1]
+
+        out_q_ref = zeros(4);
+        out_p_ref = zeros(4)
+        sys.dq_dt_compiled(out_q_ref, q, p, 0.0, params, kappas)
+        sys.dp_dt_compiled(out_p_ref, q, p, 0.0, params, kappas)
+        H_ref = sys.hamiltonian_compiled(q, p, 0.0, params, kappas)
+
+        for t_val in (1.7, -0.5, 1e6, π)
+            out_q = zeros(4);
+            out_p = zeros(4)
+            sys.dq_dt_compiled(out_q, q, p, t_val, params, kappas)
+            sys.dp_dt_compiled(out_p, q, p, t_val, params, kappas)
+            H_val = sys.hamiltonian_compiled(q, p, t_val, params, kappas)
+            @test out_q == out_q_ref
+            @test out_p == out_p_ref
+            @test H_val == H_ref
+        end
+    end
 end

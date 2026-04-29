@@ -167,4 +167,77 @@
         @test sol_a.q[end] == sol_b.q[end]
         @test sol_a.p[end] == sol_b.p[end]
     end
+
+    @testset "callbacks=nothing is parity with empty tuple" begin
+        sys = HamiltonianSystem(2, 2)
+        prob = HamiltonianProblem(
+            sys,
+            (0.0, 0.05),
+            [1.0, 0.0, -1.0, 0.0],
+            [0.0, 0.1, 0.0, -0.1];
+            masses = [1.0, 1.0],
+            charges = [1.0, -1.0],
+            c = 100.0,
+            dt = 0.01,
+        )
+        # Both forms should yield the same internal callbacks tuple `()`
+        # and bit-identical trajectories.
+        int_default = init(prob, SymmetricProjectionIntegrator())
+        int_nothing = init(prob, SymmetricProjectionIntegrator(); callbacks = nothing)
+        int_empty = init(prob, SymmetricProjectionIntegrator(); callbacks = ())
+        @test int_default.callbacks === ()
+        @test int_nothing.callbacks === ()
+        @test int_empty.callbacks === ()
+
+        sol_a = solve(prob, SymmetricProjectionIntegrator(); callbacks = nothing)
+        sol_b = solve(prob, SymmetricProjectionIntegrator(); callbacks = ())
+        @test sol_a.q == sol_b.q
+        @test sol_a.p == sol_b.p
+    end
+
+    @testset "multi-callback tuple iterates in order" begin
+        # Track invocation order via a side-effect counter on a captured closure.
+        # Each callback bumps a per-instance counter; we verify both fire and
+        # that final state matches the no-callback baseline (since both are no-ops
+        # apart from the counter).
+        mutable struct _CountingCallback <: HamiltonianCallback
+            pre::Int
+            post::Int
+        end
+        _CountingCallback() = _CountingCallback(0, 0)
+        WeberElectrodynamics.apply_pre_step!(cb::_CountingCallback, _, _::Float64) =
+            (cb.pre += 1; nothing)
+        WeberElectrodynamics.apply_post_step!(cb::_CountingCallback, _, _::Float64) =
+            (cb.post += 1; nothing)
+
+        sys = HamiltonianSystem(2, 2)
+        prob = HamiltonianProblem(
+            sys,
+            (0.0, 0.05),
+            [1.0, 0.0, -1.0, 0.0],
+            [0.0, 0.1, 0.0, -0.1];
+            masses = [1.0, 1.0],
+            charges = [1.0, -1.0],
+            c = 100.0,
+            dt = 0.01,
+        )
+        cb_a = _CountingCallback()
+        cb_b = _CountingCallback()
+        integrator = init(prob, SymmetricProjectionIntegrator(); callbacks = (cb_a, cb_b))
+        @test length(integrator.callbacks) == 2
+        @test integrator.callbacks[1] === cb_a
+        @test integrator.callbacks[2] === cb_b
+
+        sol = solve(prob, SymmetricProjectionIntegrator(); callbacks = (cb_a, cb_b))
+        n_steps = length(sol.t) - 1   # one callback fires per macro-step (not on the IC)
+        @test cb_a.pre == n_steps
+        @test cb_a.post == n_steps
+        @test cb_b.pre == n_steps
+        @test cb_b.post == n_steps
+
+        # Trajectory matches the no-callback baseline (counters are pure side-effects).
+        sol_baseline = solve(prob, SymmetricProjectionIntegrator())
+        @test sol.q == sol_baseline.q
+        @test sol.p == sol_baseline.p
+    end
 end

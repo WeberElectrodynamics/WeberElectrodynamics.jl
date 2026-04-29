@@ -80,6 +80,37 @@
         @test kappas(prob)[3] ≈ 1.0 + a   # pair (2,3): unlike
     end
 
+    @testset "Kappa computation — N=3 with one neutral particle" begin
+        # Particles: +1, 0, -1. With sign(0.0) == 0.0, the neutral pair is
+        # treated as "unlike sign" relative to any nonzero charge — see
+        # _compute_zollner_kappas comment. So all three pairs receive κ = 1+a:
+        #   (1,2): +1 vs 0 → unlike → 1+a
+        #   (1,3): +1 vs -1 → unlike → 1+a
+        #   (2,3): 0 vs -1 → unlike → 1+a
+        sys = HamiltonianSystem(3, 2)
+        a = 0.07
+        prob = HamiltonianProblem(
+            sys,
+            (0.0, 1.0),
+            [1.0, 0.0, 0.0, 0.0, -1.0, 0.0],
+            zeros(6);
+            masses = [1.0, 1.0, 1.0],
+            charges = [1.0, 0.0, -1.0],
+            c = 10.0,
+            dt = 0.01,
+            zollner = ZollnerOptions(enabled = true, a = a),
+        )
+        κ = kappas(prob)
+        @test length(κ) == 3
+        @test κ[1] ≈ 1.0 + a
+        @test κ[2] ≈ 1.0 + a
+        @test κ[3] ≈ 1.0 + a
+        # Per-pair accessor agrees.
+        @test kappa(prob, 1, 2) ≈ 1.0 + a
+        @test kappa(prob, 1, 3) ≈ 1.0 + a
+        @test kappa(prob, 2, 3) ≈ 1.0 + a
+    end
+
     @testset "Params and kappas vector lengths" begin
         # For N particles: params length = 2N + 1, kappas length = N*(N-1)/2
         for N in [2, 3, 4]
@@ -102,9 +133,8 @@
             @test length(kappas(prob)) == N * (N - 1) ÷ 2
             # kappas accessor aligns with the _pair_index order via kappa(prob, i, j)
             for i = 1:N, j = (i+1):N
-                @test kappa(prob, i, j) == kappas(prob)[
-                    WeberElectrodynamics._pair_index(i, j, N)
-                ]
+                @test kappa(prob, i, j) ==
+                      kappas(prob)[WeberElectrodynamics._pair_index(i, j, N)]
             end
         end
     end
