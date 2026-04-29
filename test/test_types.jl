@@ -242,6 +242,41 @@
         @test occursin("HamiltonianIntegrator", String(take!(io)))
     end
 
+    @testset "_with_tspan clones a problem with a new tspan" begin
+        prob = HamiltonianProblem(
+            HamiltonianSystem(2, 2),
+            (0.0, 1.5),
+            [1.0, 0.0, -1.0, 0.0],
+            [0.0, 0.1, 0.0, -0.1];
+            masses = [1.0, 2.0],
+            charges = [1.0, -1.0],
+            c = 10.0,
+            dt = 0.01,
+            zollner = ZollnerOptions(enabled = true, a = 0.05),
+        )
+        new_prob = WeberElectrodynamics._with_tspan(prob, (0.5, 4.0))
+
+        # tspan replaced.
+        @test new_prob.tspan == (0.5, 4.0)
+
+        # All other fields are equal-by-value to the original.
+        @test new_prob.system === prob.system
+        @test new_prob.q_initial == prob.q_initial
+        @test new_prob.p_initial == prob.p_initial
+        @test params(new_prob) == params(prob)
+        @test kappas(new_prob) == kappas(prob)
+        @test new_prob.dt == prob.dt
+        @test new_prob.convergence_tolerance == prob.convergence_tolerance
+        @test new_prob.maximum_iterations == prob.maximum_iterations
+
+        # ICs, params, and kappas are *copies*, not aliases — mutating the
+        # clone must not propagate back to the original.
+        @test new_prob.q_initial !== prob.q_initial
+        @test new_prob.p_initial !== prob.p_initial
+        @test params(new_prob) !== params(prob)
+        @test kappas(new_prob) !== kappas(prob)
+    end
+
     @testset "HamiltonianSystem display" begin
         system = HamiltonianSystem(2, 2)
 
