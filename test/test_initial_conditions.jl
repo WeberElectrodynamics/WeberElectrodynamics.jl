@@ -21,10 +21,7 @@
 
     function pair_rdot(q, p, masses, dims, i, j)
         rel_q = [q[(i-1)*dims+d] - q[(j-1)*dims+d] for d = 1:dims]
-        rel_v = [
-            p[(i-1)*dims+d] / masses[i] - p[(j-1)*dims+d] / masses[j] for
-            d = 1:dims
-        ]
+        rel_v = [p[(i-1)*dims+d] / masses[i] - p[(j-1)*dims+d] / masses[j] for d = 1:dims]
         return dot(rel_q, rel_v) / norm(rel_q)
     end
 
@@ -70,17 +67,7 @@
     end
 
     @testset "rigid_rotation_initial_conditions" begin
-        q = [
-            1.0,
-            0.0,
-            0.0,
-            -0.5,
-            sqrt(3) / 2,
-            0.2,
-            -0.5,
-            -sqrt(3) / 2,
-            -0.4,
-        ]
+        q = [1.0, 0.0, 0.0, -0.5, sqrt(3) / 2, 0.2, -0.5, -sqrt(3) / 2, -0.4]
         masses = [1.0, 1.0, 1.0]
         ic = rigid_rotation_initial_conditions(
             q,

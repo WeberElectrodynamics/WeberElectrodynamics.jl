@@ -97,9 +97,11 @@ function compute_trajectory_data(
     )
 end
 
-function compute_trajectory_data(
-    sol::HamiltonianSolution;
-    stride::Int = 1,
-)::TrajectoryData
-    return compute_trajectory_data(sol, n_particles(sol.prob), dims(sol.prob); stride = stride)
+function compute_trajectory_data(sol::HamiltonianSolution; stride::Int = 1)::TrajectoryData
+    return compute_trajectory_data(
+        sol,
+        n_particles(sol.prob),
+        dims(sol.prob);
+        stride = stride,
+    )
 end

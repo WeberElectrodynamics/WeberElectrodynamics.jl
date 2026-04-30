@@ -230,10 +230,8 @@ function compute_pair_force_timeseries(
             )
         end
         for d = 1:dims
-            accelerations_i[d, t] =
-                (velocities_i[d, t+1] - velocities_i[d, t]) / dt_step
-            accelerations_j[d, t] =
-                (velocities_j[d, t+1] - velocities_j[d, t]) / dt_step
+            accelerations_i[d, t] = (velocities_i[d, t+1] - velocities_i[d, t]) / dt_step
+            accelerations_j[d, t] = (velocities_j[d, t+1] - velocities_j[d, t]) / dt_step
         end
     end
 

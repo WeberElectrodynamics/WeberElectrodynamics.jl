@@ -226,12 +226,45 @@
                 rb.rel_p[1] = randn()
                 rb.rel_p[2] = randn()
 
+                px = rb.rel_p[1]
+                py = rb.rel_p[2]
+
                 WeberElectrodynamics._lc_lift!(rb)
                 WeberElectrodynamics._lc_project!(q_rel, p_rel, rb.lc_u, rb.lc_U)
 
                 @test q_rel[1] ≈ x rtol = 1e-10 atol = 1e-10
                 @test q_rel[2] ≈ y rtol = 1e-10 atol = 1e-10
+                @test p_rel[1] ≈ px rtol = 1e-10 atol = 1e-10
+                @test p_rel[2] ≈ py rtol = 1e-10 atol = 1e-10
             end
+        end
+
+        @testset "LC singularity at origin preserves p_rel" begin
+            # _lc_project! is undefined when r = u₁²+u₂² ≤ eps: the LC map's
+            # inverse Jacobian blows up. The fix is to leave p_rel untouched
+            # rather than zero it out (which silently discards momentum).
+            rb = WeberElectrodynamics.RegularizationBuffers(
+                2,
+                2,
+                4,
+                0.1,
+                0.2,
+                :lifted_pair,
+                false,
+                RegularizationOptions(),
+            )
+            rb.lc_u[1] = 0.0
+            rb.lc_u[2] = 0.0
+            rb.lc_U[1] = 1.7
+            rb.lc_U[2] = -2.3
+
+            q_rel = zeros(2)
+            p_rel = [0.42, -0.91]
+            r = WeberElectrodynamics._lc_project!(q_rel, p_rel, rb.lc_u, rb.lc_U)
+
+            @test r == 0.0
+            @test q_rel == [0.0, 0.0]
+            @test p_rel == [0.42, -0.91]
         end
 
         @testset "KS" begin
@@ -279,6 +312,78 @@
                 WeberElectrodynamics._ks_project!(q_rel, p_rel, rb.ks_u, rb.ks_U, J)
                 @test q_rel ≈ [x1, x2, x3] rtol = 1e-10 atol = 1e-10
             end
+        end
+
+        @testset "KS 3D _ks_lift! / _ks_project! round-trip" begin
+            # Exercises the full lift→project chain (the production path used
+            # by the 3D :lifted_pair backend). Covers both KS charts: the
+            # primary chart (r + x₁ ≫ 0) and the alternate chart used when
+            # r + x₁ ≈ 0 (i.e. q_rel along the negative x-axis).
+            rb = WeberElectrodynamics.RegularizationBuffers(
+                2,
+                3,
+                6,
+                0.1,
+                0.2,
+                :adaptive_cartesian,
+                false,
+                RegularizationOptions(),
+            )
+
+            cases = [
+                ([1.5, 0.7, -0.3], [0.2, -0.4, 0.6]),       # generic
+                ([0.5, 0.0, 0.0], [0.1, 0.0, 0.0]),         # along +x (primary chart)
+                ([-0.5, 0.0, 0.0], [0.0, 0.1, -0.2]),       # along -x (alternate chart)
+                ([-1.0, 1e-9, 1e-9], [0.3, 0.0, 0.0]),      # near alternate-chart boundary
+                ([0.1, -0.2, 0.3], [-0.5, 0.7, -0.9]),      # generic, opposite signs
+            ]
+
+            for (q_in, p_in) in cases
+                rb.rel_q[1] = q_in[1]
+                rb.rel_q[2] = q_in[2]
+                rb.rel_q[3] = q_in[3]
+                rb.rel_p[1] = p_in[1]
+                rb.rel_p[2] = p_in[2]
+                rb.rel_p[3] = p_in[3]
+
+                r_lift = WeberElectrodynamics._ks_lift!(rb)
+                r_expected = sqrt(q_in[1]^2 + q_in[2]^2 + q_in[3]^2)
+                @test r_lift ≈ r_expected rtol = 1e-12 atol = 1e-12
+
+                # Bilinear constraint: ‖u‖² = r
+                u_norm2 = sum(abs2, rb.ks_u)
+                @test u_norm2 ≈ r_expected rtol = 1e-12 atol = 1e-12
+
+                # Bilinear orthogonality constraint ψ(u, U) = 0
+                psi = WeberElectrodynamics._ks_constraint(rb.ks_u, rb.ks_U)
+                @test abs(psi) < 1e-10
+
+                q_out = zeros(3)
+                p_out = zeros(3)
+                WeberElectrodynamics._ks_project!(q_out, p_out, rb.ks_u, rb.ks_U, rb.ks_J)
+                @test q_out ≈ q_in rtol = 1e-10 atol = 1e-10
+                @test p_out ≈ p_in rtol = 1e-10 atol = 1e-10
+            end
+        end
+
+        @testset "KS lift at origin returns zero buffers" begin
+            rb = WeberElectrodynamics.RegularizationBuffers(
+                2,
+                3,
+                6,
+                0.1,
+                0.2,
+                :adaptive_cartesian,
+                false,
+                RegularizationOptions(),
+            )
+            rb.rel_q .= 0.0
+            rb.rel_p .= [1.0, 2.0, 3.0]
+
+            r = WeberElectrodynamics._ks_lift!(rb)
+            @test r == 0.0
+            @test all(iszero, rb.ks_u)
+            @test all(iszero, rb.ks_U)
         end
     end
 

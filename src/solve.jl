@@ -30,7 +30,14 @@ using LinearAlgebra: norm, mul!, Transpose
         P_component = Z_vec[idx_P_start:idx_P_end]
         Y_component = Z_vec[idx_Y_start:idx_Y_end]
 
-        dq_dt_compiled(auxiliary_position_buffer, Q_component, Y_component, t, params, kappas)
+        dq_dt_compiled(
+            auxiliary_position_buffer,
+            Q_component,
+            Y_component,
+            t,
+            params,
+            kappas,
+        )
         dp_dt_compiled(momentum_buffer, Q_component, Y_component, t, params, kappas)
 
         @. X_component = X_component + auxiliary_position_buffer * (dt / 2)
@@ -38,13 +45,27 @@ using LinearAlgebra: norm, mul!, Transpose
 
         t_mid = t + dt / 2
         dq_dt_compiled(position_buffer, X_component, P_component, t_mid, params, kappas)
-        dp_dt_compiled(auxiliary_momentum_buffer, X_component, P_component, t_mid, params, kappas)
+        dp_dt_compiled(
+            auxiliary_momentum_buffer,
+            X_component,
+            P_component,
+            t_mid,
+            params,
+            kappas,
+        )
 
         @. Q_component = Q_component + position_buffer * dt
         @. Y_component = Y_component + auxiliary_momentum_buffer * dt
 
         t_end = t + dt
-        dq_dt_compiled(auxiliary_position_buffer, Q_component, Y_component, t_end, params, kappas)
+        dq_dt_compiled(
+            auxiliary_position_buffer,
+            Q_component,
+            Y_component,
+            t_end,
+            params,
+            kappas,
+        )
         dp_dt_compiled(momentum_buffer, Q_component, Y_component, t_end, params, kappas)
 
         @. X_component = X_component + auxiliary_position_buffer * (dt / 2)
@@ -749,10 +770,7 @@ end
     return r_geom
 end
 
-@inline function _lift_1d!(
-    rb::RegularizationBuffers,
-    chart_sign::Float64,
-)
+@inline function _lift_1d!(rb::RegularizationBuffers, chart_sign::Float64)
     x = rb.rel_q[1]
     p_rel = rb.rel_p[1]
     r = abs(x)
@@ -897,8 +915,22 @@ end
     )
 
     t_mid = t + dt_sub * 0.5
-    system.dq_dt_compiled(rb.dq_pair, rb.q_mid, rb.p_mid, t_mid, rb.params_pair, rb.kappas_pair)
-    system.dp_dt_compiled(rb.dp_pair, rb.q_mid, rb.p_mid, t_mid, rb.params_pair, rb.kappas_pair)
+    system.dq_dt_compiled(
+        rb.dq_pair,
+        rb.q_mid,
+        rb.p_mid,
+        t_mid,
+        rb.params_pair,
+        rb.kappas_pair,
+    )
+    system.dp_dt_compiled(
+        rb.dp_pair,
+        rb.q_mid,
+        rb.p_mid,
+        t_mid,
+        rb.params_pair,
+        rb.kappas_pair,
+    )
     _extract_pair_2d_derivatives!(rb, rb.dq_pair, rb.dp_pair, i, j, mi, mj, mu, M)
 
     _compute_lc_tau_derivatives!(
@@ -997,8 +1029,22 @@ end
     )
 
     t_mid = t + dt_sub * 0.5
-    system.dq_dt_compiled(rb.dq_pair, rb.q_mid, rb.p_mid, t_mid, rb.params_pair, rb.kappas_pair)
-    system.dp_dt_compiled(rb.dp_pair, rb.q_mid, rb.p_mid, t_mid, rb.params_pair, rb.kappas_pair)
+    system.dq_dt_compiled(
+        rb.dq_pair,
+        rb.q_mid,
+        rb.p_mid,
+        t_mid,
+        rb.params_pair,
+        rb.kappas_pair,
+    )
+    system.dp_dt_compiled(
+        rb.dp_pair,
+        rb.q_mid,
+        rb.p_mid,
+        t_mid,
+        rb.params_pair,
+        rb.kappas_pair,
+    )
     _extract_pair_derivatives!(rb, rb.dq_pair, rb.dp_pair, 1, i, j, mi, mj, mu, M)
 
     _compute_1d_tau_derivatives!(
@@ -1059,16 +1105,24 @@ end
 
     @inbounds begin
         dU_dt1 =
-            J[1, 1] * pdot_rel[1] + J[2, 1] * pdot_rel[2] + J[3, 1] * pdot_rel[3] +
+            J[1, 1] * pdot_rel[1] +
+            J[2, 1] * pdot_rel[2] +
+            J[3, 1] * pdot_rel[3] +
             2 * (du1 * p1 + du2 * p2 + du3 * p3)
         dU_dt2 =
-            J[1, 2] * pdot_rel[1] + J[2, 2] * pdot_rel[2] + J[3, 2] * pdot_rel[3] +
+            J[1, 2] * pdot_rel[1] +
+            J[2, 2] * pdot_rel[2] +
+            J[3, 2] * pdot_rel[3] +
             2 * (-du2 * p1 + du1 * p2 + du4 * p3)
         dU_dt3 =
-            J[1, 3] * pdot_rel[1] + J[2, 3] * pdot_rel[2] + J[3, 3] * pdot_rel[3] +
+            J[1, 3] * pdot_rel[1] +
+            J[2, 3] * pdot_rel[2] +
+            J[3, 3] * pdot_rel[3] +
             2 * (-du3 * p1 - du4 * p2 + du1 * p3)
         dU_dt4 =
-            J[1, 4] * pdot_rel[1] + J[2, 4] * pdot_rel[2] + J[3, 4] * pdot_rel[3] +
+            J[1, 4] * pdot_rel[1] +
+            J[2, 4] * pdot_rel[2] +
+            J[3, 4] * pdot_rel[3] +
             2 * (du4 * p1 - du3 * p2 + du2 * p3)
 
         dU_tau[1] = g_scale * dU_dt1
@@ -1125,7 +1179,9 @@ end
     _ks_lift!(rb)
     if prev_norm2 > 0
         dot_u =
-            rb.ks_u[1] * prev_u1 + rb.ks_u[2] * prev_u2 + rb.ks_u[3] * prev_u3 +
+            rb.ks_u[1] * prev_u1 +
+            rb.ks_u[2] * prev_u2 +
+            rb.ks_u[3] * prev_u3 +
             rb.ks_u[4] * prev_u4
         if dot_u < 0
             @inbounds for k = 1:4
@@ -1143,10 +1199,7 @@ end
         reg.constraint_tolerance,
     )
 
-    r_eff = max(
-        rb.ks_u[1]^2 + rb.ks_u[2]^2 + rb.ks_u[3]^2 + rb.ks_u[4]^2,
-        g_floor,
-    )
+    r_eff = max(rb.ks_u[1]^2 + rb.ks_u[2]^2 + rb.ks_u[3]^2 + rb.ks_u[4]^2, g_floor)
     _compute_ks_tau_derivatives!(
         rb.ks_du_tau,
         rb.ks_dU_tau,
@@ -1200,8 +1253,22 @@ end
     )
 
     t_mid = t + dt_sub * 0.5
-    system.dq_dt_compiled(rb.dq_pair, rb.q_mid, rb.p_mid, t_mid, rb.params_pair, rb.kappas_pair)
-    system.dp_dt_compiled(rb.dp_pair, rb.q_mid, rb.p_mid, t_mid, rb.params_pair, rb.kappas_pair)
+    system.dq_dt_compiled(
+        rb.dq_pair,
+        rb.q_mid,
+        rb.p_mid,
+        t_mid,
+        rb.params_pair,
+        rb.kappas_pair,
+    )
+    system.dp_dt_compiled(
+        rb.dp_pair,
+        rb.q_mid,
+        rb.p_mid,
+        t_mid,
+        rb.params_pair,
+        rb.kappas_pair,
+    )
     _extract_pair_derivatives!(rb, rb.dq_pair, rb.dp_pair, 3, i, j, mi, mj, mu, M)
 
     _compute_ks_tau_derivatives!(
@@ -1815,7 +1882,10 @@ end
 
 @inline function _regularized_bounce_radius(integrator::HamiltonianIntegrator)
     rb = integrator.buffers.regularization_buffers
-    return max(rb.options.collision_bounce_radius, _callback_collision_radius(integrator.callbacks))
+    return max(
+        rb.options.collision_bounce_radius,
+        _callback_collision_radius(integrator.callbacks),
+    )
 end
 
 @inline function _apply_regularized_substep_bounces!(integrator::HamiltonianIntegrator)
