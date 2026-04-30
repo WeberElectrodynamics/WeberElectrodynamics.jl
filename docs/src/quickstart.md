@@ -87,6 +87,16 @@ p0 = [0.0, p_circ, 0.0, -p_circ]
 p0  = p0 .* η_v
 ```
 
+The helper API provides the same COM setup directly:
+
+```julia
+ic = two_body_initial_conditions([m1, m2], [q1, q2];
+    separation = r0,
+    velocity_scale = η_v,
+)
+q0, p0 = ic.q, ic.p
+```
+
 ### N-body symmetric polygon
 
 Place N particles at regular N-gon vertices of circumradius `R` with alternating charges ±Q.
@@ -123,7 +133,7 @@ energy = compute_energy_timeseries(sol)
 println("Max energy drift: ", energy.statistics.global_error_percent_max, " %")
 
 # Trajectory data
-traj = compute_trajectory_data(sol, 2, 2)
+traj = compute_trajectory_data(sol)
 
 # Plotting (requires Plots.jl)
 using Plots
@@ -146,7 +156,7 @@ sol = solve!(integrator)
 ```julia
 using Plots
 
-traj     = compute_trajectory_data(sol, 2, 2)
+traj     = compute_trajectory_data(sol)
 energy   = compute_energy_timeseries(sol)
 momentum = compute_momentum_timeseries(sol)
 
@@ -169,9 +179,9 @@ animate_weber(sol)    # replay
 The integrator above runs the core unregularized symplectic method. Two optional
 extensions can be enabled explicitly:
 
-- **[Regularization](regularization.md)** — Levi-Civita / KS handling for
-  close encounters. Wrap the base algorithm:
-  `solve(prob, RegularizedIntegrator(SymmetricProjectionIntegrator()))`.
+- **[Regularization](regularization.md)** — lifted square-root (1D),
+  Levi-Civita (2D), and KS (3D) pair handling for close encounters. Wrap the
+  base algorithm: `solve(prob, RegularizedIntegrator())`.
 - **[Zöllner Extension](zollner.md)** — research feature implementing Zöllner's
   electrogravitational mismatch hypothesis. Pass
   `zollner = ZollnerOptions(enabled = true, a = <value>)` to `HamiltonianProblem`.

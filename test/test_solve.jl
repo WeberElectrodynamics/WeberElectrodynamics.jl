@@ -124,6 +124,50 @@
         @test length(integrator.p_history) >= expected_steps
     end
 
+    @testset "save_stride stores sparse history and final state" begin
+        prob = make_weber_problem(tspan = (0.0, 0.1), dt = 0.01)
+        sol = solve(prob; save_stride = 4)
+
+        @test sol.retcode == :Success
+        @test sol.t ≈ [0.0, 0.04, 0.08, 0.1]
+        @test length(sol.q) == 4
+        @test length(sol.p) == 4
+
+        sol_alias = solve(prob; save_every = 5)
+        @test sol_alias.t ≈ [0.0, 0.05, 0.1]
+        @test_throws ArgumentError solve(prob; save_stride = 2, save_every = 5)
+        @test_throws ArgumentError solve(prob; save_stride = 0)
+    end
+
+    @testset "stream_sink receives every macro-step" begin
+        prob = make_weber_problem(tspan = (0.0, 0.03), dt = 0.01)
+        seen = Tuple{Float64,Int}[]
+        sink = (t, q, p, step) -> push!(seen, (t, step))
+
+        sol = solve(prob; save_stride = 10, stream_sink = sink)
+
+        @test sol.retcode == :Success
+        @test sol.t ≈ [0.0, 0.03]
+        @test first.(seen) ≈ [0.0, 0.01, 0.02, 0.03]
+        @test last.(seen) == [0, 1, 2, 3]
+    end
+
+    @testset "JLD2 solution archive helpers" begin
+        prob = make_weber_problem(tspan = (0.0, 0.02), dt = 0.01)
+        sol = solve(prob)
+        path = tempname() * ".jld2"
+
+        @test save_solution(path, sol; metadata = (case = "archive",)) == path
+        loaded = load_solution(path)
+
+        @test loaded isa HamiltonianSolution
+        @test loaded.t == sol.t
+        @test loaded.q == sol.q
+        @test loaded.p == sol.p
+        @test loaded.retcode == sol.retcode
+        rm(path; force = true)
+    end
+
     @testset "Two-body system solve" begin
         prob = make_coulomb_like_problem(tspan = (0.0, 1.0), dt = 0.01)
         sol = solve(prob)

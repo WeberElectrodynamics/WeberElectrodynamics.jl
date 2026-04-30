@@ -405,3 +405,88 @@ function Base.show(io::IO, ::MIME"text/plain", data::EnergyData)
         "  Hamiltonian validation: max error = $(maximum(data.hamiltonian_validation_error))",
     )
 end
+
+function _summary_min_pair_distance(sol::HamiltonianSolution, stride::Int)
+    n = n_particles(sol.prob)
+    d = dims(sol.prob)
+    n < 2 && return Inf
+
+    min_r = Inf
+    @inbounds for sol_idx in 1:stride:length(sol.t)
+        q = sol.q[sol_idx]
+        for i = 1:n
+            i0 = (i - 1) * d
+            for j = (i+1):n
+                j0 = (j - 1) * d
+                r2 = 0.0
+                for k = 1:d
+                    dx = q[i0+k] - q[j0+k]
+                    r2 += dx * dx
+                end
+                min_r = min(min_r, sqrt(r2))
+            end
+        end
+    end
+    return min_r
+end
+
+function _summary_angular_drift(momentum)
+    if isnothing(momentum.angular_momentum_magnitude)
+        return (max = nothing, relative_max = nothing)
+    end
+
+    initial = momentum.angular_momentum_magnitude[1]
+    max_drift = 0.0
+    @inbounds for value in momentum.angular_momentum_magnitude
+        max_drift = max(max_drift, abs(value - initial))
+    end
+    relative =
+        abs(initial) <= 100 * eps(Float64) ? NaN : max_drift / abs(initial)
+    return (max = max_drift, relative_max = relative)
+end
+
+"""
+    conservation_summary(sol; stride=1) -> NamedTuple
+
+Return a compact conservation summary for notebooks, smoke tests, and
+regression checks.
+
+The result contains energy error statistics, maximum linear and angular
+momentum drift, the minimum sampled pair distance, and the solution's
+regularization diagnostics.
+"""
+function conservation_summary(sol::HamiltonianSolution; stride::Int = 1)
+    stride > 0 || throw(ArgumentError("stride must be positive, got $stride"))
+
+    energy = compute_energy_timeseries(sol; stride = stride)
+    momentum = compute_momentum_timeseries(sol; stride = stride)
+
+    linear_initial = momentum.linear_momentum_magnitude[1]
+    linear_drift_max = 0.0
+    @inbounds for value in momentum.linear_momentum_magnitude
+        linear_drift_max = max(linear_drift_max, abs(value - linear_initial))
+    end
+    linear_relative =
+        abs(linear_initial) <= 100 * eps(Float64) ? NaN :
+        linear_drift_max / abs(linear_initial)
+
+    angular = _summary_angular_drift(momentum)
+    validation_max = maximum(energy.hamiltonian_validation_error)
+
+    return (
+        n_points = length(energy.t),
+        energy = (
+            local_error_max = energy.statistics.local_error_max,
+            global_error_percent_max = energy.statistics.global_error_percent_max,
+            hamiltonian_validation_max = validation_max,
+        ),
+        momentum = (
+            linear_drift_max = linear_drift_max,
+            linear_relative_drift_max = linear_relative,
+            angular_drift_max = angular.max,
+            angular_relative_drift_max = angular.relative_max,
+        ),
+        min_pair_distance = _summary_min_pair_distance(sol, stride),
+        regularization = sol.regularization,
+    )
+end

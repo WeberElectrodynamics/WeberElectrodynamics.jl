@@ -581,7 +581,7 @@ Simulation parameters should be chosen accordingly:
 - $\mathrm{tspan}$: several multiples of $T$ to capture multiple oscillation cycles.
 - $\mathrm{dt}$: small enough to resolve the oscillation; at least 20 steps per period.
 
-**Regularization.** As $r \to 0$ the radial velocity approaches $\sqrt{2}\,c$ and the Coulomb singularity $k/r$ diverges. Regularization (see [Regularization.md](Regularization.md)) is essential for accurate integration. Use `:adaptive_cartesian` for 3D or `:lifted_pair` for 2D.
+**Regularization.** As $r \to 0$ the radial velocity approaches $\sqrt{2}\,c$ and the Coulomb singularity $k/r$ diverges. Regularization (see [Regularization.md](Regularization.md)) is essential for accurate integration. Use `:lifted_pair` for binary 1D/2D/3D close encounters or `:adaptive_cartesian` when a Cartesian substep path is preferred.
 
 ## Distant-State Like-Charge Scattering
 
@@ -621,11 +621,11 @@ $$v = \eta_{\text{orb}} \cdot v_{\text{orb}}$$
 
 Bound orbits require $\eta_{\text{orb}} \lesssim 0.9$; at $\eta_{\text{orb}} \geq 1$ the orbiter escapes. The exact bound/unbound threshold depends on the nucleus size and Zöllner coupling.
 
-**Collision bounce.** The nucleus pair oscillation passes through $r = 0$ (in the $\ell = 0$ regularisable case). Use a collision bounce radius $r_{\text{bounce}} > 0$ to reflect the relative coordinate at small separation (see [../exploratory/CollisionBounceRegularization.md](../exploratory/CollisionBounceRegularization.md)).
+**Collision bounce.** The nucleus pair oscillation passes through $r = 0$ (in the $\ell = 0$ regularisable case). Use a collision bounce radius $r_{\text{bounce}} > 0$ to reflect the relative coordinate at small separation. The package-level callback and regularized-integrator bridge are documented in [docs/src/regularization.md](../docs/src/regularization.md).
 
 **Zöllner enhancement.** With mismatch parameter $a > 0$, the unlike-pair coupling strengthens by factor $(1+a)$. This tightens the orbiter's orbit and can circularise an otherwise eccentric trajectory. For $\eta_{\text{orb}} = 0.8$ and $a = 0.5$, the orbit becomes nearly circular. The nucleus (like-charge pair) is unaffected by $a$ since $\kappa_{ij} = 1$ for like signs.
 
-This construction is approximate: the nucleus oscillation and orbital motion couple dynamically. The scale separation $R \gg r_{\text{nuc}}$ controls the quality of the approximation. Validated configurations and parameter sweeps are documented in [../exploratory/ThreeBodyBoundStates.md](../exploratory/ThreeBodyBoundStates.md).
+This construction is approximate: the nucleus oscillation and orbital motion couple dynamically. The scale separation $R \gg r_{\text{nuc}}$ controls the quality of the approximation. Treat parameter sweeps as simulation studies rather than closed-form guarantees.
 
 ## Reference Tables
 

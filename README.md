@@ -25,6 +25,25 @@ A Julia package for symplectic numerical integration of n-body Weber electrodyna
 
 - **WeberElectrodynamicsPlotsExt** — static plotting of trajectories, energy, forces, momentum and phase space
 - **WeberElectrodynamicsMakieExt** — real-time animated dashboard with any Makie backend (GLMakie, CairoMakie, WGLMakie)
+- **WeberElectrodynamicsJLD2Ext** — optional `HamiltonianSolution` archives via JLD2
+
+## Regularization capability matrix
+
+Regularization is opt-in through `RegularizedIntegrator`. The lifted backend
+regularizes binary close encounters by dimension; chain encounters still use
+adaptive Cartesian sub-stepping.
+
+| Situation | Backend | Status |
+| --- | --- | --- |
+| 1D binary close encounter | `:lifted_pair` | Lifted square-root chart |
+| 2D binary close encounter | `:lifted_pair` | Lifted Levi-Civita chart |
+| 3D binary close encounter | `:lifted_pair` | Lifted KS chart with constraint projection diagnostics |
+| Any dimension binary fallback | `:adaptive_cartesian` | Cartesian close-encounter substeps |
+| Multi-particle close cluster | chain mode | Adaptive Cartesian substeps over the active component |
+
+The regularization machinery handles the Coulomb/Kepler singular part. Weber's
+velocity-dependent correction is evaluated through the existing equations of
+motion and is not analytically regularized.
 
 ## Examples
 

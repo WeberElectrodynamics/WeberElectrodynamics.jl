@@ -11,7 +11,7 @@ export @sprintf, norm, dot
 include("hamiltonian_system.jl")
 export HamiltonianSystem, weber_term, zollner_term, kinetic_term, coulomb_term
 export NamedTerm, term_names, has_term, get_term
-export n_particles, dims, degrees_of_freedom
+export n_particles, dims, degrees_of_freedom, n_pairs, pair_indices
 
 # =============================================================================
 # Core Types (Problem, Solution, Integrator)
@@ -25,6 +25,14 @@ export RegularizationDiagnostics
 export ZollnerOptions
 export SymmetricProjectionIntegrator
 export masses, charges, speed_of_light, kappas, kappa, params
+
+# =============================================================================
+# Initial-condition helpers
+# =============================================================================
+include("initial_conditions.jl")
+export center_of_mass_frame
+export two_body_initial_conditions, polygon_initial_conditions
+export rigid_rotation_initial_conditions
 
 # =============================================================================
 # Regularization Helpers
@@ -64,6 +72,13 @@ export EnergyData
 export PairEnergyData
 export EnergyStatistics
 export compute_energy_timeseries
+export conservation_summary
+
+# =============================================================================
+# Persistence
+# =============================================================================
+include("archive.jl")
+export save_solution, load_solution
 
 include("statistics/forces.jl")
 export PairForceData

@@ -63,7 +63,9 @@ Regularization and collision bounce are composed outside the problem:
 - **Algorithm wrapper**: `RegularizedIntegrator(SymmetricProjectionIntegrator(); backend=:lifted_pair|:adaptive_cartesian, r_on_factor=..., r_off_factor=..., max_substeps=..., ...)`.
   Pass to `solve(prob, alg)`.
 - **Callback**: `CollisionBounce(radius)` passed via `solve(prob, alg; callbacks=CollisionBounce(r))`.
-- Regularization backends: `:adaptive_cartesian` (2D+3D) and `:lifted_pair` (2D only). Neither regularizes Weber's velocity-dependent force.
+- Regularization backends: `:adaptive_cartesian` (1D/2D/3D Cartesian substeps)
+  and `:lifted_pair` (1D square-root, 2D Levi-Civita, 3D KS binary pair
+  charts). Neither analytically regularizes Weber's velocity-dependent force.
 
 ### Accessor API
 

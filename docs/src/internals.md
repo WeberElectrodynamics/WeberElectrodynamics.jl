@@ -8,7 +8,8 @@ Reference for contributors, developers, and AI agents working with WeberElectrod
 
 ### Source files (`src/`)
 
-- `WeberElectrodynamics.jl` — Module definition, exports, extension stubs (`plot_*`, `animate_weber`)
+- `WeberElectrodynamics.jl` — Module definition, exports, extension stubs (`plot_*`, `animate_weber`, archive helpers)
+- `initial_conditions.jl` — COM-frame two-body, polygon, and rigid-rotation initial-condition helpers
 - `hamiltonian_system.jl` — `HamiltonianSystem`: uses Symbolics.jl to build the Weber Hamiltonian symbolically, then compiles `dq_dt`, `dp_dt`, and `hamiltonian` functions via `build_function`
 - `types.jl` — All core structs: `HamiltonianProblem`, `HamiltonianSolution`, `HamiltonianIntegrator`, `SymmetricProjectionIntegrator`, `RegularizationOptions`, `ZollnerOptions`, buffer/diagnostics types
 - `regularization.jl` — Internal helpers: pair distance detection, adjacency graph (BFS), Levi-Civita 2D projection, KS quaternion helpers
@@ -19,12 +20,13 @@ Reference for contributors, developers, and AI agents working with WeberElectrod
 
 - `WeberElectrodynamicsPlotsExt.jl` — Plots.jl weak dependency; provides `plot_trajectories`, `plot_energy`, `plot_pair_energy`, `plot_energy_errors`, `plot_pair_forces`, `plot_phase_space`, `plot_momentum_errors`, and Zöllner-specific plot functions.
 - `WeberElectrodynamicsMakieExt.jl` — Makie weak dependency (any backend: GLMakie, CairoMakie, WGLMakie); provides `animate_weber` for real-time streaming or solution replay with rolling trajectory/energy/momentum/phase-space dashboard.
+- `WeberElectrodynamicsJLD2Ext.jl` — JLD2 weak dependency; provides `save_solution` and `load_solution`.
 
 ### Tests (`test/`)
 
 - `test_utils.jl` — Problem builders (`make_weber_problem()`, `make_coulomb_like_problem()`) and reference energy functions; **must be included before other test files**
 - `runtests.jl` — Entry point, includes all test files in order
-- Test files: `test_types.jl`, `test_hamiltonian_system.jl`, `test_solve.jl`, `test_statistics.jl`, `test_integration.jl`, `test_physics.jl`, `test_regularization.jl`, `test_zollner.jl`
+- Test files: `test_types.jl`, `test_hamiltonian_system.jl`, `test_initial_conditions.jl`, `test_solve.jl`, `test_statistics.jl`, `test_integration.jl`, `test_physics.jl`, `test_regularization.jl`, `test_zollner.jl`
 
 ### Examples (`examples/`)
 
@@ -76,17 +78,19 @@ Pair index (internal): `_pair_index(i, j, n) = (i-1)*(2n-i)÷2 + (j-i)` (1-based
 ### Regularization backends
 
 Only two valid values for `RegularizationOptions.backend`:
-- `:adaptive_cartesian` — KS-style, works for all dimensions
-- `:lifted_pair` — Levi-Civita, **2D only** (auto-falls back to `:adaptive_cartesian` outside 2D)
+- `:adaptive_cartesian` — Cartesian close-encounter substeps, works for all dimensions
+- `:lifted_pair` — lifted square-root (1D), Levi-Civita (2D), or KS (3D) binary pair stepping
 
-Neither backend regularizes Weber's velocity-dependent force — only the Coulomb/Kepler singularity.
+Multi-particle close clusters use chain mode, which is adaptive Cartesian over
+the active component. Neither backend analytically regularizes Weber's
+velocity-dependent force — only the Coulomb/Kepler singularity.
 
 ### Collision bounce
 
 - Implemented as the `CollisionBounce(radius)` callback; pass it to `solve` (or `init`) via the `callbacks` kwarg
 - `RegularizedIntegrator` also accepts a `collision_bounce_radius` kwarg and synthesises a matching callback automatically when no `CollisionBounce` is supplied
+- Under `RegularizedIntegrator`, the bounce radius is checked after regularized substeps as well as at macro-step boundaries
 - Only valid for ℓ=0 (head-on) collisions
-- Works best with the **unregularized** integrator (symplectic error stays bounded)
 
 ### Zöllner extension
 

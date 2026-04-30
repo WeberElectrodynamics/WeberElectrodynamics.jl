@@ -4,6 +4,7 @@ using WeberElectrodynamics: SymmetricProjectionIntegrator
 using LinearAlgebra
 using Random
 using Symbolics
+using JLD2
 
 @testset "WeberElectrodynamics.jl" begin
     include("test_utils.jl")
@@ -13,6 +14,7 @@ using Symbolics
     include("test_custom_hamiltonian.jl")
     include("test_named_term.jl")
     include("test_accessors.jl")
+    include("test_initial_conditions.jl")
     include("test_algorithm_dispatch.jl")
     include("test_regularized_integrator.jl")
     include("test_callbacks.jl")

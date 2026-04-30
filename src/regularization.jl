@@ -364,6 +364,37 @@ end
     return abs(_ks_constraint(u, U))
 end
 
+@inline function _ks_project!(
+    q_rel::Vector{Float64},
+    p_rel::Vector{Float64},
+    u::Vector{Float64},
+    U::Vector{Float64},
+    J::Matrix{Float64},
+)
+    u1, u2, u3, u4 = u
+
+    q_rel[1] = u1 * u1 - u2 * u2 - u3 * u3 + u4 * u4
+    q_rel[2] = 2 * (u1 * u2 - u3 * u4)
+    q_rel[3] = 2 * (u1 * u3 + u2 * u4)
+
+    r = u1 * u1 + u2 * u2 + u3 * u3 + u4 * u4
+    if r <= eps(Float64)
+        return 0.0
+    end
+
+    _ks_jacobian!(J, u)
+    inv_4r = 0.25 / r
+    @inbounds for d = 1:3
+        value = 0.0
+        for k = 1:4
+            value += J[d, k] * U[k]
+        end
+        p_rel[d] = inv_4r * value
+    end
+
+    return r
+end
+
 @inline function _ks_lift!(rb::RegularizationBuffers)
     x1 = rb.rel_q[1]
     x2 = rb.rel_q[2]

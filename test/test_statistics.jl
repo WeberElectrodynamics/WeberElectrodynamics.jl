@@ -11,12 +11,17 @@ using WeberElectrodynamics: compute_total_kinetic_energy, compute_pair_weber_com
     @testset "TrajectoryData" begin
         @testset "compute_trajectory_data basic" begin
             traj = compute_trajectory_data(sol_coulomb, 2, 2)
+            inferred = compute_trajectory_data(sol_coulomb)
 
             @test traj isa TrajectoryData
+            @test inferred isa TrajectoryData
             @test traj.n_particles == 2
             @test traj.dims == 2
+            @test inferred.n_particles == 2
+            @test inferred.dims == 2
             @test length(traj.trajectories) == 2
             @test size(traj.trajectories[1]) == (length(sol_coulomb.t), 2)
+            @test inferred.trajectories[1] == traj.trajectories[1]
             @test length(traj.initial_positions) == 2
             @test length(traj.final_positions) == 2
             @test length(traj.initial_positions[1]) == 2
@@ -436,6 +441,17 @@ using WeberElectrodynamics: compute_total_kinetic_energy, compute_pair_weber_com
             @test length(momentum.linear_momentum_magnitude) == length(sol_weber.t)
             @test momentum.n_particles == 2
             @test momentum.dims == 2
+        end
+
+        @testset "conservation_summary" begin
+            summary = conservation_summary(sol_weber; stride = 10)
+
+            @test summary.n_points == length(1:10:length(sol_weber.t))
+            @test summary.energy.global_error_percent_max >= 0
+            @test summary.energy.hamiltonian_validation_max >= 0
+            @test summary.momentum.linear_drift_max >= 0
+            @test summary.min_pair_distance > 0
+            @test summary.regularization === sol_weber.regularization
         end
 
         @testset "Linear momentum components" begin

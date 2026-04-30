@@ -10,7 +10,7 @@
 #   2. Term introspection (`term_names`, `has_term`, `pair_decomposition`)
 #   3. Accessor tour
 #   4. N=3 mixed signs with a neutral particle (Zöllner)
-#   5. 3D regularization with `:adaptive_cartesian`
+#   5. 3D lifted KS regularization with `:lifted_pair`
 #   6. CollisionBounce callback
 #   7. Combined RegularizedIntegrator + CollisionBounce
 #
@@ -150,9 +150,9 @@ sol_n3 = solve(prob_n3)
 @printf "  retcode=%s  steps=%d\n" sol_n3.retcode length(sol_n3.t)
 
 # ---------------------------------------------------------------------------
-# Section 5 — 3D regularization with :adaptive_cartesian
+# Section 5 — 3D lifted KS regularization with :lifted_pair
 # ---------------------------------------------------------------------------
-println("\n[5] 3D close approach with :adaptive_cartesian regularization")
+println("\n[5] 3D close approach with :lifted_pair KS regularization")
 sys_3d = HamiltonianSystem(2, 3)
 m1_3d, m2_3d = 1.0, 0.1
 q1_3d, q2_3d = sqrt(0.1), -sqrt(0.1)
@@ -175,7 +175,7 @@ prob_3d = HamiltonianProblem(
 )
 alg_3d = RegularizedIntegrator(
     SymmetricProjectionIntegrator();
-    backend = :adaptive_cartesian,
+    backend = :lifted_pair,
     r_on_factor = 0.3,
     r_off_factor = 0.45,
     warn_on_fallback = false,
@@ -184,6 +184,7 @@ sol_3d = solve(prob_3d, alg_3d)
 diag = sol_3d.regularization
 @printf "  retcode=%s  steps=%d\n" sol_3d.retcode length(sol_3d.t)
 @printf "  regularization: backend=%s activations=%d active_steps=%d total_substeps=%d min_r=%.3e\n" diag.used_backend diag.activation_count diag.active_steps diag.total_substeps diag.min_encounter_distance
+@printf "  KS projections=%d  max constraint violation=%.3e\n" diag.ks_constraint_projection_count diag.max_constraint_violation
 
 # ---------------------------------------------------------------------------
 # Section 6 — CollisionBounce callback (sub-critical like-charge oscillation)

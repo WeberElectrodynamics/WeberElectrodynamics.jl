@@ -261,8 +261,8 @@ function fixture_oned_kepler()
 end
 
 function fixture_threed_close_approach_adaptive()
-    # 3D analogue of close_approach_lifted, with the only 3D-supported backend
-    # (`:adaptive_cartesian`). Same 2-body parameters, embedded in the z=0
+    # 3D analogue of close_approach_lifted using the Cartesian substep backend.
+    # Same 2-body parameters, embedded in the z=0
     # plane to share an analytic structure with the 2D fixture.
     m1, m2 = 1.0, 0.1
     q1, q2 = sqrt(0.1), -sqrt(0.1)
