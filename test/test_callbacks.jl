@@ -6,6 +6,37 @@
         @test_throws AssertionError CollisionBounce(-0.1)
     end
 
+    @testset "CollisionBounce reflects unlike-charge head-on pairs" begin
+        sys = HamiltonianSystem(2, 2)
+        q0 = [0.004, 0.0, -0.004, 0.0]
+        p0 = [0.1, -0.2, -0.3, 0.4]
+        prob = HamiltonianProblem(
+            sys,
+            (0.0, 0.02),
+            q0,
+            p0;
+            masses = [1.0, 1.0],
+            charges = [1.0, -1.0],
+            c = 100.0,
+            dt = 0.01,
+        )
+        cb = CollisionBounce(0.02)
+        integrator = init(prob, SymmetricProjectionIntegrator(); callbacks = cb)
+
+        rel_before = integrator.q[1:2] .- integrator.q[3:4]
+        com_before = 0.5 .* (integrator.q[1:2] .+ integrator.q[3:4])
+        p_before = copy(integrator.p)
+
+        apply_pre_step!(cb, integrator, prob.dt)
+
+        rel_after = integrator.q[1:2] .- integrator.q[3:4]
+        com_after = 0.5 .* (integrator.q[1:2] .+ integrator.q[3:4])
+
+        @test rel_after ≈ -rel_before
+        @test com_after ≈ com_before
+        @test integrator.p == p_before
+    end
+
     @testset "default callbacks are empty" begin
         sys = HamiltonianSystem(2, 2)
         prob = HamiltonianProblem(

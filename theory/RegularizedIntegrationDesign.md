@@ -119,7 +119,9 @@ The frozen-per-substep monitor avoids distortion from re-scaling midpoint stages
 
 ## Chain Mode
 
-Chain mode uses adaptive Cartesian integration:
+Chain mode uses adaptive Cartesian integration. It does not implement analytic
+chain-coordinate regularization; the chain ordering is used to define and
+diagnose the close cluster while the actual step remains Cartesian:
 
 1. Build deterministic chain ordering from closest-link traversal.
 2. Compute active-component monitor
@@ -167,9 +169,16 @@ deferred; chain mode is adaptive Cartesian over the active component.
 `RegularizationOptions` accepts `collision_bounce_radius::Float64 = 0.0`
 (disabled by default). When positive, a pre-step reflection is applied to any
 pair closer than this radius: `q_rel → -q_rel` with momenta unchanged. This is
-the C⁰-continuation of a head-on (ℓ=0) collision and preserves energy exactly.
+the C0-continuation of a head-on (`L = 0`) collision or pass-through, including
+two-body unlike-charge pairs when explicitly enabled. For an isolated two-body
+Hamiltonian whose pair potential depends only on `|q_rel|`, the reflection
+preserves energy exactly; in `N > 2`, distances to third particles can change,
+so the bounce is not generally an exact full-system energy-preserving map.
+
 The feature is independent of the regularization backend and may be used with
-`enabled = false`.
+`enabled = false`. Under `RegularizedIntegrator`, the bounce radius is checked
+at macro-step boundaries through the callback path and after regularized
+substeps inside pair/chain macro-steps.
 
 ## Memory Model
 

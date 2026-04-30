@@ -658,10 +658,11 @@ end
     return sqrt(dx * dx + dy * dy)
 end
 
-# Reflect the relative coordinate through the origin while leaving
-# momenta unchanged.  Physically this is the two particles passing
-# through each other at r = 0 (C⁰-continuation of the ℓ = 0 collision).
-# Energy is exactly preserved because H depends only on |q_rel| and p_rel.
+# Reflect the relative coordinate through the origin while leaving momenta
+# unchanged. Physically this is the two particles passing through each other
+# at r = 0 (C0-continuation of an L = 0 collision). For an isolated two-body
+# pair Hamiltonian, energy is preserved because H depends only on |q_rel| and
+# p_rel; in N > 2 systems this is only a local pair continuation.
 @inline function _reflect_pair_2d!(
     q::Vector{Float64},
     p::Vector{Float64},
@@ -1852,9 +1853,9 @@ function _resolve_callbacks(::HamiltonianProblem, ::HamiltonianAlgorithm, cbs)
     return _normalise_callbacks(cbs)
 end
 
-# Pre-step collision bounce: for each pair closer than bounce_r,
-# reflect the relative coordinate through the origin.
-# Used for like-charge sub-critical oscillation (ℓ=0, C⁰-continuable).
+# Pre-step collision bounce: for each pair closer than bounce_r, reflect the
+# relative coordinate through the origin. This is intended for explicitly
+# selected head-on (L = 0, C0-continuable) collisions or pass-through events.
 @inline function _apply_collision_bounces!(
     q::Vector{Float64},
     masses::AbstractVector{Float64},

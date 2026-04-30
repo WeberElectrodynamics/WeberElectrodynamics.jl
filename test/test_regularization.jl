@@ -647,6 +647,52 @@
         @test en.statistics.global_error_percent_max < 1.0
     end
 
+    @testset "Unlike-charge head-on bounce with lifted regularization" begin
+        m1 = m2 = 1.0
+        q1, q2 = 1.0, -1.0
+        c = 100.0
+        r0 = 0.25
+
+        sys = HamiltonianSystem(2, 2)
+        prob = HamiltonianProblem(
+            sys,
+            (0.0, 0.25),
+            [r0 / 2, 0.0, -r0 / 2, 0.0],
+            zeros(4);
+            masses = [m1, m2],
+            charges = [q1, q2],
+            c = c,
+            dt = 1e-4,
+            maximum_iterations = 200,
+        )
+        alg = RegularizedIntegrator(
+            SymmetricProjectionIntegrator();
+            backend = :lifted_pair,
+            warn_on_fallback = false,
+            r_on = 0.03,
+            r_off = 0.05,
+            max_substeps = 4096,
+            collision_bounce_radius = 0.006,
+        )
+
+        sol = solve(prob, alg)
+        @test sol.retcode == :Success
+        @test all(isfinite, sol.q[end])
+        @test all(isfinite, sol.p[end])
+        @test sol.regularization.lifted_pair_steps > 0
+
+        rs = [
+            sqrt((sol.q[k][1] - sol.q[k][3])^2 + (sol.q[k][2] - sol.q[k][4])^2) for
+            k = 1:length(sol.t)
+        ]
+        n_minima = count(k -> rs[k] < rs[k-1] && rs[k] < rs[k+1], 2:(length(rs)-1))
+        @test minimum(rs) < 0.01
+        @test n_minima >= 1
+
+        en = compute_energy_timeseries(sol)
+        @test en.statistics.global_error_percent_max < 1.0
+    end
+
     @testset "Chain mode correctness" begin
         sys = HamiltonianSystem(3, 2)
         q0 = [-0.12, 0.0, 0.0, 0.0, 0.12, 0.0]
