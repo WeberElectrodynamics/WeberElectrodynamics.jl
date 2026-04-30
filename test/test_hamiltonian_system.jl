@@ -154,8 +154,7 @@ using WeberElectrodynamics: _pair_index
 
         # Compute energy manually using the test utility function
         E_manual = weber_energy_2body_2d(q, p, [m1, m2], [q1, q2], c)
-        E_compiled =
-            system.hamiltonian_compiled(q, p, 0.0, [m1, m2, q1, q2, c], [1.0])
+        E_compiled = system.hamiltonian_compiled(q, p, 0.0, [m1, m2, q1, q2, c], [1.0])
 
         @test E_manual isa Float64
         @test isfinite(E_manual)

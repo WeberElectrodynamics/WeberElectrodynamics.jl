@@ -286,8 +286,7 @@ using WeberElectrodynamics: compute_total_kinetic_energy, compute_pair_weber_com
                 c = 1.0,
                 dt = 0.1,
             )
-            diagnostics =
-                RegularizationDiagnostics(false, 3, :disabled, :disabled)
+            diagnostics = RegularizationDiagnostics(false, 3, :disabled, :disabled)
             sol_nonuniform = HamiltonianSolution(
                 [0.0, 0.1, 0.2, 0.25],
                 [[0.0, 2.0], [0.0, 2.0], [0.0, 2.0], [0.0, 2.0]],

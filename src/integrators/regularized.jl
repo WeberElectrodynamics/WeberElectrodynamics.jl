@@ -82,7 +82,8 @@ function _allocate_cache(prob::HamiltonianProblem, alg::RegularizedIntegrator)
         @warn "RegularizationOptions(backend=:lifted_pair) is not available for $(prob.system.dims)D; falling back to :adaptive_cartesian"
     end
     if !rb.backend_fallback && alg.options.warn_on_fallback && has_term(prob.system, :weber)
-        @warn "RegularizedIntegrator handles close encounters by substepping/lifting the Coulomb singularity; Weber's velocity-dependent force is not analytically regularized" maxlog = 1
+        @warn "RegularizedIntegrator handles close encounters by substepping/lifting the Coulomb singularity; Weber's velocity-dependent force is not analytically regularized" maxlog =
+            1
     end
     return buffers
 end

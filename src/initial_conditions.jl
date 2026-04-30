@@ -23,8 +23,7 @@ function center_of_mass_frame(
         throw(ArgumentError("p must have length $dof for $n particles in $dims_value D"))
 
     masses_vec = Vector{Float64}(masses_in)
-    all(m -> m > 0, masses_vec) ||
-        throw(ArgumentError("all masses must be positive"))
+    all(m -> m > 0, masses_vec) || throw(ArgumentError("all masses must be positive"))
 
     total_mass = sum(masses_vec)
     q_out = Vector{Float64}(q)
@@ -87,16 +86,14 @@ function two_body_initial_conditions(
     length(charges_in) == 2 || throw(ArgumentError("charges must have length 2"))
 
     dims_value = Int(dims)
-    1 <= dims_value <= 3 ||
-        throw(ArgumentError("dims must be 1, 2, or 3, got $dims_value"))
+    1 <= dims_value <= 3 || throw(ArgumentError("dims must be 1, 2, or 3, got $dims_value"))
     separation_value = Float64(separation)
     separation_value > 0 ||
         throw(ArgumentError("separation must be positive, got $separation"))
 
     masses_vec = Vector{Float64}(masses_in)
     charges_vec = Vector{Float64}(charges_in)
-    all(m -> m > 0, masses_vec) ||
-        throw(ArgumentError("all masses must be positive"))
+    all(m -> m > 0, masses_vec) || throw(ArgumentError("all masses must be positive"))
 
     mi, mj = masses_vec
     total_mass = mi + mj
@@ -192,8 +189,8 @@ function polygon_initial_conditions(
     end
 
     speed_value =
-        isnothing(speed) ? sqrt(2 * Float64(energy_ratio) * abs(potential) / (n * mass_value)) :
-        Float64(speed)
+        isnothing(speed) ?
+        sqrt(2 * Float64(energy_ratio) * abs(potential) / (n * mass_value)) : Float64(speed)
     speed_value >= 0 || throw(ArgumentError("speed must be non-negative, got $speed"))
 
     sign = clockwise ? -1.0 : 1.0
@@ -239,8 +236,7 @@ function rigid_rotation_initial_conditions(
 
     masses_vec = Vector{Float64}(masses_in)
     charges_vec = Vector{Float64}(charges)
-    all(m -> m > 0, masses_vec) ||
-        throw(ArgumentError("all masses must be positive"))
+    all(m -> m > 0, masses_vec) || throw(ArgumentError("all masses must be positive"))
 
     q_centered = center_of_mass_frame(q_in, zeros(Float64, dof), masses_vec, dims_value).q
     p = zeros(Float64, dof)

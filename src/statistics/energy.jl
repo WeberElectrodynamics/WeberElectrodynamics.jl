@@ -412,7 +412,7 @@ function _summary_min_pair_distance(sol::HamiltonianSolution, stride::Int)
     n < 2 && return Inf
 
     min_r = Inf
-    @inbounds for sol_idx in 1:stride:length(sol.t)
+    @inbounds for sol_idx = 1:stride:length(sol.t)
         q = sol.q[sol_idx]
         for i = 1:n
             i0 = (i - 1) * d
@@ -440,8 +440,7 @@ function _summary_angular_drift(momentum)
     @inbounds for value in momentum.angular_momentum_magnitude
         max_drift = max(max_drift, abs(value - initial))
     end
-    relative =
-        abs(initial) <= 100 * eps(Float64) ? NaN : max_drift / abs(initial)
+    relative = abs(initial) <= 100 * eps(Float64) ? NaN : max_drift / abs(initial)
     return (max = max_drift, relative_max = relative)
 end
 

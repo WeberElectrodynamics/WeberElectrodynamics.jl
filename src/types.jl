@@ -882,7 +882,13 @@ run to completion. The current state is accessible via `integrator.q`,
   state and every completed macro-step. The sink must copy `q`/`p` if it
   retains them.
 """
-mutable struct HamiltonianIntegrator{P<:HamiltonianProblem,A<:HamiltonianAlgorithm,C,CB<:Tuple,S}
+mutable struct HamiltonianIntegrator{
+    P<:HamiltonianProblem,
+    A<:HamiltonianAlgorithm,
+    C,
+    CB<:Tuple,
+    S,
+}
     prob::P
     alg::A
     t::Float64

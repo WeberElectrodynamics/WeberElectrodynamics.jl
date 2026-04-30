@@ -127,8 +127,10 @@ function WeberElectrodynamics.load_solution(path::AbstractString)
     t = Vector{Float64}(sdat.t)
     q = [Vector{Float64}(state) for state in sdat.q]
     p = [Vector{Float64}(state) for state in sdat.p]
-    diagnostics =
-        _diagnostics_from_archive(sdat.regularization, length(sdat.regularization.mode_history))
+    diagnostics = _diagnostics_from_archive(
+        sdat.regularization,
+        length(sdat.regularization.mode_history),
+    )
 
     return WeberElectrodynamics.HamiltonianSolution(
         t,

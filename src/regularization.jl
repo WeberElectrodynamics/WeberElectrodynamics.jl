@@ -414,20 +414,24 @@ end
     end
 
     if r + x1 > 100 * eps(Float64)
+        # Primary chart (set u₄ = 0): valid except near r ≈ -x₁.
         den = sqrt(2 * (r + x1))
         u[1] = 0.5 * den
         u[2] = x2 / den
         u[3] = x3 / den
         u[4] = 0.0
     else
+        # Alternate chart (set u₃ = 0): used near r ≈ -x₁ where the primary
+        # chart degenerates. Round-trip with the forward map x = forward_KS(u)
+        # requires u₃ = 0 (not u₁ = 0); see Stiefel & Scheifele (1971).
         den = sqrt(max(2 * (r - x1), 0.0))
-        u[1] = 0.0
         u[2] = 0.5 * den
+        u[3] = 0.0
         if den > 100 * eps(Float64)
-            u[3] = x2 / den
-            u[4] = -x3 / den
+            u[1] = x2 / den
+            u[4] = x3 / den
         else
-            u[3] = 0.0
+            u[1] = 0.0
             u[4] = 0.0
         end
     end

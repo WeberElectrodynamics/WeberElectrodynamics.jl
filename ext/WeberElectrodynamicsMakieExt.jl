@@ -455,7 +455,8 @@ function _update_phase_space!(
         end
         particle = parse(Int, m[1])
         comp = state.phase_component[]
-        if haskey(buf.particle_q, particle) && 1 <= comp <= size(buf.particle_q[particle], 1)
+        if haskey(buf.particle_q, particle) &&
+           1 <= comp <= size(buf.particle_q[particle], 1)
             x = obs.phase_x[]
             y = obs.phase_y[]
             _copy_linearized_col!(x, buf.particle_q[particle], comp, buf)
@@ -923,12 +924,13 @@ function _build_figure_impl(
     reset_btn = Button(controls_grid[1, 2]; label = "Reset", width = 70)
 
     Label(controls_grid[1, 3], "Trail:"; fontsize = 11, halign = :right)
-    trail_range = sort(unique([1; collect(10:10:state.buffer_size); state.tail_length[]; state.buffer_size]))
-    trail_slider = Slider(
-        controls_grid[1, 4];
-        range = trail_range,
-        startvalue = state.tail_length[],
+    trail_range = sort(
+        unique(
+            [1; collect(10:10:state.buffer_size); state.tail_length[]; state.buffer_size],
+        ),
     )
+    trail_slider =
+        Slider(controls_grid[1, 4]; range = trail_range, startvalue = state.tail_length[])
 
     Label(controls_grid[1, 5], "Speed:"; fontsize = 11, halign = :right)
     speed_range = _log_linear_range(1000)

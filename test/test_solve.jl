@@ -152,6 +152,48 @@
         @test last.(seen) == [0, 1, 2, 3]
     end
 
+    @testset "stream_sink fires per macro-step under regularized integrator" begin
+        # Regression guard: when the regularized integrator subdivides a
+        # macro-step into many lifted substeps, stream_sink must still be
+        # invoked once per macro-step (not once per substep). Use a tight
+        # 2D close-encounter setup with a coarse macro-dt so :lifted_pair
+        # actually subdivides each macro-step into many substeps.
+        sys = HamiltonianSystem(2, 2)
+        q0 = [0.4, 0.0, -0.4, 0.0]
+        p0 = [0.0, 0.15, 0.0, -0.15]
+        prob = HamiltonianProblem(
+            sys,
+            (0.0, 1.0),
+            q0,
+            p0;
+            masses = [1.0, 1.0],
+            charges = [1.0, -1.0],
+            c = 4.0,
+            dt = 0.05,
+        )
+        alg = RegularizedIntegrator(
+            SymmetricProjectionIntegrator();
+            backend = :lifted_pair,
+            warn_on_fallback = false,
+            r_on = 0.5,
+            r_off = 0.6,
+            chain_enabled = false,
+        )
+
+        seen = Tuple{Float64,Int}[]
+        sink = (t, q, p, step) -> push!(seen, (t, step))
+        sol = solve(prob, alg; stream_sink = sink)
+
+        @test sol.retcode == :Success
+        # One emission per macro-step plus one for the initial state.
+        @test length(seen) == length(sol.t)
+        @test last.(seen) == collect(0:(length(sol.t)-1))
+        # Lifted-pair was actually used and subdivided into multiple substeps
+        # (otherwise the regression-guard premise is moot).
+        @test sol.regularization.lifted_pair_steps > 0
+        @test sol.regularization.total_substeps > sol.regularization.lifted_pair_steps
+    end
+
     @testset "JLD2 solution archive helpers" begin
         prob = make_weber_problem(tspan = (0.0, 0.02), dt = 0.01)
         sol = solve(prob)
