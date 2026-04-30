@@ -7,7 +7,7 @@ Regularization removes collision singularities in pairwise $1/r$-type interactio
 1. Replace singular relative coordinates by collision-resolving coordinates.
 2. Rescale physical time so trajectories slow down near collisions in physical time but remain smooth in a fictitious time.
 
-This document is self-contained and independent of any specific implementation.
+This document is self-contained and independent of any specific implementation. For Weber electrodynamics, these lifted maps analytically regularize the Coulomb/Kepler $1/r$ singularity only; Weber's velocity-dependent correction must still be handled by the numerical equations of motion or by a separate collision-continuation rule.
 
 ## Singular Structure of the $N$-Body Problem
 
@@ -261,7 +261,7 @@ In numerical $N$-body work, regularization is typically activated only for close
 1. Detect candidate close pairs with an activation radius $r_{\text{on}}$.
 2. Keep regularization active until all relevant separations exceed a larger radius $r_{\text{off}}>r_{\text{on}}$ (hysteresis).
 3. If the active encounter involves one close binary, apply pair regularization directly.
-4. If several close pairs share particles (overlapping encounter graph), switch to a local chain-style subsystem and evolve it with a global monitor $g$ (for example $g=1/\Omega$).
+4. If several close pairs share particles (overlapping encounter graph), switch to a local chain-style subsystem and evolve it with a global monitor $g$ (for example $g=1/\Omega$), or use adaptive Cartesian substepping when analytic chain regularization is not implemented.
 
 This practical policy preserves the main benefit of regularization near singular events while keeping the far-field integration in ordinary coordinates.
 
@@ -275,15 +275,29 @@ When several nearby bodies interact simultaneously, direct pairwise relative coo
 
 This reduces subtraction of large nearby numbers and improves robustness in few-body subsystems embedded in large $N$-body dynamics.
 
+In WeberElectrodynamics.jl, chain coordinates are background theory rather than the implemented chain backend: multi-particle close clusters currently use adaptive Cartesian substeps over the active component, while true analytic chain-coordinate regularization remains deferred.
+
+## Collision-Bounce Continuation
+
+For $L=0$ head-on collisions that are $C^0$-continuable, a practical collision bounce reflects the relative coordinate through the origin while preserving the center of mass and momenta:
+
+$$
+\vec r_{ij}\mapsto -\vec r_{ij},\quad P_{ij}\mapsto P_{ij},\quad p_{ij}\mapsto p_{ij}.
+$$
+
+For an isolated two-body Hamiltonian whose potential depends only on $r_{ij}$, this preserves energy exactly because $r_{ij}$ and the momenta are unchanged in magnitude. In an $N>2$ system, reflecting one pair can change distances to third particles, so it should be treated as a local continuation device rather than an exact full-system energy-preserving map.
+
+The same geometric bounce can be used for unlike-charge head-on pass-through when explicitly enabled. It is not a substitute for regularization of nonzero-angular-momentum collisions.
+
 ## Key Mathematical Outcomes
 
-- Binary collision singularities are removed from the transformed vector field.
+- The Coulomb/Kepler binary collision singularity is removed from the transformed vector field.
 - Physical time is recovered by integrating $\frac{dt}{d\tau}=g$.
 - Canonical structure is preserved by coordinate maps plus extended-phase-space Hamiltonian flow.
 - 1D, 2D, and 3D binary regularizations share the same pattern:
   singular radius $r$ becomes quadratic in regularized coordinates and is canceled by $dt=r\,d\tau$.
-- In $N$-body systems, regularization is exact for isolated binary collisions and remains effective for close-encounter subsystems with suitable global $g$ and coordinate organization.
-- **Weber like-charge collisions.** For two like charges inside the critical radius $\rho$, regularizability depends on angular momentum. Head-on collisions ($\ell = 0$) reach the origin at finite speed $\sqrt{2}\,c$ and are $C^0$-continuable — amenable to the techniques above. Spiraling collisions ($\ell \neq 0$) reach the origin at infinite speed in finite time and are *not* regularizable by any smooth coordinate-time transform (Frauenfelder & Weber 2024, Theorem 2.1). The obstruction is topological: infinite winding number, preserved by all smooth coordinate changes.
+- In $N$-body systems, regularization is exact for isolated Coulomb/Kepler binary collisions and remains effective for close-encounter subsystems with suitable global $g$ and coordinate organization.
+- **Weber collision limits.** For two like charges inside the critical radius $\rho$, regularizability depends on angular momentum. Head-on collisions ($\ell = 0$) reach the origin at finite speed $\sqrt{2}\,c$ and are $C^0$-continuable. Spiraling collisions ($\ell \neq 0$) reach the origin at infinite speed in finite time and are *not* regularizable by any smooth coordinate-time transform (Frauenfelder & Weber 2024, Theorem 2.1). The obstruction is topological: infinite winding number, preserved by all smooth coordinate changes.
 
 ## References
 

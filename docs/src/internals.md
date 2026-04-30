@@ -82,15 +82,17 @@ Only two valid values for `RegularizationOptions.backend`:
 - `:lifted_pair` — lifted square-root (1D), Levi-Civita (2D), or KS (3D) binary pair stepping
 
 Multi-particle close clusters use chain mode, which is adaptive Cartesian over
-the active component. Neither backend analytically regularizes Weber's
-velocity-dependent force — only the Coulomb/Kepler singularity.
+the active component rather than analytic chain-coordinate regularization.
+Neither backend analytically regularizes Weber's velocity-dependent force —
+only the Coulomb/Kepler singularity.
 
 ### Collision bounce
 
 - Implemented as the `CollisionBounce(radius)` callback; pass it to `solve` (or `init`) via the `callbacks` kwarg
 - `RegularizedIntegrator` also accepts a `collision_bounce_radius` kwarg and synthesises a matching callback automatically when no `CollisionBounce` is supplied
 - Under `RegularizedIntegrator`, the bounce radius is checked after regularized substeps as well as at macro-step boundaries
-- Only valid for ℓ=0 (head-on) collisions
+- Geometric and charge-sign agnostic: it reflects any pair inside the radius, including two-body unlike-charge pass-through when explicitly enabled
+- Only valid for `L = 0` head-on, C0-continuable collisions/pass-through events; it is not generally energy-preserving for `N > 2`
 
 ### Zöllner extension
 

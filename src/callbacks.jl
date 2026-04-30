@@ -35,11 +35,11 @@ apply_post_step!(::HamiltonianCallback, _, _::Float64) = nothing
     CollisionBounce(radius)
 
 Pre-step callback that reflects the relative coordinate of any pair closer
-than `radius` through the origin, preserving COM and momenta (C⁰-continuation
-of the ℓ = 0 head-on collision; Frauenfelder & Weber 2024). Works best with
-the unregularized symplectic path. Under `RegularizedIntegrator`, the callback
-fires only at macro-step boundaries; close approaches inside regularized
-substeps are not reflected until the next outer step.
+than `radius` through the origin, preserving COM and momenta (C0-continuation
+of an `L = 0` head-on collision or pass-through; Frauenfelder & Weber 2024).
+The callback itself fires at macro-step boundaries. Under `RegularizedIntegrator`,
+the same radius is also checked after regularized pair/chain substeps through
+the regularized step path.
 
 See `docs/src/regularization.md` and `theory/Regularization.md` for the
 regularization and collision-continuation context.

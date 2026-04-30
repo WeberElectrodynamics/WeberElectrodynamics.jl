@@ -96,12 +96,18 @@ regularization enters chain mode (adaptive Cartesian substeps for the whole
 cluster). Chain mode is enabled by default; disable with
 `RegularizedIntegrator(...; chain_enabled = false)`.
 
+Chain mode does not implement analytic chain-coordinate regularization; it is a
+Cartesian fallback for multi-pair clusters.
+
 ## Collision bounce
 
-For head-on (ℓ = 0) collisions between like-charge pairs, a reflection boundary
-can be applied before each macro-step. Under `RegularizedIntegrator`, the same
-radius is also checked after regularized substeps, so close approaches inside a
-regularized macro-step do not have to wait for the next outer step.
+For head-on (`L = 0`) collisions or pass-through events, a reflection boundary
+can be applied before each macro-step. The bounce is geometric rather than
+charge-sign-specific: it reflects any pair inside the radius, including a
+two-body unlike-charge pair when explicitly enabled. Under
+`RegularizedIntegrator`, the same radius is also checked after regularized
+substeps, so close approaches inside a regularized macro-step do not have to
+wait for the next outer step.
 
 Collision bounce is a [`CollisionBounce`](@ref) callback; pass it through the
 `callbacks` kwarg of `solve` (or `init`):
@@ -120,8 +126,10 @@ alg = RegularizedIntegrator(SymmetricProjectionIntegrator();
 sol = solve(prob, alg)
 ```
 
-Collision bounce is intended for C0-continuable head-on cases. It does not make
-generic nonzero-angular-momentum collisions regular.
+Collision bounce is intended for C0-continuable head-on cases. It preserves the
+isolated two-body pair energy exactly, but it is not generally energy-preserving
+for `N > 2` because reflected particles move relative to third bodies. It does
+not make generic nonzero-angular-momentum collisions regular.
 
 ## Diagnostics
 
