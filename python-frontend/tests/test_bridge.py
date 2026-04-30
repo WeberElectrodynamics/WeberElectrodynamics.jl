@@ -4,10 +4,13 @@ Requires a working juliacall + WeberElectrodynamics dev environment.
 Run with ``PYTHON_JULIAPKG_PROJECT=<repo root>``.
 """
 
+import importlib.util
+
 import numpy as np
 import pytest
 
-juliacall = pytest.importorskip("juliacall")
+if importlib.util.find_spec("juliacall") is None:
+    pytest.skip("juliacall is not installed", allow_module_level=True)
 
 
 @pytest.fixture(scope="module")

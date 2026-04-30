@@ -3,12 +3,15 @@
 Requires ``QT_QPA_PLATFORM=offscreen`` for CI. Requires juliacall.
 """
 
+import importlib.util
 import os
 
 import pytest
 
-pytest.importorskip("juliacall")
-pytest.importorskip("PyQt6")
+if importlib.util.find_spec("juliacall") is None:
+    pytest.skip("juliacall is not installed", allow_module_level=True)
+if importlib.util.find_spec("PyQt6") is None:
+    pytest.skip("PyQt6 is not installed", allow_module_level=True)
 
 
 @pytest.fixture(scope="module", autouse=True)

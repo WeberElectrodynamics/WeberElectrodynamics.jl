@@ -45,7 +45,7 @@ class ControlsWidget(QWidget):
         state.play_state_changed.connect(self._on_play_state)
 
         self._tail_slider = QSlider(Qt.Orientation.Horizontal)
-        self._tail_slider.setRange(10, state.buffer.capacity)
+        self._tail_slider.setRange(1, state.buffer.capacity)
         self._tail_slider.setSingleStep(10)
         self._tail_slider.setValue(state.tail_length)
         self._tail_slider.valueChanged.connect(state.set_tail_length)

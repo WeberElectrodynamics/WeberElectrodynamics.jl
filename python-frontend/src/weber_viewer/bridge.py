@@ -8,22 +8,52 @@ delegates to the compiled Julia backend.
 
 from __future__ import annotations
 
+import atexit
+import os
 from typing import Sequence
 
 import numpy as np
+
+from weber_viewer._validation import (
+    as_flat_float_array,
+    as_int,
+    as_positive_float,
+    validate_tspan,
+)
 
 __all__ = ["JuliaBridge"]
 
 
 def _jl():
     # Lazy import so importing this module doesn't boot the Julia runtime.
-    from juliacall import Main as Main_
+    if os.environ.get("WEBER_VIEWER_ENABLE_JULIACALL_ATEXIT") == "1":
+        from juliacall import Main as Main_
+
+        return Main_
+
+    original_register = atexit.register
+
+    def register_without_julia_exit(func, *args, **kwargs):
+        # JuliaCall 0.9.31 can bus-error during jl_atexit_hook on Python 3.13
+        # after a successful run. Let the process tear down Julia instead.
+        if (
+            getattr(func, "__module__", "") == "juliacall"
+            and getattr(func, "__name__", "") == "at_jl_exit"
+        ):
+            return func
+        return original_register(func, *args, **kwargs)
+
+    atexit.register = register_without_julia_exit
+    try:
+        from juliacall import Main as Main_
+    finally:
+        atexit.register = original_register
 
     return Main_
 
 
 class JuliaBridge:
-    """Thin handle over a Julia ``WeberIntegrator``.
+    """Thin handle over a Julia ``HamiltonianIntegrator``.
 
     One instance owns one integrator. Construct via :meth:`from_problem`, then
     drive the simulation with :meth:`step` and :meth:`snapshot`.
@@ -65,37 +95,41 @@ class JuliaBridge:
         convergence_tolerance: float = 1e-13,
         maximum_iterations: int = 100,
     ) -> "JuliaBridge":
-        """Build a Julia ``WeberProblem`` and initialize its integrator."""
+        """Build a Julia ``HamiltonianProblem`` and initialize its integrator."""
+        n_particles = as_int("n_particles", n_particles, min_value=1)
+        dims = as_int("dims", dims, min_value=1, max_value=3)
+        dt = as_positive_float("dt", dt)
+        c = as_positive_float("c", c)
+        tspan = validate_tspan(tspan)
+        convergence_tolerance = as_positive_float(
+            "convergence_tolerance", convergence_tolerance,
+        )
+        maximum_iterations = as_int(
+            "maximum_iterations", maximum_iterations, min_value=1,
+        )
+        expected = n_particles * dims
+        q0 = as_flat_float_array("q_initial", q_initial, length=expected)
+        p0 = as_flat_float_array("p_initial", p_initial, length=expected)
+        m = as_flat_float_array("masses", masses, length=n_particles)
+        qch = as_flat_float_array("charges", charges, length=n_particles)
+        if np.any(m <= 0.0):
+            raise ValueError("masses must contain only positive values")
+
         self = cls()
         jl = self._jl
 
-        expected = n_particles * dims
-        q0 = np.asarray(q_initial, dtype=np.float64)
-        p0 = np.asarray(p_initial, dtype=np.float64)
-        m = np.asarray(masses, dtype=np.float64)
-        qch = np.asarray(charges, dtype=np.float64)
-        if q0.size != expected or p0.size != expected:
-            raise ValueError(
-                f"q_initial/p_initial must have length n_particles*dims = {expected}; "
-                f"got q0={q0.size}, p0={p0.size}"
-            )
-        if m.size != n_particles or qch.size != n_particles:
-            raise ValueError(
-                f"masses and charges must have length n_particles = {n_particles}"
-            )
-
-        system = jl.WeberSystem(n_particles, dims)
-        prob = jl.WeberProblem(
+        system = jl.HamiltonianSystem(n_particles, dims)
+        prob = jl.HamiltonianProblem(
             system,
-            (float(tspan[0]), float(tspan[1])),
+            tspan,
             q0,
             p0,
             masses=m,
             charges=qch,
-            c=float(c),
-            dt=float(dt),
-            convergence_tolerance=float(convergence_tolerance),
-            maximum_iterations=int(maximum_iterations),
+            c=c,
+            dt=dt,
+            convergence_tolerance=convergence_tolerance,
+            maximum_iterations=maximum_iterations,
         )
         self.prob = prob
         self.integrator = self._init_fn(prob, jl.SymmetricProjectionIntegrator())
@@ -124,8 +158,14 @@ class JuliaBridge:
 
     def energy(self, q: np.ndarray | None = None, p: np.ndarray | None = None) -> float:
         """Total Weber energy at the given state (defaults to current)."""
-        if q is None or p is None:
+        if (q is None) != (p is None):
+            raise ValueError("q and p must be provided together")
+        if q is None:
             _, q, p = self.snapshot()
+        else:
+            expected = self.n * self.dims
+            q = as_flat_float_array("q", q, length=expected)
+            p = as_flat_float_array("p", p, length=expected)
         return float(self._compute_energy(q, p, self.prob))
 
     def recycle(self) -> None:

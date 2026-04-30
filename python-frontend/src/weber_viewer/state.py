@@ -7,6 +7,7 @@ from dataclasses import dataclass
 import numpy as np
 from PyQt6.QtCore import QObject, QTimer, pyqtSignal
 
+from weber_viewer._validation import as_int
 from weber_viewer.bridge import JuliaBridge
 from weber_viewer.buffer import RollingBuffer
 
@@ -53,6 +54,11 @@ class AnimationState(QObject):
         parent: QObject | None = None,
     ):
         super().__init__(parent)
+        tail_length = as_int("tail_length", tail_length, min_value=1)
+        compute_batch = as_int("compute_batch", compute_batch, min_value=1)
+        if tail_length > buffer.capacity:
+            raise ValueError("tail_length must be <= buffer capacity")
+
         self.bridge = bridge
         self.buffer = buffer
         self.masses = bridge.masses
