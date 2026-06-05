@@ -72,6 +72,7 @@ export EnergyData
 export PairEnergyData
 export EnergyStatistics
 export compute_energy_timeseries
+export compute_total_energy
 export conservation_summary
 
 # =============================================================================

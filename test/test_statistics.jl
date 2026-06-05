@@ -1,4 +1,5 @@
-using WeberElectrodynamics: compute_total_kinetic_energy, compute_pair_weber_components
+using WeberElectrodynamics:
+    compute_pair_weber_components, compute_total_energy, compute_total_kinetic_energy
 
 @testset "Statistics" begin
     # Setup: run simulations for testing
@@ -130,6 +131,44 @@ using WeberElectrodynamics: compute_total_kinetic_energy, compute_pair_weber_com
 
             # Our computed energy should match HamiltonianSystem's compiled Hamiltonian
             @test all(energy.hamiltonian_validation_error .< 1e-12)
+        end
+
+        @testset "compute_total_energy matches compiled Hamiltonian" begin
+            sys = HamiltonianSystem(2, 2)
+            standard_prob = HamiltonianProblem(
+                sys,
+                (0.0, 0.1),
+                [1.0, 0.0, -1.0, 0.0],
+                [0.0, 0.5, 0.0, -0.5];
+                masses = [1.0, 1.0],
+                charges = [1.0, -1.0],
+                c = 100.0,
+                dt = 0.01,
+            )
+            zollner_prob = HamiltonianProblem(
+                sys,
+                (0.0, 0.1),
+                [1.0, 0.0, -1.0, 0.0],
+                [0.0, 0.5, 0.0, -0.5];
+                masses = [1.0, 1.0],
+                charges = [1.0, -1.0],
+                c = 100.0,
+                dt = 0.01,
+                zollner = ZollnerOptions(enabled = true, a = 0.05),
+            )
+
+            for prob in (standard_prob, zollner_prob)
+                q, p = prob.q_initial, prob.p_initial
+                manual = compute_total_energy(q, p, prob)
+                compiled = prob.system.hamiltonian_compiled(
+                    q,
+                    p,
+                    prob.tspan[1],
+                    params(prob),
+                    kappas(prob),
+                )
+                @test manual ≈ compiled rtol = 1e-13 atol = 1e-13
+            end
         end
 
         @testset "Statistics" begin
