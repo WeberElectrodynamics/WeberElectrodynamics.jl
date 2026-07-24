@@ -1,277 +1,679 @@
-# Hamiltonian Correctness Note: `H_naive` vs. the Weber Hamiltonian
+# Weber Hamiltonian Correctness Finding and Remediation Plan
 
-> **Status: review finding, not yet acted on.** This note documents a
-> physics-correctness issue identified in a v0.5.1 whole-package review and
-> traced to the companion paper. No code has been changed in response to it. It
-> is recorded here so the finding is not lost and so anyone can independently
-> reproduce it. See the "Reproduction" section for runnable scripts.
+> **Status: confirmed physics issue; correction not yet implemented.**
+>
+> This document records where the companion paper and the Julia package depart
+> from the Weber Lagrangian, which surrounding formulas remain correct, and the
+> work required for a future correction. It is a remediation plan, not a
+> description of the behavior currently implemented by the package.
+>
+> The `_research/` and `python-frontend/` directories are outside the scope of
+> this review.
 
-## Summary
+## Executive summary
 
-The default system built by `HamiltonianSystem(n, dims)` integrates
+The companion paper correctly writes the Weber Lagrangian and correctly derives
+the conserved energy as a function of positions and **physical velocities**.
+The error occurs when the paper converts that velocity-space energy into a
+canonical Hamiltonian: it replaces every velocity component by $p/m$.
+
+That replacement is invalid because the Weber Lagrangian depends on velocity.
+Its canonical momentum is
 
 $$
-H_{\text{naive}} = \sum_i \frac{\lVert p_i \rVert^2}{2 m_i}
-+ \sum_{i<j} \frac{q_i q_j}{r_{ij}}\left(1 - \frac{\dot r_{ij}^2}{2c^2}\right),
+\vec p_i = \frac{\partial L}{\partial \vec v_i}
+\ne m_i\vec v_i
+$$
+
+in general when pair radial velocities are nonzero. In an $n$-body system,
+different pair corrections can cancel for a particular particle, so nonzero
+$\dot r_{ij}$ is sufficient to activate the correction but does not imply that
+every individual $\vec p_i-m_i\vec v_i$ is nonzero. The Julia implementation
+follows the paper's substitution, so it consistently integrates the Hamiltonian
+derived in the paper, but that Hamiltonian is not the Legendre transform of the
+Weber Lagrangian.
+
+This is not a one-sign typo. A correct repair must:
+
+1. use the canonical momentum obtained from the Lagrangian;
+2. solve the coupled linear relation between canonical momenta and velocities;
+3. replace the canonical Hamiltonian;
+4. correct both Hamilton equations, including both $1/c^2$ signs in
+   $\dot{\vec p}$;
+5. update code that currently interprets $\vec p/m$ as physical velocity; and
+6. update internal-consistency tests for the corrected Hamiltonian and
+   supplement them with independent Weber-force and Legendre-transform checks.
+
+The current and corrected systems agree in the Coulomb limit $c\to\infty$ and
+at special instants where every pair has $\dot r_{ij}=0$. They generally differ
+at finite $c$ once radial motion is present. Away from a singular or
+ill-conditioned momentum map, the discrepancy begins at the same $O(1/c^2)$
+order as the Weber correction itself.
+
+## Background: kinetic and canonical momentum are different
+
+For this discussion, define the pair coupling
+
+$$
+k_{ij} = \kappa_{ij}q_iq_j.
+$$
+
+The companion paper has $\kappa_{ij}=1$; the package also permits the
+Zöllner-modified couplings $\kappa_{ij}\ne1$.
+
+For
+
+$$
+\vec R_{ij}=\vec r_i-\vec r_j,\qquad
+r_{ij}=\lVert\vec R_{ij}\rVert,\qquad
+\hat r_{ij}=\frac{\vec R_{ij}}{r_{ij}},
+$$
+
+the physical relative radial velocity is
+
+$$
+\dot r_{ij}
+=\hat r_{ij}\mathbin{\cdot}(\vec v_i-\vec v_j).
+$$
+
+The Weber Lagrangian used in the paper is
+
+$$
+L(\vec q,\vec v)
+=
+\frac12\sum_i m_i\lVert\vec v_i\rVert^2
+-
+\sum_{i<j}\frac{k_{ij}}{r_{ij}}
+\left(1+\frac{\dot r_{ij}^{\,2}}{2c^2}\right).
+$$
+
+Differentiating with respect to a particle velocity gives
+
+$$
+\boxed{
+\vec p_i
+=m_i\vec v_i-\sum_{j\ne i}\vec\alpha_{ij}
+}
+$$
+
+with
+
+$$
+\boxed{
+\vec\alpha_{ij}
+=
+\frac{k_{ij}}{c^2}
+\frac{\dot r_{ij}\,\vec R_{ij}}{r_{ij}^2}
+=
+\frac{k_{ij}}{r_{ij}c^2}\,
+\dot r_{ij}\hat r_{ij}.
+}
+$$
+
+Thus:
+
+- $m_i\vec v_i$ is the **kinetic momentum**;
+- $\vec p_i=\partial L/\partial\vec v_i$ is the **canonical momentum**;
+- Hamilton's equations use the canonical momentum; and
+- $\vec p_i=m_i\vec v_i$ only when the summed Weber correction vanishes.
+
+For two particles, for example,
+
+$$
+\vec p_1=m_1\vec v_1-\vec\alpha_{12},\qquad
+\vec p_2=m_2\vec v_2+\vec\alpha_{12}.
+$$
+
+Solving these relations for the velocities gives
+
+$$
+\vec v_1=\frac{\vec p_1+\vec\alpha_{12}}{m_1},\qquad
+\vec v_2=\frac{\vec p_2-\vec\alpha_{12}}{m_2}.
+$$
+
+These equations are **implicit** because $\vec\alpha_{12}$ contains
+$\dot r_{12}$, which itself contains the physical velocities. It is incorrect
+to evaluate $\vec\alpha_{12}$ by first setting $\vec v_i=\vec p_i/m_i$.
+
+## Why an effective-mass matrix appears
+
+The paper does not introduce a matrix $M$. That omission is not evidence that
+no matrix is needed; it is a consequence of the incorrect step
+$\vec v_i\mapsto\vec p_i/m_i$.
+
+The velocity-dependent part of the Weber Lagrangian is quadratic in the
+velocities. Therefore the canonical-momentum equations form a linear system.
+Stack all particle velocities and momenta into vectors
+
+$$
+\vec v=(\vec v_1,\ldots,\vec v_n),\qquad
+\vec p=(\vec p_1,\ldots,\vec p_n).
+$$
+
+Then the momentum relation can be written compactly as
+
+$$
+\boxed{\vec p=M(\vec q)\vec v.}
+$$
+
+The $d\times d$ particle blocks of $M$ are
+
+$$
+M_{ii}
+=m_iI-\sum_{j\ne i}\gamma_{ij}\,
+\hat r_{ij}\hat r_{ij}^{\mathsf T},
+$$
+
+$$
+M_{ij}
+=\gamma_{ij}\,
+\hat r_{ij}\hat r_{ij}^{\mathsf T}
+\qquad(i\ne j),
+$$
+
+where
+
+$$
+\gamma_{ij}=\frac{k_{ij}}{r_{ij}c^2}.
+$$
+
+Equivalently,
+
+$$
+M(\vec q)=D-K(\vec q),\qquad
+D=\operatorname{diag}(m_1I,\ldots,m_nI),
+$$
+
+where each pair contributes only along its radial relative direction.
+
+This matrix is only bookkeeping for the coupled momentum equations already
+contained in the Lagrangian. It introduces no new physical assumption. In the
+Coulomb limit, $K\to0$, so $M\to D$ and the familiar relation
+$\vec v_i=\vec p_i/m_i$ returns.
+
+Where $M(\vec q)$ is invertible,
+
+$$
+\boxed{\vec v=M(\vec q)^{-1}\vec p.}
+$$
+
+For two particles, only the relative radial component is modified; tangential
+components still satisfy kinetic momentum = canonical momentum. For a general
+$n$-body configuration, all pairwise radial corrections participate in one
+coupled $nd\times nd$ solve.
+
+The invertibility qualification is essential. For a two-body like-charge pair
+with $k_{12}>0$, the radial Legendre map becomes singular at
+
+$$
+r_{\mathrm{critical}}
+=\frac{k_{12}}{\mu c^2},
 \qquad
-\dot r_{ij} \equiv \hat r_{ij} \cdot \left(\frac{p_i}{m_i} - \frac{p_j}{m_j}\right)
+\mu=\frac{m_1m_2}{m_1+m_2}.
 $$
 
-— that is, it substitutes $v = p/m$ directly into the **velocity-dependent**
-Weber potential (see [`src/hamiltonian/builders/weber.jl`](../src/hamiltonian/builders/weber.jl)).
+The future implementation must define and test its behavior near this critical
+surface rather than treating the inverse as unconditionally available.
 
-Because the Weber potential depends on velocity, the canonical momentum is
-**not** $m\,v$:
+## Correct canonical Hamiltonian and equations
+
+The Legendre transform is
 
 $$
-p_i = \frac{\partial L}{\partial v_i} = m_i v_i - \frac{\partial S}{\partial v_i},
+H(\vec q,\vec p)
+=\vec p^{\mathsf T}\vec v-L(\vec q,\vec v),
 \qquad
-S = \sum_{i<j} \frac{q_i q_j}{r}\left(1 + \frac{\dot r^2}{2c^2}\right)
-\quad \text{(Lagrangian sign)}
+\vec v=M(\vec q)^{-1}\vec p.
 $$
 
-So the naive $v \to p/m$ substitution does **not** produce the Legendre transform
-of the Weber Lagrangian. $H_{\text{naive}}$ is a *different dynamical system*. It
-agrees with Weber electrodynamics only in the Coulomb limit $c \to \infty$; at
-finite $c$ it deviates at $O(1/c^2)$ — which is exactly the order of the Weber
-correction itself (the entire reason the theory is interesting).
-
-This is consistent with the repo's own theory doc
-[`theory/WeberElectrodynamics.md`](WeberElectrodynamics.md): the explicit
-equations of motion there (the section "Equations of motion", e.g. the
-$\dot x_1$ line) carry a $+$ velocity–momentum coupling — the correct Legendre
-transform — whereas the compiled `dq_dt` carries the opposite $-$ sign. The
-doc's prose $H = \sum_i T_i + \sum_{i<j} U_{ij}$ reads like $H_{\text{naive}}$,
-but its explicit EOM correctly assume $p \neq m v$. The same cannot be said of
-the **companion paper**: the paper's equations of motion match the code (the $-$
-sign), not this doc — the error originates in the paper's derivation, which the
-code then faithfully implements (see *Origin: the paper's derivation* below). So
-this is not a code-only slip: among the repo's three statements of the dynamics,
-only this theory markdown's velocity equation is correct.
-
-## The correct Hamiltonian
-
-$S = U_{\text{Coulomb}} + \sum_{i<j} (q_i q_j/r)\,\dot r^2/(2c^2)$ is **quadratic
-in the velocities**, so the Legendre transform is closed-form and clean:
+It simplifies to
 
 $$
-H_{\text{Weber}}(q, p) = \tfrac{1}{2}\, p^{\top} M(q)^{-1} p + \sum_{i<j} \frac{q_i q_j}{r}
+\boxed{
+H_{\mathrm{Weber}}(\vec q,\vec p)
+=
+\frac12\vec p^{\mathsf T}M(\vec q)^{-1}\vec p
++
+\sum_{i<j}\frac{k_{ij}}{r_{ij}}.
+}
 $$
 
-- The **potential is pure Coulomb**.
-- The **entire** velocity correction moves into a configuration-dependent
-  effective-mass matrix $M(q) = \operatorname{diag}(m_1 I, \dots, m_N I) - K(q)$,
-  where $K(q)$ is assembled from the per-pair blocks
-  $\dfrac{q_i q_j}{r c^2}\,\hat r \otimes \hat r$ acting on the relative
-  coordinate of each pair.
-- This $H$ is **non-separable** — precisely the class the package's
-  semi-explicit (Tao / Jayawardana–Ohsawa) integrator is designed for, so the
-  existing integrator could integrate it unchanged.
-- Expanding
-  $M(q)^{-1} = \operatorname{diag}(1/m) + \operatorname{diag}(1/m)\,K\,\operatorname{diag}(1/m) + O(1/c^4)$
-  reproduces $v_i = \dfrac{p_i}{m_i} + \dfrac{q_i q_j}{m_i r c^2}\,\dot r\,\hat r + \dots$
-  — i.e. the $+$ coupling of the theory doc.
+The Coulomb term is the configuration-only potential. The Weber velocity
+dependence is carried by the configuration-dependent inverse mass matrix. This
+Hamiltonian is still non-separable because its quadratic momentum term also
+depends on $\vec q$.
 
-For $N = 2$ the inverse is closed-form (a $2\times 2$ system along $\hat r$ in
-relative coordinates). For general $N$ it is an $Nd \times Nd$ solve evaluated
-inside the EOM.
-
-## Origin: the paper's derivation
-
-The defect is not introduced in the code — the code faithfully implements the
-companion paper
-[`Computational-Weber-Electrodynamics.tex`](../papers/Computational-Weber-Electrodynamics/Computational-Weber-Electrodynamics.tex).
-Two specific steps there produce $H_{\text{naive}}$ rather than the Weber
-Hamiltonian:
-
-1. **Naive substitution.** The paper's eq (H) writes
-   $H = \tfrac{1}{2} m_1 \vec v_1^2 + \tfrac{1}{2} m_2 \vec v_2^2
-   + \dfrac{q_1 q_2}{r}\left(1 - \dfrac{\dot r^2}{2c^2}\right)$, then instructs
-   that *"each velocity component $\dot x_i$ is replaced by $p_{x_i}/m_i$."* For
-   a velocity-dependent potential this is not the Legendre transform — the
-   canonical momentum is not $m\,v$.
-2. **Kinetic vs. canonical momentum.** The paper's appendix defines
-   $p_{x_i} = m_i \dot x_i$ (kinetic momentum, hence $\dot x_i = p_{x_i}/m_i$),
-   but Hamilton's equations $\dot q = \partial H/\partial p$,
-   $\dot p = -\partial H/\partial q$ hold only for the **canonical** momentum
-   $p_{x_i} = \partial L/\partial \dot x_i = m_i \dot x_i - \alpha_{x_i}$, with
-   $\alpha_{x_i} = \dfrac{q_1 q_2}{c^2}\dfrac{\dot r\,(x_i - x_j)}{r^2}$. The two
-   momenta differ at $O(1/c^2)$.
-
-The two readings give opposite signs for the velocity equation:
+The first canonical equation is
 
 $$
-\dot x_1 = \frac{1}{m_1}\left(p_{x_1} - \alpha_x\right) \quad \text{(paper, matches code)}
-\qquad \text{vs.} \qquad
-\dot x_1 = \frac{1}{m_1}\left(p_{x_1} + \alpha_x\right) \quad \text{(correct Legendre transform)}
+\boxed{\dot{\vec q}=M(\vec q)^{-1}\vec p=\vec v.}
 $$
 
-The paper is therefore internally inconsistent in two ways: its appendix
-$p = m v$ would give $\dot x_1 = p_{x_1}/m_1$ (no $\alpha$ at all), contradicting
-its own $\dot x_1 = (p_{x_1} - \alpha_x)/m_1$; and integrating its equations of
-motion does **not** reproduce its own stated Weber force law (the paper's eq 2),
-diverging at $O(1/c^2)$ (see the RK4 comparison below). The paper labels the
-naive substitution itself "the Legendre transformation", which is the conceptual
-slip.
-
-A one-point check ($m_1 = m_2 = 1$, $q_1 q_2 = -1$, $c = 1$, $q = (1,0,0,0)$,
-$p = (0.3, 0.1, -0.2, 0)$, so $\dot r = 0.5$ and $\alpha_x = -0.5$):
-
-| source | $\dot x_1$ |
-|---|---|
-| compiled code (`dq_dt[1]`) | $0.8$ |
-| paper, $(p_{x_1} - \alpha_x)/m_1$ | $0.8$ (matches code) |
-| `theory/WeberElectrodynamics.md`, $(p_{x_1} + \alpha_x)/m_1$ | $-0.2$ (correct) |
-| paper appendix $p = mv \Rightarrow p_{x_1}/m_1$ | $0.3$ (contradicts the paper's own EOM) |
-
-> **Certified vs. not.** The velocity equation / substitution error above is
-> rigorously verified (analytically and numerically). The momentum equation
-> $\dot p$ is written identically in the paper and in
-> `theory/WeberElectrodynamics.md`; this note does **not** separately certify
-> that $\dot p$ formula equals the exact $-\partial H_{\text{Weber}}/\partial q$.
-
-## Why the current test suite does not catch it
-
-- `test/test_physics.jl` "Energy conservation – Weber" conserves
-  `weber_energy_2body_2d` (`test/test_utils.jl`), which **is** $H_{\text{naive}}$
-  (it uses $v = p/m$). The integrator is built to conserve $H_{\text{naive}}$, so
-  the test is self-referential: it verifies symplecticity, not Weber correctness.
-- The "Weber force decomposition – consistency" test checks only that the
-  *vector form* and *radial form* of the post-hoc force diagnostic agree with
-  each other (an algebraic identity). It never compares $m\,a$ along the
-  trajectory to the Weber force.
-- `compute_pair_force_timeseries` (`src/statistics/forces.jl`) reconstructs the
-  *true* Weber force from $v = p/m$ and finite-difference accelerations — which
-  is **not** the force the integrator actually applied (`dp_dt` of
-  $H_{\text{naive}}$). For finite $c$ with $\dot r \neq 0$ they differ.
-
-A meaningful regression would compare `solve(...)` against an independent
-integration of the Weber **force law** at finite $c$ (see below) and assert
-convergence under `dt` refinement — not just $H$ conservation.
-
-## Reproduction
-
-### 1. Equation-of-motion sign check
-
-```julia
-# weber_verify.jl
-using WeberElectrodynamics
-
-sys = HamiltonianSystem(2, 2)
-m1, m2 = 1.0, 1.0
-Q1, Q2 = 1.0, -1.0
-c = 1.0
-q = [1.0, 0.0, 0.0, 0.0]        # r1=(1,0), r2=(0,0) => R=(1,0), r=1
-p = [0.3, 0.1, -0.2, 0.0]
-params = [m1, m2, Q1, Q2, c]
-kappas = [1.0]
-
-dq = zeros(4); dp = zeros(4)
-sys.dq_dt_compiled(dq, q, p, 0.0, params, kappas)
-
-x1,y1,x2,y2 = q
-dx = x1-x2; r = abs(dx)
-rdot_p = dx*((p[1]/m1)-(p[3]/m2))/r          # ṙ using v = p/m
-
-pred_naive_minus = p[1]/m1 - (Q1*Q2/(m1*c^2))*rdot_p*dx/r^2   # H_naive (code)
-pred_doc_plus    = (1/m1)*(p[1] + (Q1*Q2/c^2)*rdot_p*dx/r^2)  # theory doc EOM
-
-@show dq[1] pred_naive_minus pred_doc_plus
-# dq[1] = 0.8  (matches H_naive);  doc formula predicts -0.2
-```
-
-### 2. Trajectory vs. the true Weber force law ($1/c^2$ scaling)
-
-Integrate the standard Weber force
+For one pair, the contribution to the second canonical equation is
 
 $$
-\vec F = \frac{Q_1 Q_2}{r^2}\,\hat r
-\left(1 + \frac{\vec v \cdot \vec v + \vec r \cdot \vec a - \tfrac{3}{2}(\hat r \cdot \vec v)^2}{c^2}\right)
+\boxed{
+\dot{\vec p}_i^{\,(ij)}
+=
+\frac{k_{ij}}{r_{ij}^2}
+\left[
+\hat r_{ij}
+\left(1+\frac{3\dot r_{ij}^{\,2}}{2c^2}\right)
+-
+\frac{\dot r_{ij}}{c^2}(\vec v_i-\vec v_j)
+\right],
+}
 $$
 
-with an independent RK4 (the force is central, so the implicit $\vec r \cdot \vec a$
-term is solved algebraically), starting at an apsis ($\dot r = 0$, so the package
-and the reference share identical initial states), and compare the final
-positions.
+with
 
-```julia
-# weber_ref.jl
-using WeberElectrodynamics, Printf
+$$
+\dot{\vec p}_j^{\,(ij)}=-\dot{\vec p}_i^{\,(ij)}
+$$
 
-function weber_accel(s, m1,m2,Q1,Q2,c)
-    x1,y1,x2,y2, vx1,vy1,vx2,vy2 = s
-    rx,ry = x1-x2, y1-y2
-    r = hypot(rx,ry); rhx,rhy = rx/r, ry/r
-    vx,vy = vx1-vx2, vy1-vy2
-    vdotv = vx^2+vy^2; rhdotv = rhx*vx+rhy*vy
-    mu = m1*m2/(m1+m2)
-    A = (Q1*Q2/r^2)*(1 + (vdotv - 1.5*rhdotv^2)/c^2)
-    B = Q1*Q2/(r*mu*c^2)
-    G = A/(1-B)                       # solve implicit r·a (central force)
-    F1x,F1y = G*rhx, G*rhy
-    return (F1x/m1, F1y/m1, -F1x/m2, -F1y/m2)
-end
-deriv(s,p...) = (s[5],s[6],s[7],s[8], weber_accel(s,p...)...)
-function rk4(s0, dt, n, p)
-    s = collect(Float64, s0)
-    for _ in 1:n
-        k1=collect(deriv(s,p...)); k2=collect(deriv(s .+ dt/2 .*k1,p...))
-        k3=collect(deriv(s .+ dt/2 .*k2,p...)); k4=collect(deriv(s .+ dt .*k3,p...))
-        s = s .+ (dt/6).*(k1 .+ 2k2 .+ 2k3 .+ k4)
-    end
-    s
-end
+and $\vec v=M^{-1}\vec p$.
 
-m1,m2,Q1,Q2 = 1.0,1.0,1.0,-1.0; w = 0.3; T = 2.0
-for c in (3.0, 30.0)
-    p = (m1,m2,Q1,Q2,c)
-    s0 = (1.0,0.0,-1.0,0.0, 0.0,w,0.0,-w)            # apsis, ṙ=0
-    sref = rk4(s0, 1e-5, round(Int,T/1e-5), p)
-    sys = HamiltonianSystem(2,2)
-    prob = HamiltonianProblem(sys,(0.0,T),[1.0,0.0,-1.0,0.0],[0.0,m1*w,0.0,-m2*w];
-                              masses=[m1,m2],charges=[Q1,Q2],c=c,dt=1e-4)
-    qend = solve(prob).q[end]
-    d = sqrt((qend[1]-sref[1])^2+(qend[2]-sref[2])^2+(qend[3]-sref[3])^2+(qend[4]-sref[4])^2)
-    @printf("c=%5.1f  |Δr_final| pkg-vs-WeberForceLaw = %.3e\n", c, d)
-end
-```
+The signs of both $1/c^2$ terms differ from the canonical momentum equation in
+the current paper and code.
 
-Observed:
+### Canonical momentum rate is not the mechanical force
 
-| $c$ | $\lvert \Delta r_{\text{final}} \rvert$ (package vs. true Weber) |
-|---|---|
-| 3.0 | 1.46e-01  (≈15% of the orbit scale) |
-| 30.0 | 1.53e-03 |
+For a velocity-dependent Lagrangian,
 
-The discrepancy scales as $1/c^2$ (10× larger $c$ ⇒ ~95× smaller error) at
-fixed `dt`. That is an $O(1/c^2)$ *physics* discrepancy — the Weber-correction
-order — not integrator truncation (truncation is governed by `dt`, identical in
-both runs). Both runs converge to the Coulomb/Kepler orbit as $c \to \infty$,
-confirming the reference is correct and the divergence is the Weber term itself.
+$$
+\dot{\vec p}_i=\frac{\partial L}{\partial\vec r_i}
+$$
 
-## Scope of impact
+is a canonical equation, while the mechanical force is
+$m_i\dot{\vec v}_i$. Since
 
-- Affects the package's central claim and any finite-$c$ quantitative result
-  (orbital precession, eccentric orbits), including the showcased "precessing
-  ellipse" at $c=4$.
-- The defect **originates in the companion paper's derivation** (the eq (H)
-  naive substitution and the kinetic-vs-canonical momentum conflation), not
-  merely the code — the code faithfully implements the paper. Among the repo's
-  three statements of the dynamics, only `theory/WeberElectrodynamics.md`'s
-  velocity equation is correct; the paper and the code share the error.
-- The **Zöllner** extension (`src/hamiltonian/builders/zollner.jl`) is built on
-  the same naive potential and inherits the same issue.
-- Regularization lifts the same $H_{\text{naive}}$ pair Hamiltonian.
-- **Not affected:** the Coulomb/Kepler limit ($c \to \infty$) is correct; the
-  semi-explicit integrator is a valid symplectic method *for the Hamiltonian it
-  is given*; the software architecture, regularization machinery, statistics,
-  and tests are sound as software.
+$$
+\vec p_i=m_i\vec v_i-\sum_{j\ne i}\vec\alpha_{ij},
+$$
 
-## If/when a fix is desired
+the two are related by
 
-Add a correct `weber_hamiltonian` builder producing
-$H = \tfrac{1}{2} p^{\top} M(q)^{-1} p + U_{\text{Coulomb}}$, route the default
-`HamiltonianSystem(n, dims)` through it (keeping $H_{\text{naive}}$ available only
-if explicitly requested), re-derive the Zöllner correction on the corrected
-potential, and add the force-law comparison above as a regression test asserting
-`dt`-convergence (not just $H$ conservation).
+$$
+m_i\dot{\vec v}_i
+=
+\dot{\vec p}_i
++
+\frac{d}{dt}\sum_{j\ne i}\vec\alpha_{ij}.
+$$
+
+Combining the corrected canonical equation with this identity reproduces the
+Weber force law. Comparing the paper's $\dot{\vec p}$ directly with
+$m_i\dot{\vec v}_i$ would conflate canonical and kinetic momentum a second time.
+
+## Companion paper: correct and incorrect inventory
+
+The relevant file is
+[`papers/Computational-Weber-Electrodynamics/Computational-Weber-Electrodynamics.tex`](../papers/Computational-Weber-Electrodynamics/Computational-Weber-Electrodynamics.tex).
+
+### Unaffected by this Hamiltonian defect within the audited scope
+
+The following parts do not cause this defect. This is not a blanket
+re-certification of every claim in those sections.
+
+1. **Weber potential and Weber force.** Equations labelled `potential` and
+   `force` state the intended physical interaction.
+2. **The auxiliary interaction $S$ and Lagrangian $L=T-S$.** Their signs produce
+   the stated Weber force through the Euler–Lagrange equation.
+3. **The Euler–Lagrange calculation.** Equation `euler_lagrange` is a statement
+   about the mechanical Weber force and remains valid.
+4. **The Legendre-transform identity in velocity variables.** Equations `H_def`,
+   `H`, and `h_box` correctly give
+   $H(\vec q,\vec v)=T_{\mathrm{phys}}+U_{\mathrm{Weber}}$ before the velocities
+   are eliminated.
+5. **Conservation and symmetry statements.** The corrected canonical
+   Hamiltonian remains autonomous, translation-invariant, and
+   rotation-invariant, so energy, canonical linear momentum, and canonical
+   angular momentum remain conserved.
+6. **The generic symplectic-integration formulas.** Their applicability to a
+   general non-separable Hamiltonian is not invalidated by the incorrect Weber
+   formula supplied to the method.
+7. **Notation, radial-acceleration identities, units, and the qualitative
+   critical-radius discussion.** These are not created by the faulty
+   $v=p/m$ substitution.
+
+### Correct only with an explicit qualification
+
+1. **$H=T+U$.** This is correct as an energy expressed in physical velocities.
+   It is not yet a canonical function $H(\vec q,\vec p)$.
+2. **The definition of $\alpha_x$.** Its algebraic form is correct only when
+   $\dot r$ is computed from the physical velocities obtained from
+   $M\vec v=\vec p$. It must not use $\vec p/m$.
+3. **Non-separability.** The conclusion is correct, but the explanation should
+   refer to $\tfrac12\vec p^{\mathsf T}M(\vec q)^{-1}\vec p$, not to the current
+   pair potential after a naive substitution.
+4. **Computational complexity.** Pair geometry and assembly remain
+   $O(n^2)$, but evaluating $\vec v=M^{-1}\vec p$ adds a coupled linear solve.
+   A generic dense direct solve is $O(n^3)$ for fixed spatial dimension, though
+   the pair structure may permit better implementations.
+
+### Incorrect and requiring correction
+
+1. **The conversion from velocities to momenta.** The sentence following
+   equation `H` says each velocity is replaced by $p/m$. This is the primary
+   derivation error.
+2. **The two-particle velocity equations.** Equations `xdot_two` and
+   `xdot_two_p2` have the signs appropriate to the current naive Hamiltonian.
+   The canonical relations require
+
+   $$
+   \dot x_1=\frac{p_{x_1}+\alpha_x}{m_1},
+   \qquad
+   \dot x_2=\frac{p_{x_2}-\alpha_x}{m_2},
+   $$
+
+   with $\alpha_x$ evaluated implicitly through the physical velocity.
+3. **The two-particle canonical momentum equation.** Equation `pdot_two` has
+   both Weber-correction signs reversed relative to the exact Legendre
+   transform. It must use
+
+   $$
+   \dot p_{x_1}
+   =
+   \frac{q_1q_2}{r_{12}^2}
+   \left[
+   \frac{x_1-x_2}{r_{12}}
+   \left(1+\frac{3\dot r_{12}^{\,2}}{2c^2}\right)
+   -
+   \frac{\dot r_{12}(\dot x_1-\dot x_2)}{c^2}
+   \right].
+   $$
+4. **The canonical $n$-body Hamiltonian.** Equation `hamiltonian` is correct as
+   velocity-space energy, but it is presented as the Hamiltonian used with
+   canonical momenta. Its canonical replacement is the matrix-inverse
+   Hamiltonian above.
+5. **The expanded $n$-body equations.** Equations `xdot_expanded` and
+   `pdot_expanded` inherit the same errors as the two-particle equations.
+6. **The appendix momentum definition.** The appendix defines
+   $p_{x_i}=m_i\dot x_i$ and analogously for $y,z$. These are kinetic momenta,
+   not the canonical variables used by Hamilton's equations.
+
+### Minimal future paper edit
+
+The eventual paper correction should be brief:
+
+1. retain the correct potential, force, Lagrangian, Euler–Lagrange calculation,
+   and velocity-space equation $H=T+U$;
+2. identify that equation explicitly as energy temporarily expressed in
+   physical velocities;
+3. replace the $v=p/m$ sentence with $\vec p=M(\vec q)\vec v$;
+4. state the canonical matrix Hamiltonian, define the blocks of $M$, and
+   qualify $M^{-1}$ by its invertibility while referencing the existing
+   critical-radius discussion;
+5. correct the two-body and $n$-body $\dot q$ and $\dot p$ equations;
+6. replace the appendix's kinetic-momentum definitions with the canonical
+   momentum relation;
+7. make the small non-separability and complexity qualifications above; and
+8. bump the paper version from `1.2` to `1.3` under the repository's paper
+   versioning convention.
+
+No unrelated exposition or integrator derivation needs to be rewritten.
+
+## Formula verifier: correct and incorrect inventory
+
+The relevant file is
+[`papers/Computational-Weber-Electrodynamics/verify_formulas.py`](../papers/Computational-Weber-Electrodynamics/verify_formulas.py).
+
+### Checks that remain valid
+
+- Group A: velocity-space potential identities.
+- Group B: Euler–Lagrange derivation of the Weber force.
+- Group C.1: canonical momentum
+  $p_{x_1}=m_1\dot x_1-\alpha_x$.
+- Group C.2: the Legendre transform evaluated in velocity variables gives
+  $T+U$.
+- Group F: radial-velocity and radial-acceleration identities.
+
+### Checks that currently verify the wrong Hamiltonian
+
+- The global definitions `rdot12_p`, `H_qp`, `H3`, and the corresponding
+  three-particle radial rates set $\vec v=\vec p/m$.
+- Group C.3 verifies that the paper's substitution was transcribed
+  consistently; it does not verify that the substitution is a Legendre
+  transform.
+- Groups D and E differentiate the naive two-body Hamiltonian.
+- Group H verifies the naive three-body equations.
+- Groups G and I prove conservation properties of the naive Hamiltonian.
+  Those symmetry arguments are structurally valid, but they must be rerun
+  against the corrected Hamiltonian.
+
+### Required verifier correction
+
+The future verifier must check:
+
+1. $\vec p=\partial L/\partial\vec v=M\vec v$;
+2. $H=\vec p^{\mathsf T}\vec v-L
+   =\tfrac12\vec p^{\mathsf T}M^{-1}\vec p+V_{\mathrm{Coulomb}}$;
+3. $\partial H/\partial\vec p=M^{-1}\vec p$;
+4. the corrected $\dot{\vec p}$ formula;
+5. translation and rotation invariance of the corrected $H$; and
+6. at least one multi-particle momentum-map check so that pair coupling is not
+   tested only in the two-body special case.
+
+For two particles, a closed-form inverse can keep the symbolic expressions
+manageable. For three particles, it may be better to verify
+$\vec p=\partial L/\partial\vec v$ and
+$\dot{\vec p}=\partial L/\partial\vec q$ in velocity variables, supplemented by
+numerical checks of the matrix inverse, rather than expanding a large symbolic
+inverse.
+
+The verifier is currently a manual script and SymPy is not provisioned by the
+repository's paper workflow. The future fix must run it in an environment that
+explicitly supplies SymPy and record a fully passing result.
+
+## Julia package: correct and incorrect inventory
+
+### Incorrect and requiring correction
+
+1. **Core Weber builder**
+   ([`src/hamiltonian/builders/weber.jl`](../src/hamiltonian/builders/weber.jl)).
+   It constructs $\sum p^2/(2m)$ and evaluates every radial velocity with
+   $\vec p/m$. It therefore builds the paper's naive Hamiltonian.
+2. **Zöllner builder**
+   ([`src/hamiltonian/builders/zollner.jl`](../src/hamiltonian/builders/zollner.jl)).
+   It applies $\kappa-1$ to the same naive pair expression. In the corrected
+   Hamiltonian, $M^{-1}$ depends nonlinearly on all $\kappa_{ij}$, so the current
+   additive correction cannot simply be retained.
+3. **Default named-term decomposition**
+   ([`src/hamiltonian_system.jl`](../src/hamiltonian_system.jl)).
+   Its `:weber + :zollner` construction and pair closures assume the current
+   additive Hamiltonian.
+4. **Energy statistics**
+   ([`src/statistics/energy.jl`](../src/statistics/energy.jl)).
+   They call $\sum p^2/(2m)$ physical kinetic energy, compute $\dot r$ with
+   $\vec p/m$, and reconstruct the compiled Hamiltonian from those quantities.
+   They must instead obtain $\vec v=M^{-1}\vec p$, compute
+   $T_{\mathrm{phys}}=\tfrac12\sum m_i v_i^2$, and use the physical pair energy.
+5. **Force statistics**
+   ([`src/statistics/forces.jl`](../src/statistics/forces.jl)).
+   They infer velocities and finite-difference accelerations from $\vec p/m$.
+   They must obtain physical velocities from the corrected equation
+   $\dot{\vec q}=\vec v$.
+6. **Live Makie phase data**
+   ([`ext/WeberElectrodynamicsMakieExt.jl`](../ext/WeberElectrodynamicsMakieExt.jl)).
+   Its pair radial velocity also uses $\vec p/m$.
+7. **Nonzero-radial two-body initial conditions**
+   ([`src/initial_conditions.jl`](../src/initial_conditions.jl)).
+   The `radial_velocity` keyword denotes a physical velocity, but the helper
+   currently assigns radial canonical momentum as $\mu\dot r$. For two
+   particles it must use
+
+   $$
+   p_r
+   =
+   \left(\mu-\frac{k_{12}}{r_{12}c^2}\right)\dot r.
+   $$
+
+   Here
+   $p_r=\hat r_{12}\mathbin{\cdot}
+   \mu(\vec p_1/m_1-\vec p_2/m_2)$ is the canonical momentum conjugate to the
+   relative radial coordinate.
+
+   Zero-radial and rigid-rotation initial conditions remain valid at their
+   initial instant because the Weber momentum correction then vanishes.
+
+### Correct in principle and not the source of the defect
+
+1. **Generic Hamiltonian constructor.** Given a correct symbolic $H$, it
+   correctly forms Hamilton's equations by differentiation.
+2. **Base symmetric-projection integrator.** It is a numerical method for a
+   general non-separable Hamiltonian. It integrates the current wrong
+   Hamiltonian faithfully; the physics error is in the Hamiltonian supplied to
+   it.
+3. **Pure kinetic and Coulomb custom builders.** Their standard canonical
+   formulas do not contain the Weber velocity coupling.
+4. **Canonical linear and angular momentum statistics.** Summing canonical
+   $\vec p_i$ and $\vec r_i\times\vec p_i$ remains the appropriate Noether
+   diagnostic.
+5. **Trajectory extraction and generic persistence.** Copying stored
+   coordinates/momenta does not itself assume $\vec p=m\vec v$.
+6. **LC/KS coordinate maps.** Expressions resembling
+   $\mu(p_i/m_i-p_j/m_j)$ in those maps are canonical center-of-mass coordinate
+   transformations, not claims that $p_i/m_i$ is a physical velocity.
+
+### Requires revalidation before being declared unaffected
+
+1. **Regularized pair splitting.** The coordinate maps are canonical, but the
+   corrected inverse-matrix Hamiltonian is not pair-additive in the same way as
+   the current Hamiltonian. Pair isolation and subtraction must be audited.
+2. **Collision callbacks.** Their canonical transformations may remain usable,
+   but collision behavior must be rechecked against the corrected singular
+   dynamics.
+3. **Plots extension.** Most plotting code consumes statistics without
+   re-deriving physics, but labels and decompositions must be checked after the
+   `EnergyData` and `PairForceData` semantics are corrected.
+4. **Archive compatibility.** The serialization mechanism is generic, but old
+   saved trajectories represent the old dynamical system and must not be
+   presented as corrected Weber results.
+
+## Theory and documentation inventory
+
+### Incorrect or internally inconsistent
+
+1. [`theory/WeberElectrodynamics.md`](WeberElectrodynamics.md) defines
+   $p=m\dot q$ while later using a $+\alpha$ velocity relation. Its
+   velocity-space $H=T+U$ is valid, but its canonical presentation and
+   $\dot p$ equation require the same corrections as the paper.
+2. [`theory/InitialConditions.md`](InitialConditions.md) calls $m\vec v$
+   canonical momentum and states the naive canonical Hamiltonian. Most of its
+   zero-radial-velocity constructions remain numerically valid at the initial
+   instant, but the general definitions must be corrected.
+3. [`theory/NonZeroRadialVelocityBoundICs.md`](NonZeroRadialVelocityBoundICs.md)
+   already records the important forward map
+   $\vec p=\partial L/\partial\vec v$ and its implicit inverse. Its exact
+   Hamiltonian discussion should be aligned with the $M^{-1}$ form, and the
+   prose defining its auxiliary correction vector must be checked for a sign
+   inconsistency.
+4. Documentation describing energy as
+   `kinetic + pair potential` or radial velocity as a function of $p/m$ must be
+   updated when the statistics API is corrected.
+
+### Examples and generated artifacts
+
+1. The input momenta in examples that begin with every $\dot r_{ij}=0$ can
+   often remain unchanged.
+2. Their subsequent finite-$c$ trajectories were generated by the current
+   Hamiltonian and must be regenerated.
+3. Markdown cells that display the current Hamiltonian or describe
+   $\vec v=\vec p/m$ must be corrected.
+4. Stored notebook outputs and `examples/figures/*.png` must be regenerated
+   rather than retained as evidence for the corrected dynamics.
+
+## Tests and regression data
+
+The existing tests show that the implementation is internally consistent with
+the current Hamiltonian. They do not establish that this Hamiltonian is the
+Legendre transform of the Weber Lagrangian.
+
+The future correction must update at least:
+
+- `test/test_utils.jl`, whose manual Weber energy uses $\vec v=\vec p/m$;
+- `test/test_hamiltonian_system.jl`, which checks current compiled formulas;
+- `test/test_builders.jl`, which checks the current Weber/Zöllner additive
+  decomposition;
+- `test/test_named_term.jl` and `test/test_statistics.jl`, which check the
+  current pair-energy decomposition;
+- `test/test_physics.jl`, whose energy test conserves the same Hamiltonian that
+  the implementation integrates; and
+- the regression fixtures under `test/regression/`, which record trajectories
+  from the old system.
+
+The corrected suite needs independent tests that do not derive expected values
+from the implementation under test.
+
+## Future remediation plan
+
+No partial sign-only patch should be merged. The work should proceed in the
+following order.
+
+### Phase 1: establish the corrected mathematics
+
+1. Add a concise canonical-momentum derivation to the paper.
+2. Define $M(\vec q)$ and state the exact canonical Hamiltonian.
+3. Derive both Hamilton equations from that Hamiltonian.
+4. State the invertibility domain and the critical-radius singularity.
+5. Update `verify_formulas.py` to verify the corrected formulas independently.
+6. Compile the paper and bump its version from `1.2` to `1.3`.
+
+### Phase 2: correct the core Julia Hamiltonian
+
+1. Implement construction of $M(\vec q)$ and the quadratic form
+   $\tfrac12\vec p^{\mathsf T}M^{-1}\vec p$.
+2. Route the default `HamiltonianSystem(n, dims)` through the corrected builder.
+3. Decide and document how singular or ill-conditioned $M$ is handled.
+4. Rederive the Zöllner-modified Hamiltonian with $\kappa_{ij}$ inside $M$.
+5. Redesign named-term and pair decompositions so that they do not assume an
+   additive canonical velocity correction; and
+6. Provide one shared, tested way to obtain physical velocity from
+   $(\vec q,\vec p)$.
+
+### Phase 3: correct dependent APIs
+
+1. Use physical velocity in energy, force, and live phase-space diagnostics.
+2. Correct nonzero-radial-velocity initial-condition conversion.
+3. Audit regularization and collision behavior against the corrected
+   Hamiltonian;
+4. Preserve public data structures where their existing meanings can remain
+   truthful, and explicitly migrate meanings that cannot; and
+5. Update theory and API documentation.
+
+### Phase 4: replace validation artifacts
+
+1. Add symbolic checks of the Legendre transform and both Hamilton equations.
+2. Add numerical finite-difference checks of gradients of the corrected
+   Hamiltonian.
+3. Compare package trajectories with an independent integration of the
+   implicit Weber force law and demonstrate convergence under timestep
+   refinement.
+4. Test the Coulomb limit and zero-radial-velocity limit.
+5. Test two- and three-particle cases in 1D, 2D, and 3D, including nontrivial
+   $\kappa_{ij}$.
+6. Regenerate regression fixtures, notebooks, and figures only after the
+   corrected tests pass.
+7. Run the full Julia suite, formula verifier, paper build, and documentation
+   build.
+
+## Acceptance criteria for closing this finding
+
+This finding is resolved only when all of the following hold:
+
+1. The paper no longer substitutes $\vec v=\vec p/m$ in the Weber interaction.
+2. The paper, verifier, theory docs, and Julia builder use the same canonical
+   momentum and Hamiltonian.
+3. Compiled $\dot q$ equals $M^{-1}p$.
+4. Compiled $\dot p$ matches the corrected canonical equation.
+5. Combining the canonical equations reproduces the stated mechanical Weber
+   force.
+6. Diagnostics obtain physical velocity from $\dot q$, not from $\vec p/m$.
+7. Independent trajectory comparisons converge to the Weber force-law
+   reference as the timestep is refined.
+8. The behavior near singular $M$ is tested and documented.
+9. All formula, paper, Julia, documentation, and regression checks pass.
+10. Example notebooks and generated figures have been regenerated from the
+    corrected system.
+
+Only after these criteria are satisfied should this planning note be removed.
