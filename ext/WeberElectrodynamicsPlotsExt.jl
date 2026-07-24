@@ -1,7 +1,7 @@
 module WeberElectrodynamicsPlotsExt
 
 using WeberElectrodynamics
-using WeberElectrodynamics: @sprintf, norm, dot
+using WeberElectrodynamics: norm, dot
 using Plots
 using LaTeXStrings
 using Printf: Format, format

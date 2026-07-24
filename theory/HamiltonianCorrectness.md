@@ -246,7 +246,7 @@ dependence is carried by the configuration-dependent inverse mass matrix. This
 Hamiltonian is still non-separable because its quadratic momentum term also
 depends on $\vec q$.
 
-Here and below, the implemented pure-Weber coefficient is \(k_{ij}=q_iq_j\).
+Here and below, the implemented pure-Weber coefficient is $k_{ij}=q_iq_j$.
 
 The first canonical equation is
 

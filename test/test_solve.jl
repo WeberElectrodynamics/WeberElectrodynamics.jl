@@ -202,8 +202,20 @@
         @test save_solution(path, sol; metadata = (case = "archive",)) == path
         archive = JLD2.load(path)["archive"]
         @test archive.format_version == 2
-        @test !hasproperty(archive.problem, Symbol("kap" * "pas"))
-        @test !hasproperty(archive.problem, :term_names)
+        # Pin the exact v2 problem schema. This is stronger than asserting the
+        # absence of the removed fields, and it keeps the removed identifiers
+        # out of the tree entirely.
+        @test propertynames(archive.problem) == (
+            :n_particles,
+            :dims,
+            :tspan,
+            :q_initial,
+            :p_initial,
+            :params,
+            :dt,
+            :convergence_tolerance,
+            :maximum_iterations,
+        )
         loaded = load_solution(path)
 
         @test loaded isa HamiltonianSolution
