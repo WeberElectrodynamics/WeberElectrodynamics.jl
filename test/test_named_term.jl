@@ -16,17 +16,16 @@
         p = [0.1, 0.2, -0.15, -0.1]
         params = [1.0, 2.0, 1.0, -1.0, 5.0]
 
-        coulomb, velocity, rdot =
-            WeberElectrodynamics.compute_pair_weber_components(
-                q,
-                p,
-                1,
-                2,
-                params[1:2],
-                params[3:4],
-                params[5],
-                2,
-            )
+        coulomb, velocity, rdot = WeberElectrodynamics.compute_pair_weber_components(
+            q,
+            p,
+            1,
+            2,
+            params[1:2],
+            params[3:4],
+            params[5],
+            2,
+        )
         result = weber.pair_decomposition(1, 2, q, p, params)
         @test result.coulomb ≈ coulomb
         @test result.velocity ≈ velocity
@@ -80,14 +79,8 @@
         @variables x1 y1 x2 y2 px1 py1 px2 py2 m1 m2 q1 q2 cc tt
         q_syms = [x1, y1, x2, y2]
         p_syms = [px1, py1, px2, py2]
-        kinetic =
-            kinetic_term(p_syms; masses = [m1, m2], n_particles = 2, dims = 2)
-        coulomb = coulomb_term(
-            q_syms;
-            charges = [q1, q2],
-            n_particles = 2,
-            dims = 2,
-        )
+        kinetic = kinetic_term(p_syms; masses = [m1, m2], n_particles = 2, dims = 2)
+        coulomb = coulomb_term(q_syms; charges = [q1, q2], n_particles = 2, dims = 2)
         sys = HamiltonianSystem(
             kinetic + coulomb,
             q_syms,

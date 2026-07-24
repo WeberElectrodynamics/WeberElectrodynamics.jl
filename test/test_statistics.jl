@@ -613,31 +613,15 @@ using WeberElectrodynamics: compute_total_kinetic_energy, compute_pair_weber_com
 
         # Particle 2 moving right at v=3 → rdot = +3 (separating)
         p_radial = [0.0, 0.0, 3.0, 0.0]
-        coulomb2, vel2, rdot2 = compute_pair_weber_components(
-            q_rest,
-            p_radial,
-            1,
-            2,
-            masses,
-            charges,
-            c,
-            2,
-        )
+        coulomb2, vel2, rdot2 =
+            compute_pair_weber_components(q_rest, p_radial, 1, 2, masses, charges, c, 2)
         @test rdot2 ≈ 3.0
         # velocity term = -coulomb2 * rdot2²/(2c²)
         @test vel2 ≈ -coulomb2 * rdot2^2 / (2 * c^2)
 
         # Large-c limit: velocity correction vanishes relative to Coulomb
-        coulomb3, vel3, _ = compute_pair_weber_components(
-            q_rest,
-            p_radial,
-            1,
-            2,
-            masses,
-            charges,
-            1e9,
-            2,
-        )
+        coulomb3, vel3, _ =
+            compute_pair_weber_components(q_rest, p_radial, 1, 2, masses, charges, 1e9, 2)
         @test abs(vel3) / abs(coulomb3) < 1e-12
 
         # 1D: particles at x=0 and x=3 converging (particle 1 right, particle 2 left)

@@ -244,11 +244,7 @@ function fixture_oned_kepler()
     )
     alg = SymmetricProjectionIntegrator()
     sol = solve(prob, alg)
-    return prob,
-    alg,
-    sol,
-    "oned_kepler",
-    "1D 2-body repulsive oscillation, unregularized"
+    return prob, alg, sol, "oned_kepler", "1D 2-body repulsive oscillation, unregularized"
 end
 
 function fixture_threed_close_approach_adaptive()

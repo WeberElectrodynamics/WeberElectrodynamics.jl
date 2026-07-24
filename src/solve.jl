@@ -878,20 +878,8 @@ end
     )
 
     t_mid = t + dt_sub * 0.5
-    system.dq_dt_compiled(
-        rb.dq_pair,
-        rb.q_mid,
-        rb.p_mid,
-        t_mid,
-        rb.params_pair,
-    )
-    system.dp_dt_compiled(
-        rb.dp_pair,
-        rb.q_mid,
-        rb.p_mid,
-        t_mid,
-        rb.params_pair,
-    )
+    system.dq_dt_compiled(rb.dq_pair, rb.q_mid, rb.p_mid, t_mid, rb.params_pair)
+    system.dp_dt_compiled(rb.dp_pair, rb.q_mid, rb.p_mid, t_mid, rb.params_pair)
     _extract_pair_2d_derivatives!(rb, rb.dq_pair, rb.dp_pair, i, j, mi, mj, mu, M)
 
     _compute_lc_tau_derivatives!(
@@ -990,20 +978,8 @@ end
     )
 
     t_mid = t + dt_sub * 0.5
-    system.dq_dt_compiled(
-        rb.dq_pair,
-        rb.q_mid,
-        rb.p_mid,
-        t_mid,
-        rb.params_pair,
-    )
-    system.dp_dt_compiled(
-        rb.dp_pair,
-        rb.q_mid,
-        rb.p_mid,
-        t_mid,
-        rb.params_pair,
-    )
+    system.dq_dt_compiled(rb.dq_pair, rb.q_mid, rb.p_mid, t_mid, rb.params_pair)
+    system.dp_dt_compiled(rb.dp_pair, rb.q_mid, rb.p_mid, t_mid, rb.params_pair)
     _extract_pair_derivatives!(rb, rb.dq_pair, rb.dp_pair, 1, i, j, mi, mj, mu, M)
 
     _compute_1d_tau_derivatives!(
@@ -1212,20 +1188,8 @@ end
     )
 
     t_mid = t + dt_sub * 0.5
-    system.dq_dt_compiled(
-        rb.dq_pair,
-        rb.q_mid,
-        rb.p_mid,
-        t_mid,
-        rb.params_pair,
-    )
-    system.dp_dt_compiled(
-        rb.dp_pair,
-        rb.q_mid,
-        rb.p_mid,
-        t_mid,
-        rb.params_pair,
-    )
+    system.dq_dt_compiled(rb.dq_pair, rb.q_mid, rb.p_mid, t_mid, rb.params_pair)
+    system.dp_dt_compiled(rb.dp_pair, rb.q_mid, rb.p_mid, t_mid, rb.params_pair)
     _extract_pair_derivatives!(rb, rb.dq_pair, rb.dp_pair, 3, i, j, mi, mj, mu, M)
 
     _compute_ks_tau_derivatives!(
