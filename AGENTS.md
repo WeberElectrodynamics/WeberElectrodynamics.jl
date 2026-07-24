@@ -5,7 +5,7 @@ This file provides guidance to AI coding agents working in this repository. Foll
 
 ## Project
 
-Julia package for n-body Weber electrodynamics simulation. Version is tracked in `Project.toml` — do not duplicate it here.
+Julia package for n-body Weber electrodynamics simulation with Zöllner electrogravitational extension. Version is tracked in `Project.toml` — do not duplicate it here.
 
 Implements a symplectic Strang-splitting symmetric-projection integrator. Levi-Civita/KS regularization handles close encounters; collision bounce handles head-on singularities.
 
@@ -49,11 +49,12 @@ See [docs/src/internals.md](docs/src/internals.md) for per-file descriptions of 
 
 Quick-reference mirror — source of truth: [docs/src/internals.md](docs/src/internals.md).
 
-### Parameter layout
+### Params and κ vector layout
 
 `params = [m₁…mₙ, q₁…qₙ, c]` — length `2N + 1`.
-Compiled EOM signature: `dq_dt_compiled(out, q, p, t, params)` (same for `dp_dt`);
-the Hamiltonian signature is `hamiltonian_compiled(q, p, t, params)`.
+`kappas = [κ₁₂, κ₁₃, …, κ_{N-1,N}]` — length `N*(N-1)/2`, indexed by `_pair_index(i, j, n)`.
+Compiled EOM signature: `dq_dt_compiled(out, q, p, t, params, kappas)` (same for `dp_dt` and `hamiltonian_compiled`). Direct callers **must** pass both; when Zöllner is disabled, `kappas = ones(N*(N-1)÷2)`.
+Per-pair accessor: `kappa(prob, i, j)`.
 
 ### Algorithms and callbacks
 
@@ -68,9 +69,11 @@ Regularization and collision bounce are composed outside the problem:
 
 ### Accessor API
 
-`HamiltonianProblem` stores `params`; `masses`, `charges`, and `c` are O(1)
-views into it. Use the exported accessors: `masses(prob)`, `charges(prob)`,
-`speed_of_light(prob)`, `params(prob)`, plus `n_particles(sys)`, `dims(sys)`,
+`HamiltonianProblem` stores `params` and `kappas` as fields; `masses`, `charges`,
+and `c` are O(1) views into `params`. `ZollnerOptions` and `RegularizationOptions`
+are construction-time only and not retained on the problem. Use the exported
+accessors: `masses(prob)`, `charges(prob)`, `speed_of_light(prob)`, `kappas(prob)`,
+`kappa(prob, i, j)`, `params(prob)`, plus `n_particles(sys)`, `dims(sys)`,
 `degrees_of_freedom(sys)` on `HamiltonianSystem`.
 
 ### EnergyStatistics gotcha
@@ -106,7 +109,7 @@ doc tweak, a one-liner correction. Everything else gets a branch.
 | `refactor/<name>` | Internal restructuring, no behaviour change |
 | `experiment/<name>` | Exploratory / research branches — may not merge |
 
-Examples: `feature/3d-regularization`, `fix/energy-drift`, `docs/hamiltonian-theory`,
+Examples: `feature/3d-regularization`, `fix/energy-drift`, `docs/zollner-theory`,
 `experiment/three-body-bound-states`
 
 ### Pull requests
@@ -135,7 +138,7 @@ Examples:
 ```
 feat: add 3D Levi-Civita regularization backend
 fix: correct sign flip in 1D regularization lift
-docs: expand Hamiltonian theory notes
+docs: add Zöllner theory page
 refactor: extract pair-distance helpers into regularization.jl
 test: add collision bounce smoke test for 3D case
 chore: bump Symbolics compat to 7

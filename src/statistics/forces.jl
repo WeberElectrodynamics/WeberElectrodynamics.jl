@@ -45,21 +45,24 @@ end
 Comprehensive Weber force timeseries for a single particle pair (i, j).
 
 Forces are decomposed into a vector form (3 velocity/acceleration correction terms)
-and a radial form (2 terms), both sharing the same Coulomb base.
+and a radial form (2 terms), both sharing the same κ-scaled Coulomb base.
 
 # Fields
 - `t::Vector{Float64}`: Time points.
 - `dims::Int`: Spatial dimension.
 - `pair::Tuple{Int,Int}`: Particle indices (i, j).
+- `kappa::Float64`: Zöllner coupling factor κ_ij (1.0 = standard Weber).
 - `charge_product::Float64`: k = qᵢqⱼ; sign determines repulsion/attraction.
 - `force::Vector{Vector{Float64}}`: Total force vector at each time point.
 - `magnitude::Vector{Float64}`: |F| at each time point.
 - `stats::ForceStatistics`: Min/max/mean/range of |F|.
-- `coulomb::Vector{Vector{Float64}}`: Coulomb base force vector.
+- `coulomb::Vector{Vector{Float64}}`: κ-scaled Coulomb base force vector.
 - `vector_term_vv`, `vector_term_ra`, `vector_term_rv2`: Three correction terms
   in the vector form decomposition.
 - `radial_term_rdot2`, `radial_term_rddot`: Two correction terms in the radial
   form decomposition.
+- `zollner_extra_magnitude::Vector{Float64}`: |(κ−1)·F_Coulomb| (zero for
+  standard Weber without Zöllner).
 - `phase_space::PhaseSpaceData`: Pair phase-space portrait (r, ṙ, θ, L).
 """
 struct PairForceData
@@ -67,6 +70,8 @@ struct PairForceData
     t::Vector{Float64}
     dims::Int
     pair::Tuple{Int,Int}
+    # Zöllner extension field (1.0 = standard Weber, no Zöllner)
+    kappa::Float64           # coupling factor κ_ij
     charge_product::Float64  # k = q_i * q_j, determines repulsion/attraction sign
 
     # Total force (vector per timestep)
@@ -74,19 +79,22 @@ struct PairForceData
     magnitude::Vector{Float64}
     stats::ForceStatistics
 
-    # Shared Coulomb term (base for both decompositions)
+    # Shared Coulomb term (base for both decompositions); scaled by κ
     coulomb::Vector{Vector{Float64}}
 
     # Vector form decomposition (3 additional terms, Coulomb shared)
-    # F = coulomb_base * (1 + (v·v + r·a - 1.5*(r̂·v)²) / c²)
+    # F = κ * coulomb_base * (1 + (v·v + r·a - 1.5*(r̂·v)²) / c²)
     vector_term_vv::Vector{Vector{Float64}}
     vector_term_ra::Vector{Vector{Float64}}
     vector_term_rv2::Vector{Vector{Float64}}
 
     # Radial form decomposition (2 additional terms, Coulomb shared)
-    # F = coulomb_base * (1 - ṙ²/(2c²) + r·r̈/c²)
+    # F = κ * coulomb_base * (1 - ṙ²/(2c²) + r·r̈/c²)
     radial_term_rdot2::Vector{Vector{Float64}}
     radial_term_rddot::Vector{Vector{Float64}}
+
+    # Zöllner extra force magnitude: |(κ-1) * F_coulomb_base| per timestep
+    zollner_extra_magnitude::Vector{Float64}
 
     # Phase space data (computed at same timesteps, reuses r and ṙ)
     phase_space::PhaseSpaceData
@@ -252,6 +260,11 @@ function compute_pair_force_timeseries(
     c2 = c * c
     k = charges[i] * charges[j]
 
+    # Zöllner coupling for this pair (1.0 = standard Weber)
+    kappa_ij = kappa(sol.prob, i, j)
+
+    zollner_extra_magnitude = Vector{Float64}(undef, n_force_steps)
+
     sum_mag = 0.0
     min_mag = Inf
     max_mag = -Inf
@@ -293,9 +306,12 @@ function compute_pair_force_timeseries(
             end
         end
 
-        # Coulomb base vector: (k / r²) * r̂
-        coulomb_coeff = k / (r * r)
+        # Coulomb base vector, scaled by κ: (κ * k / r²) * r̂
+        coulomb_coeff = kappa_ij * k / (r * r)
         @. coulomb[t] = coulomb_coeff * r_hat
+
+        # Zöllner extra force magnitude: |(κ-1) * k / r²|
+        zollner_extra_magnitude[t] = abs((kappa_ij - 1.0) * k / (r * r))
 
         # Vector form terms
         # term_vv = coulomb * (v·v / c²)
@@ -350,6 +366,7 @@ function compute_pair_force_timeseries(
         t_forces,
         dims,
         (i, j),
+        kappa_ij,
         k,
         force,
         magnitude,
@@ -360,6 +377,7 @@ function compute_pair_force_timeseries(
         vector_term_rv2,
         radial_term_rdot2,
         radial_term_rddot,
+        zollner_extra_magnitude,
         phase_space,
     )
 end

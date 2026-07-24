@@ -32,6 +32,7 @@ makedocs(
         ],
         "Internals" => "internals.md",
         "Advanced" => ["Regularization" => "regularization.md"],
+        "Research" => ["Zöllner Extension" => "zollner.md"],
         "Theory" => "theory.md",
     ],
     checkdocs = :exports,

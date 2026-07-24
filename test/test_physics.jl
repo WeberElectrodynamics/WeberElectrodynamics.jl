@@ -221,15 +221,16 @@
         q = [1.0, 0.0, -1.0, 0.0]
         p = [0.0, 0.5, 0.0, -0.5]
 
-        # Params layout: [m1, m2, q1, q2, c]
+        # Params layout: [m1, m2, q1, q2, c]; kappas: [κ₁₂] = [1.0] (Zöllner disabled)
         params_large_c = [m1, m2, q1, q2, 1e10]
         params_small_c = [m1, m2, q1, q2, 10.0]
+        kappas = [1.0]
 
         out_large_c = zeros(4)
         out_small_c = zeros(4)
 
-        sys.dp_dt_compiled(out_large_c, q, p, 0.0, params_large_c)
-        sys.dp_dt_compiled(out_small_c, q, p, 0.0, params_small_c)
+        sys.dp_dt_compiled(out_large_c, q, p, 0.0, params_large_c, kappas)
+        sys.dp_dt_compiled(out_small_c, q, p, 0.0, params_small_c, kappas)
 
         # Force magnitude should be similar but with small Weber correction for finite c
         @test norm(out_large_c) ≈ norm(out_small_c) rtol = 0.1

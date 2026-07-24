@@ -103,7 +103,7 @@ function _compute_step_energy(
     p::AbstractVector{Float64},
     prob::HamiltonianProblem,
 )
-    return prob.system.hamiltonian_compiled(q, p, t, params(prob))
+    return prob.system.hamiltonian_compiled(q, p, t, params(prob), kappas(prob))
 end
 
 function _compute_step_pair_phase(
@@ -1022,6 +1022,7 @@ function _recycled_problem(integ::HamiltonianIntegrator)
         copy(integ.q),
         copy(integ.p),
         copy(params(old_prob)),
+        copy(kappas(old_prob)),
         old_prob.dt,
         old_prob.convergence_tolerance,
         old_prob.maximum_iterations,

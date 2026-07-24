@@ -9,7 +9,7 @@ export @sprintf, norm, dot
 # Hamiltonian System (symbolic builder + compiled EOMs)
 # =============================================================================
 include("hamiltonian_system.jl")
-export HamiltonianSystem, weber_term, kinetic_term, coulomb_term
+export HamiltonianSystem, weber_term, zollner_term, kinetic_term, coulomb_term
 export NamedTerm, term_names, has_term, get_term
 export n_particles, dims, degrees_of_freedom, n_pairs, pair_indices
 
@@ -22,8 +22,9 @@ export HamiltonianSolution
 export HamiltonianIntegrator
 export RegularizationOptions
 export RegularizationDiagnostics
+export ZollnerOptions
 export SymmetricProjectionIntegrator
-export masses, charges, speed_of_light, params
+export masses, charges, speed_of_light, kappas, kappa, params
 
 # =============================================================================
 # Initial-condition helpers
@@ -184,6 +185,52 @@ Requires `using Plots` to activate the Plots.jl extension.
 """
 function plot_momentum_errors end
 
+"""
+    plot_zollner_energy(data::EnergyData) -> Plot
+
+Visualise Zöllner potential contributions against standard Weber energies.
+
+Two-panel layout: total potential with per-pair breakdown and Zöllner extra terms
+(κ values shown); Zöllner gravitational residual ΣΔV_Z compared to total energy.
+Only meaningful when the problem was constructed with Zöllner enabled
+(non-trivial `kappas(prob)`).
+
+Requires `using Plots` to activate the Plots.jl extension.
+"""
+function plot_zollner_energy end
+
+"""
+    plot_zollner_force_residual(data::PairForceData) -> Plot
+
+Two-panel visualization of the Zöllner extra force for one particle pair:
+total force magnitude alongside the Zöllner extra magnitude |(κ−1)·F_Coulomb|,
+and the ratio of extra Zöllner force to total force.
+
+Requires `using Plots` to activate the Plots.jl extension.
+"""
+function plot_zollner_force_residual end
+
+"""
+    plot_weber_vs_zollner(sol1, sol2; labels=["Weber","Zöllner"]) -> Plot
+
+Overlay trajectories from two solutions (same initial conditions, different κ)
+to visualise the orbital divergence introduced by the Zöllner mismatch.
+Solid lines = `sol1`, dashed lines = `sol2`. Requires 2D or 3D.
+
+Requires `using Plots` to activate the Plots.jl extension.
+"""
+function plot_weber_vs_zollner end
+
+"""
+    plot_zollner_phase_space(data1, data2; labels=["Weber","Zöllner"]) -> Plot
+
+Overlay (r, ṙ) phase portraits for the same pair from two simulations, showing
+how the Zöllner mismatch shifts the phase-space orbit.
+
+Requires `using Plots` to activate the Plots.jl extension.
+"""
+function plot_zollner_phase_space end
+
 export plot_trajectories,
     plot_energy,
     plot_pair_energy,
@@ -191,6 +238,8 @@ export plot_trajectories,
     plot_pair_forces,
     plot_phase_space,
     plot_momentum_errors
+export plot_zollner_energy,
+    plot_zollner_force_residual, plot_weber_vs_zollner, plot_zollner_phase_space
 
 # =============================================================================
 # Animation (Makie Extension)

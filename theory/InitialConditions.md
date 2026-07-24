@@ -2,7 +2,7 @@
 
 ## Scope
 
-This document presents systematic methods for constructing initial conditions for $n$-body Weber electrodynamic systems. Given a target total energy and a choice of geometry or symmetry class, the methods here yield explicit positions and momenta in closed form. The treatment covers two-body orbits, symmetric planar polygon configurations, and three-dimensional symmetric polyhedra. All derivations use absolute (Gauss–Weber) units.
+This document presents systematic methods for constructing initial conditions for $n$-body Weber electrodynamic systems. Given a target total energy and a choice of geometry or symmetry class, the methods here yield explicit positions and momenta in closed form. The treatment covers two-body orbits, symmetric planar polygon configurations, three-dimensional symmetric polyhedra, and the Zöllner-modified case. All derivations use absolute (Gauss–Weber) units.
 
 ## Notation
 
@@ -13,6 +13,7 @@ We follow the conventions established for the Weber Hamiltonian. For an $n$-part
 - $\vec{v}_i = \dot{\vec{r}}_i$ — velocity vector
 - $\vec{p}_i = m_i \vec{v}_i$ — canonical momentum
 - $M = \sum_i m_i$ — total mass
+- $\kappa_{ij} \geq 1$ — pair coupling factor (equals 1 in standard Weber; see Section 7 for the Zöllner generalisation)
 
 For each pair $(i,j)$ with $i < j$:
 
@@ -26,7 +27,7 @@ $$H = \sum_{i=1}^n \frac{|\vec{p}_i|^2}{2m_i} + \sum_{i < j} U_{ij}$$
 
 with pair potential
 
-$$U_{ij} = \frac{q_i q_j}{r_{ij}} \left(1 - \frac{\dot{r}_{ij}^2}{2c^2}\right)$$
+$$U_{ij} = \frac{\kappa_{ij} q_i q_j}{r_{ij}} \left(1 - \frac{\dot{r}_{ij}^2}{2c^2}\right)$$
 
 where $c$ is the speed of light. The initial value problem is to choose $\vec{r}_i(0)$ and $\vec{p}_i(0)$ such that $H(0)$ takes a prescribed value $E$.
 
@@ -40,7 +41,7 @@ The Weber potential depends on the radial velocity $\dot{r}_{ij}$, making $H$ de
 
 With this condition, the initial potential energy is
 
-$$U_0 = \sum_{i < j} \frac{q_i q_j}{r_{ij}(0)}$$
+$$U_0 = \sum_{i < j} \frac{\kappa_{ij} q_i q_j}{r_{ij}(0)}$$
 
 and the energy constraint becomes the explicit relation
 
@@ -98,9 +99,9 @@ for some scalar $p_\perp > 0$. This satisfies $\vec{p}_1 + \vec{p}_2 = \vec{0}$ 
 
 With $\dot{r}_{12}(0) = 0$ the initial Hamiltonian is
 
-$$H(0) = \frac{p_\perp^2}{2m_1} + \frac{p_\perp^2}{2m_2} + \frac{q_1 q_2}{r_0} = \frac{p_\perp^2}{2\mu} + \frac{k}{r_0}$$
+$$H(0) = \frac{p_\perp^2}{2m_1} + \frac{p_\perp^2}{2m_2} + \frac{\kappa_{12} q_1 q_2}{r_0} = \frac{p_\perp^2}{2\mu} + \frac{k}{r_0}$$
 
-where $\mu = m_1 m_2 / M$ is the reduced mass and $k = q_1 q_2$. The energy constraint becomes
+where $\mu = m_1 m_2 / M$ is the reduced mass and $k = \kappa_{12} q_1 q_2$. The energy constraint becomes
 
 $$E = \frac{p_\perp^2}{2\mu} + \frac{k}{r_0}$$
 
@@ -256,7 +257,7 @@ With $N = 2$, $R = r_0/2$, and a single unlike pair at $r_0 = 2R$:
 
 $$U_0 = \frac{-Q^2}{r_0}$$
 
-Setting $q_1 q_2 = -Q^2$, this reproduces $k/r_0$ with $k = -Q^2 < 0$. The polygon method gives each particle speed $v = \sqrt{\eta Q^2/(m r_0)}$; the two-body reduced-mass circular speed (relative frame) is $v_{\mathrm{circ}} = \sqrt{2Q^2/(m r_0)}$ for $\mu = m/2$. Since for equal masses the relative speed is twice the individual particle speed, the two parameterisations are related by $\eta_v = \sqrt{2\eta}$, or equivalently the circular orbit ($\eta_v = 1$) corresponds to $\eta = 1/2$.
+Setting $q_1 q_2 = -Q^2$ and $\kappa_{12} = 1$, this reproduces $k/r_0$ with $k = -Q^2 < 0$. The polygon method gives each particle speed $v = \sqrt{\eta Q^2/(m r_0)}$; the two-body reduced-mass circular speed (relative frame) is $v_{\mathrm{circ}} = \sqrt{2Q^2/(m r_0)}$ for $\mu = m/2$. Since for equal masses the relative speed is twice the individual particle speed, the two parameterisations are related by $\eta_v = \sqrt{2\eta}$, or equivalently the circular orbit ($\eta_v = 1$) corresponds to $\eta = 1/2$.
 
 ### N = 4: Alternating Square
 
@@ -424,6 +425,50 @@ A large-$I$ axis (rotation in a plane that sweeps far from the axis) gives large
 
 This degree of freedom is useful when simulating different dynamical regimes — e.g.,slowly tumbling vs.rapidly spinning — at the same total energy.
 
+## Zöllner-Modified Initial Conditions
+
+### Modified Pair Coupling
+
+When the Zöllner electrogravitational extension is active with mismatch parameter $a > 0$, unlike-sign pairs receive an enhanced coupling
+
+$$\kappa_{ij} = 1 + a \quad (q_i q_j < 0), \qquad \kappa_{ij} = 1 \quad (q_i q_j > 0)$$
+
+The initial potential energy at $\dot{r}_{ij}(0) = 0$ becomes
+
+$$U_0^{\mathrm{Z}} = \sum_{\substack{i < j \\ q_i q_j < 0}} \frac{(1+a) q_i q_j}{r_{ij}(0)} + \sum_{\substack{i < j \\ q_i q_j > 0}} \frac{q_i q_j}{r_{ij}(0)}$$
+
+Since unlike pairs contribute negatively (attractive), increasing $a$ makes $U_0^{\mathrm{Z}}$ more negative than the standard $U_0$. Splitting:
+
+$$U_0^{\mathrm{Z}} = U_0 + a \sum_{\substack{i < j \\ q_i q_j < 0}} \frac{q_i q_j}{r_{ij}(0)}$$
+
+where $U_0$ is the standard ($\kappa = 1$) initial potential and the second term is always negative.
+
+### Two-Body Circular Orbit with Zöllner
+
+The circular orbit derivation in Section 4 carries through unchanged with $k$ replaced by $k^{\mathrm{Z}} = (1+a) q_1 q_2$ for an attractive pair:
+
+$$v_{\mathrm{circ}}^{\mathrm{Z}} = \sqrt{\frac{(1+a)|q_1 q_2|}{\mu r_0}}$$
+
+The circular orbit is faster than in standard Weber by the factor $\sqrt{1+a}$. Equivalently, for the same circular speed, the Zöllner radius is smaller by a factor of $1+a$.
+
+### Energy Budget Comparison
+
+For a fixed target energy $E < 0$ and the same geometric configuration:
+
+- Standard Weber: $T_0 = E - U_0$
+- Zöllner: $T_0^{\mathrm{Z}} = E - U_0^{\mathrm{Z}} > T_0$ (more kinetic energy required)
+
+For a fixed energy fraction $\eta$ (same $\eta = T_0/|U_0|$):
+
+- Standard Weber: $E = (\eta - 1)|U_0|$
+- Zöllner: $E^{\mathrm{Z}} = (\eta - 1)|U_0^{\mathrm{Z}}|$, with $|E^{\mathrm{Z}}| > |E|$ for $\eta < 1$
+
+The Zöllner system at the same $\eta$ is therefore more deeply bound (more negative energy) than the standard Weber system in the same geometry.
+
+To compare Zöllner and standard Weber at the **same physical energy** $E$, use $U_0^{\mathrm{Z}}$ in the speed formula with $\kappa_{ij}$ values set appropriately:
+
+$$v = \sqrt{\frac{2(E - U_0^{\mathrm{Z}})}{Nm}}$$
+
 ## Method D — Sub-Critical Like-Charge Pairs
 
 Methods A–C construct initial conditions for attractive ($k = q_1 q_2 < 0$) or mixed-sign systems. For two like charges ($k = q_1 q_2 > 0$), Weber's velocity-dependent force creates a fundamentally different regime: below a critical separation $\rho$, the pair forms a bound oscillatory state with *positive* total energy. This section gives closed-form initial conditions for such systems.
@@ -574,9 +619,11 @@ Scale the orbital speed by a fraction $\eta_{\text{orb}} \in (0, 1)$ to produce 
 
 $$v = \eta_{\text{orb}} \cdot v_{\text{orb}}$$
 
-Bound orbits require $\eta_{\text{orb}} \lesssim 0.9$; at $\eta_{\text{orb}} \geq 1$ the orbiter escapes. The exact bound/unbound threshold depends on the nucleus size.
+Bound orbits require $\eta_{\text{orb}} \lesssim 0.9$; at $\eta_{\text{orb}} \geq 1$ the orbiter escapes. The exact bound/unbound threshold depends on the nucleus size and Zöllner coupling.
 
 **Collision bounce.** The nucleus pair oscillation passes through $r = 0$ (in the $\ell = 0$ regularisable case). Use a collision bounce radius $r_{\text{bounce}} > 0$ to reflect the relative coordinate at small separation. The package-level callback and regularized-integrator bridge are documented in [docs/src/regularization.md](../docs/src/regularization.md).
+
+**Zöllner enhancement.** With mismatch parameter $a > 0$, the unlike-pair coupling strengthens by factor $(1+a)$. This tightens the orbiter's orbit and can circularise an otherwise eccentric trajectory. For $\eta_{\text{orb}} = 0.8$ and $a = 0.5$, the orbit becomes nearly circular. The nucleus (like-charge pair) is unaffected by $a$ since $\kappa_{ij} = 1$ for like signs.
 
 This construction is approximate: the nucleus oscillation and orbital motion couple dynamically. The scale separation $R \gg r_{\text{nuc}}$ controls the quality of the approximation. Treat parameter sweeps as simulation studies rather than closed-form guarantees.
 
@@ -609,15 +656,15 @@ This construction is approximate: the nucleus oscillation and orbital motion cou
 
 ## Step-by-Step Recipe
 
-Given: masses $m_i$, charges $q_i$, speed of light $c$, and a target energy $E$.
+Given: masses $m_i$, charges $q_i$, speed of light $c$, coupling factors $\kappa_{ij}$, and a target energy $E$.
 
 1. **Choose geometry.** Select a symmetry class (two-body, $N$-gon, polyhedron) and geometry parameters ($r_0$ or $R$). For like-charge pairs in the sub-critical regime ($k > 0$, $r_0 < \rho$), see Method D. Note that sub-critical pairs have $E > 0$ (bound with positive energy), unlike the attractive case where bound means $E < 0$.
 
 2. **Place particles.** Assign positions satisfying the COM condition $\sum_i m_i \vec{r}_i(0) = \vec{0}$.
 
-3. **Compute $U_0$.** Evaluate the Coulomb sum:
+3. **Compute $U_0$.** Evaluate the Coulomb sum (with $\kappa_{ij}$):
 
-$$U_0 = \sum_{i < j} \frac{q_i q_j}{r_{ij}(0)}$$
+$$U_0 = \sum_{i < j} \frac{\kappa_{ij} q_i q_j}{r_{ij}(0)}$$
 
 4. **Check feasibility.** Require $E > U_0$ so that $T_0 = E - U_0 > 0$. If $E \leq U_0$, increase $r_0$ (or $R$) or choose a less negative target energy.
 

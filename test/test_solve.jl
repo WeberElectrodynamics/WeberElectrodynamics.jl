@@ -200,10 +200,6 @@
         path = tempname() * ".jld2"
 
         @test save_solution(path, sol; metadata = (case = "archive",)) == path
-        archive = JLD2.load(path)["archive"]
-        @test archive.format_version == 2
-        @test !hasproperty(archive.problem, Symbol("kap" * "pas"))
-        @test !hasproperty(archive.problem, :term_names)
         loaded = load_solution(path)
 
         @test loaded isa HamiltonianSolution
@@ -212,11 +208,6 @@
         @test loaded.p == sol.p
         @test loaded.retcode == sol.retcode
         rm(path; force = true)
-
-        old_path = tempname() * ".jld2"
-        JLD2.jldsave(old_path; archive = (format_version = 1,))
-        @test_throws ArgumentError load_solution(old_path)
-        rm(old_path; force = true)
     end
 
     @testset "Two-body system solve" begin

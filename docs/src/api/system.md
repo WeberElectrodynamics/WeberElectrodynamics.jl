@@ -20,6 +20,7 @@ H = kinetic_term(p_vars; masses = m_vars, n_particles, dims) +
 
 sys = HamiltonianSystem(H, q_vars, p_vars;
     param_symbols = vcat(m_vars, q_charges, [c_var]),
+    kappa_symbols = Num[],   # no κ dependence
     t = t_var, n_particles = n_particles, dims = dims,
 )
 ```
@@ -30,6 +31,7 @@ Composable building blocks for symbolic Hamiltonians.
 
 ```@docs
 weber_term
+zollner_term
 kinetic_term
 coulomb_term
 ```
@@ -43,13 +45,13 @@ has_term
 get_term
 ```
 
-A `NamedTerm` may attach an optional `pair_decomposition(i, j, q, p, params)`
+A `NamedTerm` may attach an optional `pair_decomposition(i, j, q, p, params, kappas)`
 closure that returns a `NamedTuple` summarising the term's contribution to a
 single pair — used by the energy/force statistics to avoid re-deriving
-per-term decompositions. The default `:weber` term supplies its own closure;
-custom terms may attach any `NamedTuple` shape, but
+per-term decompositions. The default `:weber` and `:zollner` terms supply
+their own closures; custom terms may attach any `NamedTuple` shape, but
 the built-in statistics consume specific field names (`coulomb`, `velocity`,
-`rdot`, `r`).
+`rdot`, `r`, `zollner_extra`).
 
 ## Metadata accessors
 

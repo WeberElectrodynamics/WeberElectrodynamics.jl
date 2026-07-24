@@ -52,7 +52,7 @@ For masses `m1`, `m2`, charges `q1`, `q2`, and initial separation `r0`:
 | Quantity | Formula |
 |----------|---------|
 | Reduced mass | `μ = m1*m2/(m1+m2)` |
-| Pair coupling | `k = q1 * q2` |
+| Pair coupling | `k = κ₁₂ * q1 * q2`  (κ=1 standard Weber; κ=1+a for Zöllner unlike pairs) |
 | Circular momentum | `p_circ = √(μ * \|k\| / r0)` |
 
 Scale `p_circ` by a dimensionless factor η_v to select the orbit type:
@@ -176,9 +176,12 @@ animate_weber(sol)    # replay
 
 ## Optional features
 
-The integrator above runs the core unregularized symplectic method. Close-encounter
-regularization can be enabled explicitly:
+The integrator above runs the core unregularized symplectic method. Two optional
+extensions can be enabled explicitly:
 
 - **[Regularization](regularization.md)** — lifted square-root (1D),
   Levi-Civita (2D), and KS (3D) pair handling for close encounters. Wrap the
   base algorithm: `solve(prob, RegularizedIntegrator())`.
+- **[Zöllner Extension](zollner.md)** — research feature implementing Zöllner's
+  electrogravitational mismatch hypothesis. Pass
+  `zollner = ZollnerOptions(enabled = true, a = <value>)` to `HamiltonianProblem`.

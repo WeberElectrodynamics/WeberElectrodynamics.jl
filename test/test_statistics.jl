@@ -602,18 +602,19 @@ using WeberElectrodynamics: compute_total_kinetic_energy, compute_pair_weber_com
         charges = [1.0, -1.0]
         c = 10.0
 
-        coulomb, vel, rdot =
-            compute_pair_weber_components(q_rest, p_rest, 1, 2, masses, charges, c, 2)
+        coulomb, vel, rdot, zextra =
+            compute_pair_weber_components(q_rest, p_rest, 1, 2, masses, charges, c, 2, 1.0)
 
-        # At rest: rdot = 0 and the velocity term vanishes.
+        # At rest: rdot = 0, velocity term = 0, zollner_extra = 0 (kappa=1)
         @test rdot ≈ 0.0
         @test vel ≈ 0.0
-        # Coulomb: q1*q2/r = (1)(-1)/2 = -0.5
+        @test zextra ≈ 0.0
+        # Coulomb: kappa*q1*q2/r = 1*(1)(-1)/2 = -0.5
         @test coulomb ≈ -0.5
 
         # Particle 2 moving right at v=3 → rdot = +3 (separating)
         p_radial = [0.0, 0.0, 3.0, 0.0]
-        coulomb2, vel2, rdot2 = compute_pair_weber_components(
+        coulomb2, vel2, rdot2, _ = compute_pair_weber_components(
             q_rest,
             p_radial,
             1,
@@ -622,13 +623,14 @@ using WeberElectrodynamics: compute_total_kinetic_energy, compute_pair_weber_com
             charges,
             c,
             2,
+            1.0,
         )
         @test rdot2 ≈ 3.0
         # velocity term = -coulomb2 * rdot2²/(2c²)
         @test vel2 ≈ -coulomb2 * rdot2^2 / (2 * c^2)
 
         # Large-c limit: velocity correction vanishes relative to Coulomb
-        coulomb3, vel3, _ = compute_pair_weber_components(
+        coulomb3, vel3, _, _ = compute_pair_weber_components(
             q_rest,
             p_radial,
             1,
@@ -637,13 +639,30 @@ using WeberElectrodynamics: compute_total_kinetic_energy, compute_pair_weber_com
             charges,
             1e9,
             2,
+            1.0,
         )
         @test abs(vel3) / abs(coulomb3) < 1e-12
+
+        # kappa ≠ 1: Coulomb scales, Zöllner extra = (kappa-1)*q1*q2/r (rdot=0)
+        kappa = 1.3
+        coul_k, _, _, zextra_k = compute_pair_weber_components(
+            q_rest,
+            p_rest,
+            1,
+            2,
+            masses,
+            charges,
+            c,
+            2,
+            kappa,
+        )
+        @test coul_k ≈ kappa * charges[1] * charges[2] / 2.0
+        @test zextra_k ≈ (kappa - 1.0) * charges[1] * charges[2] / 2.0
 
         # 1D: particles at x=0 and x=3 converging (particle 1 right, particle 2 left)
         q_1d = [0.0, 3.0]
         p_1d = [1.0, -1.0]
-        coulomb_1d, _, rdot_1d =
+        coulomb_1d, _, rdot_1d, _ =
             compute_pair_weber_components(q_1d, p_1d, 1, 2, [1.0, 1.0], [1.0, 1.0], c, 1)
         @test coulomb_1d ≈ 1.0 / 3.0  # same-sign charges, r=3
         @test rdot_1d < 0.0            # converging

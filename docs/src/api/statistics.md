@@ -2,8 +2,8 @@
 
 For generic custom Hamiltonians, `compute_energy_timeseries` evaluates the
 compiled total Hamiltonian and kinetic split. Full pair decompositions are
-available when the system includes the built-in Weber `NamedTerm`
-decomposition closure.
+available when the system includes built-in Weber/Zöllner `NamedTerm`
+decomposition closures.
 
 ## Trajectories
 

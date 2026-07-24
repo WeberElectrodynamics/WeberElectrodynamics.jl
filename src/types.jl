@@ -38,6 +38,65 @@ struct SymmetricProjectionIntegrator <: HamiltonianAlgorithm
 end
 
 # =============================================================================
+# Zöllner Extension (research/experimental — see docs/src/zollner.md)
+# =============================================================================
+
+"""
+    ZollnerOptions(; enabled=false, a=0.0)
+
+Configuration for the Zöllner electrogravitational extension to Weber's force law.
+
+When enabled, charge pairs with opposite nonzero signs receive a coupling
+factor κ = 1 + a, producing an emergent attractive correction to the Weber
+potential. Like-sign and neutral pairs are unaffected (κ = 1).
+
+# Keywords
+- `enabled=false`: Activate the Zöllner mismatch.
+- `a=0.0`: Mismatch parameter; must be positive when `enabled=true`.
+
+# Fields
+- `enabled::Bool`: Whether the extension is active.
+- `a::Float64`: Zöllner mismatch parameter a.
+"""
+struct ZollnerOptions
+    enabled::Bool
+    a::Float64
+
+    function ZollnerOptions(; enabled::Bool = false, a::Real = 0.0)
+        if enabled
+            @assert a > 0 "Zöllner mismatch parameter a must be positive when enabled, got $a"
+        end
+        new(enabled, Float64(a))
+    end
+end
+
+# Compute per-pair Zöllner coupling factors κ_ij.
+# κ_ij = 1+a for opposite nonzero signs, 1.0 for like-sign or neutral pairs.
+# Returns a vector of length n_particles*(n_particles-1)/2, ordered by (i<j).
+# Neutral particles keep κ = 1.0 because the pair has no electrostatic
+# interaction; only pairs with opposite nonzero signs receive κ = 1+a.
+function _compute_zollner_kappas(
+    charges::Vector{Float64},
+    zollner::ZollnerOptions,
+    n_particles::Int,
+)::Vector{Float64}
+    n_pairs = n_particles * (n_particles - 1) ÷ 2
+    kappas = ones(Float64, n_pairs)
+    if zollner.enabled
+        idx = 1
+        @inbounds for i = 1:n_particles
+            for j = (i+1):n_particles
+                if charges[i] * charges[j] < 0
+                    kappas[idx] = 1.0 + zollner.a
+                end
+                idx += 1
+            end
+        end
+    end
+    return kappas
+end
+
+# =============================================================================
 # Regularization (optional, advanced — see docs/src/regularization.md)
 # =============================================================================
 
@@ -287,6 +346,7 @@ mutable struct RegularizationBuffers
     ks_n::Vector{Float64}
 
     params_pair::Vector{Float64}
+    kappas_pair::Vector{Float64}
     dq_full::Vector{Float64}
     dp_full::Vector{Float64}
     dq_pair::Vector{Float64}
@@ -375,6 +435,7 @@ mutable struct RegularizationBuffers
             Matrix{Float64}(undef, 3, 4),
             Vector{Float64}(undef, 4),
             Vector{Float64}(undef, 2n_particles + 1),
+            Vector{Float64}(undef, n_pairs),
             Vector{Float64}(undef, dof),
             Vector{Float64}(undef, dof),
             Vector{Float64}(undef, dof),
@@ -393,7 +454,7 @@ end
 Fully specified n-body Weber electrodynamics problem ready for integration.
 
 Packages the compiled `HamiltonianSystem`, initial conditions, physical parameters,
-and solver options into a single immutable structure.
+and solver/regularization options into a single immutable structure.
 
 # Arguments
 - `system::HamiltonianSystem`: Pre-built symbolic + compiled Hamiltonian system.
@@ -408,6 +469,10 @@ and solver options into a single immutable structure.
 - `dt`: Fixed macro time step (positive).
 - `convergence_tolerance=1e-13`: Fixed-point convergence threshold for projection.
 - `maximum_iterations=100`: Maximum projection iterations per step.
+- `zollner=ZollnerOptions()`: Zöllner electrogravitational extension options.
+  See `ZollnerOptions` for all available fields. The options are used at
+  construction time to compute the per-pair `κ` values stored in `prob.kappas`
+  and are **not** retained on the problem; inspect κ via `kappas(prob)`.
 
 Regularization options moved to [`RegularizedIntegrator`](@ref); pass them via
 `solve(prob, RegularizedIntegrator(SymmetricProjectionIntegrator(); ...))`.
@@ -418,6 +483,8 @@ Regularization options moved to [`RegularizedIntegrator`](@ref); pass them via
 - `q_initial`, `p_initial::Vector{Float64}`: Initial phase-space point.
 - `params::Vector{Float64}`: Packed parameter vector `[masses; charges; c]`,
   length `2N + 1`. Access slices via `masses`, `charges`, `speed_of_light`.
+- `kappas::Vector{Float64}`: Per-pair Zöllner coupling `[κ₁₂, κ₁₃, …]`,
+  length `N*(N-1)/2`. All entries `1.0` when Zöllner is disabled.
 - `dt::Float64`: Fixed step size.
 - `convergence_tolerance::Float64`: Projection convergence threshold.
 - `maximum_iterations::Int`: Maximum projection iterations per step.
@@ -428,6 +495,7 @@ struct HamiltonianProblem{S<:HamiltonianSystem}
     q_initial::Vector{Float64}
     p_initial::Vector{Float64}
     params::Vector{Float64}
+    kappas::Vector{Float64}
     dt::Float64
     convergence_tolerance::Float64
     maximum_iterations::Int
@@ -443,6 +511,7 @@ struct HamiltonianProblem{S<:HamiltonianSystem}
         dt::Real,
         convergence_tolerance::Real = 1e-13,
         maximum_iterations::Integer = 100,
+        zollner::ZollnerOptions = ZollnerOptions(),
     )
         n_particles = system.n_particles
         dof = system.degrees_of_freedom
@@ -461,6 +530,7 @@ struct HamiltonianProblem{S<:HamiltonianSystem}
         charges_f64 = Vector{Float64}(charges)
         c_f64 = Float64(c)
 
+        kappas = _compute_zollner_kappas(charges_f64, zollner, n_particles)
         params = vcat(masses_f64, charges_f64, [c_f64])
 
         new{typeof(system)}(
@@ -469,6 +539,7 @@ struct HamiltonianProblem{S<:HamiltonianSystem}
             Vector{Float64}(q_initial),
             Vector{Float64}(p_initial),
             params,
+            kappas,
             Float64(dt),
             Float64(convergence_tolerance),
             Int(maximum_iterations),
@@ -476,13 +547,15 @@ struct HamiltonianProblem{S<:HamiltonianSystem}
     end
 
     # Internal constructor used by _with_tspan to clone a problem while
-    # preserving the already-packed params vector. Not part of the public API.
+    # preserving the already-packed params and κ vectors. Not part of the
+    # public API.
     function HamiltonianProblem(
         system::HamiltonianSystem,
         tspan::Tuple{Float64,Float64},
         q_initial::Vector{Float64},
         p_initial::Vector{Float64},
         params::Vector{Float64},
+        kappas::Vector{Float64},
         dt::Float64,
         convergence_tolerance::Float64,
         maximum_iterations::Int,
@@ -493,6 +566,7 @@ struct HamiltonianProblem{S<:HamiltonianSystem}
             q_initial,
             p_initial,
             params,
+            kappas,
             dt,
             convergence_tolerance,
             maximum_iterations,
@@ -506,11 +580,13 @@ end
     masses(prob::HamiltonianProblem) -> AbstractVector{Float64}
     charges(prob::HamiltonianProblem) -> AbstractVector{Float64}
     speed_of_light(prob::HamiltonianProblem) -> Float64
+    kappas(prob::HamiltonianProblem) -> Vector{Float64}
     params(prob::HamiltonianProblem) -> Vector{Float64}
 
 Read-only accessors. `masses` and `charges` return views into the backing
-`params` vector (layout `[m₁…mₙ, q₁…qₙ, c]`). All are O(1) and
-allocation-free but must be treated as read-only.
+`params` vector (layout `[m₁…mₙ, q₁…qₙ, c]`); `kappas` returns the backing
+`κ` vector directly. All are O(1) and allocation-free but must be treated
+as read-only.
 """
 n_particles(prob::HamiltonianProblem) = n_particles(prob.system)
 dims(prob::HamiltonianProblem) = dims(prob.system)
@@ -527,8 +603,8 @@ n_pairs(prob::HamiltonianProblem) = n_pairs(prob.system)
     pair_indices(sys_or_prob) -> Vector{Tuple{Int,Int}}
 
 Return all canonical particle pairs `(i, j)` with `i < j` in the same order
-used throughout pair-wise diagnostics. The order is `(1,2), (1,3), ...,
-(N-1,N)`.
+used by `kappas(prob)` and [`kappa(prob, i, j)`](@ref). The order is
+`(1,2), (1,3), ..., (N-1,N)`.
 """
 function pair_indices(sys::HamiltonianSystem)
     n = n_particles(sys)
@@ -559,14 +635,38 @@ Return the speed-of-light parameter `c`.
 speed_of_light(prob::HamiltonianProblem) = prob.params[2*n_particles(prob)+1]
 
 """
+    kappas(prob::HamiltonianProblem) -> Vector{Float64}
+
+Return the backing vector of per-pair Zöllner coupling factors.
+"""
+kappas(prob::HamiltonianProblem) = prob.kappas
+
+"""
     params(prob::HamiltonianProblem) -> Vector{Float64}
 
 Return the packed parameter vector `[masses; charges; c]`.
 """
 params(prob::HamiltonianProblem) = prob.params
 
+"""
+    kappa(prob::HamiltonianProblem, i::Int, j::Int) -> Float64
+
+Return the Zöllner coupling `κ_ij` for pair `(i, j)`. Pair order does not
+matter, but the indices must be distinct and in `1:n_particles(prob)`.
+"""
+function kappa(prob::HamiltonianProblem, i::Int, j::Int)
+    n = n_particles(prob)
+    @assert 1 <= i <= n "kappa index i must be in 1:$n, got i=$i"
+    @assert 1 <= j <= n "kappa index j must be in 1:$n, got j=$j"
+    @assert i != j "kappa requires distinct particle indices, got i=j=$i"
+    if j < i
+        i, j = j, i
+    end
+    return prob.kappas[_pair_index(i, j, n)]
+end
+
 # Internal: clone a problem with an overridden tspan while preserving the
-# compiled system, initial conditions, and packed params. Used by
+# compiled system, initial conditions, packed params, and κ vector. Used by
 # the Makie streaming animation to extend the integration horizon without
 # needing to re-derive the construction inputs.
 function _with_tspan(prob::HamiltonianProblem, tspan::Tuple{Real,Real})
@@ -576,6 +676,7 @@ function _with_tspan(prob::HamiltonianProblem, tspan::Tuple{Real,Real})
         copy(prob.q_initial),
         copy(prob.p_initial),
         copy(prob.params),
+        copy(prob.kappas),
         prob.dt,
         prob.convergence_tolerance,
         prob.maximum_iterations,

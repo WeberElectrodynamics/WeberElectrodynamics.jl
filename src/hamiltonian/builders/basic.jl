@@ -7,7 +7,7 @@ pre-constructed symbolic inputs.
 Returns a `Symbolics.Num` expression usable with `Symbolics.derivative` and
 `Symbolics.build_function`. Intended for users composing custom Hamiltonians
 such as `H = kinetic_term(...) + coulomb_term(...)` without the Weber velocity
-term.
+term or the Zöllner mismatch.
 
 # Arguments
 - `p_vars`: Momentum symbolic variables, length `n_particles*dims`.
@@ -42,7 +42,8 @@ pre-constructed symbolic inputs.
 
 Returns a `Symbolics.Num` expression usable with `Symbolics.derivative` and
 `Symbolics.build_function`. Unlike [`weber_term`](@ref), this carries no
-velocity-dependent correction (no `c`) — it is the limit of pure 1/r Coulomb.
+velocity-dependent correction (no `c`) and no per-pair κ coupling — it is the
+limit of pure 1/r Coulomb.
 
 # Arguments
 - `q_vars`: Coordinate symbolic variables, length `n_particles*dims`.

@@ -60,9 +60,20 @@ k_{ij}=q_iq_j
 $$
 
 for the companion paper and for unmodified Weber electrodynamics. The package
-now implements this coefficient directly, with no secondary pair-coupling
-channel. Removing that channel does not correct the canonical-momentum error
-documented here; it only narrows the future remediation to pure Weber dynamics.
+currently scales the entire pair by $\kappa_{ij}$, which would instead make
+$k_{ij}=\kappa_{ij}q_iq_j$ in every formula below.
+
+That package convention is an unresolved, separate model question.
+[`ZollnerElectrogravitationalTheory.md`](ZollnerElectrogravitationalTheory.md)
+describes the Zöllner mismatch as an additional **static** residual
+interaction, while the implementation and user documentation multiply both
+the static and velocity-dependent Weber terms by $\kappa_{ij}$. Under the
+static-residual interpretation, $M$ below must be built with $q_iq_j$, and a
+separate configuration-only potential must be added to $H$; $\kappa_{ij}$ does
+not enter $M$. Under the current full-pair-scaling interpretation, it does.
+The future correction must choose and document one interpretation before
+changing the Zöllner code. The canonical-momentum error exists under either
+interpretation.
 
 For
 
@@ -246,7 +257,11 @@ dependence is carried by the configuration-dependent inverse mass matrix. This
 Hamiltonian is still non-separable because its quadratic momentum term also
 depends on $\vec q$.
 
-Here and below, the implemented pure-Weber coefficient is \(k_{ij}=q_iq_j\).
+This displayed Hamiltonian covers a coefficient $k_{ij}$ that scales the whole
+Weber pair. If the Zöllner correction is retained as a static residual instead,
+the pure-Weber coefficient $q_iq_j$ belongs in $M$ and the chosen residual
+$V_{\mathrm Z}(\vec q)$ is added separately to the configuration-only
+potential.
 
 The first canonical equation is
 
@@ -478,26 +493,36 @@ explicitly supplies SymPy and record a fully passing result.
    ([`src/hamiltonian/builders/weber.jl`](../src/hamiltonian/builders/weber.jl)).
    It constructs $\sum p^2/(2m)$ and evaluates every radial velocity with
    $\vec p/m$. It therefore builds the paper's naive Hamiltonian.
-2. **Default named-term decomposition**
+2. **Zöllner builder**
+   ([`src/hamiltonian/builders/zollner.jl`](../src/hamiltonian/builders/zollner.jl)).
+   It applies $\kappa-1$ to the same naive full Weber pair. This disagrees with
+   the static-residual interpretation in the Zöllner theory note. If full-pair
+   scaling is retained, $M^{-1}$ depends nonlinearly on all
+   $\kappa_{ij}$ and the current additive canonical correction cannot simply be
+   retained. If the static-residual interpretation is chosen, the pure-Weber
+   $M$ is unchanged and the extra Zöllner term remains configuration-only.
+   This model choice must be resolved before implementation.
+3. **Default named-term decomposition**
    ([`src/hamiltonian_system.jl`](../src/hamiltonian_system.jl)).
-   Its `:weber` pair closure assumes the current naive additive Hamiltonian. Any changed term semantics
+   Its `:weber + :zollner` construction and pair closures assume the current
+   full-pair scaling and naive additive Hamiltonian. Any changed term semantics
    must also be reflected in
    [`docs/src/api/system.md`](../docs/src/api/system.md).
-3. **Energy statistics**
+4. **Energy statistics**
    ([`src/statistics/energy.jl`](../src/statistics/energy.jl)).
    They call $\sum p^2/(2m)$ physical kinetic energy, compute $\dot r$ with
    $\vec p/m$, and reconstruct the compiled Hamiltonian from those quantities.
    They must instead obtain $\vec v=M^{-1}\vec p$, compute
    $T_{\mathrm{phys}}=\tfrac12\sum m_i v_i^2$, and use the physical pair energy.
-4. **Force statistics**
+5. **Force statistics**
    ([`src/statistics/forces.jl`](../src/statistics/forces.jl)).
    They infer velocities and finite-difference accelerations from $\vec p/m$.
    They must obtain physical velocities from the corrected equation
    $\dot{\vec q}=\vec v$.
-5. **Live Makie phase data**
+6. **Live Makie phase data**
    ([`ext/WeberElectrodynamicsMakieExt.jl`](../ext/WeberElectrodynamicsMakieExt.jl)).
    Its pair radial velocity also uses $\vec p/m$.
-6. **Nonzero-radial two-body initial conditions**
+7. **Nonzero-radial two-body initial conditions**
    ([`src/initial_conditions.jl`](../src/initial_conditions.jl)).
    The `radial_velocity` keyword denotes a physical velocity, but the helper
    currently assigns radial canonical momentum as $\mu\dot r$. For two
@@ -512,8 +537,10 @@ explicitly supplies SymPy and record a fully passing result.
    Here
    $p_r=\hat r_{12}\mathbin{\cdot}
    \mu(\vec p_1/m_1-\vec p_2/m_2)$ is the canonical momentum conjugate to the
-   relative radial coordinate, and $k_{12}^{(W)}=q_1q_2$ is the coefficient of
-   the velocity-dependent Weber pair.
+   relative radial coordinate, and $k_{12}^{(W)}$ is the coefficient of the
+   velocity-dependent Weber pair: $q_1q_2$ under the static-residual Zöllner
+   interpretation, or $\kappa_{12}q_1q_2$ if full-pair scaling is deliberately
+   retained.
 
    Zero-radial and rigid-rotation initial conditions remain valid at their
    initial instant because the Weber momentum correction then vanishes.
@@ -583,10 +610,22 @@ explicitly supplies SymPy and record a fully passing result.
    Hamiltonian discussion should be aligned with the $M^{-1}$ form, and the
    prose defining its auxiliary correction vector must be checked for a sign
    inconsistency.
-4. [`docs/src/api/system.md`](../docs/src/api/system.md) documents the current
-   per-pair `:weber` named-term closure. It must be updated if
-   its fields or semantics change.
-5. Other documentation describing energy as
+4. [`theory/ZollnerElectrogravitationalTheory.md`](ZollnerElectrogravitationalTheory.md)
+   correctly treats the Zöllner mismatch as a static residual, but its
+   theory-level expression
+   $H=\sum_i\lVert p_i\rVert^2/(2m_i)+U_W+U_g$ repeats the canonical-momentum
+   error when $U_W$ is the velocity-dependent Weber interaction. Its corrected
+   form should use the pure-Weber inverse-mass Hamiltonian plus the
+   configuration-only $U_g$. Separately,
+   [`docs/src/zollner.md`](../docs/src/zollner.md) and
+   [`docs/src/quickstart.md`](../docs/src/quickstart.md) describe
+   $\kappa_{ij}$ as scaling the whole velocity-dependent Weber pair. These
+   sources must be reconciled before deciding whether $\kappa_{ij}$ enters
+   $M$.
+5. [`docs/src/api/system.md`](../docs/src/api/system.md) documents the current
+   per-pair `:weber` and `:zollner` named-term closures. It must be updated if
+   their fields or semantics change.
+6. Other documentation describing energy as
    `kinetic + pair potential` or radial velocity as a function of $p/m$ must be
    updated when the statistics API is corrected.
 
@@ -613,11 +652,14 @@ The future correction must update at least:
 
 - `test/test_utils.jl`, whose manual Weber energy uses $\vec v=\vec p/m$;
 - `test/test_hamiltonian_system.jl`, which checks current compiled formulas;
-- `test/test_builders.jl`, which checks the current Weber builder;
+- `test/test_builders.jl`, which checks the current Weber/Zöllner additive
+  decomposition;
 - `test/test_named_term.jl` and `test/test_statistics.jl`, which check the
   current pair-energy decomposition;
 - `test/test_initial_conditions.jl`, which checks conversion from physical
   radial velocity to canonical momentum;
+- `test/test_zollner.jl`, whose expected behavior depends on resolving the
+  static-residual versus full-pair-scaling model choice;
 - `test/test_physics.jl`, whose energy test conserves the same Hamiltonian that
   the implementation integrates; and
 - the regression fixtures under `test/regression/`, which record trajectories
@@ -648,9 +690,13 @@ following order.
    $\tfrac12\vec p^{\mathsf T}M^{-1}\vec p$.
 2. Route the default `HamiltonianSystem(n, dims)` through the corrected builder.
 3. Decide and document how singular or ill-conditioned $M$ is handled.
-4. Redesign named-term and pair decompositions so that they do not assume an
+4. Resolve the Zöllner model mismatch first: either retain full-pair scaling
+   and derive the resulting $\kappa_{ij}$-dependent $M$, or follow the theory
+   note and add a static residual to a pure-Weber $M$. Then make theory, code,
+   documentation, initial conditions, and tests use that same choice.
+5. Redesign named-term and pair decompositions so that they do not assume an
    additive canonical velocity correction; and
-5. Provide one shared, tested way to obtain physical velocity from
+6. Provide one shared, tested way to obtain physical velocity from
    $(\vec q,\vec p)$.
 
 ### Phase 3: correct dependent APIs
@@ -672,7 +718,8 @@ following order.
    implicit Weber force law and demonstrate convergence under timestep
    refinement.
 4. Test the Coulomb limit and zero-radial-velocity limit.
-5. Test two- and three-particle cases in 1D, 2D, and 3D.
+5. Test two- and three-particle cases in 1D, 2D, and 3D, including nontrivial
+   $\kappa_{ij}$.
 6. Regenerate regression fixtures, notebooks, and figures only after the
    corrected tests pass.
 7. Run the full Julia suite, formula verifier, paper build, and documentation
@@ -685,16 +732,19 @@ This finding is resolved only when all of the following hold:
 1. The paper no longer substitutes $\vec v=\vec p/m$ in the Weber interaction.
 2. The paper, verifier, theory docs, and Julia builder use the same canonical
    momentum and Hamiltonian.
-3. Compiled $\dot q$ equals $M^{-1}p$.
-4. Compiled $\dot p$ matches the corrected canonical equation.
-5. Combining the canonical equations reproduces the stated mechanical Weber
+3. Zöllner theory, builders, user documentation, named terms, and tests agree
+   on whether $\kappa_{ij}$ scales only a static residual or the whole Weber
+   pair.
+4. Compiled $\dot q$ equals $M^{-1}p$.
+5. Compiled $\dot p$ matches the corrected canonical equation.
+6. Combining the canonical equations reproduces the stated mechanical Weber
    force.
-6. Diagnostics obtain physical velocity from $\dot q$, not from $\vec p/m$.
-7. Independent trajectory comparisons converge to the Weber force-law
+7. Diagnostics obtain physical velocity from $\dot q$, not from $\vec p/m$.
+8. Independent trajectory comparisons converge to the Weber force-law
    reference as the timestep is refined.
-8. The behavior near singular $M$ is tested and documented.
-9. All formula, paper, Julia, documentation, and regression checks pass.
-10. Affected Weber notebook outputs and generated figures have been regenerated
+9. The behavior near singular $M$ is tested and documented.
+10. All formula, paper, Julia, documentation, and regression checks pass.
+11. Affected Weber notebook outputs and generated figures have been regenerated
     from the corrected system.
 
 Only after these criteria are satisfied should this planning note be removed.
