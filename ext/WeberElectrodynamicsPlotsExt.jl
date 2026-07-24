@@ -487,7 +487,7 @@ function WeberElectrodynamics.plot_pair_forces(data::PairForceData)::Plots.Plot
         p3,
         data.t,
         vv_signed,
-        label = L"\mathbf v\cdot\mathbf v/c^2",
+        label = L"\mathbf{v}\cdot\mathbf{v}/c^2",
         linewidth = 1.5,
         color = decomp_colors[2],
     )
@@ -495,7 +495,7 @@ function WeberElectrodynamics.plot_pair_forces(data::PairForceData)::Plots.Plot
         p3,
         data.t,
         ra_signed,
-        label = L"\mathbf r\cdot\mathbf a/c^2",
+        label = L"\mathbf{r}\cdot\mathbf{a}/c^2",
         linewidth = 1.5,
         color = decomp_colors[3],
     )
@@ -503,7 +503,7 @@ function WeberElectrodynamics.plot_pair_forces(data::PairForceData)::Plots.Plot
         p3,
         data.t,
         rv2_signed,
-        label = L"-\tfrac{3}{2}(\hat{\mathbf r}\cdot\mathbf v)^2/c^2",
+        label = L"-\tfrac{3}{2}(\hat{\mathbf{r}}\cdot\mathbf{v})^2/c^2",
         linewidth = 1.5,
         color = decomp_colors[4],
     )
@@ -782,7 +782,7 @@ function _plot_trajectories_1d(data::TrajectoryData)::Plots.Plot
             [data.initial_positions[particle][1]],
             marker = :circle,
             markersize = 6,
-            label = (particle == 1 ? L"\mathbf q_0" : ""),
+            label = (particle == 1 ? L"\mathbf{q}_0" : ""),
         )
         scatter!(
             plt,
@@ -790,7 +790,7 @@ function _plot_trajectories_1d(data::TrajectoryData)::Plots.Plot
             [data.final_positions[particle][1]],
             marker = :square,
             markersize = 6,
-            label = (particle == 1 ? L"\mathbf q_f" : ""),
+            label = (particle == 1 ? L"\mathbf{q}_f" : ""),
         )
     end
 
@@ -837,7 +837,7 @@ function _plot_trajectories_2d(data::TrajectoryData)::Plots.Plot
             [data.initial_positions[particle][2]],
             marker = :circle,
             markersize = 6,
-            label = (particle == 1 ? L"\mathbf q_0" : ""),
+            label = (particle == 1 ? L"\mathbf{q}_0" : ""),
         )
         scatter!(
             plt,
@@ -845,7 +845,7 @@ function _plot_trajectories_2d(data::TrajectoryData)::Plots.Plot
             [data.final_positions[particle][2]],
             marker = :square,
             markersize = 6,
-            label = (particle == 1 ? L"\mathbf q_f" : ""),
+            label = (particle == 1 ? L"\mathbf{q}_f" : ""),
         )
     end
 
@@ -881,7 +881,7 @@ function _plot_trajectories_3d(data::TrajectoryData)::Plots.Plot
             [data.initial_positions[particle][3]],
             marker = :circle,
             markersize = 6,
-            label = (particle == 1 ? L"\mathbf q_0" : ""),
+            label = (particle == 1 ? L"\mathbf{q}_0" : ""),
         )
         scatter!(
             plt,
@@ -890,7 +890,7 @@ function _plot_trajectories_3d(data::TrajectoryData)::Plots.Plot
             [data.final_positions[particle][3]],
             marker = :square,
             markersize = 6,
-            label = (particle == 1 ? L"\mathbf q_f" : ""),
+            label = (particle == 1 ? L"\mathbf{q}_f" : ""),
         )
     end
 
