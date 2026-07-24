@@ -21,19 +21,17 @@ and code generation via Symbolics.jl; expect a few seconds for the first call.
 - `t_symbol::Num`: Symbolic time variable. Reserved for time-dependent terms;
   the current Weber Hamiltonian is autonomous and does not use it.
 - `param_symbols`: Symbolic parameter vector `[m1…mN, q1…qN, c]`.
-- `kappa_symbols`: Symbolic κ vector `[κ12, κ13, …, κ_{N-1,N}]`, length `N*(N-1)/2`.
 - `hamiltonian_symbolic`: Full symbolic Weber Hamiltonian expression.
 - `dq_dt_symbolic`, `dp_dt_symbolic`: Symbolic Hamilton's equations.
-- `dq_dt_compiled(out, q, p, t, params, kappas)`, `dp_dt_compiled(out, q, p, t, params, kappas)`:
+- `dq_dt_compiled(out, q, p, t, params)`, `dp_dt_compiled(out, q, p, t, params)`:
   In-place compiled equations of motion. `t` is currently unused.
-- `hamiltonian_compiled(q, p, t, params, kappas)`: Compiled scalar Hamiltonian function.
+- `hamiltonian_compiled(q, p, t, params)`: Compiled scalar Hamiltonian function.
 - `degrees_of_freedom::Int`: Total DOF = `n_particles × dims`.
-- `terms::Vector{NamedTerm}`: Named components of the Hamiltonian (e.g.
-  `:weber`, `:zollner`) preserving the decomposition for per-term statistics
-  and plotting. The generic constructor assigns a single `:hamiltonian` term
-  by default; specialized constructors populate richer decompositions.
+- `terms::Vector{NamedTerm}`: Named components of the Hamiltonian preserving
+  the decomposition for per-term statistics and plotting. The generic
+  constructor assigns a single `:hamiltonian` term by default.
 """
-struct HamiltonianSystem{H,QD,PD,QF,PF,HF,PS,KS,TS<:AbstractVector{<:NamedTerm}}
+struct HamiltonianSystem{H,QD,PD,QF,PF,HF,PS,TS<:AbstractVector{<:NamedTerm}}
     n_particles::Int
     dims::Int
 
@@ -41,7 +39,6 @@ struct HamiltonianSystem{H,QD,PD,QF,PF,HF,PS,KS,TS<:AbstractVector{<:NamedTerm}}
     p_symbols::Vector{Num}
     t_symbol::Num
     param_symbols::PS
-    kappa_symbols::KS
 
     hamiltonian_symbolic::H
     dq_dt_symbolic::QD
@@ -79,42 +76,27 @@ end
 function _generate_param_symbols(n_particles::Int)
     mass_symbols = [Symbol("m$i") for i = 1:n_particles]
     charge_symbols = [Symbol("q$i") for i = 1:n_particles]
-    kappa_symbols =
-        [Symbol("kappa_$(i)_$(j)") for i = 1:n_particles for j = (i+1):n_particles]
-    return (mass_symbols, charge_symbols, :c, kappa_symbols)
-end
-
-# Pair (i,j) with i<j maps to this 1-based index in the kappas vector.
-# Only called at HamiltonianSystem construction time (symbolic builders) and
-# from the public kappa(prob, i, j) accessor — never from the integrator hot
-# loop, so the bounds guard is essentially free. The guard elides under
-# `@inbounds` for the symbolic builder callers that already wrap their access.
-@inline function _pair_index(i::Int, j::Int, n::Int)::Int
-    Base.@boundscheck (1 <= i < j <= n) || throw(
-        ArgumentError("_pair_index requires 1 ≤ i < j ≤ n; got i=$i, j=$j, n=$n"),
-    )
-    return (i - 1) * (2n - i) ÷ 2 + (j - i)
+    return (mass_symbols, charge_symbols, :c)
 end
 
 include("hamiltonian/builders/weber.jl")
-include("hamiltonian/builders/zollner.jl")
 include("hamiltonian/builders/basic.jl")
 
 """
     HamiltonianSystem(H, q_vars, p_vars;
-                      param_symbols, kappa_symbols, t, n_particles, dims) -> HamiltonianSystem
+                      param_symbols, t, n_particles, dims) -> HamiltonianSystem
 
 Generic constructor from a pre-built symbolic Hamiltonian `H`.
 
 Derives Hamilton's equations analytically via `Symbolics.derivative`, then
 compiles them to in-place Julia functions with
-`Symbolics.build_function(…, q_vars, p_vars, t, param_symbols, kappa_symbols)`.
-The signature of the compiled EOMs is `(out, q, p, t, params, kappas)`;
+`Symbolics.build_function(…, q_vars, p_vars, t, param_symbols)`.
+The signature of the compiled EOMs is `(out, q, p, t, params)`;
 `t` is presently unused but reserved for time-dependent terms.
 
-Use this overload to build a custom Hamiltonian (e.g. `H = weber_term(…) +
-zollner_term(…)`). For the default pure Weber case, the convenience constructor
-`HamiltonianSystem(n_particles, dims)` wraps this path.
+Use this overload to build a custom Hamiltonian. For the default Weber case,
+the convenience constructor `HamiltonianSystem(n_particles, dims)` wraps this
+path.
 
 # Arguments
 - `H`: Symbolic Hamiltonian expression.
@@ -122,8 +104,6 @@ zollner_term(…)`). For the default pure Weber case, the convenience constructo
 
 # Keywords
 - `param_symbols`: Symbolic parameter vector `[m1…mN, q1…qN, c]`.
-- `kappa_symbols`: Symbolic per-pair κ vector. Pass `[]` (empty) if `H` has no
-  κ dependence; otherwise length `N*(N-1)/2`.
 - `t`: Symbolic time variable (reserved; may be unused).
 - `n_particles::Int`, `dims::Int`: Problem shape.
 - `terms`: Optional `Vector{NamedTerm}` naming the components of `H`. If
@@ -135,7 +115,6 @@ function HamiltonianSystem(
     q_vars::AbstractVector,
     p_vars::AbstractVector;
     param_symbols::AbstractVector,
-    kappa_symbols::AbstractVector = Num[],
     t,
     n_particles::Int,
     dims::Int,
@@ -150,7 +129,6 @@ function HamiltonianSystem(
         p_vars,
         t,
         param_symbols,
-        kappa_symbols,
         expression = Val{false},
     )[2]
     dp_dt_compiled = Symbolics.build_function(
@@ -159,7 +137,6 @@ function HamiltonianSystem(
         p_vars,
         t,
         param_symbols,
-        kappa_symbols,
         expression = Val{false},
     )[2]
     hamiltonian_compiled = Symbolics.build_function(
@@ -168,7 +145,6 @@ function HamiltonianSystem(
         p_vars,
         t,
         param_symbols,
-        kappa_symbols,
         expression = Val{false},
     )
 
@@ -183,7 +159,6 @@ function HamiltonianSystem(
         p_vars,
         t,
         param_symbols,
-        kappa_symbols,
         H,
         dq_dt_symbolic,
         dp_dt_symbolic,
@@ -199,8 +174,8 @@ end
     HamiltonianSystem(n_particles::Int, dims::Int) -> HamiltonianSystem
 
 Convenience constructor for the default n-body Weber Hamiltonian in `dims`
-spatial dimensions. Equivalent to building `weber_term(…)` with all κ=1 symbols
-and passing it to the generic `HamiltonianSystem(H, q, p; …)` constructor.
+spatial dimensions. Equivalent to building `weber_term(…)` and passing it to
+the generic `HamiltonianSystem(H, q, p; …)` constructor.
 
 # Arguments
 - `n_particles`: Number of particles (≥ 1).
@@ -214,67 +189,38 @@ function HamiltonianSystem(n_particles::Int, dims::Int)
     q_vars = [Symbolics.variable(sym) for sym in coordinate_symbols]
     p_vars = [Symbolics.variable(sym) for sym in momentum_symbols]
 
-    mass_symbols, charge_symbols, c_symbol, kappa_syms =
-        _generate_param_symbols(n_particles)
+    mass_symbols, charge_symbols, c_symbol = _generate_param_symbols(n_particles)
     m_vars = [Symbolics.variable(sym) for sym in mass_symbols]
     charge_vars = [Symbolics.variable(sym) for sym in charge_symbols]
     c_var = Symbolics.variable(c_symbol)
-    kappa_vars = [Symbolics.variable(sym) for sym in kappa_syms]
 
     t_var = Symbolics.variable(:t)
 
     param_symbols = vcat(m_vars, charge_vars, [c_var])
 
-    # Decompose into additive terms:
-    #   H_weber  = pure Weber (κ ≡ 1) — kinetic + Σ q_i q_j / r · (1 − ṙ²/2c²)
-    #   H_zollner = (κ − 1) · U_weber correction, identically zero when κ ≡ 1
-    # Numerically H_weber + H_zollner ≡ weber_term(…; kappas = κ) up to
-    # Symbolics rewriting, so the compiled EOMs are unchanged, but queries
-    # like `has_term(sys, :zollner)` and the per-term `pair_decomposition`
-    # hooks now work by default without manual composition.
-    ones_kappas = [one(eltype(q_vars)) for _ in kappa_vars]
     weber_H = weber_term(
         q_vars,
         p_vars;
         masses = m_vars,
         charges = charge_vars,
         c = c_var,
-        kappas = ones_kappas,
         n_particles = n_particles,
         dims = dims,
     )
-    zollner_H = zollner_term(
-        q_vars,
-        p_vars;
-        masses = m_vars,
-        charges = charge_vars,
-        c = c_var,
-        kappas = kappa_vars,
-        n_particles = n_particles,
-        dims = dims,
-    )
-    H = weber_H + zollner_H
 
     weber_decomp =
-        (i, j, q, p, params, kappas) ->
-            _weber_pair_decomposition(i, j, q, p, params, kappas, n_particles, dims)
-    zollner_decomp =
-        (i, j, q, p, params, kappas) ->
-            _zollner_pair_decomposition(i, j, q, p, params, kappas, n_particles, dims)
+        (i, j, q, p, params) ->
+            _weber_pair_decomposition(i, j, q, p, params, n_particles, dims)
 
     return HamiltonianSystem(
-        H,
+        weber_H,
         q_vars,
         p_vars;
         param_symbols = param_symbols,
-        kappa_symbols = kappa_vars,
         t = t_var,
         n_particles = n_particles,
         dims = dims,
-        terms = [
-            NamedTerm(:weber, weber_H; pair_decomposition = weber_decomp),
-            NamedTerm(:zollner, zollner_H; pair_decomposition = zollner_decomp),
-        ],
+        terms = [NamedTerm(:weber, weber_H; pair_decomposition = weber_decomp)],
     )
 end
 

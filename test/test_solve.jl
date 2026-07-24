@@ -200,6 +200,22 @@
         path = tempname() * ".jld2"
 
         @test save_solution(path, sol; metadata = (case = "archive",)) == path
+        archive = JLD2.load(path)["archive"]
+        @test archive.format_version == 2
+        # Pin the exact v2 problem schema. This is stronger than asserting the
+        # absence of the removed fields, and it keeps the removed identifiers
+        # out of the tree entirely.
+        @test propertynames(archive.problem) == (
+            :n_particles,
+            :dims,
+            :tspan,
+            :q_initial,
+            :p_initial,
+            :params,
+            :dt,
+            :convergence_tolerance,
+            :maximum_iterations,
+        )
         loaded = load_solution(path)
 
         @test loaded isa HamiltonianSolution
@@ -208,6 +224,11 @@
         @test loaded.p == sol.p
         @test loaded.retcode == sol.retcode
         rm(path; force = true)
+
+        old_path = tempname() * ".jld2"
+        JLD2.jldsave(old_path; archive = (format_version = 1,))
+        @test_throws ArgumentError load_solution(old_path)
+        rm(old_path; force = true)
     end
 
     @testset "Two-body system solve" begin

@@ -52,9 +52,8 @@
         @test !isnothing(system.dq_dt_compiled)
         @test !isnothing(system.dp_dt_compiled)
 
-        # Symbolic parameters exist: [m1, m2, q1, q2, c]; κ stored separately in kappa_symbols
+        # Symbolic parameters exist: [m1, m2, q1, q2, c].
         @test length(system.param_symbols) == 5  # m1, m2, q1, q2, c
-        @test length(system.kappa_symbols) == 1  # κ₁₂
         @test length(system.q_symbols) == 4  # x1, y1, x2, y2
         @test length(system.p_symbols) == 4  # px1, py1, px2, py2
     end
@@ -109,9 +108,8 @@
         @test prob.convergence_tolerance == 1e-13  # default
         @test prob.maximum_iterations == 100  # default
         @test fieldtype(typeof(prob), :system) == typeof(system)
-        # params = [m1, m2, q1, q2, c]; kappas = [κ₁₂]; Zöllner disabled → κ=1
+        # params = [m1, m2, q1, q2, c]
         @test params(prob) == [1.0, 0.5, 1.0, -1.0, 4.0]
-        @test kappas(prob) == [1.0]
 
         # Custom convergence_tolerance and maximum_iterations
         prob2 = HamiltonianProblem(
@@ -271,7 +269,6 @@
             charges = [1.0, -1.0],
             c = 10.0,
             dt = 0.01,
-            zollner = ZollnerOptions(enabled = true, a = 0.05),
         )
         new_prob = WeberElectrodynamics._with_tspan(prob, (0.5, 4.0))
 
@@ -283,17 +280,15 @@
         @test new_prob.q_initial == prob.q_initial
         @test new_prob.p_initial == prob.p_initial
         @test params(new_prob) == params(prob)
-        @test kappas(new_prob) == kappas(prob)
         @test new_prob.dt == prob.dt
         @test new_prob.convergence_tolerance == prob.convergence_tolerance
         @test new_prob.maximum_iterations == prob.maximum_iterations
 
-        # ICs, params, and kappas are *copies*, not aliases — mutating the
+        # ICs and params are *copies*, not aliases — mutating the
         # clone must not propagate back to the original.
         @test new_prob.q_initial !== prob.q_initial
         @test new_prob.p_initial !== prob.p_initial
         @test params(new_prob) !== params(prob)
-        @test kappas(new_prob) !== kappas(prob)
     end
 
     @testset "HamiltonianSystem display" begin

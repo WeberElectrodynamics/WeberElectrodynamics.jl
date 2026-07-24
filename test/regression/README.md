@@ -27,7 +27,7 @@ captured problem must reproduce the stored trajectory bit-for-bit (tolerance
 | `twobody_ellipse`                  | Unregularized symmetric-projection integrator, finite c |
 | `threebody_mixed`                  | Unregularized 3-body with mixed-sign charges            |
 | `close_approach_lifted`            | `:lifted_pair` Levi-Civita regularization fires (2D)    |
-| `zollner_offmatch`                 | `:adaptive_cartesian` + Zöllner κ ≠ 1 in substep path   |
+| `twod_close_approach_adaptive`     | 2D `:adaptive_cartesian` close-approach substep path    |
 | `oned_kepler`                      | 1D 2-body repulsive oscillation, unregularized          |
 | `threed_close_approach_adaptive`   | 3D 2-body close approach, `:adaptive_cartesian` backend |
 | `fourbody_mixed`                   | 4-body 2D (2+/2−) topology, unregularized               |
