@@ -63,14 +63,14 @@ function WeberElectrodynamics.save_solution(
 )
     prob = sol.prob
     terms = WeberElectrodynamics.term_names(prob.system)
-    terms == [:weber, :zollner] || throw(
+    terms == [:weber] || throw(
         ArgumentError(
-            "save_solution currently archives default Weber/Zollner systems only; got terms=$terms",
+            "save_solution currently archives default Weber systems only; got terms=$terms",
         ),
     )
 
     archive = (
-        format_version = 1,
+        format_version = 2,
         problem = (
             n_particles = WeberElectrodynamics.n_particles(prob),
             dims = WeberElectrodynamics.dims(prob),
@@ -78,11 +78,9 @@ function WeberElectrodynamics.save_solution(
             q_initial = copy(prob.q_initial),
             p_initial = copy(prob.p_initial),
             params = copy(WeberElectrodynamics.params(prob)),
-            kappas = copy(WeberElectrodynamics.kappas(prob)),
             dt = prob.dt,
             convergence_tolerance = prob.convergence_tolerance,
             maximum_iterations = prob.maximum_iterations,
-            term_names = terms,
         ),
         solution = (
             t = copy(sol.t),
@@ -103,13 +101,14 @@ function WeberElectrodynamics.load_solution(path::AbstractString)
     haskey(data, "archive") ||
         throw(ArgumentError("archive does not contain an `archive` entry"))
     archive = data["archive"]
-    archive.format_version == 1 ||
-        throw(ArgumentError("unsupported solution archive format version"))
+    archive.format_version == 2 || throw(
+        ArgumentError(
+            "unsupported solution archive format version $(archive.format_version); " *
+            "0.5.x archives must be exported or regenerated before upgrading",
+        ),
+    )
 
     pdat = archive.problem
-    pdat.term_names == [:weber, :zollner] ||
-        throw(ArgumentError("cannot reconstruct archived custom Hamiltonian system"))
-
     system = WeberElectrodynamics.HamiltonianSystem(pdat.n_particles, pdat.dims)
     prob = WeberElectrodynamics.HamiltonianProblem(
         system,
@@ -117,7 +116,6 @@ function WeberElectrodynamics.load_solution(path::AbstractString)
         Vector{Float64}(pdat.q_initial),
         Vector{Float64}(pdat.p_initial),
         Vector{Float64}(pdat.params),
-        Vector{Float64}(pdat.kappas),
         Float64(pdat.dt),
         Float64(pdat.convergence_tolerance),
         Int(pdat.maximum_iterations),

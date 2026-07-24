@@ -1,7 +1,7 @@
 @testset "Custom Hamiltonian via term builders" begin
     @testset "kinetic_term + coulomb_term builds a pure-Coulomb system" begin
-        # Build H = Σᵢ ‖pᵢ‖²/2mᵢ + Σᵢ<ⱼ qᵢqⱼ/rᵢⱼ via the generic ctor — no
-        # Weber velocity correction, no κ.
+        # Build H = Σᵢ ‖pᵢ‖²/2mᵢ + Σᵢ<ⱼ qᵢqⱼ/rᵢⱼ without the
+        # Weber velocity correction.
         @variables x1 y1 x2 y2 px1 py1 px2 py2 m1 m2 qq1 qq2 tt
         q_syms = [x1, y1, x2, y2]
         p_syms = [px1, py1, px2, py2]
@@ -15,7 +15,6 @@
             q_syms,
             p_syms;
             param_symbols = [m1, m2, qq1, qq2],
-            kappa_symbols = Num[],
             t = tt,
             n_particles = 2,
             dims = 2,
@@ -31,10 +30,9 @@
         q = [1.0, 0.0, -1.0, 0.0]
         p = [0.0, 0.5, 0.0, -0.5]
         params_vec = [1.0, 1.0, 1.0, -1.0]   # m1=m2=1, q1=+1, q2=-1
-        kappas_empty = Float64[]
 
-        sys.dq_dt_compiled(out_q, q, p, 0.0, params_vec, kappas_empty)
-        sys.dp_dt_compiled(out_p, q, p, 0.0, params_vec, kappas_empty)
+        sys.dq_dt_compiled(out_q, q, p, 0.0, params_vec)
+        sys.dp_dt_compiled(out_p, q, p, 0.0, params_vec)
 
         # dq/dt = p/m
         @test out_q ≈ [0.0, 0.5, 0.0, -0.5]
@@ -61,7 +59,6 @@
             q_syms,
             p_syms;
             param_symbols = [m1, m2, qq1, qq2, cc],
-            kappa_symbols = Num[],
             t = tt,
             n_particles = 2,
             dims = 2,
@@ -107,88 +104,10 @@
         @test isapprox(sol.p[end], p0; atol = 1e-3)
     end
 
-    @testset "weber + zollner via generic ctor matches κ-coupled weber_term" begin
-        # weber_term(κ) ≡ weber_term(ones) + zollner_term(κ)  (up to rewriting).
-        # Verify the *compiled EOMs* agree numerically — robust to Symbolics
-        # canonicalization differences.
-        @variables x1 y1 x2 y2 px1 py1 px2 py2 m1 m2 qq1 qq2 cc k12 tt
-        q_syms = [x1, y1, x2, y2]
-        p_syms = [px1, py1, px2, py2]
-
-        H_combined =
-            weber_term(
-                q_syms,
-                p_syms;
-                masses = [m1, m2],
-                charges = [qq1, qq2],
-                c = cc,
-                kappas = [1.0],
-                n_particles = 2,
-                dims = 2,
-            ) + zollner_term(
-                q_syms,
-                p_syms;
-                masses = [m1, m2],
-                charges = [qq1, qq2],
-                c = cc,
-                kappas = [k12],
-                n_particles = 2,
-                dims = 2,
-            )
-        sys_combined = HamiltonianSystem(
-            H_combined,
-            q_syms,
-            p_syms;
-            param_symbols = [m1, m2, qq1, qq2, cc],
-            kappa_symbols = [k12],
-            t = tt,
-            n_particles = 2,
-            dims = 2,
-        )
-
-        H_native = weber_term(
-            q_syms,
-            p_syms;
-            masses = [m1, m2],
-            charges = [qq1, qq2],
-            c = cc,
-            kappas = [k12],
-            n_particles = 2,
-            dims = 2,
-        )
-        sys_native = HamiltonianSystem(
-            H_native,
-            q_syms,
-            p_syms;
-            param_symbols = [m1, m2, qq1, qq2, cc],
-            kappa_symbols = [k12],
-            t = tt,
-            n_particles = 2,
-            dims = 2,
-        )
-
-        out_q1 = zeros(4);
-        out_p1 = zeros(4)
-        out_q2 = zeros(4);
-        out_p2 = zeros(4)
-        q = [1.0, 0.2, -0.5, 0.3]
-        p = [0.1, 0.2, -0.15, -0.1]
-        params_vec = [1.0, 2.0, 1.0, -1.0, 5.0]
-        kappas_vec = [1.3]
-
-        sys_combined.dq_dt_compiled(out_q1, q, p, 0.0, params_vec, kappas_vec)
-        sys_combined.dp_dt_compiled(out_p1, q, p, 0.0, params_vec, kappas_vec)
-        sys_native.dq_dt_compiled(out_q2, q, p, 0.0, params_vec, kappas_vec)
-        sys_native.dp_dt_compiled(out_p2, q, p, 0.0, params_vec, kappas_vec)
-
-        @test out_q1 ≈ out_q2
-        @test out_p1 ≈ out_p2
-    end
-
     @testset "user-defined NamedTerm with custom name + pair_decomposition" begin
         # Build a system tagged with a custom term whose pair_decomposition
         # returns an arbitrary NamedTuple shape — verify the round-trip.
-        @variables x1 y1 x2 y2 px1 py1 px2 py2 m1 m2 qq1 qq2 cc k12 tt
+        @variables x1 y1 x2 y2 px1 py1 px2 py2 m1 m2 qq1 qq2 cc tt
         q_syms = [x1, y1, x2, y2]
         p_syms = [px1, py1, px2, py2]
 
@@ -198,14 +117,13 @@
             masses = [m1, m2],
             charges = [qq1, qq2],
             c = cc,
-            kappas = [k12],
             n_particles = 2,
             dims = 2,
         )
 
         # Custom decomposition: simple |Δq| only — exercises the closure plumbing.
         custom_pd =
-            (i, j, q, p, params, kappas) -> begin
+            (i, j, q, p, params) -> begin
                 qi_start = (i - 1) * 2 + 1
                 qj_start = (j - 1) * 2 + 1
                 r = sqrt((q[qi_start] - q[qj_start])^2 + (q[qi_start+1] - q[qj_start+1])^2)
@@ -217,7 +135,6 @@
             q_syms,
             p_syms;
             param_symbols = [m1, m2, qq1, qq2, cc],
-            kappa_symbols = [k12],
             t = tt,
             n_particles = 2,
             dims = 2,
@@ -237,7 +154,6 @@
             [3.0, 0.0, 0.0, 4.0],
             zeros(4),
             [1.0, 1.0, 1.0, -1.0, 1.0],
-            [1.0],
         )
         @test result.separation ≈ 5.0
         @test result.sentinel === :ok
@@ -254,7 +170,6 @@
             q_syms,
             p_syms;
             param_symbols = [m1, m2, qq1, qq2, cc],
-            kappa_symbols = Num[],
             t = tt,
             n_particles = 2,
             dims = 2,
@@ -277,7 +192,6 @@
         @test isempty(energy.pair_energies)
         @test energy.total_energy ≈ energy.kinetic_energy
         @test all(abs.(energy.total_potential_energy) .< 1e-14)
-        @test all(energy.total_zollner_residual .== 0.0)
         @test all(energy.hamiltonian_validation_error .< 1e-14)
     end
 end

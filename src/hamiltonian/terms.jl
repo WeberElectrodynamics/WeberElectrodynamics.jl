@@ -2,22 +2,22 @@
     NamedTerm(name, H_symbolic; pair_decomposition = nothing)
 
 Named component of a composite Hamiltonian: a symbol that identifies the
-physical role (e.g. `:weber`, `:zollner`) and the symbolic expression
+physical role (e.g. `:weber`) and the symbolic expression
 contributing to the total `H`. Stored on `HamiltonianSystem` as
 `terms::Vector{NamedTerm}` so statistics and plotting can query individual
 contributions without re-deriving them from the compiled aggregate.
 
 The optional `pair_decomposition` closure returns a per-pair decomposition of
 the term's contribution, evaluated on concrete
-`(i, j, q, p, params, kappas)` inputs. The shape of the returned tuple is
-term-specific. The built-in Weber and Zöllner builders attach compatible
-closures used by the pair energy and force diagnostics.
+`(i, j, q, p, params)` inputs. The shape of the returned tuple is
+term-specific. The built-in Weber builder attaches a closure used by the pair
+energy diagnostics.
 
 # Fields
 - `name::Symbol`: Identifier used by `get_term`, `has_term`, `term_names`.
 - `H_symbolic`: Symbolic expression contributing to the aggregate Hamiltonian.
 - `pair_decomposition::Union{Function,Nothing}`: Optional closure
-  `(i, j, q, p, params, kappas) -> NamedTuple` for per-pair statistics.
+  `(i, j, q, p, params) -> NamedTuple` for per-pair statistics.
 """
 struct NamedTerm{H,F}
     name::Symbol

@@ -3,7 +3,7 @@
 #
 # For each .jld2 fixture under test/regression/fixtures/, this script:
 #   1. Reads the captured setup (masses, charges, c, ICs, dt, tspan,
-#      regularization/Zöllner options).
+#      regularization options).
 #   2. Rebuilds the problem using the CURRENT API — whatever `main` looks like
 #      at the time of running.
 #   3. Runs `solve(prob, SymmetricProjectionIntegrator())`.
@@ -29,7 +29,7 @@ const FIXTURES = [
     "twobody_ellipse",
     "threebody_mixed",
     "close_approach_lifted",
-    "zollner_offmatch",
+    "twod_close_approach_adaptive",
     "oned_kepler",
     "threed_close_approach_adaptive",
     "fourbody_mixed",
@@ -60,10 +60,6 @@ function _rebuild_algorithm(d::Dict{String,Any})
     )
 end
 
-function _rebuild_zollner_options(d::Dict{String,Any})
-    ZollnerOptions(enabled = d["enabled"], a = d["a"])
-end
-
 # Rebuild the HamiltonianProblem + algorithm corresponding to a fixture.
 #
 # This function is the single point that must be updated each time the public
@@ -74,8 +70,6 @@ function rebuild_problem(setup::Dict{String,Any})
     system = HamiltonianSystem(n_particles, dims)
 
     alg = _rebuild_algorithm(setup["regularization"])
-    zol = _rebuild_zollner_options(setup["zollner"])
-
     tspan = Tuple(setup["tspan"]::Vector{Float64})
 
     prob = HamiltonianProblem(
@@ -89,7 +83,6 @@ function rebuild_problem(setup::Dict{String,Any})
         dt = setup["dt"]::Float64,
         convergence_tolerance = setup["convergence_tolerance"]::Float64,
         maximum_iterations = setup["maximum_iterations"]::Int,
-        zollner = zol,
     )
     return prob, alg
 end

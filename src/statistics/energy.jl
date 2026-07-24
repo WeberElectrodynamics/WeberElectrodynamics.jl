@@ -5,21 +5,15 @@ Energy decomposition timeseries for a single particle pair (i, j).
 
 # Fields
 - `pair::Tuple{Int,Int}`: Particle indices (i < j).
-- `kappa::Float64`: Zöllner coupling factor κ_ij (1.0 for standard Weber).
-- `coulomb_term::Vector{Float64}`: κ·qᵢqⱼ/r — Coulomb part of the potential.
-- `velocity_term::Vector{Float64}`: −κ·qᵢqⱼ/r·ṙ²/(2c²) — velocity correction.
-- `zollner_extra_potential::Vector{Float64}`: (κ−1)·qᵢqⱼ/r·(...) — extra
-  potential from the Zöllner mismatch (zero when Zöllner is disabled).
+- `coulomb_term::Vector{Float64}`: qᵢqⱼ/r — Coulomb part of the potential.
+- `velocity_term::Vector{Float64}`: −qᵢqⱼ/r·ṙ²/(2c²) — velocity correction.
 - `total_pair_potential::Vector{Float64}`: Sum of all pair potential contributions.
 - `radial_velocity::Vector{Float64}`: Radial velocity ṙ = dr/dt.
 """
 struct PairEnergyData
     pair::Tuple{Int,Int}
-    kappa::Float64
     coulomb_term::Vector{Float64}
     velocity_term::Vector{Float64}
-    # Zöllner extension field (zero when Zöllner is disabled)
-    zollner_extra_potential::Vector{Float64}
     total_pair_potential::Vector{Float64}
     radial_velocity::Vector{Float64}
 end
@@ -68,8 +62,6 @@ Complete energy timeseries and conservation statistics for an n-body simulation.
 - `total_energy::Vector{Float64}`: Total Hamiltonian H = KE + V at each time point.
 - `kinetic_energy::Vector{Float64}`: Total kinetic energy.
 - `total_potential_energy::Vector{Float64}`: Sum of all pair Weber potentials.
-- `total_zollner_residual::Vector{Float64}`: Summed Zöllner extra potential (zero
-  when Zöllner extension is disabled).
 - `pair_energies::Dict{Tuple{Int,Int},PairEnergyData}`: Per-pair energy decomposition.
 - `statistics::EnergyStatistics`: Energy conservation quality metrics.
 - `hamiltonian_validation_error::Vector{Float64}`: |H_manual − H_compiled| at each
@@ -81,8 +73,6 @@ struct EnergyData
     total_energy::Vector{Float64}
     kinetic_energy::Vector{Float64}
     total_potential_energy::Vector{Float64}
-    # Zöllner extension field (zero when Zöllner is disabled)
-    total_zollner_residual::Vector{Float64}
     pair_energies::Dict{Tuple{Int,Int},PairEnergyData}
     statistics::EnergyStatistics
     hamiltonian_validation_error::Vector{Float64}
@@ -116,8 +106,7 @@ function compute_pair_weber_components(
     charges::AbstractVector{Float64},
     c::Float64,
     dims::Int,
-    kappa::Float64 = 1.0,
-)::Tuple{Float64,Float64,Float64,Float64}
+)::Tuple{Float64,Float64,Float64}
     qi_start = (i - 1) * dims + 1
     qj_start = (j - 1) * dims + 1
 
@@ -143,21 +132,14 @@ function compute_pair_weber_components(
     end
     rdot = r_dot_v / r
 
-    # Base charge product
-    @inbounds base_k = charges[i] * charges[j]
+    # Coulomb term: qᵢqⱼ/r
+    @inbounds coulomb_term = charges[i] * charges[j] / r
 
-    # κ-scaled Coulomb term: κ·qᵢqⱼ/r
-    coulomb_term = kappa * base_k / r
-
-    # Velocity-dependent term: -κ·qᵢqⱼ/r * ṙ²/(2c²)
+    # Velocity-dependent term: -qᵢqⱼ/r * ṙ²/(2c²)
     c_squared = c^2
     velocity_term = -coulomb_term * rdot^2 / (2 * c_squared)
 
-    # Zöllner extra potential: (κ-1)·qᵢqⱼ/r · (1 - ṙ²/(2c²))
-    # This is the emergent 'gravitational' residual from the mismatch.
-    zollner_extra = (kappa - 1.0) * base_k / r * (1.0 - rdot^2 / (2 * c_squared))
-
-    return (coulomb_term, velocity_term, rdot, zollner_extra)
+    return (coulomb_term, velocity_term, rdot)
 end
 
 function compute_energy_statistics(total_energy::Vector{Float64})::EnergyStatistics
@@ -264,7 +246,6 @@ function compute_energy_timeseries(
     d = dims(prob)
     ms = masses(prob)
     params_vec = params(prob)
-    κs = kappas(prob)
     hamiltonian_compiled = system.hamiltonian_compiled
 
     # Compute indices and allocate
@@ -280,27 +261,20 @@ function compute_energy_timeseries(
     # Compute n_pairs without allocating pairs vector
     n_pairs = n * (n - 1) ÷ 2
 
-    total_zollner_residual = zeros(Float64, n_points)
-
     weber_decomp =
         has_term(system, :weber) ? get_term(system, :weber).pair_decomposition : nothing
-    zollner_decomp =
-        has_term(system, :zollner) ? get_term(system, :zollner).pair_decomposition : nothing
-    has_weber_decomposition = weber_decomp !== nothing && zollner_decomp !== nothing
+    has_weber_decomposition = weber_decomp !== nothing
 
     # Initialize pair energy storage only when the system supplies the built-in
-    # Weber/Zöllner pair decompositions. Generic Hamiltonians still get a valid
+    # Weber pair decomposition. Generic Hamiltonians still get a valid
     # compiled-Hamiltonian energy timeseries, but arbitrary NamedTerm shapes
     # cannot be losslessly projected into PairEnergyData.
     pair_energies = sizehint!(Dict{Tuple{Int,Int},PairEnergyData}(), n_pairs)
     if has_weber_decomposition
         for i = 1:n
             for j = (i+1):n
-                kappa_ij = kappa(prob, i, j)
                 pair_energies[(i, j)] = PairEnergyData(
                     (i, j),
-                    kappa_ij,
-                    Vector{Float64}(undef, n_points),
                     Vector{Float64}(undef, n_points),
                     Vector{Float64}(undef, n_points),
                     Vector{Float64}(undef, n_points),
@@ -315,7 +289,7 @@ function compute_energy_timeseries(
         q = solution.q[sol_idx]
         p = solution.p[sol_idx]
         t_pt = solution.t[sol_idx]
-        H_compiled = hamiltonian_compiled(q, p, t_pt, params_vec, κs)
+        H_compiled = hamiltonian_compiled(q, p, t_pt, params_vec)
 
         # Kinetic energy
         KE = compute_total_kinetic_energy(p, ms, d)
@@ -324,32 +298,25 @@ function compute_energy_timeseries(
         if has_weber_decomposition
             # Pair-wise potential energies
             PE_total = 0.0
-            zollner_sum = 0.0
             for i = 1:n
                 for j = (i+1):n
-                    wc = weber_decomp(i, j, q, p, params_vec, κs)
-                    zc = zollner_decomp(i, j, q, p, params_vec, κs)
+                    wc = weber_decomp(i, j, q, p, params_vec)
                     coulomb = wc.coulomb
                     velocity = wc.velocity
                     rdot = wc.rdot
-                    zollner_extra = zc.zollner_extra
                     pair_data = pair_energies[(i, j)]
                     pair_data.coulomb_term[pt_idx] = coulomb
                     pair_data.velocity_term[pt_idx] = velocity
-                    pair_data.zollner_extra_potential[pt_idx] = zollner_extra
                     pair_data.total_pair_potential[pt_idx] = coulomb + velocity
                     pair_data.radial_velocity[pt_idx] = rdot
                     PE_total += coulomb + velocity
-                    zollner_sum += zollner_extra
                 end
             end
             total_potential_energy[pt_idx] = PE_total
             total_energy[pt_idx] = KE + PE_total
-            total_zollner_residual[pt_idx] = zollner_sum
         else
             total_energy[pt_idx] = H_compiled
             total_potential_energy[pt_idx] = H_compiled - KE
-            total_zollner_residual[pt_idx] = 0.0
         end
 
         # Validate against compiled Hamiltonian
@@ -364,7 +331,6 @@ function compute_energy_timeseries(
         total_energy,
         kinetic_energy,
         total_potential_energy,
-        total_zollner_residual,
         pair_energies,
         statistics,
         hamiltonian_validation,

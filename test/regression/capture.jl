@@ -2,12 +2,12 @@
 # Capture regression fixtures against the current API.
 #
 # This script is run ONCE against `main` before Phase 1 of the refactor begins.
-# It produces four JLD2 fixture files under test/regression/fixtures/ covering:
+# It produces JLD2 fixture files under test/regression/fixtures/ covering:
 #
 #   1. twobody_ellipse.jld2        — 2-body unregularized elliptic orbit
 #   2. threebody_mixed.jld2        — 3-body unregularized mixed-charge system
 #   3. close_approach_lifted.jld2  — 2-body close approach, :lifted_pair backend
-#   4. zollner_offmatch.jld2       — 2-body Zöllner with a ≠ 0, regularized
+#   4. twod_close_approach_adaptive.jld2 — 2-body adaptive-Cartesian backend
 #
 # After the refactor, test/regression/validate.jl rebuilds each problem with
 # the current (new-API) code, runs it, and asserts pointwise agreement with the
@@ -25,7 +25,6 @@ using WeberElectrodynamics
 using WeberElectrodynamics: SymmetricProjectionIntegrator, RegularizedIntegrator
 using JLD2
 using Dates
-using Symbolics: pkgversion
 
 const FIXTURE_DIR = joinpath(@__DIR__, "fixtures")
 const GIT_HASH = try
@@ -53,10 +52,6 @@ function reg_opts_to_dict(r::RegularizationOptions)
         "warn_on_fallback" => r.warn_on_fallback,
         "collision_bounce_radius" => r.collision_bounce_radius,
     )
-end
-
-function zollner_opts_to_dict(z::ZollnerOptions)
-    Dict{String,Any}("enabled" => z.enabled, "a" => z.a)
 end
 
 function diagnostics_to_dict(d::RegularizationDiagnostics)
@@ -106,7 +101,7 @@ function metadata_dict(name::String, description::String)
         "git_commit" => GIT_HASH,
         "captured_at" => string(Dates.now(Dates.UTC)),
         "julia_version" => string(VERSION),
-        "package_version" => "0.4.3",
+        "package_version" => string(pkgversion(WeberElectrodynamics)),
     )
 end
 
@@ -145,7 +140,6 @@ function fixture_twobody_ellipse()
     return prob,
     alg,
     sol,
-    ZollnerOptions(),
     "twobody_ellipse",
     "2-body unregularized bound elliptic orbit (finite c, mild eccentricity)"
 end
@@ -176,7 +170,6 @@ function fixture_threebody_mixed()
     return prob,
     alg,
     sol,
-    ZollnerOptions(),
     "threebody_mixed",
     "3-body unregularized mixed-charge system starting from rest"
 end
@@ -222,7 +215,6 @@ function fixture_close_approach_lifted()
     return prob,
     alg,
     sol,
-    ZollnerOptions(),
     "close_approach_lifted",
     "2-body close approach with :lifted_pair Levi-Civita regularization"
 end
@@ -255,7 +247,6 @@ function fixture_oned_kepler()
     return prob,
     alg,
     sol,
-    ZollnerOptions(),
     "oned_kepler",
     "1D 2-body repulsive oscillation, unregularized"
 end
@@ -308,7 +299,6 @@ function fixture_threed_close_approach_adaptive()
     return prob,
     alg,
     sol,
-    ZollnerOptions(),
     "threed_close_approach_adaptive",
     "3D 2-body close approach with :adaptive_cartesian regularization"
 end
@@ -342,16 +332,14 @@ function fixture_fourbody_mixed()
     return prob,
     alg,
     sol,
-    ZollnerOptions(),
     "fourbody_mixed",
     "4-body unregularized (2+/2-) square topology, starting from rest"
 end
 
-function fixture_zollner_offmatch()
-    # 2-body attractive pair with Zöllner mismatch; adaptive-Cartesian regularized.
-    # Apocenter-start eccentric orbit that plunges through pericenter, so κ=1+a
-    # propagates through the regularization substep code. Short period so
-    # tspan=5.0 spans a full orbit.
+function fixture_twod_close_approach_adaptive()
+    # 2-body attractive pair exercising the 2D adaptive-Cartesian backend.
+    # An apocenter-start eccentric orbit plunges through pericenter, so
+    # tspan=5.0 spans a full orbit and the substep path is exercised.
     m1, m2 = 1.0, 1.0
     q1, q2 = 0.1, -0.1
     c = 10.0
@@ -365,8 +353,6 @@ function fixture_zollner_offmatch()
     tspan = (0.0, 5.0)
     dt = 1e-3
 
-    zol = ZollnerOptions(enabled = true, a = 0.05)
-
     system = HamiltonianSystem(2, 2)
     prob = HamiltonianProblem(
         system,
@@ -377,7 +363,6 @@ function fixture_zollner_offmatch()
         charges = [q1, q2],
         c = c,
         dt = dt,
-        zollner = zol,
     )
     alg = RegularizedIntegrator(
         SymmetricProjectionIntegrator();
@@ -391,9 +376,8 @@ function fixture_zollner_offmatch()
     return prob,
     alg,
     sol,
-    zol,
-    "zollner_offmatch",
-    "2-body Zöllner off-match (a≠0) with adaptive-Cartesian regularization"
+    "twod_close_approach_adaptive",
+    "2D 2-body close approach with :adaptive_cartesian regularization"
 end
 
 # ---------------------------------------------------------------------------
@@ -411,7 +395,6 @@ function save_fixture(
     prob::HamiltonianProblem,
     alg,
     sol::HamiltonianSolution,
-    zol::ZollnerOptions,
     name::String,
     desc::String,
 )
@@ -423,14 +406,12 @@ function save_fixture(
         "masses" => collect(masses(prob)),
         "charges" => collect(charges(prob)),
         "c" => speed_of_light(prob),
-        "kappas" => collect(kappas(prob)),
         "params" => copy(prob.params),
         "tspan" => collect(prob.tspan),
         "dt" => prob.dt,
         "convergence_tolerance" => prob.convergence_tolerance,
         "maximum_iterations" => prob.maximum_iterations,
         "regularization" => reg_opts_to_dict(_alg_reg_opts(alg)),
-        "zollner" => zollner_opts_to_dict(zol),
     )
 
     fixture = Dict{String,Any}(
@@ -468,7 +449,7 @@ function main()
         fixture_twobody_ellipse,
         fixture_threebody_mixed,
         fixture_close_approach_lifted,
-        fixture_zollner_offmatch,
+        fixture_twod_close_approach_adaptive,
         fixture_oned_kepler,
         fixture_threed_close_approach_adaptive,
         fixture_fourbody_mixed,
@@ -476,10 +457,10 @@ function main()
         name_guess = string(nameof(builder))
         print("Building $name_guess ... ")
         t0 = time()
-        prob, alg, sol, zol, name, desc = builder()
+        prob, alg, sol, name, desc = builder()
         elapsed = time() - t0
         println("solve=$(round(elapsed; digits=2))s")
-        save_fixture(prob, alg, sol, zol, name, desc)
+        save_fixture(prob, alg, sol, name, desc)
         if sol.retcode != :Success
             error("Fixture $name produced retcode=$(sol.retcode); aborting.")
         end
@@ -489,4 +470,4 @@ function main()
     println("All fixtures captured successfully.")
 end
 
-main()
+abspath(PROGRAM_FILE) == (@__FILE__) && main()
