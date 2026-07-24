@@ -12,7 +12,7 @@ This document fills the remaining regime — $E < 0$, $\dot{r}_{ij}(0) \neq 0$ �
 - Infalling / expanding binaries inside multi-body configurations.
 - Breathing regular $N$-gons.
 
-All conventions (absolute units, Zöllner couplings $\kappa_{ij}$, notation for relative coordinates) follow [`WeberElectrodynamics.md`](WeberElectrodynamics.md) and [`InitialConditions.md`](InitialConditions.md) unchanged.
+All conventions (absolute units and notation for relative coordinates) follow [`WeberElectrodynamics.md`](WeberElectrodynamics.md) and [`InitialConditions.md`](InitialConditions.md) unchanged.
 
 ---
 
@@ -28,7 +28,7 @@ The short statement: the user supplies physical velocities $\{\vec{v}_i\}$, and 
 
 ### 2.1 Derivation
 
-For a two-body Weber system with reduced mass $\mu = m_1 m_2/M$ (total mass $M = m_1 + m_2$), coupling $k = \kappa_{12} q_1 q_2$, and conserved angular momentum $L = \mu r^2 \dot{\theta}$, the Hamiltonian (in the COM frame) is
+For a two-body Weber system with reduced mass $\mu = m_1 m_2/M$ (total mass $M = m_1 + m_2$), coupling $k = q_1 q_2$, and conserved angular momentum $L = \mu r^2 \dot{\theta}$, the Hamiltonian (in the COM frame) is
 
 $$H \;=\; T + U \;=\; \tfrac{1}{2}\mu\!\left(\dot{r}^2 + \frac{L^2}{\mu^2 r^2}\right) \;+\; \frac{k}{r}\!\left(1 - \frac{\dot{r}^2}{2c^2}\right) \;=\; E.$$
 
@@ -110,7 +110,7 @@ $$\vec{v}_1^{\,B} \;=\; \frac{m_2}{m_1+m_2}\,\vec{v}_{\mathrm{rel}}^{\,B}, \qqua
 
 ### 3.4 Orbiter motion
 
-The orbiter sees an effective attractor of charge $q_1 + q_2$ at the binary COM. Apply Method A of [`InitialConditions.md`](InitialConditions.md) (circular or elliptical) with reduced mass $\mu_{\mathrm{out}} = (m_1 + m_2)m_3/M$ and coupling $k_{\mathrm{out}} = \kappa_{\mathrm{out}}(q_1 + q_2)q_3$, obtaining the orbital speed $V_{\mathrm{rel}}$ perpendicular to $\vec{R}$. Place $\vec{V}_B$ and $\vec{v}_3$ along $\hat{y}$ with $\sum_i m_i \vec{v}_i = \vec{0}$.
+The orbiter sees an effective attractor of charge $q_1 + q_2$ at the binary COM. Apply Method A of [`InitialConditions.md`](InitialConditions.md) (circular or elliptical) with reduced mass $\mu_{\mathrm{out}} = (m_1 + m_2)m_3/M$ and coupling $k_{\mathrm{out}} = (q_1 + q_2)q_3$, obtaining the orbital speed $V_{\mathrm{rel}}$ perpendicular to $\vec{R}$. Place $\vec{V}_B$ and $\vec{v}_3$ along $\hat{y}$ with $\sum_i m_i \vec{v}_i = \vec{0}$.
 
 ### 3.5 Cross-pair radial rates
 
@@ -134,7 +134,7 @@ $$\vec{p}_1 \;=\; m_1 \vec{v}_1 \;-\; \frac{k_{12}\dot{r}_{12}}{c^2 r_{12}^2}(\v
 
 ### 3.8 Worked sketch
 
-Set $m_1 = m_2 = m_3 = 1$, $q_1 = +Q$, $q_2 = -Q$, $q_3 = +Q$, $r_0 = 1$, $R = 20$. Choose $L_B = 0$ and target binary energy $E_B = -0.3\,|k_{12}|/r_0$ at radius $r_0$ with $s = -1$ (infalling). Section 2 gives $\dot{r}_{12}(0)$. The binary's net charge is zero, so to give the orbiter a net attraction one must use a charge asymmetry (e.g. give particle 3 a different magnitude) or enable Zöllner enhancement so that $\kappa_{13} \neq \kappa_{23}$ produces a net attractive $k_{13} + k_{23}$.
+Set $m_1 = m_2 = m_3 = 1$, $q_1 = +Q$, $q_2 = -Q$, $q_3 = +Q$, $r_0 = 1$, $R = 20$. Choose $L_B = 0$ and target binary energy $E_B = -0.3\,|k_{12}|/r_0$ at radius $r_0$ with $s = -1$ (infalling). Section 2 gives $\dot{r}_{12}(0)$. The binary's net charge is zero, so to give the orbiter a net attraction one must use a charge asymmetry (e.g. give particle 3 a different magnitude).
 
 ---
 
@@ -194,11 +194,11 @@ In the $\dot{R} \to 0$ limit this recovers the Method-B criterion exactly.
 
 Apply $(F)$ to particle $i$ with $\dot{r}_{ij} = d_k\dot{R}$, $r_{ij}^2 = R^2 d_k^2$, $\vec{r}_i - \vec{r}_j = R(\hat{r}_i - \hat{r}_j)$:
 
-$$\vec{p}_i \;=\; m\vec{v}_i \;-\; \frac{\dot{R}}{c^2 R}\sum_{j\ne i}\frac{\kappa_{ij}q_i q_j}{d_k}\,(\hat{r}_i - \hat{r}_j).$$
+$$\vec{p}_i \;=\; m\vec{v}_i \;-\; \frac{\dot{R}}{c^2 R}\sum_{j\ne i}\frac{q_i q_j}{d_k}\,(\hat{r}_i - \hat{r}_j).$$
 
 Using $(\hat{r}_i - \hat{r}_j)\cdot \hat{r}_i = 1 - \cos(2\pi k/N)$ and the identity $(1 - \cos 2\theta)/(2\sin\theta) = \sin\theta$, so $(1 - \cos(2\pi k/N))/d_k = d_k/2$. The projection onto $\hat{r}_i$ collapses by symmetry: the transverse components from ring-$k$ partners $j = i \pm k$ cancel. Counting per-particle multiplicities $m_k = 2$ for $k < N/2$ (two partners $j = i\pm k$) and $m_{N/2} = 1$, together with $n_k = N\,m_k/2$ (each pair belongs to one ring but is counted at both endpoints), the per-particle sum evaluates to
 
-$$\sum_{j\ne i}\frac{\kappa_{ij}q_i q_j}{d_k}\,(\hat{r}_i - \hat{r}_j)\cdot\hat{r}_i \;=\; \frac{Q^2}{2}\sum_{k=1}^{N/2} m_k\,s_k\,d_k \;=\; \frac{Q^2\,\Sigma_N}{N}.$$
+$$\sum_{j\ne i}\frac{q_i q_j}{d_k}\,(\hat{r}_i - \hat{r}_j)\cdot\hat{r}_i \;=\; \frac{Q^2}{2}\sum_{k=1}^{N/2} m_k\,s_k\,d_k \;=\; \frac{Q^2\,\Sigma_N}{N}.$$
 
 Therefore:
 
@@ -240,7 +240,7 @@ The following are physically interesting but do not reduce to a clean closed-for
 
 From [`WeberElectrodynamics.md`](WeberElectrodynamics.md), the Weber Lagrangian is $L = T - S$ with
 
-$$T \;=\; \sum_i \tfrac{1}{2}m_i|\vec{v}_i|^2, \qquad S \;=\; \sum_{j<k}\frac{\kappa_{jk}q_j q_k}{r_{jk}}\!\left(1 \;+\; \frac{\dot{r}_{jk}^2}{2c^2}\right).$$
+$$T \;=\; \sum_i \tfrac{1}{2}m_i|\vec{v}_i|^2, \qquad S \;=\; \sum_{j<k}\frac{q_j q_k}{r_{jk}}\!\left(1 \;+\; \frac{\dot{r}_{jk}^2}{2c^2}\right).$$
 
 The canonical momentum is
 
@@ -248,7 +248,7 @@ $$\vec{p}_i \;=\; \frac{\partial L}{\partial \vec{v}_i} \;=\; m_i \vec{v}_i \;-\
 
 Only pair terms containing particle $i$ contribute to $\partial S/\partial \vec{v}_i$. Using $\dot{r}_{jk} = (\vec{r}_j - \vec{r}_k)\cdot(\vec{v}_j - \vec{v}_k)/r_{jk}$ gives $\partial \dot{r}_{jk}/\partial \vec{v}_i = (\delta_{ij} - \delta_{ik})(\vec{r}_j - \vec{r}_k)/r_{jk}$, and chain-ruling yields
 
-$$\boxed{\;\vec{p}_i \;=\; m_i \vec{v}_i \;-\; \sum_{j \neq i}\frac{\kappa_{ij}q_i q_j}{c^2}\,\frac{\dot{r}_{ij}}{r_{ij}^2}\,(\vec{r}_i - \vec{r}_j)\;}\qquad(F)$$
+$$\boxed{\;\vec{p}_i \;=\; m_i \vec{v}_i \;-\; \sum_{j \neq i}\frac{q_i q_j}{c^2}\,\frac{\dot{r}_{ij}}{r_{ij}^2}\,(\vec{r}_i - \vec{r}_j)\;}\qquad(F)$$
 
 For the two-body case $(F)$ inverts the $\dot{x}_1 = \partial H/\partial p_{x_1}$ equation of [`WeberElectrodynamics.md`](WeberElectrodynamics.md) exactly.
 
@@ -264,32 +264,32 @@ In the COM frame, canonical total momentum vanishes iff kinetic total momentum d
 
 The inverse $\vec{p} \mapsto \vec{v}$ is implicit. Hamilton's equations give
 
-$$\vec{v}_i \;=\; \frac{\vec{p}_i}{m_i} \;+\; \frac{1}{m_i}\sum_{j\ne i}\frac{\kappa_{ij}q_i q_j}{c^2}\,\frac{\dot{r}_{ij}}{r_{ij}^2}\,(\vec{r}_i - \vec{r}_j),$$
+$$\vec{v}_i \;=\; \frac{\vec{p}_i}{m_i} \;+\; \frac{1}{m_i}\sum_{j\ne i}\frac{q_i q_j}{c^2}\,\frac{\dot{r}_{ij}}{r_{ij}^2}\,(\vec{r}_i - \vec{r}_j),$$
 
-with $\dot{r}_{ij}$ on the right-hand side depending on $\vec{v}_i - \vec{v}_j$. Collecting the $n(n-1)/2$ unknowns $\dot{r}_{ij}$ into a vector and the sources $\hat{r}_{ij}\cdot(\vec{p}_i/m_i - \vec{p}_j/m_j)$ into another, the system takes the form $(\mathbb{I} - A)\boldsymbol{\varrho} = \boldsymbol{\pi}$, with $A$'s entries $\mathcal{O}(\kappa q^2/(m c^2 r))$. For sub-relativistic velocities $A$ is a contraction and the solution is unique.
+with $\dot{r}_{ij}$ on the right-hand side depending on $\vec{v}_i - \vec{v}_j$. Collecting the $n(n-1)/2$ unknowns $\dot{r}_{ij}$ into a vector and the sources $\hat{r}_{ij}\cdot(\vec{p}_i/m_i - \vec{p}_j/m_j)$ into another, the system takes the form $(\mathbb{I} - A)\boldsymbol{\varrho} = \boldsymbol{\pi}$, with $A$'s entries $\mathcal{O}(q^2/(m c^2 r))$. For sub-relativistic velocities $A$ is a contraction and the solution is unique.
 
 **Users do not need the inverse map for IC construction** — the forward map $(F)$ is explicit. The integrator handles the inverse internally.
 
 ### 6.4 Canonical and physical Hamiltonians
 
 The "kinetic-like" term $\sum_i|\vec{p}_i|^2/(2m_i)$ is **not** the physical kinetic energy when $\vec{p}$ includes the Weber correction from $(F)$. Writing $\vec{A}_i \equiv \vec{p}_i - m_i\vec{v}_i$ (the pairwise correction in $(F)$), the double-sum
-$\sum_i \vec{v}_i\cdot\vec{A}_i = \sum_{i<j}(\kappa_{ij}q_iq_j/c^2)(\dot{r}_{ij}^2/r_{ij})$ follows from the pair-antisymmetry of $\vec{A}_i$ and from $\dot{r}_{ij} = (\vec{r}_i-\vec{r}_j)\cdot(\vec{v}_i-\vec{v}_j)/r_{ij}$. Expanding $|\vec{p}_i|^2 = m_i^2|\vec{v}_i|^2 - 2m_i\vec{v}_i\cdot\vec{A}_i + |\vec{A}_i|^2$ and dropping the $\mathcal{O}(c^{-4})$ tail $\sum_i |\vec{A}_i|^2/(2m_i)$:
+$\sum_i \vec{v}_i\cdot\vec{A}_i = \sum_{i<j}(q_iq_j/c^2)(\dot{r}_{ij}^2/r_{ij})$ follows from the pair-antisymmetry of $\vec{A}_i$ and from $\dot{r}_{ij} = (\vec{r}_i-\vec{r}_j)\cdot(\vec{v}_i-\vec{v}_j)/r_{ij}$. Expanding $|\vec{p}_i|^2 = m_i^2|\vec{v}_i|^2 - 2m_i\vec{v}_i\cdot\vec{A}_i + |\vec{A}_i|^2$ and dropping the $\mathcal{O}(c^{-4})$ tail $\sum_i |\vec{A}_i|^2/(2m_i)$:
 
-$$\sum_i \frac{|\vec{p}_i|^2}{2m_i} \;=\; T_{\mathrm{phys}} \;-\; \sum_{i<j}\frac{\kappa_{ij}q_i q_j\,\dot{r}_{ij}^2}{c^2\,r_{ij}} \;+\; \mathcal{O}(c^{-4}).\qquad(H_1)$$
+$$\sum_i \frac{|\vec{p}_i|^2}{2m_i} \;=\; T_{\mathrm{phys}} \;-\; \sum_{i<j}\frac{q_i q_j\,\dot{r}_{ij}^2}{c^2\,r_{ij}} \;+\; \mathcal{O}(c^{-4}).\qquad(H_1)$$
 
 The Legendre-transform identity of [`WeberElectrodynamics.md`](WeberElectrodynamics.md) is $H = T_{\mathrm{phys}} + U_{\mathrm{Weber}}$, expressed as a function of $(\vec{r},\vec{v})$. Re-expressed in canonical coordinates $(\vec{q},\vec{p})$ via the implicit inverse map of §6.3, $H$ is **not** equal to $\sum|\vec{p}|^2/(2m) + U_{\mathrm{Weber}}$. Substituting $(H_1)$ into $H = T_{\mathrm{phys}} + U_{\mathrm{Weber}}$ gives, to $\mathcal{O}(c^{-2})$,
 
-$$\boxed{\;H(\vec{q},\vec{p}) \;=\; \sum_i \frac{|\vec{p}_i|^2}{2m_i} \;+\; \sum_{i<j}\frac{\kappa_{ij}q_i q_j}{r_{ij}}\!\left(1 + \frac{\dot{r}_{ij}^2}{2c^2}\right) \;+\; \mathcal{O}(c^{-4}),\;}$$
+$$\boxed{\;H(\vec{q},\vec{p}) \;=\; \sum_i \frac{|\vec{p}_i|^2}{2m_i} \;+\; \sum_{i<j}\frac{q_i q_j}{r_{ij}}\!\left(1 + \frac{\dot{r}_{ij}^2}{2c^2}\right) \;+\; \mathcal{O}(c^{-4}),\;}$$
 
 with $\dot{r}_{ij}$ understood as $\dot{r}_{ij}(\vec{q},\vec{p})$ through §6.3. Observe the **sign flip** in the velocity correction relative to the physical potential: the canonical Hamiltonian carries $+\dot{r}^2/(2c^2)$ where $U_{\mathrm{Weber}}$ carries $-\dot{r}^2/(2c^2)$. The flip absorbs the $\sum_i\vec{v}_i\cdot\vec{A}_i$ cross-term produced by the Legendre transform.
 
-The primary numerical cross-check in Section 7 step 5 is $(H_1)$ itself: given $(\vec{r},\vec{v})$ and $\vec{p}$ from $(F)$, the residual $\sum_i|\vec{p}_i|^2/(2m_i) - T_{\mathrm{phys}} + \sum_{i<j}(\kappa_{ij}q_iq_j/c^2)(\dot{r}_{ij}^2/r_{ij})$ must vanish to the $\mathcal{O}(c^{-4})$ tail $\sum_i|\vec{A}_i|^2/(2m_i)$ — typically $\lesssim 10^{-10}$ in absolute units at sub-relativistic velocities.
+The primary numerical cross-check in Section 7 step 5 is $(H_1)$ itself: given $(\vec{r},\vec{v})$ and $\vec{p}$ from $(F)$, the residual $\sum_i|\vec{p}_i|^2/(2m_i) - T_{\mathrm{phys}} + \sum_{i<j}(q_iq_j/c^2)(\dot{r}_{ij}^2/r_{ij})$ must vanish to the $\mathcal{O}(c^{-4})$ tail $\sum_i|\vec{A}_i|^2/(2m_i)$ — typically $\lesssim 10^{-10}$ in absolute units at sub-relativistic velocities.
 
 ### 6.5 Gotcha — stationary particles can carry canonical momentum
 
 A particle with $\vec{v}_i = \vec{0}$ in the physical frame does **not** automatically have $\vec{p}_i = \vec{0}$ in the canonical frame. If any pair containing particle $i$ has $\dot{r}_{ij} \neq 0$, then
 
-$$\vec{p}_i \;=\; \vec{0} \;-\; \sum_{j\ne i}\frac{\kappa_{ij}q_i q_j}{c^2}\,\frac{\dot{r}_{ij}}{r_{ij}^2}\,(\vec{r}_i - \vec{r}_j) \;\ne\; \vec{0}.$$
+$$\vec{p}_i \;=\; \vec{0} \;-\; \sum_{j\ne i}\frac{q_i q_j}{c^2}\,\frac{\dot{r}_{ij}}{r_{ij}^2}\,(\vec{r}_i - \vec{r}_j) \;\ne\; \vec{0}.$$
 
 Always compute $\vec{p}_i$ from physical $\vec{v}_i$ via $(F)$; never shortcut with "$\vec{v}_i = \vec{0} \implies \vec{p}_i = \vec{0}$".
 
@@ -304,12 +304,12 @@ Every IC built with the recipes in this document should pass this six-step check
 2. **Pair radial rates.** For every pair, $\dot{r}_{ij}(0) = (\vec{r}_i - \vec{r}_j)\cdot(\vec{v}_i - \vec{v}_j)/r_{ij}$, computed kinematically.
 
 3. **Physical Hamiltonian.** Evaluate
-$$T_{\mathrm{phys}} \;=\; \tfrac{1}{2}\sum_i m_i|\vec{v}_i|^2, \qquad U_{\mathrm{Weber}} \;=\; \sum_{i<j}\frac{\kappa_{ij}q_i q_j}{r_{ij}}\!\left(1 - \frac{\dot{r}_{ij}^2}{2c^2}\right).$$
+$$T_{\mathrm{phys}} \;=\; \tfrac{1}{2}\sum_i m_i|\vec{v}_i|^2, \qquad U_{\mathrm{Weber}} \;=\; \sum_{i<j}\frac{q_i q_j}{r_{ij}}\!\left(1 - \frac{\dot{r}_{ij}^2}{2c^2}\right).$$
 Confirm $E = T_{\mathrm{phys}} + U_{\mathrm{Weber}} < 0$ (bound).
 
 4. **Canonical momenta.** Apply $(F)$ to get $\{\vec{p}_i(0)\}$. Confirm $\sum_i \vec{p}_i(0) = \vec{0}$.
 
-5. **Canonical-momentum consistency.** Compute the residual $X \;\equiv\; \sum_i\frac{|\vec{p}_i|^2}{2m_i} \;-\; T_{\mathrm{phys}} \;+\; \sum_{i<j}\frac{\kappa_{ij}q_i q_j\,\dot{r}_{ij}^2}{c^2\,r_{ij}}$. By $(H_1)$ of §6.4 this is the $\mathcal{O}(c^{-4})$ tail $\sum_i|\vec{A}_i|^2/(2m_i)$ with $\vec{A}_i = \vec{p}_i - m_i\vec{v}_i$; confirm $|X|/|E| \lesssim 10^{-10}$ at sub-relativistic velocities. Note the common pitfall of comparing $\sum|\vec{p}|^2/(2m) + U_{\mathrm{Weber}}$ against $T_{\mathrm{phys}} + U_{\mathrm{Weber}}$: these differ by $\sum(\kappa qq/c^2)(\dot r^2/r)$ whenever any pair has $\dot{r}_{ij}\neq 0$ and should **not** agree.
+5. **Canonical-momentum consistency.** Compute the residual $X \;\equiv\; \sum_i\frac{|\vec{p}_i|^2}{2m_i} \;-\; T_{\mathrm{phys}} \;+\; \sum_{i<j}\frac{q_i q_j\,\dot{r}_{ij}^2}{c^2\,r_{ij}}$. By $(H_1)$ of §6.4 this is the $\mathcal{O}(c^{-4})$ tail $\sum_i|\vec{A}_i|^2/(2m_i)$ with $\vec{A}_i = \vec{p}_i - m_i\vec{v}_i$; confirm $|X|/|E| \lesssim 10^{-10}$ at sub-relativistic velocities. Note the common pitfall of comparing $\sum|\vec{p}|^2/(2m) + U_{\mathrm{Weber}}$ against $T_{\mathrm{phys}} + U_{\mathrm{Weber}}$: these differ by $\sum(qq/c^2)(\dot r^2/r)$ whenever any pair has $\dot{r}_{ij}\neq 0$ and should **not** agree.
 
 6. **Forward integration.** Integrate for several natural timescales. Confirm $|H(t) - E|/|E|$ and $|\vec{L}(t) - \vec{L}(0)|/|\vec{L}(0)|$ are within the integrator's tolerance.
 

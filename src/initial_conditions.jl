@@ -60,14 +60,14 @@ end
 
 """
     two_body_initial_conditions(masses, charges; separation, dims=2,
-                                kappa=1.0, velocity_scale=1.0,
+                                velocity_scale=1.0,
                                 radial_velocity=0.0) -> NamedTuple
 
 Construct centre-of-mass two-body initial conditions.
 
 The particles are placed on the x axis with separation `separation`. For
 `dims >= 2`, the transverse momentum is
-`velocity_scale * sqrt(mu * abs(kappa*q1*q2) / separation)`, where `mu` is the
+`velocity_scale * sqrt(mu * abs(q1*q2) / separation)`, where `mu` is the
 reduced mass. Set `velocity_scale=1` for the circular Coulomb scale and
 `radial_velocity=0` for zero initial radial velocity.
 
@@ -78,7 +78,6 @@ function two_body_initial_conditions(
     charges_in::AbstractVector{<:Real};
     separation::Real,
     dims::Integer = 2,
-    kappa::Real = 1.0,
     velocity_scale::Real = 1.0,
     radial_velocity::Real = 0.0,
 )
@@ -109,7 +108,7 @@ function two_body_initial_conditions(
     rel_p = zeros(Float64, dims_value)
     rel_p[1] = reduced_mass * Float64(radial_velocity)
     if dims_value >= 2
-        pair_coupling = Float64(kappa) * charges_vec[1] * charges_vec[2]
+        pair_coupling = charges_vec[1] * charges_vec[2]
         circular_p = sqrt(reduced_mass * abs(pair_coupling) / separation_value)
         rel_p[2] = Float64(velocity_scale) * circular_p
     end
@@ -126,14 +125,13 @@ end
 """
     polygon_initial_conditions(n; radius, mass=1.0, charge_magnitude=1.0,
                                energy_ratio=0.5, speed=nothing,
-                               clockwise=false, kappas=nothing) -> NamedTuple
+                               clockwise=false) -> NamedTuple
 
 Construct planar regular-polygon initial conditions with alternating charges.
 
 Particles sit at regular `n`-gon vertices with circumradius `radius`. Momenta
 are tangential. If `speed` is omitted, the speed is chosen from
-`energy_ratio = T0 / abs(U0)` using the initial Coulomb potential, optionally
-scaled by `kappas` in the same pair order as [`pair_indices`](@ref).
+`energy_ratio = T0 / abs(U0)` using the initial Coulomb potential.
 
 Returns `(q, p, masses, charges)`.
 """
@@ -145,7 +143,6 @@ function polygon_initial_conditions(
     energy_ratio::Real = 0.5,
     speed::Union{Nothing,Real} = nothing,
     clockwise::Bool = false,
-    kappas::Union{Nothing,AbstractVector{<:Real}} = nothing,
 )
     n = Int(n_in)
     n >= 2 || throw(ArgumentError("n must be at least 2, got $n"))
@@ -155,11 +152,6 @@ function polygon_initial_conditions(
     mass_value > 0 || throw(ArgumentError("mass must be positive, got $mass"))
     Float64(energy_ratio) >= 0 ||
         throw(ArgumentError("energy_ratio must be non-negative, got $energy_ratio"))
-
-    pair_count = n * (n - 1) ÷ 2
-    if !isnothing(kappas) && length(kappas) != pair_count
-        throw(ArgumentError("kappas must have length $pair_count for n=$n"))
-    end
 
     masses_vec = fill(mass_value, n)
     qmag = Float64(charge_magnitude)
@@ -174,7 +166,6 @@ function polygon_initial_conditions(
     end
 
     potential = 0.0
-    pair_idx = 1
     @inbounds for i = 1:n
         qi = 2i - 1
         for j = (i+1):n
@@ -182,9 +173,7 @@ function polygon_initial_conditions(
             dx = q[qi] - q[qj]
             dy = q[qi+1] - q[qj+1]
             r = sqrt(dx * dx + dy * dy)
-            kappa_ij = isnothing(kappas) ? 1.0 : Float64(kappas[pair_idx])
-            potential += kappa_ij * charges_vec[i] * charges_vec[j] / r
-            pair_idx += 1
+            potential += charges_vec[i] * charges_vec[j] / r
         end
     end
 

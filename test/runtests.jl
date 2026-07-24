@@ -23,7 +23,6 @@ using JLD2
     include("test_integration.jl")
     include("test_physics.jl")
     include("test_regularization.jl")
-    include("test_zollner.jl")
     include("test_aqua.jl")
 
     @testset "regression fixtures" begin
