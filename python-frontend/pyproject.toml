@@ -16,13 +16,13 @@ dependencies = [
     "PyOpenGL>=3.1",
 ]
 
-[project.optional-dependencies]
-dev = ["pytest>=7", "pytest-qt>=4"]
-
 [project.scripts]
 weber-viewer-two-body = "weber_viewer.examples.two_body_streaming:main"
 weber-viewer-three-body = "weber_viewer.examples.three_body_polygon:main"
 weber-viewer-smoke = "weber_viewer.examples.smoke_probe:main"
+
+[dependency-groups]
+dev = ["pytest>=7", "pytest-qt>=4"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/weber_viewer"]

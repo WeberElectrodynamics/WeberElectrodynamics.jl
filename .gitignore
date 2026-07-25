@@ -32,12 +32,17 @@ LocalPreferences.toml
 /build/
 /builds/
 
-# Python frontend (weber-viewer)
-.venv-viewer/
+# Python (uv-managed; uv.lock IS tracked)
+.venv/
+.venv*
 pyjuliapkg/
 **/__pycache__/
 **/*.egg-info/
-.pytest_cache/
+**/.pytest_cache/
+**/.ruff_cache/
+**/.mypy_cache/
+# Scratch Julia project juliacall resolves into (regenerated on demand)
+python-frontend/.julia-env/
 
 # Generated figures (kept in git for reproducibility)
 # examples/figures/
@@ -76,8 +81,6 @@ examples/output/
 .env
 .env.local
 .envrc
-
-.venv*
 
 # LaTeX auxiliary files
 *.aux

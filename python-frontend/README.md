@@ -6,59 +6,51 @@ Mirrors the Makie extension's `animate_weber(prob)` streaming mode as a PyQt6
 desktop application. The Julia package runs the integrator in-process via
 `juliacall`; Python owns the UI.
 
-## Install
+## Requirements
 
-```bash
-# 1. Python package (editable)
-pip install -e python-frontend/
-
-# 2. Point juliacall at this repo's Julia project so the local WeberElectrodynamics
-#    package is used instead of a registered version
-export PYTHON_JULIAPKG_PROJECT="$(pwd)"
-export PYTHON_JULIAPKG_OFFLINE=yes    # optional: skip package resolution
-```
+[uv](https://docs.astral.sh/uv/) and `julia` on `PATH`. uv is the only supported
+Python workflow here — it manages the interpreter, the virtualenv and the locked
+dependency set. There is nothing to `pip install`.
 
 ## Run
 
-One-shot wrapper (bootstraps a venv on first run, then just runs):
+All commands run from `python-frontend/`:
 
 ```bash
-./python-frontend/run-two-body.sh                 # 3D two-body viewer
-./python-frontend/run-three-body.sh               # 2D three-body polygon viewer
-./python-frontend/run-smoke.sh --steps 50         # headless Julia bridge probe
-
-./python-frontend/run-example.sh                 # two-body viewer (default)
-./python-frontend/run-example.sh --list          # list bundled examples
-./python-frontend/run-example.sh two-body        # 3D two-body viewer
-./python-frontend/run-example.sh three-body      # 2D three-body polygon viewer
-./python-frontend/run-example.sh smoke           # headless Julia bridge probe
-./python-frontend/run-example.sh smoke --steps 50
-./python-frontend/run-example.sh path/to/other.py
+uv run weber-viewer-two-body           # 3D two-body streaming viewer
+uv run weber-viewer-three-body         # 2D three-body polygon viewer
+uv run weber-viewer-smoke --steps 50   # headless Julia bridge probe
 ```
 
-The wrapper keeps JuliaCall's scratch dependencies in `.venv-viewer/julia-env`
-and `dev`s the local package there, so the repository `Project.toml` is not
-modified by example runs.
+The first invocation creates `.venv/` from `uv.lock` and bootstraps a scratch
+Julia project at `.julia-env/` that `dev`s the local package, so juliacall can
+add PythonCall/OpenSSL_jll without touching the repository's own `Project.toml`.
+Both directories are gitignored and regenerate on demand.
 
-Or manually (after `pip install -e python-frontend/`):
+Tests:
 
 ```bash
-export PYTHON_JULIAPKG_PROJECT="$(pwd)"
-export PYTHON_JULIAPKG_EXE="$(which julia)"
-python python-frontend/examples/two_body_streaming.py
-python python-frontend/examples/three_body_polygon.py
-python python-frontend/examples/smoke_probe.py --steps 25
+uv run pytest
 ```
 
-Installed console scripts are also available:
+### Interpreter pin
+
+`.python-version` pins CPython 3.14. juliacall constrains `OpenSSL_jll` to
+whatever OpenSSL the interpreter links against, and uv's CPython 3.13 build
+links OpenSSL 3.0, for which no installable `OpenSSL_jll` remains — resolution
+fails. The 3.14 build links OpenSSL 3.6 and resolves cleanly.
+
+Override the scratch Julia project location with `WEBER_VIEWER_JULIA_ENV`, or
+bypass detection entirely with the standard `PYTHON_JULIAPKG_PROJECT` /
+`PYTHON_JULIAPKG_EXE` variables.
+
+## Use as a library
 
 ```bash
-weber-viewer-two-body
-weber-viewer-three-body
-weber-viewer-smoke --steps 25
+uv run python
 ```
 
-Or from Python:
+
 
 ```python
 from weber_viewer import animate_weber

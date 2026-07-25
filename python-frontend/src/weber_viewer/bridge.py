@@ -14,6 +14,7 @@ from typing import Sequence
 
 import numpy as np
 
+from weber_viewer._julia_env import ensure_julia_env
 from weber_viewer._validation import (
     as_flat_float_array,
     as_int,
@@ -26,6 +27,10 @@ __all__ = ["JuliaBridge"]
 
 def _jl():
     # Lazy import so importing this module doesn't boot the Julia runtime.
+    # Must precede the juliacall import — it decides which Julia project the
+    # runtime resolves into.
+    ensure_julia_env()
+
     if os.environ.get("WEBER_VIEWER_ENABLE_JULIACALL_ATEXIT") == "1":
         from juliacall import Main as Main_
 
