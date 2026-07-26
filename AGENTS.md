@@ -39,6 +39,30 @@ derivations. `_research/` — **exploratory sandbox**, not authoritative.
 `papers/<name>/` — LaTeX papers with their own `VERSION` files. See
 [docs/src/internals.md](docs/src/internals.md) for per-file descriptions.
 
+## Markdown Math and KaTeX
+
+These conventions apply to Markdown under `theory/` and `docs/`. They do not
+apply to the LaTeX sources under `papers/`, and formatting audits must ignore
+`_research/`.
+
+When a task is explicitly formatting-only, preserve all mathematical and
+technical content, prose, symbol definitions, reasoning, citations, and
+equation order. Only delimiters, layout, whitespace, and semantically
+equivalent KaTeX-safe syntax may change.
+
+1. Use `$...$` for inline math and `$$...$$` for display math. Put display
+   delimiters on their own lines, with blank lines around every display.
+2. Do not number equations or use `\tag`, `\label`, `\ref`, or `\eqref`; refer
+   to equations by description. New or substantively rewritten text must
+   explain every symbol after a display equation. During a formatting-only
+   pass, flag missing explanations instead of adding prose.
+3. Use `\boldsymbol` rather than `\bm`; expand `\newcommand`, `\renewcommand`,
+   and `\def` inline.
+4. Put multiline displays inside
+   `$$\begin{aligned}...\end{aligned}$$` rather than standalone `equation`,
+   `align`, `gather`, `multline`, or `eqnarray` environments.
+5. Write chemical formulas as text or Unicode rather than `\ce`.
+
 ## Architecture
 
 **Pipeline**: Symbolic Hamiltonian → compiled equations of motion → symplectic integration → statistics/plotting/animation

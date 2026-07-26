@@ -387,6 +387,7 @@ re-certification of every claim in those sections.
    \frac{\dot r_{12}(\dot x_1-\dot x_2)}{c^2}
    \right].
    $$
+
 4. **The canonical $n$-body Hamiltonian.** Equation `hamiltonian` is correct as
    velocity-space energy, but it is presented as the Hamiltonian used with
    canonical momenta. Its canonical replacement is the matrix-inverse
@@ -451,8 +452,7 @@ The relevant file is
 The future verifier must check:
 
 1. $\vec p=\partial L/\partial\vec v=M\vec v$;
-2. $H=\vec p^{\mathsf T}\vec v-L
-   =\tfrac12\vec p^{\mathsf T}M^{-1}\vec p+V_{\mathrm{Coulomb}}$;
+2. $H=\vec p^{\mathsf T}\vec v-L =\tfrac12\vec p^{\mathsf T}M^{-1}\vec p+V_{\mathrm{Coulomb}}$;
 3. $\partial H/\partial\vec p=M^{-1}\vec p$;
 4. the corrected $\dot{\vec p}$ formula;
 5. translation and rotation invariance of the corrected $H$; and
@@ -509,9 +509,7 @@ explicitly supplies SymPy and record a fully passing result.
    \left(\mu-\frac{k_{12}^{(W)}}{r_{12}c^2}\right)\dot r.
    $$
 
-   Here
-   $p_r=\hat r_{12}\mathbin{\cdot}
-   \mu(\vec p_1/m_1-\vec p_2/m_2)$ is the canonical momentum conjugate to the
+   Here $p_r=\hat r_{12}\mathbin{\cdot} \mu(\vec p_1/m_1-\vec p_2/m_2)$ is the canonical momentum conjugate to the
    relative radial coordinate, and $k_{12}^{(W)}=q_1q_2$ is the coefficient of
    the velocity-dependent Weber pair.
 
