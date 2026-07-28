@@ -22,6 +22,7 @@ makedocs(
     pages = [
         "Home" => "index.md",
         "Quick Start" => "quickstart.md",
+        "The Weber Hamiltonian" => "hamiltonian.md",
         "API Reference" => [
             "System" => "api/system.md",
             "Problem" => "api/problem.md",
@@ -31,7 +32,10 @@ makedocs(
             "Visualization" => "api/visualization.md",
         ],
         "Internals" => "internals.md",
-        "Advanced" => ["Regularization" => "regularization.md"],
+        "Advanced" => [
+            "Regularization" => "regularization.md",
+            "Custom Hamiltonians" => "custom_hamiltonians.md",
+        ],
         "Theory" => "theory.md",
     ],
     checkdocs = :exports,

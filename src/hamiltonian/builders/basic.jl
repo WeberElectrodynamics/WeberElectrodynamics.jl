@@ -41,7 +41,7 @@ Build the symbolic pairwise Coulomb potential `Σᵢ<ⱼ qᵢ qⱼ / rᵢⱼ` fr
 pre-constructed symbolic inputs.
 
 Returns a `Symbolics.Num` expression usable with `Symbolics.derivative` and
-`Symbolics.build_function`. Unlike [`weber_term`](@ref), this carries no
+`Symbolics.build_function`. Unlike the built-in Weber system, this carries no
 velocity-dependent correction (no `c`) — it is the limit of pure 1/r Coulomb.
 
 # Arguments

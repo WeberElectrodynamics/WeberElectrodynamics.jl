@@ -145,7 +145,7 @@ or more compactly,
     \boxed{H = T + U}
 \end{equation}
 
-where $T$ is given by~\eqref{ke} and $U$ is the velocity-dependent potential~\eqref{potential}.
+where $T$ is given by~\eqref{ke} and $U$ is the velocity-dependent potential~\eqref{potential}. Equations~\eqref{H} and~\eqref{h_box} express the conserved energy in positions and \textit{physical velocities}; they become a canonical Hamiltonian only after the velocities have been eliminated as described next.
 
 Before we can apply Hamilton's canonical equations, we express the Hamiltonian in terms of \textit{positions} and \textit{momenta}. For a system of two particles in three spatial dimensions we have
 
@@ -153,9 +153,15 @@ Before we can apply Hamilton's canonical equations, we express the Hamiltonian i
     H = H(x_1, y_1, z_1, x_2, y_2, z_2, p_{x_1}, p_{y_1}, p_{z_1}, p_{x_2}, p_{y_2}, p_{z_2})
 \end{equation}
 
-where each velocity component $\dot{x}_i$ in~\eqref{H} is replaced by $p_{x_i}/m_i$ and similarly for all other velocity components.
+The Lagrangian $L = T - S$ is velocity dependent through $\dot{r}$, so the canonical momentum $\vec{p}_i = \partial L / \partial \vec{v}_i$ is \textit{not} the kinetic momentum $m_i \vec{v}_i$. Carrying out the differentiation with $\partial \dot{r} / \partial \vec{v}_1 = \hat{r} = -\,\partial \dot{r} / \partial \vec{v}_2$ gives
 
-Defining
+\begin{equation}\label{canonical_momentum}
+    \boxed{\vec{p}_1 = m_1 \vec{v}_1 - \vec{\alpha}, \qquad \vec{p}_2 = m_2 \vec{v}_2 + \vec{\alpha}, \qquad \vec{\alpha} \equiv \frac{q_1 q_2}{c^2}\frac{\dot{r}\,(\vec{r}_1 - \vec{r}_2)}{r^2}}
+\end{equation}
+
+The correction $\vec{\alpha}$ is purely radial and enters with opposite signs, so total momentum is unaffected: $\vec{p}_1 + \vec{p}_2 = m_1\vec{v}_1 + m_2\vec{v}_2$. Velocities are therefore eliminated in favour of momenta through~\eqref{canonical_momentum}, not by replacing each $\dot{x}_i$ with $p_{x_i}/m_i$.
+
+Writing the components of $\vec{\alpha}$ as
 \begin{equation}\label{alpha_x}
     \alpha_x = \frac{q_1 q_2}{c^2} \frac{\dot{r}_{12} (x_1 - x_2)}{r_{12}^2}
 \end{equation}
@@ -163,35 +169,63 @@ Defining
 with analogous definitions for $\alpha_y$ and $\alpha_z$, we apply Hamilton's equations~\eqref{xdot} and~\eqref{pdot} to obtain
 
 \begin{equation}\label{xdot_two}
-    \dot{x}_1 = \frac{1}{m_1} \left(p_{x_1} - \alpha_x\right)
+    \dot{x}_1 = \frac{1}{m_1} \left(p_{x_1} + \alpha_x\right)
 \end{equation}
 
 \begin{equation}\label{xdot_two_p2}
-    \dot{x}_2 = \frac{1}{m_2} \left(p_{x_2} + \alpha_x\right)
+    \dot{x}_2 = \frac{1}{m_2} \left(p_{x_2} - \alpha_x\right)
 \end{equation}
 
 and
 
 \begin{equation}\label{pdot_two}
-    \dot{p}_{x_1} = \frac{q_1 q_2}{r_{12}^2}\left[\frac{(x_1 - x_2)}{r_{12}}\left(1 - \frac{3\dot{r}_{12}^2}{2 c^2}\right) + \frac{\dot{r}_{12}(\dot{x}_1 - \dot{x}_2)}{c^2}\right]
+    \dot{p}_{x_1} = \frac{q_1 q_2}{r_{12}^2}\left[\frac{(x_1 - x_2)}{r_{12}}\left(1 + \frac{3\dot{r}_{12}^2}{2 c^2}\right) - \frac{\dot{r}_{12}(\dot{x}_1 - \dot{x}_2)}{c^2}\right]
 \end{equation}
 
 \begin{equation}\label{pdot_two_p2}
     \dot{p}_{x_2} = -\dot{p}_{x_1}
 \end{equation}
 
-with analogous equations for the $y$ and $z$ directions. Note that $\dot{p}_{x_1} + \dot{p}_{x_2} = 0$, but $\dot{x}_1 - \dot{x}_2 \neq 0$ in general.
+with analogous equations for the $y$ and $z$ directions. Note that $\dot{p}_{x_1} + \dot{p}_{x_2} = 0$, but $\dot{x}_1 - \dot{x}_2 \neq 0$ in general. Throughout, $\dot{r}_{12}$ and $\dot{x}_1 - \dot{x}_2$ denote \textit{physical} velocities; $\vec{\alpha}$ in~\eqref{xdot_two} and~\eqref{xdot_two_p2} contains $\dot{r}$, so these relations are implicit.
+
+For two particles the implicit relation reduces to a single scalar equation. With $\mu = m_1 m_2/(m_1+m_2)$ the reduced mass and $p_r = \mu\,\hat{r}\cdot(\vec{p}_1/m_1 - \vec{p}_2/m_2)$ the momentum conjugate to the relative radial coordinate, contracting~\eqref{canonical_momentum} with $\hat{r}$ gives
+
+\begin{equation}\label{radial_inverse}
+    \boxed{p_r = \left(\mu - \frac{q_1 q_2}{r c^2}\right)\dot{r}, \qquad \dot{r} = \frac{p_r}{\mu - q_1 q_2/(r c^2)}}
+\end{equation}
+
+so the physical radial velocity follows in closed form from the canonical momenta. Only the relative radial motion is modified; the centre-of-mass and relative transverse momenta keep their ordinary relation to velocity. The effective radial inertia $\mu - q_1 q_2/(r c^2)$ vanishes for like charges exactly at Weber's critical radius $\rho = q_1 q_2/(\mu c^2)$, revisited in the Discussion; below $\rho$ it is negative but finite.
 
 \subsection{Conserved quantities and symmetries}
-Weber's electrodynamics for 2 particles conserves energy, linear momentum, and angular momentum. These conserved quantities arise from symmetries in the Hamiltonian~\eqref{h_box} according to Noether's theorem. The conservation of energy follows from the \textit{time-translation symmetry} of the Hamiltonian, meaning that the Hamiltonian has no explicit time dependence. The conservation of linear momentum arises from the \textit{translational symmetry} of the Hamiltonian, meaning that shifting all particle positions by a constant vector does not change the form of the Hamiltonian. The conservation of angular momentum is a consequence of the \textit{rotational symmetry} of the Hamiltonian, indicating that rotating the entire system around any axis does not change the form of the Hamiltonian. These symmetries arise from the fact that Weber's electrodynamics relies only on what Assis calls \textit{relational magnitudes} (see Appendix~\ref{app:additional-remarks}).
+Weber's electrodynamics for 2 particles conserves energy, linear momentum, and angular momentum. These conserved quantities arise from symmetries in the Hamiltonian~\eqref{h_box}, equivalently the canonical form~\eqref{hamiltonian_canonical}, according to Noether's theorem. The conservation of energy follows from the \textit{time-translation symmetry} of the Hamiltonian, meaning that the Hamiltonian has no explicit time dependence. The conservation of linear momentum arises from the \textit{translational symmetry} of the Hamiltonian, meaning that shifting all particle positions by a constant vector does not change the form of the Hamiltonian. The conservation of angular momentum is a consequence of the \textit{rotational symmetry} of the Hamiltonian, indicating that rotating the entire system around any axis does not change the form of the Hamiltonian. These symmetries arise from the fact that Weber's electrodynamics relies only on what Assis calls \textit{relational magnitudes} (see Appendix~\ref{app:additional-remarks}).
 
 \subsection{Hamiltonian for \texorpdfstring{$n$}{n} particles}\label{n-body-hamiltonian}
-For a system with $n$ particles, the Hamiltonian~\eqref{H} generalizes to:
+For a system with $n$ particles, the energy~\eqref{H} generalizes to:
 \begin{equation}\label{hamiltonian}
-    H_n = \sum_{i=1}^{n} \frac{1}{2} m_i v_i^2 + \sum_{i=1}^{n} \sum_{j=i+1}^{n} \frac{q_i q_j}{r_{ij}} \left(1 - \frac{\dot{r}_{ij}^2}{2 c^2}\right)
+    E_n = \sum_{i=1}^{n} \frac{1}{2} m_i v_i^2 + \sum_{i=1}^{n} \sum_{j=i+1}^{n} \frac{q_i q_j}{r_{ij}} \left(1 - \frac{\dot{r}_{ij}^2}{2 c^2}\right)
 \end{equation}
 
 where the double sum is taken over every unique particle pair $i$ and $j$ (see Section~\ref{complexity}). The conservation laws stated previously still hold for this general case.
+
+Equation~\eqref{hamiltonian} is expressed in positions and \textit{physical velocities}. To obtain the canonical Hamiltonian we must first recover the velocities from the canonical momenta~\eqref{canonical_momentum}. Generalizing~\eqref{alpha_x} to $n$ particles, the correction to $\vec{v}_i$ is a sum over the pairs containing particle $i$,
+
+\begin{equation}\label{velocity_recovery}
+    \vec{v}_i = \frac{\vec{p}_i}{m_i} + \frac{1}{m_i}\sum_{\substack{j=1 \\ j \neq i}}^{n} k_{ij}\,\dot{r}_{ij}\,\hat{r}_{ij}, \qquad k_{ij} \equiv \frac{q_i q_j}{c^2 r_{ij}}
+\end{equation}
+
+Each $\dot{r}_{ij}$ on the right-hand side depends on the velocities themselves, so the $n(n-1)/2$ pair radial velocities must be obtained together. Contracting~\eqref{velocity_recovery} with $\hat{r}_{ab}$ gives a linear system in those unknowns,
+
+\begin{equation}\label{radial_system}
+    \dot{r}_{ab} = s_{ab} + \sum_{\substack{\text{pairs} \\ (c,d)}} G_{ab,cd}\,k_{cd}\,\dot{r}_{cd}, \qquad s_{ab} \equiv \hat{r}_{ab}\cdot\left(\frac{\vec{p}_a}{m_a} - \frac{\vec{p}_b}{m_b}\right)
+\end{equation}
+
+where $s_{ab}$ is the radial rate one would obtain by mistaking canonical momentum for kinetic momentum, and $G_{ab,cd} = (\hat{r}_{ab}\cdot\hat{r}_{cd})\left[(\delta_{ac}-\delta_{ad})/m_a - (\delta_{bc}-\delta_{bd})/m_b\right]$ couples pairs through their shared particles. With the $\dot{r}_{ij}$ in hand, the exact canonical Hamiltonian is
+
+\begin{equation}\label{hamiltonian_canonical}
+    \boxed{H_n(\mathbf{q},\mathbf{p}) = \frac{1}{2}\sum_{i=1}^{n} \vec{p}_i \cdot \vec{v}_i + \sum_{i=1}^{n}\sum_{j=i+1}^{n} \frac{q_i q_j}{r_{ij}} = \sum_{i=1}^{n} \frac{|\vec{p}_i|^2}{2 m_i} + \frac{1}{2}\sum_{i=1}^{n}\sum_{j=i+1}^{n} k_{ij}\,\dot{r}_{ij}\,s_{ij} + \sum_{i=1}^{n}\sum_{j=i+1}^{n} \frac{q_i q_j}{r_{ij}}}
+\end{equation}
+
+and $H_n(\mathbf{q},\mathbf{p}) = E_n(\mathbf{q},\mathbf{v}(\mathbf{q},\mathbf{p}))$ by the Legendre transform. In the Coulomb limit $c \to \infty$, and at any instant where every $\dot{r}_{ij}$ vanishes, $k_{ij} \to 0$ and~\eqref{hamiltonian_canonical} reduces to $\sum_i |\vec{p}_i|^2/(2m_i) + \sum_{i<j} q_i q_j / r_{ij}$.
 
 For a system of $n$ particles in one spatial dimension $x$, Hamilton's equations of motion are given by
 
@@ -208,16 +242,16 @@ for particle $i \in \{1, 2, \ldots, n\}$. In three dimensions, we also have the 
 For a system of $n$ particles,~\eqref{xdot} expands to
 
 \begin{equation}\label{xdot_expanded}
-    \boxed{\dot{x}_i = \frac{1}{m_i} \left(p_{x_i} - \sum_{\substack{j=1 \\ j \neq i}}^{n} \frac{q_i q_j}{c^2} \frac{\dot{r}_{ij} (x_i - x_j)}{r_{ij}^2}\right)}
+    \boxed{\dot{x}_i = \frac{1}{m_i} \left(p_{x_i} + \sum_{\substack{j=1 \\ j \neq i}}^{n} \frac{q_i q_j}{c^2} \frac{\dot{r}_{ij} (x_i - x_j)}{r_{ij}^2}\right)}
 \end{equation}
 
 for particle $i \in \{1, 2, \ldots, n\}$, with analogous expressions for $\dot{y}_i$ and $\dot{z}_i$, and~\eqref{pdot} expands to
 
 \begin{equation}\label{pdot_expanded}
-    \boxed{\dot{p}_{x_i} = \sum_{\substack{j=1 \\ j \neq i}}^{n} \frac{q_i q_j}{r_{ij}^2}\left[\frac{(x_i - x_j)}{r_{ij}}\left(1 - \frac{3\dot{r}_{ij}^2}{2 c^2}\right) + \frac{\dot{r}_{ij}(\dot{x}_i - \dot{x}_j)}{c^2}\right]}
+    \boxed{\dot{p}_{x_i} = \sum_{\substack{j=1 \\ j \neq i}}^{n} \frac{q_i q_j}{r_{ij}^2}\left[\frac{(x_i - x_j)}{r_{ij}}\left(1 + \frac{3\dot{r}_{ij}^2}{2 c^2}\right) - \frac{\dot{r}_{ij}(\dot{x}_i - \dot{x}_j)}{c^2}\right]}
 \end{equation}
 
-for particle $i \in \{1, 2, \ldots, n\}$, with analogous expressions for $\dot{p}_{y_i}$ and $\dot{p}_{z_i}$.
+for particle $i \in \{1, 2, \ldots, n\}$, with analogous expressions for $\dot{p}_{y_i}$ and $\dot{p}_{z_i}$. In both boxed equations every $\dot{r}_{ij}$ and $\dot{x}_i - \dot{x}_j$ is a physical velocity obtained from the simultaneous system~\eqref{radial_system}; equation~\eqref{xdot_expanded} is the component form of~\eqref{velocity_recovery}.
 
 Equations~\eqref{xdot_expanded} and~\eqref{pdot_expanded} together with their analogs for $y$ and $z$ directions form a system of $6n$ first-order ordinary differential equations that describe the time evolution in \textit{phase space} of an $n$-particle system for Weber's electrodynamics. For any time $t$, the \textit{state} of the system is represented by a point $\mathbf{z}$ in a $6n$-dimensional phase space
 
@@ -280,11 +314,11 @@ To understand the total number of unique interactions, consider an $n \times n$ 
     \end{tikzpicture}
 \end{center}
 
-For a system of $n$ particles, we thus have a total of $n(n-1)/2$ unique particle pairs, resulting in a computational complexity of order $\mathcal{O}(n^2)$.
+For a system of $n$ particles, we thus have a total of $P = n(n-1)/2$ unique particle pairs, so assembling the pair geometry costs $\mathcal{O}(n^2)$.
 
-A naive implementation would compute all $n(n-1)$ interactions, but by exploiting~\eqref{alpha_x},~\eqref{xdot_two},~\eqref{xdot_two_p2},~\eqref{pdot_two} and~\eqref{pdot_two_p2}, we reduce this to $n(n-1)/2$ interactions.
+A naive implementation would compute all $n(n-1)$ interactions, but by exploiting~\eqref{alpha_x},~\eqref{xdot_two},~\eqref{xdot_two_p2},~\eqref{pdot_two} and~\eqref{pdot_two_p2}, we reduce this to $P$ interactions. Each evaluation of~\eqref{xdot_expanded} and~\eqref{pdot_expanded} then needs $r_{ij}$ and $\dot{r}_{ij}$ and their powers only once per unique pair.
 
-Furthermore, each evaluation of~\eqref{xdot_expanded} and~\eqref{pdot_expanded} only needs to compute $r_{ij}$ and $\dot{r}_{ij}$ and their powers once per unique pair, which further reduces the computational load.
+Pair evaluation alone does not, however, complete an evaluation of the equations of motion. Because canonical momentum is not kinetic momentum, the physical velocities entering~\eqref{xdot_expanded} and~\eqref{pdot_expanded} are only available after solving the coupled system~\eqref{radial_system}, whose matrix is $P \times P$ and dense in general. A direct factorization costs $\mathcal{O}(P^3) = \mathcal{O}(n^6)$ per evaluation, so for large $n$ the linear solve, not the pair sum, dominates. Two remarks temper this. First, $\mathbb{I} - GK$ is a perturbation of the identity of order $q^2/(m c^2 r)$, so for sub-relativistic configurations a few Jacobi or conjugate-gradient iterations converge to machine precision at $\mathcal{O}(n^2)$ cost per iteration. Second, for the two-body case $P = 1$ and the solve degenerates to the closed-form division~\eqref{radial_inverse}. Our reference implementation~\citep{WeberElectrodynamics.jl} uses a direct dense factorization, which is exact at all separations and comfortably fast for the particle counts studied here.
 
 \subsection{Units and numerical values}\label{units}
 When performing numerical computations, we often rely on the 64-bit floating-point representation of decimal numbers. This number representation introduces a trade-off between range and precision. To maintain optimal precision, it is advantageous to work with number values near the order of magnitude of 1. In Weber's electrodynamics, we are mostly interested in numerical values that are relatively small when expressed in SI units. In our numerical computations, we will convert to smaller units to obtain larger numerical values for the same physical quantities.
@@ -296,13 +330,13 @@ Thus, the original system of Gauss and Weber, compared to the SI system, is bett
 Another common system of units is obtained by setting $c = 1$ and (in the case of SI units) $1/(4\pi \epsilon_0) = 1$. This system is often used in computational physics for the same reasons mentioned above.
 
 \section{Symplectic numerical integration of non-separable Hamiltonian systems}\label{symplectic}
-A numerical method is called \textit{symplectic} if it preserves the \textit{phase space volume} of Hamiltonian systems over time according to \textit{Liouville's theorem}. Standard symplectic methods require the Hamiltonian to be separable into kinetic and potential energy terms that each depend only on positions or momenta. The general Hamiltonian for Weber's electrodynamics~\eqref{hamiltonian} is non-separable because the velocity-dependent term
+A numerical method is called \textit{symplectic} if it preserves the \textit{phase space volume} of Hamiltonian systems over time according to \textit{Liouville's theorem}. Standard symplectic methods require the Hamiltonian to be separable into kinetic and potential energy terms that each depend only on positions or momenta. The canonical Hamiltonian for Weber's electrodynamics~\eqref{hamiltonian_canonical} is non-separable because the velocity-dependent term
 
 \begin{equation}
-    -\frac{\qq \dot{r}_{ij}^2}{2 c^2 r_{ij}}
+    \frac{1}{2} k_{ij}\,\dot{r}_{ij}\,s_{ij}
 \end{equation}
 
-is both a function of the positions and momenta after the Legendre transformation. Therefore, standard symplectic methods cannot be applied directly. Recent work by \citet{Pihajoki2015} and \citet{Tao2016} introduced explicit symplectic methods using the clever extended phase space method. Building on these approaches, \citet{Jayawardana2023} developed a semi-explicit symplectic integrator for non-separable Hamiltonian systems that also preserves quadratic invariants (see \citep{Ohsawa2023}). Currently, this is one of the most suitable methods for our purposes. We describe it briefly here.
+is a function of both the positions and the momenta after the Legendre transformation: $k_{ij}$ and $s_{ij}$ depend on positions and momenta explicitly, and $\dot{r}_{ij}$ does so through the solve~\eqref{radial_system}. Therefore, standard symplectic methods cannot be applied directly. Recent work by \citet{Pihajoki2015} and \citet{Tao2016} introduced explicit symplectic methods using the clever extended phase space method. Building on these approaches, \citet{Jayawardana2023} developed a semi-explicit symplectic integrator for non-separable Hamiltonian systems that also preserves quadratic invariants (see \citep{Ohsawa2023}). Currently, this is one of the most suitable methods for our purposes. We describe it briefly here.
 
 We introduce compact vector notation $\mathbf{q} = (x_1, y_1, z_1, \ldots, x_n, y_n, z_n) \in \mathbb{R}^{3n}$ for positions and $\mathbf{p} = (p_{x_1}, p_{y_1}, p_{z_1}, \ldots, p_{x_n}, p_{y_n}, p_{z_n}) \in \mathbb{R}^{3n}$ for momenta, so that $\mathbf{z} = (\mathbf{q}, \mathbf{p}) \in \mathbb{R}^{6n}$ as in~\eqref{z}. The extended phase space doubles the phase space by introducing another pair of positions and momenta $\mathbf{x} \in \mathbb{R}^{3n}$ and $\mathbf{y} \in \mathbb{R}^{3n}$, giving the state vector in extended phase space
 
@@ -396,13 +430,15 @@ The individual particle positions, velocities, and accelerations are
     \vec{a}_1 = (\ddot{x}_1, \ddot{y}_1, \ddot{z}_1) &  & \vec{a}_2 = (\ddot{x}_2, \ddot{y}_2, \ddot{z}_2)
 \end{align*}
 
-The individual particle momenta are
+The individual particle canonical momenta are given by~\eqref{canonical_momentum}, componentwise
 
 \begin{align*}
-    p_{x_1} = m_1 \dot{x}_1 &  & p_{x_2} = m_2 \dot{x}_2 \\
-    p_{y_1} = m_1 \dot{y}_1 &  & p_{y_2} = m_2 \dot{y}_2 \\
-    p_{z_1} = m_1 \dot{z}_1 &  & p_{z_2} = m_2 \dot{z}_2
+    p_{x_1} = m_1 \dot{x}_1 - \alpha_x &  & p_{x_2} = m_2 \dot{x}_2 + \alpha_x \\
+    p_{y_1} = m_1 \dot{y}_1 - \alpha_y &  & p_{y_2} = m_2 \dot{y}_2 + \alpha_y \\
+    p_{z_1} = m_1 \dot{z}_1 - \alpha_z &  & p_{z_2} = m_2 \dot{z}_2 + \alpha_z
 \end{align*}
+
+with $\alpha_x$, $\alpha_y$, $\alpha_z$ the components of $\vec{\alpha}$ defined in~\eqref{alpha_x}. The kinetic momenta $m_i \dot{x}_i$ are recovered only when $\dot{r} = 0$ or in the limit $c \to \infty$.
 
 The relative positions, velocities, and accelerations between particle 1 and particle 2 are
 

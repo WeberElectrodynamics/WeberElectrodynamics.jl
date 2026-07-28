@@ -65,7 +65,11 @@ equivalent KaTeX-safe syntax may change.
 
 ## Architecture
 
-**Pipeline**: Symbolic Hamiltonian → compiled equations of motion → symplectic integration → statistics/plotting/animation
+**Pipeline**: Hamiltonian (analytic or symbolic) → compiled equations of motion → symplectic integration → statistics/plotting/animation
+
+The default Weber system is **analytic** (hand-derived closed forms, symbolic
+fields are `nothing`); custom Hamiltonians go through Symbolics.jl. Check with
+`has_symbolic_hamiltonian(sys)`.
 
 See [docs/src/internals.md](docs/src/internals.md) for per-file descriptions of `src/`, extensions, tests, and the `_research/` sandbox.
 
@@ -73,11 +77,33 @@ See [docs/src/internals.md](docs/src/internals.md) for per-file descriptions of 
 
 Quick-reference mirror — source of truth: [docs/src/internals.md](docs/src/internals.md).
 
+### Canonical momentum is not m·v
+
+The Weber Lagrangian is velocity dependent, so
+`p_i = ∂L/∂v_i = m_i v_i − Σ_{j≠i} (q_i q_j/c²) ṙ_ij (r_i − r_j)/r_ij²`.
+
+**Never write `p ./ masses` to get a velocity.** Use
+`physical_velocities(prob, q, p)` (public) or `_weber_state!` on a
+`WeberWorkspace` (hot paths). This applies to kinetic energy
+(`Σ ½ m|v|²`, not `Σ|p|²/2m`), pair radial velocities, force diagnostics, and
+nonzero-ṙ initial conditions (`p_r = (μ − q₁q₂/(rc²)) ṙ`, so
+`two_body_initial_conditions` requires `c` when `radial_velocity ≠ 0`).
+
+Evaluating at a like-charge pair's critical radius `ρ = q₁q₂/(μc²)` throws
+`WeberCriticalRadiusError`. Below `ρ` the effective radial inertia is negative
+but finite and integration continues normally.
+
+See [docs/src/hamiltonian.md](docs/src/hamiltonian.md); every equation is
+verified in `papers/Computational-Weber-Electrodynamics/verify_formulas.py`
+(run it with `uv run --project papers/Computational-Weber-Electrodynamics
+python papers/Computational-Weber-Electrodynamics/verify_formulas.py`).
+
 ### Parameter layout
 
 `params = [m₁…mₙ, q₁…qₙ, c]` — length `2N + 1`.
 Compiled EOM signature: `dq_dt_compiled(out, q, p, t, params)` (same for `dp_dt`);
 the Hamiltonian signature is `hamiltonian_compiled(q, p, t, params)`.
+Both analytic and symbolic systems expose these identically.
 
 ### Algorithms and callbacks
 
@@ -96,6 +122,13 @@ Regularization and collision bounce are composed outside the problem:
 views into it. Use the exported accessors: `masses(prob)`, `charges(prob)`,
 `speed_of_light(prob)`, `params(prob)`, plus `n_particles(sys)`, `dims(sys)`,
 `degrees_of_freedom(sys)` on `HamiltonianSystem`.
+
+### NamedTerm hooks
+
+`pair_decomposition(q, p, params)` and `kinetic_energy(q, p, params)` take the
+whole state, not one pair — recovering physical velocities is a single coupled
+solve over all pairs. `pair_decomposition` returns per-pair vectors in
+`pair_indices` order.
 
 ### EnergyStatistics gotcha
 

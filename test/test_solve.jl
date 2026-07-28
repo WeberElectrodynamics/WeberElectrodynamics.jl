@@ -201,8 +201,8 @@
 
         @test save_solution(path, sol; metadata = (case = "archive",)) == path
         archive = JLD2.load(path)["archive"]
-        @test archive.format_version == 2
-        # Pin the exact v2 problem schema. This is stronger than asserting the
+        @test archive.format_version == 3
+        # Pin the exact v3 problem schema. This is stronger than asserting the
         # absence of the removed fields, and it keeps the removed identifiers
         # out of the tree entirely.
         @test propertynames(archive.problem) == (
@@ -229,6 +229,21 @@
         JLD2.jldsave(old_path; archive = (format_version = 1,))
         @test_throws ArgumentError load_solution(old_path)
         rm(old_path; force = true)
+
+        # Format 2 archives were integrated with the pre-correction Hamiltonian
+        # (p_i treated as m_i v_i). They are different trajectories and must be
+        # rejected outright rather than silently reinterpreted as Weber results.
+        v2_path = tempname() * ".jld2"
+        JLD2.jldsave(v2_path; archive = (format_version = 2,))
+        err = try
+            load_solution(v2_path)
+            nothing
+        catch e
+            e
+        end
+        @test err isa ArgumentError
+        @test occursin("canonical Weber Hamiltonian correction", err.msg)
+        rm(v2_path; force = true)
     end
 
     @testset "Two-body system solve" begin

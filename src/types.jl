@@ -565,6 +565,31 @@ Return the packed parameter vector `[masses; charges; c]`.
 """
 params(prob::HamiltonianProblem) = prob.params
 
+"""
+    physical_velocities(prob::HamiltonianProblem, q, p) -> Vector{Float64}
+    physical_velocities(sol::HamiltonianSolution, index::Int) -> Vector{Float64}
+
+Recover the physical particle velocities at a canonical state.
+
+Canonical momentum in Weber electrodynamics is `p_i = ∂L/∂v_i`, which differs
+from `m_i v_i` whenever a pair has nonzero radial velocity. Always convert
+through this function rather than dividing momenta by masses.
+
+```julia
+sol = solve(prob, SymmetricProjectionIntegrator())
+v0  = physical_velocities(sol, 1)          # velocities at the first timestep
+v   = physical_velocities(prob, q, p)      # velocities at an arbitrary state
+```
+"""
+physical_velocities(prob::HamiltonianProblem, q::AbstractVector, p::AbstractVector) =
+    physical_velocities(
+        q,
+        p,
+        params(prob);
+        n_particles = n_particles(prob),
+        dims = dims(prob),
+    )
+
 # Internal: clone a problem with an overridden tspan while preserving the
 # compiled system, initial conditions, and packed params. Used by
 # the Makie streaming animation to extend the integration horizon without

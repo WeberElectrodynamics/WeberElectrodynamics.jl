@@ -11,8 +11,24 @@ We follow the conventions established for the Weber Hamiltonian. For an $n$-part
 - $m_i$, $q_i$ — mass and electric charge of particle $i$
 - $\vec{r}_i = (x_i, y_i, z_i)$ — position vector
 - $\vec{v}_i = \dot{\vec{r}}_i$ — velocity vector
-- $\vec{p}_i = m_i \vec{v}_i$ — canonical momentum
+- $\vec{p}_i = \partial L/\partial\vec{v}_i$ — canonical momentum
 - $M = \sum_i m_i$ — total mass
+
+Canonical momentum is **not** kinetic momentum for the Weber Lagrangian:
+
+$$
+\vec{p}_i = m_i\vec{v}_i
+- \sum_{j\ne i}\frac{q_i q_j}{c^2}\frac{\dot{r}_{ij}}{r_{ij}^2}(\vec{r}_i - \vec{r}_j)
+$$
+
+where $\dot{r}_{ij}$ is the physical pair radial velocity and $c$ is the speed
+of light. The two coincide exactly when every pair radial velocity vanishes,
+which is the case for every construction in this document except the
+sub-critical mid-oscillation case in the like-charge section. See
+[`WeberElectrodynamics.md`](WeberElectrodynamics.md) for the general velocity
+recovery, and
+[`NonZeroRadialVelocityBoundICs.md`](NonZeroRadialVelocityBoundICs.md) for
+constructions where the distinction is unavoidable.
 
 For each pair $(i,j)$ with $i < j$:
 
@@ -24,10 +40,10 @@ $$
 \dot{r}_{ij} = \frac{\vec{r}_{ij} \cdot \dot{\vec{r}}_{ij}}{r_{ij}}
 $$
 
-The Weber Hamiltonian for $n$ particles is
+The conserved energy for $n$ particles, in positions and physical velocities, is
 
 $$
-H = \sum_{i=1}^n \frac{|\vec{p}_i|^2}{2m_i} + \sum_{i < j} U_{ij}
+E = \sum_{i=1}^n \frac{1}{2} m_i |\vec{v}_i|^2 + \sum_{i < j} U_{ij}
 $$
 
 with pair potential
@@ -37,6 +53,17 @@ U_{ij} = \frac{q_i q_j}{r_{ij}} \left(1 - \frac{\dot{r}_{ij}^2}{2c^2}\right)
 $$
 
 where $c$ is the speed of light. The initial value problem is to choose $\vec{r}_i(0)$ and $\vec{p}_i(0)$ such that $H(0)$ takes a prescribed value $E$.
+
+Whenever all pair radial velocities vanish at $t = 0$ — true for every circular,
+turning-point, polygon, and rigid-rotation construction below — the Weber
+velocity term drops out and the initial energy reduces to
+
+$$
+E = \sum_{i=1}^n \frac{|\vec{p}_i|^2}{2m_i} + \sum_{i<j}\frac{q_i q_j}{r_{ij}}
+$$
+
+so the familiar canonical expression may be used for those instants only. It
+is not valid once radial motion develops.
 
 ## The Zero-Radial-Velocity Principle
 
@@ -604,21 +631,31 @@ $$
 
 Both $r_0 - r > 0$ and $\rho - r > 0$ (since $r < r_0 < \rho$), so $\dot{r}^2 > 0$. As $r \to 0$, $\dot{r}^2 \to 2c^2$.
 
-Choose the sign of $\dot{r}$: negative for approaching, positive for receding. The momenta are
+Choose the sign of $\dot{r}$: negative for approaching, positive for receding.
+
+This is the one construction in this document with $\dot{r} \neq 0$, so the
+canonical momenta are **not** $\pm\mu\dot{r}\,\hat{r}$. The conjugate radial
+momentum carries the Weber correction:
 
 $$
-\vec{p}_1(0) = +\mu\dot{r}\,\hat{r}, \qquad \vec{p}_2(0) = -\mu\dot{r}\,\hat{r}
+p_r = \left(\mu - \frac{k}{r c^2}\right)\dot{r},
+\qquad
+\vec{p}_1(0) = +p_r\,\hat{r}, \qquad \vec{p}_2(0) = -p_r\,\hat{r}
 $$
 
-where $\hat{r} = (\vec{r}_1 - \vec{r}_2)/r$. These satisfy $\vec{p}_1 + \vec{p}_2 = \vec{0}$.
+where $k = q_1 q_2$ and $\hat{r} = (\vec{r}_1 - \vec{r}_2)/r$. These satisfy
+$\vec{p}_1 + \vec{p}_2 = \vec{0}$. Setting $p_r = \mu\dot{r}$ here would
+assign the wrong initial state and shift the energy invariant.
 
-**Verification.** Since $\dot{r} \neq 0$, the full velocity-dependent potential enters:
+**Verification.** Since $\dot{r} \neq 0$, the full velocity-dependent potential
+enters, and the energy must be evaluated in velocity space:
 
 $$
-H(0) = \frac{\mu\dot{r}^2}{2} + \frac{k}{r}\left(1 - \frac{\dot{r}^2}{2c^2}\right) = \frac{k}{r_0}
+E(0) = \frac{\mu\dot{r}^2}{2} + \frac{k}{r}\left(1 - \frac{\dot{r}^2}{2c^2}\right) = \frac{k}{r_0}
 $$
 
 Substituting $\dot{r}^2$ from the integrated equation confirms this identity.
+Note $\mu\dot{r}^2/2$ uses the physical $\dot{r}$, not $p_r/\mu$.
 
 ### Oscillation with Transverse Velocity
 
@@ -784,4 +821,4 @@ $$
 \omega = \sqrt{2(E - U_0)/I}, \qquad \vec{p}_i(0) = m_i \omega\hat{\omega} \times \vec{r}_i(0)
 $$
 
-6. **Verify.** Compute $H(0) = \sum_i |\vec{p}_i|^2/(2m_i) + U_0$ and confirm it equals $E$. Check $\sum_i \vec{p}_i = \vec{0}$.
+6. **Verify.** Compute $H(0) = \sum_i |\vec{p}_i|^2/(2m_i) + U_0$ and confirm it equals $E$. Check $\sum_i \vec{p}_i = \vec{0}$. This shortcut is valid because the construction has $\dot{r}_{ij}(0) = 0$ for every pair; otherwise evaluate the exact canonical Hamiltonian instead.

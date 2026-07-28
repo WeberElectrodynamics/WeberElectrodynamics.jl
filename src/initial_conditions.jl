@@ -61,15 +61,30 @@ end
 """
     two_body_initial_conditions(masses, charges; separation, dims=2,
                                 velocity_scale=1.0,
-                                radial_velocity=0.0) -> NamedTuple
+                                radial_velocity=0.0, c=nothing) -> NamedTuple
 
-Construct centre-of-mass two-body initial conditions.
+Construct centre-of-mass two-body initial conditions in **canonical** variables.
 
 The particles are placed on the x axis with separation `separation`. For
-`dims >= 2`, the transverse momentum is
+`dims >= 2`, the transverse relative momentum is
 `velocity_scale * sqrt(mu * abs(q1*q2) / separation)`, where `mu` is the
-reduced mass. Set `velocity_scale=1` for the circular Coulomb scale and
-`radial_velocity=0` for zero initial radial velocity.
+reduced mass. Set `velocity_scale=1` for the circular Coulomb scale.
+
+`radial_velocity` is a **physical** radial velocity ṙ. Because canonical
+momentum in Weber electrodynamics is `p_i = ∂L/∂v_i`, the conjugate radial
+momentum is
+
+```
+p_r = (mu - q1*q2/(r*c^2)) * rdot
+```
+
+not `mu * rdot`. Supplying a nonzero `radial_velocity` therefore requires `c`;
+omitting it throws. Only the radial direction is affected — the transverse
+momentum is unchanged, and for `radial_velocity = 0` canonical and kinetic
+momenta coincide so `c` is irrelevant and may be omitted.
+
+Throws if the pair sits exactly at Weber's critical radius
+`rho = q1*q2/(mu*c^2)`, where `p_r` carries no information about ṙ.
 
 Returns `(q, p, masses, charges)`.
 """
@@ -80,6 +95,7 @@ function two_body_initial_conditions(
     dims::Integer = 2,
     velocity_scale::Real = 1.0,
     radial_velocity::Real = 0.0,
+    c::Union{Nothing,Real} = nothing,
 )
     length(masses_in) == 2 || throw(ArgumentError("masses must have length 2"))
     length(charges_in) == 2 || throw(ArgumentError("charges must have length 2"))
@@ -97,6 +113,18 @@ function two_body_initial_conditions(
     mi, mj = masses_vec
     total_mass = mi + mj
     reduced_mass = mi * mj / total_mass
+    pair_coupling = charges_vec[1] * charges_vec[2]
+
+    radial_velocity_value = Float64(radial_velocity)
+    if radial_velocity_value != 0
+        isnothing(c) && throw(
+            ArgumentError(
+                "c is required when radial_velocity != 0: canonical radial momentum " *
+                "is p_r = (mu - q1*q2/(r*c^2)) * rdot, not mu * rdot",
+            ),
+        )
+        Float64(c) > 0 || throw(ArgumentError("c must be positive, got $c"))
+    end
 
     q = zeros(Float64, 2 * dims_value)
     p = zeros(Float64, 2 * dims_value)
@@ -106,9 +134,22 @@ function two_body_initial_conditions(
     q[dims_value+1] = -mi / total_mass * separation_value
 
     rel_p = zeros(Float64, dims_value)
-    rel_p[1] = reduced_mass * Float64(radial_velocity)
+    if radial_velocity_value != 0
+        c_value = Float64(c)
+        radial_inertia = reduced_mass - pair_coupling / (separation_value * c_value^2)
+        if abs(radial_inertia) <= 1e-12 * reduced_mass
+            rho = pair_coupling / (reduced_mass * c_value^2)
+            throw(
+                ArgumentError(
+                    "separation = $separation_value is at Weber's critical radius " *
+                    "rho = $rho, where canonical radial momentum does not determine " *
+                    "a physical radial velocity",
+                ),
+            )
+        end
+        rel_p[1] = radial_inertia * radial_velocity_value
+    end
     if dims_value >= 2
-        pair_coupling = charges_vec[1] * charges_vec[2]
         circular_p = sqrt(reduced_mass * abs(pair_coupling) / separation_value)
         rel_p[2] = Float64(velocity_scale) * circular_p
     end

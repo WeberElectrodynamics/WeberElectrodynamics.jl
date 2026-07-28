@@ -9,7 +9,9 @@ export @sprintf, norm, dot
 # Hamiltonian System (symbolic builder + compiled EOMs)
 # =============================================================================
 include("hamiltonian_system.jl")
-export HamiltonianSystem, weber_term, kinetic_term, coulomb_term
+export HamiltonianSystem, kinetic_term, coulomb_term
+export has_symbolic_hamiltonian
+export physical_velocities, WeberCriticalRadiusError
 export NamedTerm, term_names, has_term, get_term
 export n_particles, dims, degrees_of_freedom, n_pairs, pair_indices
 

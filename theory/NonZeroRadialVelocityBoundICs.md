@@ -329,9 +329,12 @@ $$
 \vec{v}_i \;=\; \frac{\vec{p}_i}{m_i} \;+\; \frac{1}{m_i}\sum_{j\ne i}\frac{q_i q_j}{c^2}\,\frac{\dot{r}_{ij}}{r_{ij}^2}\,(\vec{r}_i - \vec{r}_j),
 $$
 
-with $\dot{r}_{ij}$ on the right-hand side depending on $\vec{v}_i - \vec{v}_j$. Collecting the $n(n-1)/2$ unknowns $\dot{r}_{ij}$ into a vector and the sources $\hat{r}_{ij}\cdot(\vec{p}_i/m_i - \vec{p}_j/m_j)$ into another, the system takes the form $(\mathbb{I} - A)\boldsymbol{\varrho} = \boldsymbol{\pi}$, with $A$'s entries $\mathcal{O}(q^2/(m c^2 r))$. For sub-relativistic velocities $A$ is a contraction and the solution is unique.
+with $\dot{r}_{ij}$ on the right-hand side depending on $\vec{v}_i - \vec{v}_j$. Collecting the $n(n-1)/2$ unknowns $\dot{r}_{ij}$ into a vector and the sources $\hat{r}_{ij}\cdot(\vec{p}_i/m_i - \vec{p}_j/m_j)$ into another, the system takes the form $(\mathbb{I} - A)\boldsymbol{\varrho} = \boldsymbol{\pi}$, with $A$'s entries $\mathcal{O}(q^2/(m c^2 r))$. For sub-relativistic velocities $A$ is a contraction and the solution is unique. The package solves this system exactly (dense LU, no contraction assumption), so the inverse is available at all separations at which $\mathbb{I} - A$ is non-singular — including the sub-critical regime where the effective radial inertia is negative.
 
-**Users do not need the inverse map for IC construction** — the forward map $(F)$ is explicit. The integrator handles the inverse internally.
+For two particles the system is one-dimensional and collapses to
+$p_r = (\mu - q_1q_2/(rc^2))\dot{r}$, singular only at Weber's critical radius $\rho = q_1q_2/(\mu c^2)$.
+
+**Users do not need the inverse map for IC construction** — the forward map $(F)$ is explicit. The integrator handles the inverse internally, and `physical_velocities(prob, q, p)` exposes it for post-processing.
 
 ### 6.4 Canonical and physical Hamiltonians
 
@@ -342,13 +345,21 @@ $$
 \sum_i \frac{|\vec{p}_i|^2}{2m_i} \;=\; T_{\mathrm{phys}} \;-\; \sum_{i<j}\frac{q_i q_j\,\dot{r}_{ij}^2}{c^2\,r_{ij}} \;+\; \mathcal{O}(c^{-4}).\qquad(H_1)
 $$
 
-The Legendre-transform identity of [`WeberElectrodynamics.md`](WeberElectrodynamics.md) is $H = T_{\mathrm{phys}} + U_{\mathrm{Weber}}$, expressed as a function of $(\vec{r},\vec{v})$. Re-expressed in canonical coordinates $(\vec{q},\vec{p})$ via the implicit inverse map of §6.3, $H$ is **not** equal to $\sum|\vec{p}|^2/(2m) + U_{\mathrm{Weber}}$. Substituting $(H_1)$ into $H = T_{\mathrm{phys}} + U_{\mathrm{Weber}}$ gives, to $\mathcal{O}(c^{-2})$,
+The Legendre-transform identity of [`WeberElectrodynamics.md`](WeberElectrodynamics.md) is $H = T_{\mathrm{phys}} + U_{\mathrm{Weber}}$, expressed as a function of $(\vec{r},\vec{v})$. Re-expressed in canonical coordinates $(\vec{q},\vec{p})$ via the implicit inverse map of §6.3, $H$ is **not** equal to $\sum|\vec{p}|^2/(2m) + U_{\mathrm{Weber}}$. The exact canonical Hamiltonian is
 
 $$
-\boxed{\;H(\vec{q},\vec{p}) \;=\; \sum_i \frac{|\vec{p}_i|^2}{2m_i} \;+\; \sum_{i<j}\frac{q_i q_j}{r_{ij}}\!\left(1 + \frac{\dot{r}_{ij}^2}{2c^2}\right) \;+\; \mathcal{O}(c^{-4}),\;}
+\boxed{\;H(\vec{q},\vec{p}) \;=\; \sum_i \frac{|\vec{p}_i|^2}{2m_i} \;+\; \frac{1}{2}\sum_{i<j}\frac{q_i q_j}{c^2 r_{ij}}\,\dot{r}_{ij}\,s_{ij} \;+\; \sum_{i<j}\frac{q_i q_j}{r_{ij}},\;}
 $$
 
-with $\dot{r}_{ij}$ understood as $\dot{r}_{ij}(\vec{q},\vec{p})$ through §6.3. Observe the **sign flip** in the velocity correction relative to the physical potential: the canonical Hamiltonian carries $+\dot{r}^2/(2c^2)$ where $U_{\mathrm{Weber}}$ carries $-\dot{r}^2/(2c^2)$. The flip absorbs the $\sum_i\vec{v}_i\cdot\vec{A}_i$ cross-term produced by the Legendre transform.
+where $s_{ij} = \hat{r}_{ij}\cdot(\vec{p}_i/m_i - \vec{p}_j/m_j)$ is the naive radial rate and $\dot{r}_{ij} = \dot{r}_{ij}(\vec{q},\vec{p})$ is the physical radial velocity from §6.3. This form is exact — no $\mathcal{O}(c^{-4})$ truncation — and is the expression the package evaluates.
+
+Expanding it to $\mathcal{O}(c^{-2})$, where $\dot{r}_{ij} \to s_{ij}$, recovers
+
+$$
+H(\vec{q},\vec{p}) \;=\; \sum_i \frac{|\vec{p}_i|^2}{2m_i} \;+\; \sum_{i<j}\frac{q_i q_j}{r_{ij}}\!\left(1 + \frac{s_{ij}^2}{2c^2}\right) \;+\; \mathcal{O}(c^{-4}).
+$$
+
+Observe the **sign flip** in the velocity correction relative to the physical potential: the canonical Hamiltonian carries $+\dot{r}^2/(2c^2)$ where $U_{\mathrm{Weber}}$ carries $-\dot{r}^2/(2c^2)$. The flip absorbs the $\sum_i\vec{v}_i\cdot\vec{A}_i$ cross-term produced by the Legendre transform.
 
 The primary numerical cross-check in Section 7 step 5 is $(H_1)$ itself: given $(\vec{r},\vec{v})$ and $\vec{p}$ from $(F)$, the residual $\sum_i|\vec{p}_i|^2/(2m_i) - T_{\mathrm{phys}} + \sum_{i<j}(q_iq_j/c^2)(\dot{r}_{ij}^2/r_{ij})$ must vanish to the $\mathcal{O}(c^{-4})$ tail $\sum_i|\vec{A}_i|^2/(2m_i)$ — typically $\lesssim 10^{-10}$ in absolute units at sub-relativistic velocities.
 

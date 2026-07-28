@@ -102,6 +102,11 @@ Compute the Weber force decomposition for one particle pair over a simulation.
 Both the vector form and the radial form of the Weber force are evaluated, together
 with phase-space data (r, ṙ, θ, L).
 
+Velocities are the physical velocities recovered from the canonical momenta via
+[`physical_velocities`](@ref); accelerations are finite differences of those.
+The reported ṙ and angular momentum are therefore physical, not the
+`p/m` surrogates that are only valid in the Coulomb limit.
+
 # Arguments
 - `sol::HamiltonianSolution`: Completed simulation.
 - `pair::Tuple{Int,Int}`: Particle pair indices (order does not matter; i ≠ j).
@@ -188,23 +193,32 @@ function compute_pair_force_timeseries(
     n_force_steps = length(t_forces)
 
     # Extract positions and velocities for the pair
-    mi = masses[i]
-    mj = masses[j]
     qi_start = (i - 1) * dims
     qj_start = (j - 1) * dims
 
-    # Build position and velocity arrays for both particles
+    # Build position and velocity arrays for both particles.
+    # Velocities are the PHYSICAL velocities recovered from the canonical
+    # momenta by the coupled Weber solve — never p/m, which is only the
+    # Coulomb-limit value.
     positions_i = Array{Float64}(undef, dims, n_steps)
     positions_j = Array{Float64}(undef, dims, n_steps)
     velocities_i = Array{Float64}(undef, dims, n_steps)
     velocities_j = Array{Float64}(undef, dims, n_steps)
 
+    param_vec = vcat(Vector{Float64}(masses), Vector{Float64}(charges), [c])
     @inbounds for (step_idx, sol_idx) in enumerate(indices)
+        v = physical_velocities(
+            sol.q[sol_idx],
+            sol.p[sol_idx],
+            param_vec;
+            n_particles = n_particles,
+            dims = dims,
+        )
         for d = 1:dims
             positions_i[d, step_idx] = sol.q[sol_idx][qi_start+d]
             positions_j[d, step_idx] = sol.q[sol_idx][qj_start+d]
-            velocities_i[d, step_idx] = sol.p[sol_idx][qi_start+d] / mi
-            velocities_j[d, step_idx] = sol.p[sol_idx][qj_start+d] / mj
+            velocities_i[d, step_idx] = v[qi_start+d]
+            velocities_j[d, step_idx] = v[qj_start+d]
         end
     end
 

@@ -8,7 +8,8 @@ Energy decomposition timeseries for a single particle pair (i, j).
 - `coulomb_term::Vector{Float64}`: qᵢqⱼ/r — Coulomb part of the potential.
 - `velocity_term::Vector{Float64}`: −qᵢqⱼ/r·ṙ²/(2c²) — velocity correction.
 - `total_pair_potential::Vector{Float64}`: Sum of all pair potential contributions.
-- `radial_velocity::Vector{Float64}`: Radial velocity ṙ = dr/dt.
+- `radial_velocity::Vector{Float64}`: **Physical** radial velocity ṙ = dr/dt,
+  obtained from the canonical momenta through the coupled pair solve.
 """
 struct PairEnergyData
     pair::Tuple{Int,Int}
@@ -60,7 +61,10 @@ Complete energy timeseries and conservation statistics for an n-body simulation.
 # Fields
 - `t::Vector{Float64}`: Time points.
 - `total_energy::Vector{Float64}`: Total Hamiltonian H = KE + V at each time point.
-- `kinetic_energy::Vector{Float64}`: Total kinetic energy.
+- `kinetic_energy::Vector{Float64}`: Total **physical** kinetic energy
+  `Σ ½ mᵢ|vᵢ|²`, computed from the physical velocities recovered from the
+  canonical momenta. It is not `Σ |pᵢ|²/(2mᵢ)`, which is only the Coulomb-limit
+  value.
 - `total_potential_energy::Vector{Float64}`: Sum of all pair Weber potentials.
 - `pair_energies::Dict{Tuple{Int,Int},PairEnergyData}`: Per-pair energy decomposition.
 - `statistics::EnergyStatistics`: Energy conservation quality metrics.
@@ -80,39 +84,51 @@ struct EnergyData
     n_pairs::Int
 end
 
+"""
+    compute_total_kinetic_energy(v, masses, dims) -> Float64
+
+Physical kinetic energy `Σ ½ mᵢ|vᵢ|²` from **physical velocities** `v`.
+
+`v` must come from [`physical_velocities`](@ref); passing canonical momenta
+divided by masses is wrong for any velocity-dependent Hamiltonian.
+"""
 function compute_total_kinetic_energy(
-    p::AbstractVector{Float64},
+    v::AbstractVector{Float64},
     masses::AbstractVector{Float64},
     dims::Int,
 )::Float64
     KE = 0.0
     @inbounds for i in eachindex(masses)
-        p_start = (i - 1) * dims + 1
-        p_squared = 0.0
+        v_start = (i - 1) * dims + 1
+        v_squared = 0.0
         @inbounds for d = 0:(dims-1)
-            p_squared += p[p_start+d]^2
+            v_squared += v[v_start+d]^2
         end
-        KE += p_squared / (2 * masses[i])
+        KE += 0.5 * masses[i] * v_squared
     end
     return KE
 end
 
+"""
+    compute_pair_weber_components(q, v, i, j, charges, c, dims)
+        -> (coulomb_term, velocity_term, rdot)
+
+Weber pair potential split for pair `(i, j)` from positions `q` and **physical
+velocities** `v`:
+
+`U_ij = qᵢqⱼ/r · (1 − ṙ²/(2c²))`, returned as `(qᵢqⱼ/r, −qᵢqⱼṙ²/(2c²r), ṙ)`.
+"""
 function compute_pair_weber_components(
     q::AbstractVector{Float64},
-    p::AbstractVector{Float64},
+    v::AbstractVector{Float64},
     i::Int,
     j::Int,
-    masses::AbstractVector{Float64},
     charges::AbstractVector{Float64},
     c::Float64,
     dims::Int,
 )::Tuple{Float64,Float64,Float64}
     qi_start = (i - 1) * dims + 1
     qj_start = (j - 1) * dims + 1
-
-    # Cache mass lookups
-    @inbounds mi = masses[i]
-    @inbounds mj = masses[j]
 
     # Compute separation distance
     r_squared = 0.0
@@ -125,10 +141,7 @@ function compute_pair_weber_components(
     r_dot_v = 0.0
     @inbounds for d = 0:(dims-1)
         dq = q[qi_start+d] - q[qj_start+d]
-        vi_d = p[qi_start+d] / mi
-        vj_d = p[qj_start+d] / mj
-        dv = vi_d - vj_d
-        r_dot_v += dq * dv
+        r_dot_v += dq * (v[qi_start+d] - v[qj_start+d])
     end
     rdot = r_dot_v / r
 
@@ -136,8 +149,7 @@ function compute_pair_weber_components(
     @inbounds coulomb_term = charges[i] * charges[j] / r
 
     # Velocity-dependent term: -qᵢqⱼ/r * ṙ²/(2c²)
-    c_squared = c^2
-    velocity_term = -coulomb_term * rdot^2 / (2 * c_squared)
+    velocity_term = -coulomb_term * rdot^2 / (2 * c^2)
 
     return (coulomb_term, velocity_term, rdot)
 end
@@ -218,9 +230,15 @@ end
 
 Compute the full energy decomposition timeseries from a `HamiltonianSolution`.
 
-Evaluates kinetic energy, per-pair Weber potentials, and the compiled Hamiltonian
-at each selected timestep. The `hamiltonian_validation_error` field cross-checks
-the manual decomposition against the Symbolics-compiled function.
+Evaluates physical kinetic energy, per-pair Weber potentials, and the compiled
+Hamiltonian at each selected timestep.
+
+The decomposition is the velocity-space energy
+`E = Σ ½ mᵢ|vᵢ|² + Σ qᵢqⱼ/rᵢⱼ (1 − ṙᵢⱼ²/(2c²))`, built from the physical
+velocities recovered from the canonical momenta. Because that equals the exact
+canonical Hamiltonian by the Legendre transform, `hamiltonian_validation_error`
+is a genuine independent cross-check of the compiled `H(q, p)` rather than a
+restatement of it.
 
 # Keywords
 - `stride=1`: Downsample factor; every `stride`-th timestep is included.
@@ -261,9 +279,14 @@ function compute_energy_timeseries(
     # Compute n_pairs without allocating pairs vector
     n_pairs = n * (n - 1) ÷ 2
 
+    weber_term_or_nothing = has_term(system, :weber) ? get_term(system, :weber) : nothing
     weber_decomp =
-        has_term(system, :weber) ? get_term(system, :weber).pair_decomposition : nothing
+        weber_term_or_nothing === nothing ? nothing :
+        weber_term_or_nothing.pair_decomposition
+    weber_kinetic =
+        weber_term_or_nothing === nothing ? nothing : weber_term_or_nothing.kinetic_energy
     has_weber_decomposition = weber_decomp !== nothing
+    pairs = pair_indices(system)
 
     # Initialize pair energy storage only when the system supplies the built-in
     # Weber pair decomposition. Generic Hamiltonians still get a valid
@@ -291,30 +314,39 @@ function compute_energy_timeseries(
         t_pt = solution.t[sol_idx]
         H_compiled = hamiltonian_compiled(q, p, t_pt, params_vec)
 
-        # Kinetic energy
-        KE = compute_total_kinetic_energy(p, ms, d)
-        kinetic_energy[pt_idx] = KE
-
         if has_weber_decomposition
-            # Pair-wise potential energies
+            # Physical kinetic energy from the recovered physical velocities.
+            KE = weber_kinetic(q, p, params_vec)
+            kinetic_energy[pt_idx] = KE
+
+            # Pair-wise potential energies, one coupled solve per timestep.
+            wc = weber_decomp(q, p, params_vec)
             PE_total = 0.0
-            for i = 1:n
-                for j = (i+1):n
-                    wc = weber_decomp(i, j, q, p, params_vec)
-                    coulomb = wc.coulomb
-                    velocity = wc.velocity
-                    rdot = wc.rdot
-                    pair_data = pair_energies[(i, j)]
-                    pair_data.coulomb_term[pt_idx] = coulomb
-                    pair_data.velocity_term[pt_idx] = velocity
-                    pair_data.total_pair_potential[pt_idx] = coulomb + velocity
-                    pair_data.radial_velocity[pt_idx] = rdot
-                    PE_total += coulomb + velocity
-                end
+            for (a, (i, j)) in enumerate(pairs)
+                coulomb = wc.coulomb[a]
+                velocity = wc.velocity[a]
+                pair_data = pair_energies[(i, j)]
+                pair_data.coulomb_term[pt_idx] = coulomb
+                pair_data.velocity_term[pt_idx] = velocity
+                pair_data.total_pair_potential[pt_idx] = coulomb + velocity
+                pair_data.radial_velocity[pt_idx] = wc.rdot[a]
+                PE_total += coulomb + velocity
             end
             total_potential_energy[pt_idx] = PE_total
             total_energy[pt_idx] = KE + PE_total
         else
+            # Generic custom Hamiltonians have no physical-velocity map, so the
+            # canonical kinetic split is the only meaningful one available.
+            KE = 0.0
+            for i = 1:n
+                p_start = (i - 1) * d + 1
+                acc = 0.0
+                for dd = 0:(d-1)
+                    acc += p[p_start+dd]^2
+                end
+                KE += acc / (2 * ms[i])
+            end
+            kinetic_energy[pt_idx] = KE
             total_energy[pt_idx] = H_compiled
             total_potential_energy[pt_idx] = H_compiled - KE
         end

@@ -6,12 +6,25 @@ include("hamiltonian/terms.jl")
 """
     HamiltonianSystem
 
-Symbolic and compiled representation of the n-body Weber Hamiltonian.
+Compiled representation of an n-body Hamiltonian, with an optional symbolic
+backing.
 
-Constructed once for a given `(n_particles, dims)` pair via `HamiltonianSystem(n_particles, dims)`.
-The compiled equations of motion are reused across many `HamiltonianProblem` instances
-with different physical parameters. Construction involves symbolic differentiation
-and code generation via Symbolics.jl; expect a few seconds for the first call.
+There are two construction paths:
+
+- **Analytic** — `HamiltonianSystem(n_particles, dims)` builds the default
+  *exact canonical Weber* system. Its equations of motion are hand-derived
+  closed forms evaluated numerically, because recovering physical velocities
+  from canonical momenta requires solving a coupled linear system that has no
+  practical closed symbolic form for general `n`. The three symbolic fields are
+  `nothing` for this path.
+- **Symbolic** — `HamiltonianSystem(H, q_vars, p_vars; …)` takes any symbolic
+  Hamiltonian, differentiates it with Symbolics.jl, and compiles the result.
+  Use this for custom Hamiltonians.
+
+Both paths expose the same compiled-function signatures, so everything
+downstream (solver, statistics, plotting, animation) is agnostic to which was
+used. Construct a system once for a given `(n_particles, dims)` and reuse it
+across many `HamiltonianProblem` instances.
 
 # Fields
 - `n_particles::Int`: Number of charged particles.
@@ -19,10 +32,12 @@ and code generation via Symbolics.jl; expect a few seconds for the first call.
 - `q_symbols::Vector{Num}`: Symbolic coordinate variables `[x1, y1, ..., xN, yN, ...]`.
 - `p_symbols::Vector{Num}`: Symbolic momentum variables `[px1, py1, ...]`.
 - `t_symbol::Num`: Symbolic time variable. Reserved for time-dependent terms;
-  the current Weber Hamiltonian is autonomous and does not use it.
+  the Weber Hamiltonian is autonomous and does not use it.
 - `param_symbols`: Symbolic parameter vector `[m1…mN, q1…qN, c]`.
-- `hamiltonian_symbolic`: Full symbolic Weber Hamiltonian expression.
-- `dq_dt_symbolic`, `dp_dt_symbolic`: Symbolic Hamilton's equations.
+- `hamiltonian_symbolic`: Symbolic Hamiltonian expression, or `nothing` for an
+  analytic system.
+- `dq_dt_symbolic`, `dp_dt_symbolic`: Symbolic Hamilton's equations, or
+  `nothing` for an analytic system.
 - `dq_dt_compiled(out, q, p, t, params)`, `dp_dt_compiled(out, q, p, t, params)`:
   In-place compiled equations of motion. `t` is currently unused.
 - `hamiltonian_compiled(q, p, t, params)`: Compiled scalar Hamiltonian function.
@@ -30,6 +45,8 @@ and code generation via Symbolics.jl; expect a few seconds for the first call.
 - `terms::Vector{NamedTerm}`: Named components of the Hamiltonian preserving
   the decomposition for per-term statistics and plotting. The generic
   constructor assigns a single `:hamiltonian` term by default.
+
+See also [`has_symbolic_hamiltonian`](@ref).
 """
 struct HamiltonianSystem{H,QD,PD,QF,PF,HF,PS,TS<:AbstractVector{<:NamedTerm}}
     n_particles::Int
@@ -173,13 +190,33 @@ end
 """
     HamiltonianSystem(n_particles::Int, dims::Int) -> HamiltonianSystem
 
-Convenience constructor for the default n-body Weber Hamiltonian in `dims`
-spatial dimensions. Equivalent to building `weber_term(…)` and passing it to
-the generic `HamiltonianSystem(H, q, p; …)` constructor.
+Convenience constructor for the default n-body **exact canonical Weber** system
+in `dims` spatial dimensions.
+
+The Weber Lagrangian is velocity dependent, so its canonical momentum is
+`p_i = ∂L/∂v_i = m_i v_i − Σ_{j≠i} (q_i q_j/c²) ṙ_ij (r_i − r_j)/r_ij²`, not
+`m_i v_i`. Recovering the physical velocities therefore requires solving a
+coupled linear system over the `n(n−1)/2` particle pairs at every evaluation.
+That solve has no practical closed symbolic form for general `n`, so this
+constructor takes the **analytic** path: the exact Hamiltonian and both
+canonical equations are evaluated by hand-derived closed-form routines rather
+than by Symbolics.jl differentiation. `hamiltonian_symbolic`, `dq_dt_symbolic`,
+and `dp_dt_symbolic` are `nothing` for the resulting system.
+
+The compiled-function signatures are identical to the symbolic path, so
+`HamiltonianProblem`, `solve`, statistics, plotting, and animation are
+unaffected.
+
+Construction is cheap — there is no symbolic differentiation or code generation.
 
 # Arguments
 - `n_particles`: Number of particles (≥ 1).
 - `dims`: Spatial dimension; must be 1, 2, or 3.
+
+# Throws
+- [`WeberCriticalRadiusError`](@ref) during evaluation if the canonical mass
+  matrix becomes singular (a like-charge pair exactly at Weber's critical
+  radius `ρ = q₁q₂/(μc²)`).
 """
 function HamiltonianSystem(n_particles::Int, dims::Int)
     @assert n_particles >= 1 "Must have at least 1 particle"
@@ -198,31 +235,57 @@ function HamiltonianSystem(n_particles::Int, dims::Int)
 
     param_symbols = vcat(m_vars, charge_vars, [c_var])
 
-    weber_H = weber_term(
-        q_vars,
-        p_vars;
-        masses = m_vars,
-        charges = charge_vars,
-        c = c_var,
-        n_particles = n_particles,
-        dims = dims,
-    )
+    # Each compiled entry point owns a workspace; a workspace is not reentrant.
+    ws_dq = WeberWorkspace(n_particles, dims)
+    ws_dp = WeberWorkspace(n_particles, dims)
+    ws_H = WeberWorkspace(n_particles, dims)
+    ws_decomp = WeberWorkspace(n_particles, dims)
+    ws_ke = WeberWorkspace(n_particles, dims)
 
-    weber_decomp =
-        (i, j, q, p, params) ->
-            _weber_pair_decomposition(i, j, q, p, params, n_particles, dims)
+    dq_dt_compiled = (out, q, p, t, params) -> weber_dq_dt!(out, ws_dq, q, p, params)
+    dp_dt_compiled = (out, q, p, t, params) -> weber_dp_dt!(out, ws_dp, q, p, params)
+    hamiltonian_compiled = (q, p, t, params) -> weber_hamiltonian(ws_H, q, p, params)
+
+    weber_decomp = (q, p, params) -> _weber_pair_decomposition(ws_decomp, q, p, params)
+    weber_kinetic = (q, p, params) -> _weber_kinetic_energy(ws_ke, q, p, params)
 
     return HamiltonianSystem(
-        weber_H,
+        n_particles,
+        dims,
         q_vars,
-        p_vars;
-        param_symbols = param_symbols,
-        t = t_var,
-        n_particles = n_particles,
-        dims = dims,
-        terms = [NamedTerm(:weber, weber_H; pair_decomposition = weber_decomp)],
+        p_vars,
+        t_var,
+        param_symbols,
+        nothing,
+        nothing,
+        nothing,
+        dq_dt_compiled,
+        dp_dt_compiled,
+        hamiltonian_compiled,
+        n_particles * dims,
+        [
+            NamedTerm(
+                :weber,
+                nothing;
+                pair_decomposition = weber_decomp,
+                kinetic_energy = weber_kinetic,
+            ),
+        ],
     )
 end
+
+"""
+    has_symbolic_hamiltonian(sys::HamiltonianSystem) -> Bool
+
+Return `true` when `sys` carries a Symbolics.jl expression for `H` and its
+derivatives, i.e. when it was built through the generic symbolic constructor.
+
+The default Weber system is analytic and returns `false`: its exact canonical
+Hamiltonian requires a per-evaluation linear solve and has no closed symbolic
+form for general `n`. Guard any code that reads `hamiltonian_symbolic`,
+`dq_dt_symbolic`, or `dp_dt_symbolic` with this predicate.
+"""
+has_symbolic_hamiltonian(sys::HamiltonianSystem) = sys.hamiltonian_symbolic !== nothing
 
 """
     term_names(sys::HamiltonianSystem) -> Vector{Symbol}
@@ -254,14 +317,39 @@ function Base.show(io::IO, sys::HamiltonianSystem)
     )
 end
 
+# Plain-text and LaTeX renderings of the exact canonical Weber Hamiltonian.
+# Used when the system is analytic and therefore carries no symbolic expression.
+const _WEBER_H_TEXT =
+    "H = Σᵢ |pᵢ|²/(2mᵢ) + ½ Σᵢ<ⱼ kᵢⱼ ṙᵢⱼ sᵢⱼ + Σᵢ<ⱼ qᵢqⱼ/rᵢⱼ" *
+    "   [kᵢⱼ = qᵢqⱼ/(c²rᵢⱼ), sᵢⱼ = r̂ᵢⱼ·(pᵢ/mᵢ − pⱼ/mⱼ), " *
+    "ṙᵢⱼ from (I − GK)ṙ = s]"
+
+const _WEBER_H_LATEX =
+    raw"$$H = \sum_i \frac{\lVert \vec p_i\rVert^2}{2 m_i}" *
+    raw" + \frac{1}{2}\sum_{i<j} k_{ij}\,\dot r_{ij}\,s_{ij}" *
+    raw" + \sum_{i<j} \frac{q_i q_j}{r_{ij}},\qquad" *
+    raw" k_{ij} = \frac{q_i q_j}{c^2 r_{ij}},\quad" *
+    raw" s_{ij} = \hat r_{ij}\cdot\left(\frac{\vec p_i}{m_i}" *
+    raw" - \frac{\vec p_j}{m_j}\right)$$"
+
 function Base.show(io::IO, ::MIME"text/plain", sys::HamiltonianSystem)
     println(io, "HamiltonianSystem")
     println(io, "  Particles: $(sys.n_particles)")
     println(io, "  Dimensions: $(sys.dims)")
     println(io, "  DOF: $(sys.degrees_of_freedom)")
-    println(io, "  H = $(sys.hamiltonian_symbolic)")
+    if has_symbolic_hamiltonian(sys)
+        println(io, "  Backing: symbolic (Symbolics.jl)")
+        println(io, "  H = $(sys.hamiltonian_symbolic)")
+    else
+        println(io, "  Backing: analytic (exact canonical Weber)")
+        println(io, "  $(_WEBER_H_TEXT)")
+    end
 end
 
 function Base.show(io::IO, ::MIME"text/latex", sys::HamiltonianSystem)
-    print(io, latexify(sys.hamiltonian_symbolic))
+    if has_symbolic_hamiltonian(sys)
+        print(io, latexify(sys.hamiltonian_symbolic))
+    else
+        print(io, _WEBER_H_LATEX)
+    end
 end

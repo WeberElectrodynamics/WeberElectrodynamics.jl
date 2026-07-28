@@ -78,29 +78,64 @@ $$
 
 ### Momenta for Particle 1 and Particle 2
 
-$$
-p_{x_1} = m_1 \dot{x}_1
-$$
+The Weber Lagrangian defined below depends on velocities through both the
+kinetic energy and the relative radial velocity $\dot{r}$, so the canonical
+momentum $\vec{p}_i = \partial L/\partial \vec{v}_i$ is **not** the kinetic
+momentum $m_i\vec{v}_i$. Writing the Weber momentum correction as
 
 $$
-p_{y_1} = m_1 \dot{y}_1
+\vec{\alpha} = \frac{q_1 q_2}{c^2}\frac{\dot{r}\,(\vec{r}_1 - \vec{r}_2)}{r^2}
+= \frac{q_1 q_2}{r c^2}\,\dot{r}\,\hat{r},
 $$
 
-$$
-p_{z_1} = m_1 \dot{z}_1
-$$
+where $q_1$ and $q_2$ are the charges, $c$ is the speed of light, $r$ is the
+separation, $\hat{r}$ is the unit separation vector, and $\dot{r}$ is the
+physical relative radial velocity, the canonical momenta are
 
 $$
-p_{x_2} = m_2 \dot{x}_2
+\vec{p}_1 = m_1\vec{v}_1 - \vec{\alpha},
+\qquad
+\vec{p}_2 = m_2\vec{v}_2 + \vec{\alpha}.
 $$
 
-$$
-p_{y_2} = m_2 \dot{y}_2
-$$
+Here $\vec{p}_1$ and $\vec{p}_2$ are canonical momenta, $m_1\vec{v}_1$ and
+$m_2\vec{v}_2$ are kinetic momenta. The opposite signs of $\vec{\alpha}$
+preserve total momentum, $\vec{p}_1 + \vec{p}_2 = m_1\vec{v}_1 + m_2\vec{v}_2$.
+
+The correction is purely radial, so only the radial component is affected.
+Solving for the physical velocities gives
 
 $$
-p_{z_2} = m_2 \dot{z}_2
+\vec{v}_1 = \frac{\vec{p}_1 + \vec{\alpha}}{m_1},
+\qquad
+\vec{v}_2 = \frac{\vec{p}_2 - \vec{\alpha}}{m_2}.
 $$
+
+These are implicit because $\vec{\alpha}$ itself contains $\dot{r}$. For two
+particles the implicit relation collapses to a single scalar equation. With
+$\mu = m_1m_2/(m_1+m_2)$ the reduced mass and
+
+$$
+p_r = \mu\,\hat{r}\mathbin{\cdot}
+\left(\frac{\vec{p}_1}{m_1} - \frac{\vec{p}_2}{m_2}\right)
+$$
+
+the canonical momentum conjugate to the relative radial coordinate, we have
+
+$$
+p_r = \left(\mu - \frac{q_1 q_2}{r c^2}\right)\dot{r},
+\qquad
+\dot{r} = \frac{p_r}{\mu - q_1 q_2/(r c^2)}.
+$$
+
+Here the second form is valid whenever its denominator is non-zero. For like
+charges the denominator vanishes at Weber's critical radius
+$\rho = q_1 q_2/(\mu c^2)$, where a canonical momentum no longer determines a
+finite physical velocity. Below $\rho$ the effective radial inertia is negative
+but finite.
+
+Canonical and kinetic momenta coincide exactly when $\dot{r} = 0$, and
+asymptotically as $c \to \infty$.
 
 ### Relative Coordinates and Vectors for Particle 1 and Particle 2
 
@@ -288,6 +323,12 @@ $$
 H = T + U
 $$
 
+This is the conserved energy expressed in **positions and physical
+velocities**. It becomes a canonical Hamiltonian only after the physical
+velocities have been eliminated in favour of the canonical momenta using the
+relations above. In particular, it must not be turned into a function of
+$(\vec{r}, \vec{p})$ by substituting $\vec{v}_i = \vec{p}_i/m_i$.
+
 ## Hamiltonian formulation
 
 For an n-body system of particles interacting via Weber electrodynamics, the kinetic energy for each particle is
@@ -304,11 +345,79 @@ $$
 
 where $r_{ij}$ is the distance between particles $i$ and $j$, and $\dot{r}_{ij}$ is its time derivative. Here $q_i$ and $q_j$ denote the electric charges of particles $i$ and $j$.
 
-The Hamiltonian for n charges is then given by
+The conserved energy for n charges, in positions and physical velocities, is
 
 $$
-H = \sum_{i=1}^{n} T_i + \sum_{i\lt j}^{n} U_{ij}
+E = \sum_{i=1}^{n} T_i + \sum_{i\lt j}^{n} U_{ij}
 $$
+
+where $E$ is the total energy, $T_i$ is the kinetic energy of particle $i$, and
+$U_{ij}$ is the Weber pair potential.
+
+### Canonical momenta and the canonical Hamiltonian
+
+Differentiating the n-particle Weber Lagrangian with respect to a particle
+velocity gives the canonical momentum
+
+$$
+\vec{p}_i = m_i\vec{v}_i
+- \sum_{j\ne i}\frac{q_i q_j}{c^2}\frac{\dot{r}_{ij}}{r_{ij}^2}
+(\vec{r}_i - \vec{r}_j)
+$$
+
+where $\vec{p}_i$ is the canonical momentum of particle $i$, $m_i$ its mass,
+$\vec{v}_i$ its physical velocity, and each term of the sum is the Weber
+correction contributed by a pair containing particle $i$.
+
+These equations are linear in all particle velocities, but different pairs
+share particle velocities, so the velocities must be recovered together. It is
+convenient to write $k_{ij} = q_i q_j/(c^2 r_{ij})$ and introduce, for each
+pair, the *naive* radial rate
+
+$$
+s_{ij} = \hat{r}_{ij}\mathbin{\cdot}
+\left(\frac{\vec{p}_i}{m_i} - \frac{\vec{p}_j}{m_j}\right)
+$$
+
+which is what one would wrongly call $\dot{r}_{ij}$ if canonical momentum were
+kinetic momentum. The physical radial velocities $\dot{r}_{ij}$ then solve the
+$n(n-1)/2$ dimensional linear system
+
+$$
+\dot{r}_{ab} = s_{ab}
++ \sum_{\text{pairs } cd} G_{ab,cd}\,k_{cd}\,\dot{r}_{cd},
+\qquad
+G_{ab,cd} = (\hat{r}_{ab}\mathbin{\cdot}\hat{r}_{cd})
+\left(
+\frac{\delta_{ac} - \delta_{ad}}{m_a}
+- \frac{\delta_{bc} - \delta_{bd}}{m_b}
+\right)
+$$
+
+where $G$ couples pairs through the particles they share and $\delta$ is the
+Kronecker delta. Once $\dot{r}_{ij}$ is known the physical velocities follow
+explicitly,
+
+$$
+\vec{v}_i = \frac{\vec{p}_i}{m_i}
++ \frac{1}{m_i}\sum_{j\ne i} k_{ij}\,\dot{r}_{ij}\,\hat{r}_{ij}.
+$$
+
+The exact canonical Hamiltonian, obtained by the Legendre transform, is
+
+$$
+H(\vec{r},\vec{p}) = \frac{1}{2}\sum_i \vec{p}_i\mathbin{\cdot}\vec{v}_i
++ \sum_{i\lt j}\frac{q_i q_j}{r_{ij}}
+= \sum_i \frac{\lVert\vec{p}_i\rVert^2}{2m_i}
++ \frac{1}{2}\sum_{i\lt j} k_{ij}\,\dot{r}_{ij}\,s_{ij}
++ \sum_{i\lt j}\frac{q_i q_j}{r_{ij}}
+$$
+
+where the second form is the one evaluated by the package. Both equal the
+velocity-space energy $E$ above once $\vec{v}(\vec{r},\vec{p})$ is substituted.
+In the Coulomb limit $c\to\infty$, and at any instant where every pair radial
+velocity vanishes, $k_{ij}\to 0$ and $H$ reduces to
+$\sum_i\lVert\vec{p}_i\rVert^2/(2m_i) + \sum_{i<j} q_iq_j/r_{ij}$.
 
 ## Euler-Lagrange equations
 
@@ -339,11 +448,34 @@ $$
 $$
 
 $$
-\dot{p}_{x_1} = \frac{q_1 q_2}{r^2}\left[\frac{(x_1 - x_2)}{r}\left(1 - \frac{3\dot{r}^2}{2 c^2}\right) + \frac{\dot{r}(\dot{x}_1 - \dot{x}_2)}{c^2}\right]
+\dot{p}_{x_1} = \frac{q_1 q_2}{r^2}\left[\frac{(x_1 - x_2)}{r}\left(1 + \frac{3\dot{r}^2}{2 c^2}\right) - \frac{\dot{r}(\dot{x}_1 - \dot{x}_2)}{c^2}\right]
 $$
 
 $$
 \dot{p}_{x_2} = -\dot{p}_{x_1}
 $$
 
-with analogous equations for the $y$ and $z$ directions.
+with analogous equations for the $y$ and $z$ directions. In all four equations
+$\dot{r}$ and $\dot{x}_1 - \dot{x}_2$ are the **physical** radial and relative
+velocities obtained from the canonical momenta by the scalar inverse given
+earlier, never $p/m$ surrogates.
+
+For $n$ particles the momentum rate is
+
+$$
+\dot{\vec{p}}_i = \sum_{j\ne i}\frac{q_i q_j}{r_{ij}^2}
+\left[
+\hat{r}_{ij}\left(1 + \frac{3\dot{r}_{ij}^2}{2c^2}\right)
+- \frac{\dot{r}_{ij}}{c^2}(\vec{v}_i - \vec{v}_j)
+\right]
+$$
+
+where every $\dot{r}_{ij}$ and $\vec{v}_i - \vec{v}_j$ comes from the
+simultaneous velocity solve.
+
+Canonical momentum rate is not itself the mechanical Weber force. Because the
+canonical momentum contains the velocity-dependent pair correction
+$\vec{\alpha}$, the mechanical acceleration satisfies
+$m_i\dot{\vec{v}}_i = \dot{\vec{p}}_i + \mathrm{d}\vec{\alpha}_i/\mathrm{d}t$;
+combining that identity with the equation above reproduces the Weber force law
+stated earlier in this document.
