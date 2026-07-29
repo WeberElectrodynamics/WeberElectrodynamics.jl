@@ -1,0 +1,13 @@
+# Build inputs derived from git by make_review.py
+old.tex
+new.tex
+
+# LaTeX build artifacts
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+build.log
