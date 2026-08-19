@@ -70,11 +70,7 @@ function WeberElectrodynamics.save_solution(
     )
 
     archive = (
-        # format_version 3 marks trajectories produced by the exact canonical
-        # Weber Hamiltonian. Version 2 and earlier were integrated with a
-        # Hamiltonian that treated p_i as m_i*v_i and are physically different
-        # trajectories, so they are rejected rather than silently reinterpreted.
-        format_version = 3,
+        format_version = 2,
         problem = (
             n_particles = WeberElectrodynamics.n_particles(prob),
             dims = WeberElectrodynamics.dims(prob),
@@ -105,22 +101,10 @@ function WeberElectrodynamics.load_solution(path::AbstractString)
     haskey(data, "archive") ||
         throw(ArgumentError("archive does not contain an `archive` entry"))
     archive = data["archive"]
-    if archive.format_version == 2
-        throw(
-            ArgumentError(
-                "solution archive format version 2 was produced before the canonical " *
-                "Weber Hamiltonian correction. Those trajectories were integrated with " *
-                "p_i = m_i*v_i, which is not the canonical momentum of the Weber " *
-                "Lagrangian, so they are not valid Weber dynamics and cannot be " *
-                "reinterpreted under the corrected system. Re-run the simulation to " *
-                "regenerate the archive.",
-            ),
-        )
-    end
-    archive.format_version == 3 || throw(
+    archive.format_version == 2 || throw(
         ArgumentError(
             "unsupported solution archive format version $(archive.format_version); " *
-            "expected 3",
+            "0.5.x archives must be exported or regenerated before upgrading",
         ),
     )
 

@@ -97,22 +97,6 @@ ic = two_body_initial_conditions([m1, m2], [q1, q2];
 q0, p0 = ic.q, ic.p
 ```
 
-!!! note "Momenta are canonical"
-    `p0` here is **canonical** momentum, `∂L/∂v`, not `m·v`. The two coincide
-    for every construction above because all of them start with zero pair
-    radial velocity. To start mid-flight with `ṙ ≠ 0`, pass `c` as well —
-    the conjugate radial momentum carries a Weber correction,
-    `p_r = (μ − q₁q₂/(r c²)) ṙ`:
-
-    ```julia
-    ic = two_body_initial_conditions([m1, m2], [q1, q2];
-        separation = r0, velocity_scale = η_v,
-        radial_velocity = -0.3, c = 10.0,   # c is required when ṙ ≠ 0
-    )
-    ```
-
-    See [The Weber Hamiltonian](@ref) for why.
-
 ### N-body symmetric polygon
 
 Place N particles at regular N-gon vertices of circumradius `R` with alternating charges ±Q.
@@ -142,13 +126,6 @@ for full derivations including polygon U₀ formulas, 3D rigid-rotation construc
 energy–angular-momentum parameterisation.
 
 ## Analysing the result
-
-Physical velocities are not `p ./ masses(prob)` — recover them with
-[`physical_velocities`](@ref):
-
-```julia
-v_final = physical_velocities(prob, sol.q[end], sol.p[end])
-```
 
 ```julia
 # Energy conservation

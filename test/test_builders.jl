@@ -1,5 +1,7 @@
 @testset "Hamiltonian term builders" begin
-    @testset "default Weber system produces Newton-third-law pair forces" begin
+    @testset "weber_term alone reproduces HamiltonianSystem(n, dims)" begin
+        # Building via the generic ctor on weber_term output must yield the
+        # same compiled EOMs as the convenience ctor (same symbolic expression).
         sys_conv = HamiltonianSystem(2, 2)
         params = [1.0, 1.0, 1.0, -1.0, 100.0]  # m1, m2, q1, q2, c
         q0 = [1.0, 0.0, -1.0, 0.0]
@@ -94,14 +96,12 @@
         @test isapprox(abs(out_p[1]), 0.25; atol = 1e-14)
     end
 
-    @testset "kinetic_term + coulomb_term ≡ Weber system at zero momentum" begin
-        # Weber's velocity correction vanishes when every pair radial velocity
-        # vanishes. At p ≡ 0 the canonical solve returns v ≡ 0, so the exact
-        # canonical Weber system must reduce to the composed symbolic
-        # kinetic + Coulomb system. This pins the Coulomb limit of the
-        # analytic path against an independent symbolic construction.
+    @testset "kinetic_term + coulomb_term ≡ weber_term at zero momentum" begin
+        # Weber's velocity correction is −(q₁q₂/r)·ṙ²/(2c²), which vanishes
+        # when p ≡ 0 (so ṙ = 0). Compiled dp/dt from the composed
+        # kinetic+coulomb Hamiltonian must match weber_term at p = 0.
         @variables x1 y1 x2 y2 x3 y3 px1 py1 px2 py2 px3 py3
-        @variables m1 m2 m3 q1 q2 q3 tt
+        @variables m1 m2 m3 q1 q2 q3 cc tt
         q_syms = [x1, y1, x2, y2, x3, y3]
         p_syms = [px1, py1, px2, py2, px3, py3]
         m_syms = [m1, m2, m3]
@@ -120,7 +120,24 @@
             dims = 2,
         )
 
-        sys_w = HamiltonianSystem(3, 2)
+        H_w = weber_term(
+            q_syms,
+            p_syms;
+            masses = m_syms,
+            charges = qc_syms,
+            c = cc,
+            n_particles = 3,
+            dims = 2,
+        )
+        sys_w = HamiltonianSystem(
+            H_w,
+            q_syms,
+            p_syms;
+            param_symbols = vcat(m_syms, qc_syms, [cc]),
+            t = tt,
+            n_particles = 3,
+            dims = 2,
+        )
 
         q0 = [0.0, 0.0, 1.0, 0.0, 0.5, 0.9]
         p_zero = zeros(6)
@@ -133,19 +150,12 @@
         sys_w.dp_dt_compiled(out_w, q0, p_zero, 0.0, pvals_w)
         @test maximum(abs.(out_kc .- out_w)) < 1e-14
 
+        # dq/dt differs trivially (pᵢ/mᵢ vs weber's identical expression) but
+        # should also agree exactly at p = 0 (both identically zero).
         out_kc .= 0;
         out_w .= 0
         sys_kc.dq_dt_compiled(out_kc, q0, p_zero, 0.0, pvals_kc)
         sys_w.dq_dt_compiled(out_w, q0, p_zero, 0.0, pvals_w)
         @test maximum(abs.(out_kc .- out_w)) < 1e-14
-
-        # And in the Coulomb limit c → ∞ at nonzero momentum they must also
-        # agree, which the old (p/m) Weber Hamiltonian happened to satisfy too —
-        # keeping it here guards the limit without asserting the wrong physics.
-        p_nz = [0.05, -0.02, 0.01, 0.04, -0.06, -0.02]
-        pvals_w_bigc = vcat(pvals_kc, [1e8])
-        sys_kc.dp_dt_compiled(out_kc, q0, p_nz, 0.0, pvals_kc)
-        sys_w.dp_dt_compiled(out_w, q0, p_nz, 0.0, pvals_w_bigc)
-        @test maximum(abs.(out_kc .- out_w)) < 1e-10
     end
 end

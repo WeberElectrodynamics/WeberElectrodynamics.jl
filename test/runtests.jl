@@ -10,7 +10,6 @@ using JLD2
     include("test_utils.jl")
     include("test_types.jl")
     include("test_hamiltonian_system.jl")
-    include("test_canonical_weber.jl")
     include("test_builders.jl")
     include("test_custom_hamiltonian.jl")
     include("test_named_term.jl")

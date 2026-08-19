@@ -43,12 +43,10 @@
         @test system.dims == 2
         @test system.degrees_of_freedom == 4
 
-        # The default Weber system is analytic: its exact canonical Hamiltonian
-        # needs a per-evaluation pair solve and carries no symbolic expression.
-        @test !has_symbolic_hamiltonian(system)
-        @test isnothing(system.hamiltonian_symbolic)
-        @test isnothing(system.dq_dt_symbolic)
-        @test isnothing(system.dp_dt_symbolic)
+        # Symbolic fields exist
+        @test !isnothing(system.hamiltonian_symbolic)
+        @test !isnothing(system.dq_dt_symbolic)
+        @test !isnothing(system.dp_dt_symbolic)
 
         # Compiled functions exist
         @test !isnothing(system.dq_dt_compiled)
@@ -78,8 +76,8 @@
         # 3D, 3 particles
         sys2 = HamiltonianSystem(3, 3)
         @test sys2.degrees_of_freedom == 9
-        @test length(sys2.q_symbols) == 9
-        @test length(sys2.p_symbols) == 9
+        @test length(sys2.dq_dt_symbolic) == 9
+        @test length(sys2.dp_dt_symbolic) == 9
 
         # 2D, 2 particles (common case)
         sys3 = HamiltonianSystem(2, 2)

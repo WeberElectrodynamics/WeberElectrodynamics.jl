@@ -4,17 +4,12 @@
         system = HamiltonianSystem(2, 2)
 
         @test system.degrees_of_freedom == 4
-        @test length(system.q_symbols) == 4
-        @test length(system.p_symbols) == 4
+        @test length(system.dq_dt_symbolic) == 4
+        @test length(system.dp_dt_symbolic) == 4
 
-        # The default Weber system is analytic, not symbolic: recovering
-        # physical velocities from canonical momenta needs a coupled pair
-        # solve with no practical closed symbolic form for general n.
-        @test !has_symbolic_hamiltonian(system)
-        @test isnothing(system.hamiltonian_symbolic)
-        @test system.dq_dt_compiled !== nothing
-        @test system.dp_dt_compiled !== nothing
-        @test system.hamiltonian_compiled !== nothing
+        # Hamiltonian should be a symbolic expression
+        H = system.hamiltonian_symbolic
+        @test H isa Symbolics.Num || H isa Symbolics.BasicSymbolic
     end
 
     @testset "Compiled functions correctness" begin
@@ -56,7 +51,7 @@
         # 1D system
         sys1d = HamiltonianSystem(2, 1)
         @test sys1d.degrees_of_freedom == 2
-        @test length(sys1d.q_symbols) == 2
+        @test length(sys1d.dq_dt_symbolic) == 2
 
         params1d = [1.0, 1.0, 1.0, -1.0, 1.0]  # m1, m2, q1, q2, c
         out1 = zeros(2)
@@ -73,7 +68,7 @@
         # 3D system
         sys3d = HamiltonianSystem(2, 3)
         @test sys3d.degrees_of_freedom == 6
-        @test length(sys3d.q_symbols) == 6
+        @test length(sys3d.dq_dt_symbolic) == 6
     end
 
     @testset "Multiple particles" begin
@@ -159,36 +154,16 @@
         @test E_compiled ≈ E_manual atol = 1e-12
     end
 
-    @testset "Analytic system display and symbolic-path parity" begin
+    @testset "Symbolic parameters in Hamiltonian" begin
         system = HamiltonianSystem(2, 2)
+        H_str = string(system.hamiltonian_symbolic)
 
-        # The analytic system still names its variables and renders a readable
-        # Hamiltonian, even though it carries no Symbolics expression.
-        @test length(system.param_symbols) == 5
-        plain = sprint(show, MIME"text/plain"(), system)
-        @test occursin("analytic", plain)
-        @test occursin("H =", plain)
-        @test !occursin("nothing", plain)
-        @test occursin("\\frac", sprint(show, MIME"text/latex"(), system))
-
-        # A custom symbolic system takes the other branch and keeps its
-        # symbolic fields populated.
-        @variables sx1 sy1 sx2 sy2 spx1 spy1 spx2 spy2 sm1 sm2 st
-        q_syms = [sx1, sy1, sx2, sy2]
-        p_syms = [spx1, spy1, spx2, spy2]
-        H = kinetic_term(p_syms; masses = [sm1, sm2], n_particles = 2, dims = 2)
-        sym_sys = HamiltonianSystem(
-            H,
-            q_syms,
-            p_syms;
-            param_symbols = [sm1, sm2],
-            t = st,
-            n_particles = 2,
-            dims = 2,
-        )
-        @test has_symbolic_hamiltonian(sym_sys)
-        @test occursin("sm1", string(sym_sys.hamiltonian_symbolic))
-        @test occursin("symbolic", sprint(show, MIME"text/plain"(), sym_sys))
+        # Hamiltonian should contain symbolic parameters, not numerical values
+        @test occursin("m1", H_str)
+        @test occursin("m2", H_str)
+        @test occursin("q1", H_str)
+        @test occursin("q2", H_str)
+        @test occursin("c", H_str)
     end
 
     @testset "compiled EOMs are autonomous (t-arg invariance)" begin

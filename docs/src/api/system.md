@@ -1,19 +1,13 @@
 # System
 
-The `HamiltonianSystem` encapsulates the compiled Hamiltonian for a given
-`(n_particles, dims)` configuration. Construct it once and reuse it across many
-`HamiltonianProblem` instances.
-
-There are two construction paths — an **analytic** one used by the built-in
-Weber system, and a **symbolic** one for custom Hamiltonians. See
-[Custom Hamiltonians](@ref) for the full comparison, and
-[The Weber Hamiltonian](@ref) for why the Weber system is analytic.
+The `HamiltonianSystem` encapsulates the symbolic and compiled Weber Hamiltonian for
+a given `(n_particles, dims)` configuration. Construct it once and reuse it
+across many `HamiltonianProblem` instances.
 
 ```@docs
 HamiltonianSystem
 HamiltonianSystem(::Int, ::Int)
 HamiltonianSystem(::Any, ::AbstractVector, ::AbstractVector)
-has_symbolic_hamiltonian
 ```
 
 The generic constructor takes a pre-built symbolic Hamiltonian `H` and the
@@ -30,21 +24,12 @@ sys = HamiltonianSystem(H, q_vars, p_vars;
 )
 ```
 
-## Physical velocities
-
-```@docs
-physical_velocities
-WeberCriticalRadiusError
-```
-
-Canonical momentum in Weber electrodynamics is `p_i = ∂L/∂v_i`, which is not
-`m_i v_i`. Always convert with `physical_velocities`, never `p ./ masses(prob)`.
-
 ## Term builders
 
 Composable building blocks for symbolic Hamiltonians.
 
 ```@docs
+weber_term
 kinetic_term
 coulomb_term
 ```
@@ -58,14 +43,13 @@ has_term
 get_term
 ```
 
-A `NamedTerm` may attach optional `pair_decomposition(q, p, params)` and
-`kinetic_energy(q, p, params)` closures — used by the energy/force statistics
-to avoid re-deriving per-term decompositions. Both take the whole state rather
-than one pair, because recovering physical velocities for a velocity-dependent
-Hamiltonian is a single coupled solve over all pairs. `pair_decomposition`
-returns per-pair vectors ordered as `pair_indices`. The default `:weber` term
-supplies both; custom terms may attach any `NamedTuple` shape, but the built-in
-statistics consume specific field names (`coulomb`, `velocity`, `rdot`, `r`).
+A `NamedTerm` may attach an optional `pair_decomposition(i, j, q, p, params)`
+closure that returns a `NamedTuple` summarising the term's contribution to a
+single pair — used by the energy/force statistics to avoid re-deriving
+per-term decompositions. The default `:weber` term supplies its own closure;
+custom terms may attach any `NamedTuple` shape, but
+the built-in statistics consume specific field names (`coulomb`, `velocity`,
+`rdot`, `r`).
 
 ## Metadata accessors
 

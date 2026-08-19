@@ -106,25 +106,23 @@ function _compute_step_energy(
     return prob.system.hamiltonian_compiled(q, p, t, params(prob))
 end
 
-# Pair (r, ṙ) from positions and PHYSICAL velocities. The velocities are
-# recovered once per step by the coupled canonical solve in
-# `physical_velocities`; ṙ must never be built from p/m, which is only the
-# Coulomb-limit surrogate.
 function _compute_step_pair_phase(
     q::AbstractVector{Float64},
-    v::AbstractVector{Float64},
+    p::AbstractVector{Float64},
     i::Int,
     j::Int,
+    masses::AbstractVector{Float64},
     dims::Int,
 )
     qi_start = (i - 1) * dims
     qj_start = (j - 1) * dims
+    mi, mj = masses[i], masses[j]
 
     r_sq = 0.0
     r_dot_v = 0.0
     @inbounds for d = 1:dims
         dq = q[qi_start+d] - q[qj_start+d]
-        dv = v[qi_start+d] - v[qj_start+d]
+        dv = p[qi_start+d] / mi - p[qj_start+d] / mj
         r_sq += dq^2
         r_dot_v += dq * dv
     end
@@ -161,10 +159,9 @@ function push_step!(
     # Total energy (only used for live error display)
     buf.total_energy[idx] = _compute_step_energy(t, q, p, prob)
 
-    # Pair phase space, from physical velocities (one coupled solve per step)
-    v = physical_velocities(prob, q, p)
+    # Pair phase space
     @inbounds for i = 1:n, j = (i+1):n
-        r, rdot = _compute_step_pair_phase(q, v, i, j, D)
+        r, rdot = _compute_step_pair_phase(q, p, i, j, masses(prob), D)
         buf.pair_separation[(i, j)][idx] = r
         buf.pair_radial_velocity[(i, j)][idx] = rdot
     end

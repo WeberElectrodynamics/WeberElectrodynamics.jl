@@ -111,16 +111,24 @@
         q_syms = [x1, y1, x2, y2]
         p_syms = [px1, py1, px2, py2]
 
-        H =
-            kinetic_term(p_syms; masses = [m1, m2], n_particles = 2, dims = 2) +
-            coulomb_term(q_syms; charges = [qq1, qq2], n_particles = 2, dims = 2)
+        H = weber_term(
+            q_syms,
+            p_syms;
+            masses = [m1, m2],
+            charges = [qq1, qq2],
+            c = cc,
+            n_particles = 2,
+            dims = 2,
+        )
 
-        # Custom decomposition: per-pair |Δq| only — exercises the closure
-        # plumbing with the per-state signature (q, p, params).
-        custom_pd = (q, p, params) -> begin
-            r = sqrt((q[1] - q[3])^2 + (q[2] - q[4])^2)
-            return (separation = [r], sentinel = :ok)
-        end
+        # Custom decomposition: simple |Δq| only — exercises the closure plumbing.
+        custom_pd =
+            (i, j, q, p, params) -> begin
+                qi_start = (i - 1) * 2 + 1
+                qj_start = (j - 1) * 2 + 1
+                r = sqrt((q[qi_start] - q[qj_start])^2 + (q[qi_start+1] - q[qj_start+1])^2)
+                return (separation = r, sentinel = :ok)
+            end
 
         sys = HamiltonianSystem(
             H,
@@ -141,14 +149,14 @@
         @test custom.pair_decomposition !== nothing
 
         result = custom.pair_decomposition(
+            1,
+            2,
             [3.0, 0.0, 0.0, 4.0],
             zeros(4),
             [1.0, 1.0, 1.0, -1.0, 1.0],
         )
-        @test result.separation[1] ≈ 5.0
+        @test result.separation ≈ 5.0
         @test result.sentinel === :ok
-        # A custom term may omit the kinetic_energy hook entirely.
-        @test custom.kinetic_energy === nothing
     end
 
     @testset "energy statistics support generic Hamiltonian systems" begin
