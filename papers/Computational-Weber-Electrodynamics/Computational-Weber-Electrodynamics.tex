@@ -52,12 +52,14 @@
 \newcommand{\genmom}{p}                 % Generalized momentum
 
 % ---- REVIEW MARKUP -- remove once the corrections are accepted ----
-% \wrong{}  red   : wrong as written, deliberately left uncorrected
+% wrong env / \wrongtext{}  red : wrong as written, left uncorrected
 % \gsign{}  green : a sign corrected in this pass
 \usepackage[most]{tcolorbox}
 \definecolor{revred}{RGB}{255,196,203}
 \definecolor{revgreen}{RGB}{183,232,193}
 \newcommand{\gsign}[1]{\mathbin{{\setlength{\fboxsep}{1.5pt}\colorbox{revgreen}{\ensuremath{#1}}}}}
+\usepackage{soul}
+\newcommand{\wrongtext}[1]{{\sethlcolor{revred}\hl{#1}}}
 \newtcolorbox{wrong}{breakable,colback=revred,colframe=revred!65!black,
   boxrule=0.4pt,arc=1pt,left=6pt,right=6pt,top=4pt,bottom=4pt}
 % ---- END REVIEW MARKUP ----
@@ -247,7 +249,9 @@ where every component is a function of time $t$. To evolve the system in time us
     p_{x_i}^{t + \Delta t} = p_{x_i}^t + \Delta t \, \dot{p}_{x_i}^t
 \end{equation}
 
+\begin{wrong}
 and similarly for $y_i$ and $z_i$, where $\dot{x}_i^t$ and $\dot{p}_{x_i}^t$ are computed using~\eqref{xdot_expanded} and~\eqref{pdot_expanded} at time $t$. Repeating this process iteratively allows us to evolve a system of $n$ charged particles interacting via Weber's electrodynamics over time given some initial positions and momenta.
+\end{wrong}
 
 \subsection[Computational complexity of Hamiltonian Weber electrodynamics]{Computational complexity of Hamiltonian Weber \\ electrodynamics}\label{complexity}
 To understand the total number of unique interactions, consider an $n \times n$ matrix where entry $(i,j)$ represents the interaction between particles $i$ and $j$:
@@ -390,7 +394,7 @@ The computational framework presented in this paper enables the numerical simula
 
 We could in principle also simulate \textit{the physics} of passive analog components such as coils, capacitors, and transformers by considering charged particles and their mutual motion. To move in this direction, we need to consider the role of \textit{surface charges on resistive conductors} (see \citep{jackson1996} and \citep{assis-electric-force}). Self-inductance in coils and mutual inductance in transformers can be simulated by considering the correct inductance calculations presented in \citep{assis-inductance}. It is also relevant to note the \textit{Amperian current element}, an electrically neutral system of two opposite (not necessarily equal) charges moving in opposite directions, which can be used to model electric currents \citep{assis-ampere}.
 
-Perhaps the most promising direction for future research lies in the remarkable fact that Weber's force law admits \textit{attraction between like charges} below a critical separation $\rho = q_1 q_2/(\mu c^2)$, where $\mu = m_1 m_2 / (m_1 + m_2)$ is the reduced mass. At this critical radius, the sign of the force between $q_1$ and $q_2$ is reversed. For $r < \rho$, the particles respond to the still-repulsive Coulomb force as if they had ``negative inertia'', accelerating toward each other rather than away. Weber himself identified this phenomenon in his Sixth Memoir (1871)~\citep{assis-weber-vol4}.
+Perhaps the most promising direction for future research lies in the remarkable fact that Weber's force law admits \textit{attraction between like charges} below a critical separation $\rho = q_1 q_2/(\mu c^2)$, where $\mu = m_1 m_2 / (m_1 + m_2)$ is the reduced mass. \wrongtext{At this critical radius, the sign of the force between \mbox{$q_1$} and \mbox{$q_2$} is reversed.} For $r < \rho$, the particles respond to the still-repulsive Coulomb force as if they had ``negative inertia'', accelerating toward each other rather than away. Weber himself identified this phenomenon in his Sixth Memoir (1871)~\citep{assis-weber-vol4}.
 
 \citet{Frauenfelder2024} have shown that classical collisions at the origin are regularizable only when the angular momentum $\ell = 0$, corresponding to purely radial (head-on) motion. For $\ell \neq 0$, the system is not regularizable. This constraint poses a fundamental challenge: finding stable, bound configurations of like charges below the critical radius that go beyond purely radial oscillation. One avenue is to develop advanced regularization or stabilization techniques that could handle the $\ell \neq 0$ singularity. Another, perhaps more promising, approach is to expand our view beyond the isolated two-body problem and consider multi-particle systems. For instance, we could balance a pair of like charges in the sub-critical regime with oppositely charged particles above $\rho$, or explore other conceivable configurations whose mutual interactions provide the stabilizing forces that a single pair lacks.
 
