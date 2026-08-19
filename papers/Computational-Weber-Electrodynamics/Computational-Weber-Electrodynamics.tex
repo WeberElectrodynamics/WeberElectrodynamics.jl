@@ -51,6 +51,17 @@
 \newcommand{\genvel}{\dot{q}}           % Generalized velocity
 \newcommand{\genmom}{p}                 % Generalized momentum
 
+% ---- REVIEW MARKUP -- remove once the corrections are accepted ----
+% \wrong{}  red   : wrong as written, deliberately left uncorrected
+% \gsign{}  green : a sign corrected in this pass
+\usepackage[most]{tcolorbox}
+\definecolor{revred}{RGB}{255,196,203}
+\definecolor{revgreen}{RGB}{183,232,193}
+\newcommand{\gsign}[1]{\mathbin{{\setlength{\fboxsep}{1.5pt}\colorbox{revgreen}{\ensuremath{#1}}}}}
+\newtcolorbox{wrong}{breakable,colback=revred,colframe=revred!65!black,
+  boxrule=0.4pt,arc=1pt,left=6pt,right=6pt,top=4pt,bottom=4pt}
+% ---- END REVIEW MARKUP ----
+
 % Document metadata
 \title{Computational Weber electrodynamics: symplectic n-body integration}
 \author{Samer Al Duleimi \\
@@ -153,7 +164,9 @@ Before we can apply Hamilton's canonical equations, we express the Hamiltonian i
     H = H(x_1, y_1, z_1, x_2, y_2, z_2, p_{x_1}, p_{y_1}, p_{z_1}, p_{x_2}, p_{y_2}, p_{z_2})
 \end{equation}
 
+\begin{wrong}
 where each velocity component $\dot{x}_i$ in~\eqref{H} is replaced by $p_{x_i}/m_i$ and similarly for all other velocity components.
+\end{wrong}
 
 Defining
 \begin{equation}\label{alpha_x}
@@ -163,17 +176,17 @@ Defining
 with analogous definitions for $\alpha_y$ and $\alpha_z$, we apply Hamilton's equations~\eqref{xdot} and~\eqref{pdot} to obtain
 
 \begin{equation}\label{xdot_two}
-    \dot{x}_1 = \frac{1}{m_1} \left(p_{x_1} + \alpha_x\right)
+    \dot{x}_1 = \frac{1}{m_1} \left(p_{x_1} \gsign{+} \alpha_x\right)
 \end{equation}
 
 \begin{equation}\label{xdot_two_p2}
-    \dot{x}_2 = \frac{1}{m_2} \left(p_{x_2} - \alpha_x\right)
+    \dot{x}_2 = \frac{1}{m_2} \left(p_{x_2} \gsign{-} \alpha_x\right)
 \end{equation}
 
 and
 
 \begin{equation}\label{pdot_two}
-    \dot{p}_{x_1} = \frac{q_1 q_2}{r_{12}^2}\left[\frac{(x_1 - x_2)}{r_{12}}\left(1 + \frac{3\dot{r}_{12}^2}{2 c^2}\right) - \frac{\dot{r}_{12}(\dot{x}_1 - \dot{x}_2)}{c^2}\right]
+    \dot{p}_{x_1} = \frac{q_1 q_2}{r_{12}^2}\left[\frac{(x_1 - x_2)}{r_{12}}\left(1 \gsign{+} \frac{3\dot{r}_{12}^2}{2 c^2}\right) \gsign{-} \frac{\dot{r}_{12}(\dot{x}_1 - \dot{x}_2)}{c^2}\right]
 \end{equation}
 
 \begin{equation}\label{pdot_two_p2}
@@ -208,13 +221,13 @@ for particle $i \in \{1, 2, \ldots, n\}$. In three dimensions, we also have the 
 For a system of $n$ particles,~\eqref{xdot} expands to
 
 \begin{equation}\label{xdot_expanded}
-    \boxed{\dot{x}_i = \frac{1}{m_i} \left(p_{x_i} + \sum_{\substack{j=1 \\ j \neq i}}^{n} \frac{q_i q_j}{c^2} \frac{\dot{r}_{ij} (x_i - x_j)}{r_{ij}^2}\right)}
+    \boxed{\dot{x}_i = \frac{1}{m_i} \left(p_{x_i} \gsign{+} \sum_{\substack{j=1 \\ j \neq i}}^{n} \frac{q_i q_j}{c^2} \frac{\dot{r}_{ij} (x_i - x_j)}{r_{ij}^2}\right)}
 \end{equation}
 
 for particle $i \in \{1, 2, \ldots, n\}$, with analogous expressions for $\dot{y}_i$ and $\dot{z}_i$, and~\eqref{pdot} expands to
 
 \begin{equation}\label{pdot_expanded}
-    \boxed{\dot{p}_{x_i} = \sum_{\substack{j=1 \\ j \neq i}}^{n} \frac{q_i q_j}{r_{ij}^2}\left[\frac{(x_i - x_j)}{r_{ij}}\left(1 + \frac{3\dot{r}_{ij}^2}{2 c^2}\right) - \frac{\dot{r}_{ij}(\dot{x}_i - \dot{x}_j)}{c^2}\right]}
+    \boxed{\dot{p}_{x_i} = \sum_{\substack{j=1 \\ j \neq i}}^{n} \frac{q_i q_j}{r_{ij}^2}\left[\frac{(x_i - x_j)}{r_{ij}}\left(1 \gsign{+} \frac{3\dot{r}_{ij}^2}{2 c^2}\right) \gsign{-} \frac{\dot{r}_{ij}(\dot{x}_i - \dot{x}_j)}{c^2}\right]}
 \end{equation}
 
 for particle $i \in \{1, 2, \ldots, n\}$, with analogous expressions for $\dot{p}_{y_i}$ and $\dot{p}_{z_i}$.
@@ -396,6 +409,7 @@ The individual particle positions, velocities, and accelerations are
     \vec{a}_1 = (\ddot{x}_1, \ddot{y}_1, \ddot{z}_1) &  & \vec{a}_2 = (\ddot{x}_2, \ddot{y}_2, \ddot{z}_2)
 \end{align*}
 
+\begin{wrong}
 The individual particle momenta are
 
 \begin{align*}
@@ -403,6 +417,7 @@ The individual particle momenta are
     p_{y_1} = m_1 \dot{y}_1 &  & p_{y_2} = m_2 \dot{y}_2 \\
     p_{z_1} = m_1 \dot{z}_1 &  & p_{z_2} = m_2 \dot{z}_2
 \end{align*}
+\end{wrong}
 
 The relative positions, velocities, and accelerations between particle 1 and particle 2 are
 
