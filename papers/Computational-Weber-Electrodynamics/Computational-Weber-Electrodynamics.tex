@@ -160,35 +160,41 @@ or more compactly,
 
 where $T$ is given by~\eqref{ke} and $U$ is the velocity-dependent potential~\eqref{potential}.
 
-Before we can apply Hamilton's canonical equations, we express the Hamiltonian in terms of \textit{positions} and \textit{momenta}. For a system of two particles in three spatial dimensions we have
+Before we can apply Hamilton's canonical equations, we express the Hamiltonian in terms of \textit{positions} and \textit{momenta}. The canonical momentum $p_{x_1}$ is defined as
 
-\begin{equation}
+\begin{equation}\label{px1}
+    p_{x_1} = \frac{\partial L}{\partial \dot{x}_1} = m_1 \dot{x}_1 - \frac{q_1 q_2}{c^2} \frac{\rdot (x_1 - x_2)}{r^2}
+\end{equation}
+
+The \textit{Legendre transform} then yields
+
+\begin{equation}\label{H_p}
     H = H(x_1, y_1, z_1, x_2, y_2, z_2, p_{x_1}, p_{y_1}, p_{z_1}, p_{x_2}, p_{y_2}, p_{z_2})
 \end{equation}
 
-\begin{wrong}
-where each velocity component $\dot{x}_i$ in~\eqref{H} is replaced by $p_{x_i}/m_i$ and similarly for all other velocity components.
-\end{wrong}
+where each velocity component in~\eqref{H} is replaced by expressions like \eqref{xdot_two} and \eqref{xdot_two_p2}.
 
 Defining
 \begin{equation}\label{alpha_x}
     \alpha_x = \frac{q_1 q_2}{c^2} \frac{\dot{r}_{12} (x_1 - x_2)}{r_{12}^2}
 \end{equation}
 
-with analogous definitions for $\alpha_y$ and $\alpha_z$, we apply Hamilton's equations~\eqref{xdot} and~\eqref{pdot} to obtain
+with analogous definitions for $\alpha_y$ and $\alpha_z$, we obtain
 
 \begin{equation}\label{xdot_two}
-    \dot{x}_1 = \frac{1}{m_1} \left(p_{x_1} \gsign{+} \alpha_x\right)
+    \dot{x}_1 = \frac{1}{m_1} \left(p_{x_1} + \alpha_x\right)
 \end{equation}
 
 \begin{equation}\label{xdot_two_p2}
-    \dot{x}_2 = \frac{1}{m_2} \left(p_{x_2} \gsign{-} \alpha_x\right)
+    \dot{x}_2 = \frac{1}{m_2} \left(p_{x_2} - \alpha_x\right)
 \end{equation}
 
-and
+(and analogous equations for the $\dot{y}_1$, $\dot{y}_2$, $\dot{z}_1$, and $\dot{z}_2$ components) by either rewriting the canonical momenta \eqref{px1} or by applying \eqref{xdot} to \eqref{H_p}.
+
+We also apply~\eqref{pdot} to obtain
 
 \begin{equation}\label{pdot_two}
-    \dot{p}_{x_1} = \frac{q_1 q_2}{r_{12}^2}\left[\frac{(x_1 - x_2)}{r_{12}}\left(1 \gsign{+} \frac{3\dot{r}_{12}^2}{2 c^2}\right) \gsign{-} \frac{\dot{r}_{12}(\dot{x}_1 - \dot{x}_2)}{c^2}\right]
+    \dot{p}_{x_1} = \frac{q_1 q_2}{r_{12}^2}\left[\frac{(x_1 - x_2)}{r_{12}}\left(1 + \frac{3\dot{r}_{12}^2}{2 c^2}\right) - \frac{\dot{r}_{12}(\dot{x}_1 - \dot{x}_2)}{c^2}\right]
 \end{equation}
 
 \begin{equation}\label{pdot_two_p2}
@@ -223,13 +229,13 @@ for particle $i \in \{1, 2, \ldots, n\}$. In three dimensions, we also have the 
 For a system of $n$ particles,~\eqref{xdot} expands to
 
 \begin{equation}\label{xdot_expanded}
-    \boxed{\dot{x}_i = \frac{1}{m_i} \left(p_{x_i} \gsign{+} \sum_{\substack{j=1 \\ j \neq i}}^{n} \frac{q_i q_j}{c^2} \frac{\dot{r}_{ij} (x_i - x_j)}{r_{ij}^2}\right)}
+    \boxed{\dot{x}_i = \frac{1}{m_i} \left(p_{x_i} + \sum_{\substack{j=1 \\ j \neq i}}^{n} \frac{q_i q_j}{c^2} \frac{\dot{r}_{ij} (x_i - x_j)}{r_{ij}^2}\right)}
 \end{equation}
 
 for particle $i \in \{1, 2, \ldots, n\}$, with analogous expressions for $\dot{y}_i$ and $\dot{z}_i$, and~\eqref{pdot} expands to
 
 \begin{equation}\label{pdot_expanded}
-    \boxed{\dot{p}_{x_i} = \sum_{\substack{j=1 \\ j \neq i}}^{n} \frac{q_i q_j}{r_{ij}^2}\left[\frac{(x_i - x_j)}{r_{ij}}\left(1 \gsign{+} \frac{3\dot{r}_{ij}^2}{2 c^2}\right) \gsign{-} \frac{\dot{r}_{ij}(\dot{x}_i - \dot{x}_j)}{c^2}\right]}
+    \boxed{\dot{p}_{x_i} = \sum_{\substack{j=1 \\ j \neq i}}^{n} \frac{q_i q_j}{r_{ij}^2}\left[\frac{(x_i - x_j)}{r_{ij}}\left(1 + \frac{3\dot{r}_{ij}^2}{2 c^2}\right) - \frac{\dot{r}_{ij}(\dot{x}_i - \dot{x}_j)}{c^2}\right]}
 \end{equation}
 
 for particle $i \in \{1, 2, \ldots, n\}$, with analogous expressions for $\dot{p}_{y_i}$ and $\dot{p}_{z_i}$.
@@ -249,9 +255,7 @@ where every component is a function of time $t$. To evolve the system in time us
     p_{x_i}^{t + \Delta t} = p_{x_i}^t + \Delta t \, \dot{p}_{x_i}^t
 \end{equation}
 
-\begin{wrong}
 and similarly for $y_i$ and $z_i$, where $\dot{x}_i^t$ and $\dot{p}_{x_i}^t$ are computed using~\eqref{xdot_expanded} and~\eqref{pdot_expanded} at time $t$. Repeating this process iteratively allows us to evolve a system of $n$ charged particles interacting via Weber's electrodynamics over time given some initial positions and momenta.
-\end{wrong}
 
 \subsection[Computational complexity of Hamiltonian Weber electrodynamics]{Computational complexity of Hamiltonian Weber \\ electrodynamics}\label{complexity}
 To understand the total number of unique interactions, consider an $n \times n$ matrix where entry $(i,j)$ represents the interaction between particles $i$ and $j$:
@@ -394,7 +398,7 @@ The computational framework presented in this paper enables the numerical simula
 
 We could in principle also simulate \textit{the physics} of passive analog components such as coils, capacitors, and transformers by considering charged particles and their mutual motion. To move in this direction, we need to consider the role of \textit{surface charges on resistive conductors} (see \citep{jackson1996} and \citep{assis-electric-force}). Self-inductance in coils and mutual inductance in transformers can be simulated by considering the correct inductance calculations presented in \citep{assis-inductance}. It is also relevant to note the \textit{Amperian current element}, an electrically neutral system of two opposite (not necessarily equal) charges moving in opposite directions, which can be used to model electric currents \citep{assis-ampere}.
 
-Perhaps the most promising direction for future research lies in the remarkable fact that Weber's force law admits \textit{attraction between like charges} below a critical separation $\rho = q_1 q_2/(\mu c^2)$, where $\mu = m_1 m_2 / (m_1 + m_2)$ is the reduced mass. \wrongtext{At this critical radius, the sign of the force between \mbox{$q_1$} and \mbox{$q_2$} is reversed.} For $r < \rho$, the particles respond to the still-repulsive Coulomb force as if they had ``negative inertia'', accelerating toward each other rather than away. Weber himself identified this phenomenon in his Sixth Memoir (1871)~\citep{assis-weber-vol4}.
+Perhaps the most promising direction for future research lies in the remarkable fact that Weber's force law admits \textit{attraction between like charges} below a critical separation $\rho = q_1 q_2/(\mu c^2)$, where $\mu = m_1 m_2 / (m_1 + m_2)$ is the reduced mass. Below this critical radius, the sign of the force between $q_1$ and $q_2$ is reversed. For $r < \rho$, the particles respond to the still-repulsive Coulomb force as if they had ``negative inertia'', accelerating toward each other rather than away. Weber himself identified this mathematical phenomenon in his Sixth Memoir (1871)~\citep{assis-weber-vol4}.
 
 \citet{Frauenfelder2024} have shown that classical collisions at the origin are regularizable only when the angular momentum $\ell = 0$, corresponding to purely radial (head-on) motion. For $\ell \neq 0$, the system is not regularizable. This constraint poses a fundamental challenge: finding stable, bound configurations of like charges below the critical radius that go beyond purely radial oscillation. One avenue is to develop advanced regularization or stabilization techniques that could handle the $\ell \neq 0$ singularity. Another, perhaps more promising, approach is to expand our view beyond the isolated two-body problem and consider multi-particle systems. For instance, we could balance a pair of like charges in the sub-critical regime with oppositely charged particles above $\rho$, or explore other conceivable configurations whose mutual interactions provide the stabilizing forces that a single pair lacks.
 
@@ -412,16 +416,6 @@ The individual particle positions, velocities, and accelerations are
     \vec{v}_1 = (\dot{x}_1, \dot{y}_1, \dot{z}_1)    &  & \vec{v}_2 = (\dot{x}_2, \dot{y}_2, \dot{z}_2)    \\
     \vec{a}_1 = (\ddot{x}_1, \ddot{y}_1, \ddot{z}_1) &  & \vec{a}_2 = (\ddot{x}_2, \ddot{y}_2, \ddot{z}_2)
 \end{align*}
-
-\begin{wrong}
-The individual particle momenta are
-
-\begin{align*}
-    p_{x_1} = m_1 \dot{x}_1 &  & p_{x_2} = m_2 \dot{x}_2 \\
-    p_{y_1} = m_1 \dot{y}_1 &  & p_{y_2} = m_2 \dot{y}_2 \\
-    p_{z_1} = m_1 \dot{z}_1 &  & p_{z_2} = m_2 \dot{z}_2
-\end{align*}
-\end{wrong}
 
 The relative positions, velocities, and accelerations between particle 1 and particle 2 are
 
