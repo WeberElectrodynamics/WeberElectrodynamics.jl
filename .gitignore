@@ -1,6 +1,5 @@
 # Editor directories and files
 .vscode/*
-!.vscode/settings.json
 .claude/
 *.swp
 *.swo

@@ -1,12 +1,20 @@
 # Weber Hamiltonian Correctness Finding and Minimum Repair
 
-> **Status: confirmed physics error; correction not yet implemented.**
+> **Status (2026-08-20, branch `fix/canonical-weber-hamiltonian`)**
 >
-> This note describes the behavior that the theory, paper, and package must
-> eventually implement. It does not describe the equations currently integrated
-> by the package.
+> | Area | State |
+> | --- | --- |
+> | Physics finding below | Confirmed, independently re-derived |
+> | Companion paper | **Mostly corrected** — six sign fixes and the momentum definition landed; **Tier 0 below is still outstanding** |
+> | Formula verifier | **Done** — 94 symbolic checks, all passing |
+> | Theory notes (`theory/*.md`) | **Not started** — Tier 1 and Tier 2 below |
+> | Julia package, tests, fixtures, notebooks | **Not started** — Phase 2 below, deliberately deferred |
 >
-> The `_research/` directory is outside the scope of this review.
+> This note is the work order. Read Tier 0 first: everything else aligns *to*
+> the paper, so the paper must be finished before the theory notes are
+> rewritten to match it.
+>
+> The `_research/` directory is outside the scope of this repair.
 
 ## Result
 
@@ -367,6 +375,73 @@ $m_i\dot{\vec v}_i$ also contains the time derivatives of those corrections.
 Combining that identity with the corrected canonical equations reproduces the
 Weber force law stated in the theory and paper.
 
+## Tier 0 — remaining companion-paper items
+
+Five commits on this branch (`5cc03c5`, `129c2da`, `bdd93f9`, `177ffc0`,
+`f9b6eb7`) applied most of this note's original paper table; `129c2da`
+narrowed `5cc03c5`, so the table below reflects the **verified current
+state of the file**, not the sum of the commits. What landed, and what did not, is recorded here so the next agent does
+not redo finished work or assume unfinished work is done.
+
+All line numbers refer to
+[`papers/Computational-Weber-Electrodynamics/Computational-Weber-Electrodynamics.tex`](../papers/Computational-Weber-Electrodynamics/Computational-Weber-Electrodynamics.tex)
+at commit `87135d7`.
+
+### Already applied — do not redo
+
+| Item | Result |
+| --- | --- |
+| `xdot_two` | `ẋ₁ = (p_{x₁} + α_x)/m₁` ✔ |
+| `xdot_two_p2` | `ẋ₂ = (p_{x₂} − α_x)/m₂` ✔ |
+| `pdot_two`, `pdot_expanded` | both `1/c²` signs corrected ✔ |
+| `xdot_expanded` | summed Weber correction now `+` ✔ |
+| Canonical momentum `p_{x₁} = ∂L/∂ẋ₁` | inserted as `px1` ✔ |
+| Appendix `p = m v` block | deleted ✔ |
+| "replace each velocity by `p_{x_i}/m_i`" | deleted ✔ |
+| Critical-radius wording | "At this critical radius" → "Below this critical radius" ✔ |
+
+The critical-radius fix was not in this note's original table. It is recorded
+because the reversal happens on *crossing* ρ: at `r = ρ` the effective inertia
+`μ_eff = μ − q₁q₂/(c²r)` is exactly zero and `r̈` is singular, not merely
+sign-reversed. Verifier checks `L.1`, `L.5`–`L.8` pin this down, including the
+proof that the reversal holds at arbitrary angular momentum, not only for
+radial motion.
+
+### Required — the minimum that resolves the finding
+
+Four items. Nothing here is optional; each one is either wrong or would lead a
+reader to implement the wrong integrator.
+
+| Line | Item | Required change |
+| --- | --- | --- |
+| 169 | "The *Legendre transform* then yields" | Followed only by an argument list; the transform is never performed. Insert the exact canonical Hamiltonian — for `n = 2` the closed form in "Explicit two-particle Hamiltonian" below is exact and also exhibits ρ as the pole. **Doing this one item largely resolves lines 211 and 258 as well**, which is why it is listed first. |
+| 211 | `hamiltonian` | `H_n` is written in velocities (`v_i²`, `ṙ_ij`) but is immediately fed to `ẋ_i = ∂H_n/∂p_{x_i}` at line 220. Either relabel it as velocity-space energy `E_n(r,v)`, or state that the velocities are functions of `(q,p)`. Last surviving instance of the original error's presentation. |
+| 258 | "are computed using `xdot_expanded` … at time `t`" | Circular as written: the right-hand side needs `ṙ_ij` at time `t`, built from the velocities at time `t` — the quantity the equation produces. State that velocities are recovered from the momenta each step. For two particles this is one scalar: `ṙ = p_r/(μ − q₁q₂/(rc²))`; no matrix notation is needed. |
+| 306, 308 | complexity section | `n(n−1)/2` is right for assembling pair geometry, but "each evaluation … only needs to compute `r_ij` and `ṙ_ij`" hides the cost: obtaining `ṙ_ij` from `(q,p)` *is* the velocity solve. Name it as a separate per-step cost. |
+
+### Optional — skip unless polishing
+
+Not required to resolve the finding. Recorded so they are not re-discovered as
+new defects; leave them alone if the goal is the minimum repair.
+
+- Line 99: "It satisfies Newton's third law … **Therefore**, energy, linear
+  momentum, and angular momentum are always conserved." The strong third law
+  gives linear and angular momentum; energy conservation is separate, from `L`
+  having no explicit time dependence. Over-claims via "therefore".
+- Line 204: "`ṗ_{x₁} + ṗ_{x₂} = 0`, **but** `ẋ₁ − ẋ₂ ≠ 0` in general" is a
+  non-sequitur — a sum contrasted with an unrelated difference. The real point
+  is that `α_x` cancels in the sum but not in either momentum alone.
+- Line 326: the non-separability display shows an isolated pair term; after the
+  correct transform the non-separable object is the whole `½ Σ p_i · v_i(q,p)`.
+- Line 355: "for `(q,p)` and `(x,y)` separately" contradicts the bullets below,
+  which correctly use the mixed pairs `(x,p)` and `(q,y)`. The bullets are right.
+- Lines 251–258: the Euler steps are legitimate — inside `Φ^A`/`Φ^B` the
+  right-hand side is frozen, so Euler is the *exact* sub-flow. One sentence
+  would say so.
+- Line 165: `px1` uses bare `ṙ`, `r²` where neighbours use `ṙ₁₂`, `r₁₂²`;
+  `r₁₂` is never defined, only `r` is.
+- Line 376: `Z_n` uses `n` as a time-step index while `n` is the particle count.
+
 ## How the error is confirmed in the repository
 
 ### Theory
@@ -384,141 +459,199 @@ contradiction directly:
 5. its canonical momentum-rate equation has both Weber correction signs
    reversed.
 
-### Companion paper
+### Companion paper (historical — now corrected)
 
-[`papers/Computational-Weber-Electrodynamics/Computational-Weber-Electrodynamics.tex`](../papers/Computational-Weber-Electrodynamics/Computational-Weber-Electrodynamics.tex)
-correctly derives the velocity-space energy, then explicitly says that every
-velocity is replaced by momentum divided by mass. That sentence is the
-primary paper error. All later expanded Weber Hamilton equations inherit it.
+v1.2 of
+[`Computational-Weber-Electrodynamics.tex`](../papers/Computational-Weber-Electrodynamics/Computational-Weber-Electrodynamics.tex)
+derived the velocity-space energy correctly and then said that every velocity
+is replaced by momentum divided by mass. That sentence was the primary paper
+error; all later expanded Weber Hamilton equations inherited it.
 
-### Julia package
+`git show main:` confirms v1.2 carried both halves of the defect together —
+the `p/m` substitution **and** `ẋ₁ = (p_{x₁} − α_x)/m₁`. That is not a
+coincidence: taking `∂H/∂p` of the naively-substituted Hamiltonian *produces*
+the minus sign. The v1.2 paper and the package were therefore a consistent,
+mutually-reinforcing pair — which is exactly why the error survived review.
+
+Both halves are fixed as of commit `5cc03c5`. Tier 0 lists what remains.
+
+### Julia package (still wrong)
 
 [`src/hamiltonian/builders/weber.jl`](../src/hamiltonian/builders/weber.jl)
-constructs the current Hamiltonian as ordinary
-$\sum_i\lVert\vec p_i\rVert^2/(2m_i)$ plus pair terms whose radial velocities
-are computed from $\vec p_i/m_i-\vec p_j/m_j$. Symbolics.jl differentiates
-that expression correctly, but the expression being differentiated is not the
-Legendre transform of the Weber Lagrangian.
+constructs the Hamiltonian as ordinary `Σ ‖p_i‖²/(2m_i)` plus pair terms whose
+radial velocities are computed at line 60 from `p_i/m_i − p_j/m_j`.
+Symbolics.jl differentiates that expression correctly, but the expression being
+differentiated is not the Legendre transform of the Weber Lagrangian.
 
-The existing energy-conservation tests therefore show that the integrator
-conserves the Hamiltonian it was given. They do not independently establish
-that this Hamiltonian represents the stated Weber Lagrangian or Weber force.
+`git diff main..HEAD -- src/` is empty: the package still implements v1.2.
 
-## Minimum equation changes in the theory notes
+Two consequences are worth stating plainly, because they explain why the
+existing test suite cannot catch this:
+
+1. The package's Hamiltonian is a **perfectly good** Hamiltonian — autonomous,
+   translation-invariant, rotation-invariant. A symplectic integrator conserves
+   it, so **energy, linear momentum and angular momentum all come out flat**.
+   The three headline conservation checks are structurally incapable of
+   detecting the defect.
+2. The discrepancy is `O(ρ/r)` in the momentum–velocity relation, so far from
+   the critical radius it is numerically small. Near ρ it is not: the correct
+   `H` has a pole at `μ_eff = 0`, while the package's `H` has `μ_eff` in the
+   **numerator** and is finite there. The critical-radius physics — the
+   paper's headline future direction — is simply absent from the equations the
+   package integrates.
+
+Energy-conservation tests therefore show that the integrator conserves the
+Hamiltonian it was given. They do not establish that this Hamiltonian
+represents the stated Weber Lagrangian or Weber force.
+
+## Tier 1 — theory notes that carry wrong mathematics
+
+These are the documents a reader would trust and copy from. Fix
+`WeberElectrodynamics.md` first: it is the root note that both the paper and
+the package descend from.
 
 ### `theory/WeberElectrodynamics.md`
 
-At minimum, eight existing display blocks require mathematical changes:
-
-| Existing location | Minimum correction |
+| Location | Required correction |
 | --- | --- |
-| Six component equations under “Momenta for Particle 1 and Particle 2” | Replace the six statements $p=m\dot x$, $p=m\dot y$, and $p=m\dot z$ with the canonical two-particle relation containing the opposite Weber corrections. The compact $\vec p_1$, $\vec p_2$, and $\vec\alpha$ equations above may replace all six blocks. |
-| The $n$-particle equation under “Hamiltonian formulation” | Stop presenting $\sum_i T_i+\sum_{i<j}U_{ij}$ as a canonical function of positions and momenta. Retain it as velocity-space energy and add the exact canonical form $\tfrac12\sum_i\vec p_i\cdot\vec v_i+\sum_{i<j}q_iq_j/r_{ij}$, with the velocities obtained from the canonical-momentum equations. |
-| The equation for $\dot p_{x_1}$ under “Equations of motion” | Change $1-3\dot r^2/(2c^2)$ to $1+3\dot r^2/(2c^2)$ and change the final plus sign to a minus sign. |
+| Lines 82–102, six blocks under "Momenta for Particle 1 and Particle 2" | Replace `p_{x₁} = m₁ẋ₁`, `p_{y₁} = m₁ẏ₁`, … with the canonical relation. The compact `p⃗₁ = m₁v⃗₁ − α⃗`, `p⃗₂ = m₂v⃗₂ + α⃗` pair from this note's "Two-particle form" replaces all six blocks. |
+| Line 342, `ṗ_{x₁}` under "Equations of motion" | `1 − 3ṙ²/(2c²)` → `1 + 3ṙ²/(2c²)`, and the trailing `+ ṙ(ẋ₁−ẋ₂)/c²` → `−`. Both signs together; neither is independently correctable. |
+| The `H = T + U` block under "Hamiltonian formulation" | Keep it, but label it explicitly as **velocity-space energy**. Add the exact canonical form `½ Σ p⃗_i · v⃗_i(r,p) + Σ_{i<j} q_i q_j / r_{ij}`, with velocities obtained from the canonical-momentum equations. |
 
-The following formulas can remain:
+Insert two derivational steps the note currently skips: `p⃗_i = ∂L/∂v⃗_i`, and
+the two-particle scalar inverse `ṙ = p_r/(μ − q₁q₂/(rc²))`.
 
-- the position, velocity, acceleration, and radial-derivative definitions;
-- the Weber pair energy and Weber force;
-- the Lagrangian;
-- the Euler–Lagrange equation;
-- the Legendre-transform identity $H=T+U$ when explicitly described as
-  velocity-space energy;
-- the existing two-particle $\dot x_1$ and $\dot x_2$ formulas, whose signs are
-  already correct, provided their $\dot r$ is obtained from the implicit
-  canonical-momentum relation; and
-- $\dot p_{x_2}=-\dot p_{x_1}$.
+These formulas may remain unchanged: the position, velocity, acceleration and
+radial-derivative definitions; the Weber pair energy and Weber force; the
+Lagrangian; the Euler–Lagrange equation; the two-particle `ẋ₁` and `ẋ₂`
+formulas, whose signs are already correct provided their `ṙ` is the physical
+one; and `ṗ_{x₂} = −ṗ_{x₁}`.
 
-### Other theory files
+### `theory/InitialConditions.md`
 
-The minimum authoritative theory follow-up is:
-
-| File | Required correction |
+| Location | Required correction |
 | --- | --- |
-| [`theory/InitialConditions.md`](InitialConditions.md) | Replace the general statement that canonical momentum is $m_i\vec v_i$ and replace the naive canonical Hamiltonian. Correct every nonzero-radial construction that assigns $p_r=\mu\dot r$; it must use $p_r=(\mu-q_1q_2/(rc^2))\dot r$. Zero-radial and rigid-rotation constructions remain valid at their initial instant. |
-| [`theory/NonZeroRadialVelocityBoundICs.md`](NonZeroRadialVelocityBoundICs.md) | Retain its correct forward canonical-momentum formula, but replace the approximate canonical-Hamiltonian discussion with the exact implicit form used in this note. Remove the claim that the current integrator already performs the correct inverse conversion. |
+| Line 14 | `p⃗_i = m_i v⃗_i — canonical momentum` is the defect stated verbatim. Replace with the canonical definition. |
+| Naive canonical Hamiltonian | Replace with the exact form from this note. |
+| Every nonzero-radial construction assigning `p_r = μṙ` | Must become `p_r = (μ − q₁q₂/(rc²))ṙ`. |
 
-No file under `_research/` is part of the repair.
+State explicitly which constructions survive untouched: zero-radial and
+rigid-rotation constructions impose `ṙ_ij(0) = 0`, so `α⃗ = 0` and canonical
+equals kinetic momentum **at the initial instant**. That is the majority of
+the file, and saying so prevents an over-broad rewrite.
 
-## Minimum equation changes in the companion paper
+## Tier 2 — documents whose status claims are stale
 
-The paper has eight existing displayed equation blocks whose mathematical
-content must change:
+### `theory/NonZeroRadialVelocityBoundICs.md`
 
-| Paper equation or location | Minimum correction |
-| --- | --- |
-| `xdot_two` | Replace the minus correction with $\dot x_1=(p_{x_1}+\alpha_x)/m_1$. |
-| `xdot_two_p2` | Replace the plus correction with $\dot x_2=(p_{x_2}-\alpha_x)/m_2$. |
-| `pdot_two` | Use the corrected two-particle canonical momentum-rate equation stated above. |
-| `hamiltonian` | Retain its right-hand side as velocity-space energy $E_n(\vec r,\vec v)$ rather than a canonical Hamiltonian, and add the exact canonical form $\tfrac12\sum_i\vec p_i\cdot\vec v_i(\vec r,\vec p)+\sum_{i<j}q_iq_j/r_{ij}$. |
-| `xdot_expanded` | Change the summed Weber correction from minus to plus and state that all pair radial velocities are obtained from the simultaneous canonical-momentum equations. |
-| `pdot_expanded` | Change both $1/c^2$ signs to the corrected signs shown in the general canonical equation above. |
-| The displayed velocity correction in the non-separability section | Replace the naive isolated pair term after momentum substitution with the canonical kinetic contribution $\tfrac12\sum_i\vec p_i\cdot\vec v_i(\vec r,\vec p)$. |
-| The appendix momentum `align*` block | Replace all six kinetic-momentum definitions with the canonical two-particle momentum relation. |
+Line 21 is already correct — it distinguishes canonical from kinetic momentum.
+Retain the forward canonical-momentum formula. Replace the approximate
+canonical-Hamiltonian discussion with the exact implicit form used in this
+note, and remove any claim that the current integrator performs the correct
+inverse conversion. It does not.
 
-At least two derivational relations must also be inserted:
+### This note itself
 
-1. the canonical momentum obtained from
-   $\partial L/\partial\vec v_i$; and
-2. the exact canonical Hamiltonian after the physical velocities have been
-   obtained from the canonical momenta.
+After Tiers 0–1 land, update the status table at the top, and mark the Tier 0
+"already applied" rows as they are completed. Do **not** delete this note when
+the paper and theory notes are done: its acceptance criteria are the only
+record that the package is still wrong. Retire it only when every criterion
+passes.
 
-The paper equation `alpha_x` may remain algebraically unchanged, but
-$\dot r$ must mean physical radial velocity. Equations `H_def`, `H`, and
-`h_box` may remain if their surrounding prose makes clear that they still use
-physical velocities. The abstract conservation claims, generic Hamilton
-equations `xdot` and `pdot`, phase-space definitions, and generic
-symplectic-integrator derivation do not require mathematical changes.
+## Tier 3 — housekeeping
 
-The paper's complexity section must also stop claiming that pair evaluation
-alone completes an equation evaluation. Pair geometry still costs
-$O(n^2)$, but obtaining all physical velocities requires solving a coupled
-linear system. The eventual paper correction is a minor paper revision, so
-[`papers/Computational-Weber-Electrodynamics/VERSION`](../papers/Computational-Weber-Electrodynamics/VERSION)
-must change from `1.2` to `1.3`, and the tracked PDF must be rebuilt.
+- Bump [`VERSION`](../papers/Computational-Weber-Electrodynamics/VERSION) from `1.2` to `1.3`.
+- Delete the review-markup block at `.tex` lines 54–65 once Tier 0 is accepted.
+- Rebuild the paper PDF locally. It is **not** tracked: `.gitignore:97`
+  matches `papers/**/*.pdf`, and commit `a111a74` removed it from the
+  index. Any instruction to rebuild "the tracked PDF" is stale.
+- Add a `CHANGELOG.md` entry describing the corrected Hamiltonian.
 
-## Formula verifier
+## Documents that need no change
+
+- [`docs/src/theory.md`](../docs/src/theory.md) — twelve lines of links, no
+  equations. It inherits correctness from Tier 1 automatically.
+- [`docs/src/api/*.md`](../docs/src/api), [`docs/src/internals.md`](../docs/src/internals.md),
+  [`docs/src/quickstart.md`](../docs/src/quickstart.md) — these describe the
+  **API surface**, which cannot be written until the source settles. They
+  belong to Phase 2, not to the documentation tiers.
+- `docs/build/` — generated by Documenter; never hand-edited.
+- `_research/**` — explicitly out of scope.
+
+## Guard rails — code that looks wrong but is not
+
+A `p_i/m_i` pattern is not by itself the defect. The next agent will grep for
+it and must not "fix" these:
+
+- [`src/regularization.jl`](../src/regularization.jl) lines 236–238 compute
+  `rel_p[d] = μ (p_i/m_i − p_j/m_j)`. That is the **exact canonical relative
+  momentum** `(m_j p⃗_i − m_i p⃗_j)/(m_i+m_j)`, a linear map on canonical
+  momenta that is valid whether or not `p = mv`. Only the local variable
+  names `vi_d`, `vj_d` are misleading; the mathematics is correct. Rename the
+  variables, change nothing else.
+- The same canonical centre-of-mass and relative transformations in
+  [`src/solve.jl`](../src/solve.jl) are likewise correct.
+
+The genuine defect is narrower: computing a **radial velocity** `ṙ_ij` from
+`p_i/m_i − p_j/m_j`, or a **kinetic energy** from `Σ p_i²/(2m_i)`. Confirmed
+occurrences are listed in the Phase 2 table below.
+
+## Formula verifier — done
 
 [`papers/Computational-Weber-Electrodynamics/verify_formulas.py`](../papers/Computational-Weber-Electrodynamics/verify_formulas.py)
-currently defines radial velocities in canonical variables by using
-$\vec p_i/m_i$. Its checks then prove that the paper and verifier contain the
-same naive Hamiltonian.
+has been rebuilt and is **complete**: 94 checks, all passing, re-based on the
+single source of truth `L = T − S`. Nothing the paper asserts is assumed.
 
-At minimum, the verifier must replace:
+```
+uv run --with sympy python3 verify_formulas.py     # 94/94, ~35 s
+```
 
-- the global two- and three-particle momentum-space radial-rate definitions;
-- Group C.3, which verifies the invalid velocity substitution;
-- Groups D and E, which verify the current two-particle and expanded
-  Hamilton equations;
-- Group H, which verifies the current three-particle equations; and
-- the Hamiltonian expressions used by Groups G and I for conservation checks.
+SymPy is not provisioned by the repository's Julia environment; `uv run --with
+sympy` is the recorded invocation.
 
-The corrected verifier must independently check:
+Groups, and what each settles:
 
-1. the canonical momentum obtained from the Lagrangian;
-2. the exact Legendre-transform identity;
-3. the two-particle scalar inverse for $\dot r$;
-4. both corrected canonical equations;
-5. at least one three-particle simultaneous velocity solve; and
-6. translation and rotation invariance of the corrected canonical
-   Hamiltonian.
+| Group | Covers |
+| --- | --- |
+| A–C | potential identities; Euler–Lagrange → Weber force, in both relative and the paper's absolute coordinates; `H = T + U` |
+| D–E | two-particle Hamilton equations; the `n`-particle equations at `n = 2` |
+| F–G | Appendix A.1 radial-acceleration identities; conservation laws |
+| H–I | `n = 3` equations of motion; rotational invariance |
+| J | `dU/dt = −F ṙ`; Newton's third law in the strong form; centrality |
+| K | the **closed-form** `H(q,p)` for `n = 2`, and the end-to-end chain Hamilton's equations → Weber's force law |
+| L | critical radius: `μ_eff(ρ) = 0`, divergence at ρ, sign reversal below ρ **at arbitrary angular momentum** |
+| M | extended phase space: `A Aᵀ = 2I`, the `1/4` Newton factor, the `Φ^A`/`Φ^B` flow structure, second order, symplecticity, constraint drift |
+| N | the `n`-body momentum–velocity relation, and the `ρ/r` contraction factor of the naive fixed-point solve |
+| O | units, dimensions, pair count |
+| P | **negative controls** — each corrected sign is shown to be *necessary*, and the v1.2 formulation is shown not to reproduce Weber's force law |
 
-SymPy is not provisioned by the repository's current Julia environment or
-paper workflow. The repair must supply it explicitly and record a passing
-verifier run.
+Two results are load-bearing for the rest of this note:
 
-## Minimum Julia source changes
+- **`P.9` / `P.10`.** Feeding both Hamiltonians through Hamilton's equations
+  and testing against Weber's force law gives residual **exactly 0** for the
+  corrected `H`, and **non-zero** for the v1.2 / `weber.jl` form. This is the
+  decisive test; it does not depend on any interpretation argument.
+- **`N.7` / `N.8`.** Seeding the implicit velocity relation with `p/m` and
+  iterating is a Jacobi solve whose contraction factor is exactly `ρ/r`. It
+  converges only *above* the critical radius and diverges below it — the
+  regime the paper calls its most promising direction. The velocity recovery
+  must therefore be a real solve, not an iteration.
+
+The suite is mutation-tested: flipping `L = T − S` to `L = T + S` fails 12
+checks. Any Phase 2 work should extend this file rather than start a new one.
+
+## Phase 2 — Julia source (deferred; not part of the documentation pass)
 
 The directly incorrect production paths are:
 
 | File | Minimum source change |
 | --- | --- |
-| [`src/hamiltonian/builders/weber.jl`](../src/hamiltonian/builders/weber.jl) | Replace the naive symbolic Hamiltonian and its $\vec p/m$ radial rates with the exact canonical Hamiltonian. Its pair decomposition must use physical velocities obtained from the canonical momenta. |
+| [`src/hamiltonian/builders/weber.jl`](../src/hamiltonian/builders/weber.jl) (confirmed: line 60) | Replace the naive symbolic Hamiltonian and its $\vec p/m$ radial rates with the exact canonical Hamiltonian. Its pair decomposition must use physical velocities obtained from the canonical momenta. |
 | [`src/hamiltonian_system.jl`](../src/hamiltonian_system.jl) | Route the default Weber system through corrected Hamiltonian and equation evaluators. Preserve the generic custom-Hamiltonian constructor. If exact symbolic elimination is not practical for general $n$, the default Weber constructor needs a specialized numerical path while retaining the public compiled-function signatures. |
-| [`src/statistics/energy.jl`](../src/statistics/energy.jl) | Compute physical kinetic energy from physical velocities, compute pair radial velocities from those velocities, and compare their decomposition with the corrected compiled Hamiltonian. |
-| [`src/statistics/forces.jl`](../src/statistics/forces.jl) | Stop constructing velocities and accelerations from $\vec p/m$; obtain physical velocities from the corrected coordinate-rate equation. |
-| [`src/initial_conditions.jl`](../src/initial_conditions.jl) | Convert the `radial_velocity` keyword to canonical radial momentum using $p_r=(\mu-q_1q_2/(rc^2))\dot r$. This may require adding `c` to the helper input. |
-| [`ext/WeberElectrodynamicsMakieExt.jl`](../ext/WeberElectrodynamicsMakieExt.jl) | Replace the live pair radial-rate calculation based on $\vec p/m$ with the corrected physical velocities. |
+| [`src/statistics/energy.jl`](../src/statistics/energy.jl) (confirmed: lines 128–129) | Compute physical kinetic energy from physical velocities, compute pair radial velocities from those velocities, and compare their decomposition with the corrected compiled Hamiltonian. |
+| [`src/statistics/forces.jl`](../src/statistics/forces.jl) (confirmed: lines 206–207) | Stop constructing velocities and accelerations from $\vec p/m$; obtain physical velocities from the corrected coordinate-rate equation. |
+| [`src/initial_conditions.jl`](../src/initial_conditions.jl) (confirmed: line 109, `rel_p[1] = reduced_mass * radial_velocity`) | Convert the `radial_velocity` keyword to canonical radial momentum using $p_r=(\mu-q_1q_2/(rc^2))\dot r$. This may require adding `c` to the helper input. |
+| [`ext/WeberElectrodynamicsMakieExt.jl`](../ext/WeberElectrodynamicsMakieExt.jl) (confirmed: line 125) | Replace the live pair radial-rate calculation based on $\vec p/m$ with the corrected physical velocities. |
 | [`ext/WeberElectrodynamicsJLD2Ext.jl`](../ext/WeberElectrodynamicsJLD2Ext.jl) | Bump the solution archive format or otherwise prevent old default-Weber trajectories from being silently reconstructed as corrected dynamics. |
 
 A shared internal routine should perform the canonical-momentum-to-velocity
@@ -542,7 +675,7 @@ The following source areas do not presently contain the primary error:
 Regularization and collision behavior must nevertheless be revalidated because
 the corrected Weber Hamiltonian changes the dynamics they receive.
 
-## Minimum tests and generated artifacts
+### Phase 2 — tests and generated artifacts
 
 At minimum, the following tests contain expectations tied directly to the old
 Hamiltonian or to $\vec p/m$ as physical velocity:
@@ -583,77 +716,89 @@ The default-Weber portions of these notebooks must be rerun:
 The three tracked PNGs under `examples/figures/` must also be regenerated.
 Pure custom-Coulomb notebook sections are unaffected.
 
-## Minimum documentation changes
+### Phase 2 — API documentation
 
-After the source API is settled, update:
-
-- [`docs/src/api/system.md`](../docs/src/api/system.md) for the corrected
-  default Weber builder and named-term behavior;
-- [`docs/src/api/statistics.md`](../docs/src/api/statistics.md) for physical
-  kinetic energy and radial-velocity semantics;
-- [`docs/src/internals.md`](../docs/src/internals.md) if the default Weber
-  system no longer follows the current all-symbolic construction path; and
-- [`docs/src/quickstart.md`](../docs/src/quickstart.md) if the
-  initial-condition helper signature or displayed momentum conventions change.
-
-Generated `docs/build/` output is not an authoritative input and should be
-rebuilt through Documenter rather than edited by hand.
+Only after the source API settles:
+[`docs/src/api/system.md`](../docs/src/api/system.md),
+[`docs/src/api/statistics.md`](../docs/src/api/statistics.md),
+[`docs/src/internals.md`](../docs/src/internals.md), and
+[`docs/src/quickstart.md`](../docs/src/quickstart.md). Generated `docs/build/`
+output is rebuilt through Documenter, never hand-edited.
 
 ## Work estimate
 
-This is a medium-to-large correction, not a sign-only patch. A realistic
-minimum estimate for one contributor already familiar with the package is:
+| Work area | Estimate | State |
+| --- | --- | --- |
+| Derivation, paper source, formula verifier | 1–2 days | **mostly done**; Tier 0 required items remain (~half a day) |
+| Theory notes (Tiers 1–3) | ~1 day | not started |
+| Correct default Hamiltonian and shared velocity solve | 3–5 days | not started |
+| Statistics, initial conditions, Makie, archive handling | 2–3 days | not started |
+| Independent tests, regularization/collision revalidation | 2–4 days | not started |
+| Notebooks, fixtures, figures, Documenter, final validation | 1–3 days | not started |
 
-| Work area | Estimate |
-| --- | --- |
-| Final derivation, paper source, and formula verifier | 1–2 focused days |
-| Correct default Hamiltonian and shared velocity solve | 3–5 focused days |
-| Statistics, initial conditions, Makie, and archive handling | 2–3 focused days |
-| Independent tests and regularization/collision revalidation | 2–4 focused days |
-| Documentation, notebooks, fixtures, figures, and final full validation | 1–3 focused days |
+Remaining total is roughly 9–16 focused days, almost all of it Phase 2. The
+largest uncertainty is unchanged: whether the current symbolic representation
+stays practical for general particle counts, or whether the default Weber
+system needs specialised runtime equation evaluators.
 
-The total is approximately 9–17 focused working days. The largest uncertainty
-is whether the current symbolic representation remains practical for general
-particle counts or whether the default Weber system needs specialized runtime
-equation evaluators.
+## Implementation order
 
-## Minimum implementation order
+**Documentation pass (this branch, now):**
 
-1. Correct `WeberElectrodynamics.md`, the paper derivation, and the independent
-   formula verifier.
-2. Implement one tested canonical-momentum-to-velocity solve.
-3. Implement the corrected canonical Hamiltonian and both canonical equations.
-4. Update energy, force, initial-condition, and Makie consumers.
-5. Decide archive compatibility for trajectories generated by the old
-   dynamics.
-6. Add independent physics tests before replacing regression fixtures.
-7. Revalidate regularization and collision behavior.
-8. Update documentation and regenerate notebooks, figures, fixtures, the
-   paper PDF, and Documenter output.
+1. Tier 0 — finish the companion paper. Everything downstream aligns to it.
+2. Tier 1 — `theory/WeberElectrodynamics.md`, then `theory/InitialConditions.md`.
+3. Tier 2 — `theory/NonZeroRadialVelocityBoundICs.md`, then the status table
+   at the top of this note.
+4. Tier 3 — `VERSION`, review-markup removal, PDF rebuild, `CHANGELOG.md`.
 
-No partial patch that changes only the two signs in $\dot{\vec p}$ should be
-merged. Those signs are consequences of the same canonical-momentum error and
-cannot be corrected independently.
+Gate before moving on: every boxed equation in `theory/WeberElectrodynamics.md`
+should name the `verify_formulas.py` check that proves it. That cross-reference
+is the mechanism that stops the theory note and the verifier drifting apart
+again — undetected drift between the paper and the package is precisely how
+v1.2 and the current `weber.jl` became a mutually-consistent wrong pair.
+
+**Package pass (Phase 2, deliberately deferred):**
+
+5. Implement one tested canonical-momentum-to-velocity solve, shared by every
+   consumer. Repeating it in the Hamiltonian, statistics and Makie paths would
+   risk another divergence.
+6. Implement the corrected canonical Hamiltonian and both canonical equations.
+7. Update energy, force, initial-condition and Makie consumers.
+8. Decide archive compatibility for trajectories generated by the old dynamics.
+9. Add independent physics tests **before** replacing regression fixtures.
+10. Revalidate regularization and collision behaviour.
+11. Regenerate notebooks, figures, fixtures and Documenter output.
+
+No partial patch that changes only the two signs in `ṗ⃗` should be merged.
+Those signs are consequences of the same canonical-momentum error and cannot
+be corrected independently.
 
 ## Acceptance criteria
 
-The finding is resolved only when:
+**Documentation pass (this branch) is done when:**
 
-1. theory, paper, verifier, and package all use
-   $\vec p_i=\partial L/\partial\vec v_i$;
-2. no Weber path obtains physical velocity by setting
-   $\vec v_i=\vec p_i/m_i$;
-3. the canonical Hamiltonian is the exact Legendre transform of the stated
-   Weber Lagrangian;
-4. the coordinate rate equals the recovered physical velocity;
-5. the canonical momentum rate has the corrected signs;
-6. the canonical equations reproduce the mechanical Weber force;
-7. nonzero-radial initial conditions are converted to canonical momenta;
-8. old trajectories cannot be mistaken for corrected Weber results;
-9. independent two- and three-particle physics checks pass;
-10. regularization, collision, regression, package, documentation, paper, and
-    verifier checks all pass; and
-11. affected notebooks, figures, fixtures, and the paper PDF have been
-    regenerated from the corrected system.
+1. the four Tier 0 required items are applied and the paper builds;
+2. `theory/WeberElectrodynamics.md` and `theory/InitialConditions.md` use
+   `p⃗_i = ∂L/∂v⃗_i` and contain no `p = m v` momentum definition;
+3. no theory note obtains physical velocity by setting `v⃗_i = p⃗_i/m_i`;
+4. `theory/NonZeroRadialVelocityBoundICs.md` no longer claims the current
+   integrator performs the inverse conversion;
+5. `VERSION` reads `1.3` and the review markup is gone; and
+6. `verify_formulas.py` still passes 94/94.
 
-Only after these criteria are satisfied should this planning note be removed.
+**The finding as a whole is resolved only when, in addition:**
+
+7. the canonical Hamiltonian in the package is the exact Legendre transform of
+   the stated Weber Lagrangian;
+8. the coordinate rate equals the recovered physical velocity, and the
+   canonical momentum rate has the corrected signs;
+9. the canonical equations reproduce the mechanical Weber force;
+10. nonzero-radial initial conditions are converted to canonical momenta;
+11. old trajectories cannot be mistaken for corrected Weber results;
+12. independent two- and three-particle physics checks pass, including
+    behaviour near `μ_eff = 0`; and
+13. regularization, collision, regression, package, documentation and paper
+    checks all pass, with notebooks, figures and fixtures regenerated.
+
+Retire this note only when criteria 1–13 are satisfied. Until then it is the
+only record that the package is still integrating the v1.2 equations.
